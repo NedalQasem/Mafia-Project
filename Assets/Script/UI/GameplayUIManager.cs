@@ -14,7 +14,7 @@ namespace MafiaNight.UI
         [SerializeField] private GameObject gameplayPanel;
         [SerializeField] private GameObject phasePanel;
         [SerializeField] private GameObject rolePanel;
-        [SerializeField] private GameObject playerListPanel;
+        // [SerializeField] private GameObject playerListPanel; // DEPRECATED
         
         [Header("Text Elements")]
         [SerializeField] private TextMeshProUGUI phaseText;
@@ -22,9 +22,9 @@ namespace MafiaNight.UI
         [SerializeField] private TextMeshProUGUI roleText;
         [SerializeField] private TextMeshProUGUI roleDescriptionText;
         
-        [Header("Player List")]
-        [SerializeField] private Transform playerListContainer;
-        [SerializeField] private GameObject playerItemPrefab;
+        // [Header("Player List")] - DEPRECATED
+        // [SerializeField] private Transform playerListContainer;
+        // [SerializeField] private GameObject playerItemPrefab;
         
         [Header("Action Buttons")]
         [SerializeField] private Button voteButton;
@@ -125,7 +125,9 @@ namespace MafiaNight.UI
             UpdatePhaseDisplay(GameState.Night);
             
             // Set placeholder role (will be updated by network)
-            SetRole("???", "Waiting for role assignment...");
+            SetRole("???", ""); // Clear description initially
+            
+            if (roleDescriptionText != null) roleDescriptionText.text = "";
             
             // Hide action buttons initially
             if (voteButton != null)
@@ -258,61 +260,10 @@ namespace MafiaNight.UI
         
         #endregion
         
-        #region Player List Management
+        #region Player List Management (DEPRECATED - Handled by SeatManager)
         
-        /// <summary>
-        /// Adds a player to the visual player list
-        /// </summary>
-        public void AddPlayerToList(string playerName, bool isAlive = true)
-        {
-            if (playerListContainer == null) return;
-            
-            GameObject playerItem = new GameObject($"Player_{playerName}");
-            playerItem.transform.SetParent(playerListContainer, false);
-            
-            TextMeshProUGUI playerText = playerItem.AddComponent<TextMeshProUGUI>();
-            playerText.text = isAlive ? $"👤 {playerName}" : $"💀 {playerName}";
-            playerText.fontSize = 20;
-            playerText.color = isAlive ? Color.white : Color.gray;
-            playerText.alignment = TextAlignmentOptions.Left;
-            
-            RectTransform rectTransform = playerItem.GetComponent<RectTransform>();
-            rectTransform.sizeDelta = new Vector2(400, 40);
-        }
-        
-        /// <summary>
-        /// Updates a player's status (alive/dead)
-        /// </summary>
-        public void UpdatePlayerStatus(string playerName, bool isAlive)
-        {
-            if (playerListContainer == null) return;
-            
-            for (int i = 0; i < playerListContainer.childCount; i++)
-            {
-                Transform child = playerListContainer.GetChild(i);
-                TextMeshProUGUI playerText = child.GetComponent<TextMeshProUGUI>();
-                
-                if (playerText != null && playerText.text.Contains(playerName))
-                {
-                    playerText.text = isAlive ? $"👤 {playerName}" : $"💀 {playerName}";
-                    playerText.color = isAlive ? Color.white : Color.gray;
-                    break;
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Clears all players from the list
-        /// </summary>
-        public void ClearPlayerList()
-        {
-            if (playerListContainer == null) return;
-            
-            for (int i = playerListContainer.childCount - 1; i >= 0; i--)
-            {
-                Destroy(playerListContainer.GetChild(i).gameObject);
-            }
-        }
+        // Removed generic list to avoid UI clutter. 
+        // Players are now visualized as 3D Seats in the scene.
         
         #endregion
         

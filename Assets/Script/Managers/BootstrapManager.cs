@@ -114,7 +114,64 @@ namespace MafiaNight.Core
 
             Debug.Log("[Bootstrap] ✅ Currency fetched");
 
-            // ================== STEP 5: التأكد من وقت التحميل الأدنى ==================
+            // ================== STEP 5: تحميل بيانات اللاعب (PlayerProfile) ==================
+            UpdateLoadingUI("Loading player data...", 0.8f);
+
+            var profileManager = MafiaNight.Managers.PlayerProfileManager.Instance;
+            if (profileManager != null)
+            {
+                bool profileLoaded = false;
+
+                void OnProfileLoaded(MafiaNight.Player.PlayerProfile profile)
+                {
+                    profileLoaded = true;
+                    profileManager.OnProfileLoaded -= OnProfileLoaded;
+                    
+                    // Check if this is a new player
+                    bool isNewPlayer = profile.Statistics != null && 
+                                       profile.Statistics.GamesPlayed == 0 && 
+                                       profile.Level == 1 && 
+                                       profile.CurrentXP == 0;
+                    
+                    if (isNewPlayer)
+                    {
+                        Debug.Log($"[Bootstrap] 🆕 New player detected - Saving initial profile to PlayFab");
+                        profileManager.SaveProfile();
+                    }
+                    
+                    Debug.Log($"[Bootstrap] ✅ PlayerProfile loaded: Level {profile.Level}, Rank {profile.Rank}");
+                }
+                
+                profileManager.OnProfileLoaded += OnProfileLoaded;
+                
+                // If profile already loaded (from PlayFabEOSLogin callback)
+                if (profileManager.HasProfile)
+                {
+                    profileLoaded = true;
+                    Debug.Log($"[Bootstrap] ✅ PlayerProfile already loaded: Level {profileManager.LocalProfile.Level}");
+                }
+
+                // انتظار تحميل البيانات
+                elapsed = 0f;
+                timeout = 5f;
+                while (!profileLoaded && elapsed < timeout)
+                {
+                    elapsed += Time.deltaTime;
+                    yield return null;
+                }
+
+                if (!profileLoaded)
+                {
+                    Debug.LogWarning("[Bootstrap] ⚠️ PlayerProfile load timeout - continuing anyway");
+                    profileManager.OnProfileLoaded -= OnProfileLoaded;
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[Bootstrap] ⚠️ PlayerProfileManager not found - skipping profile load");
+            }
+
+            // ================== STEP 6: التأكد من وقت التحميل الأدنى ==================
             UpdateLoadingUI("Preparing Main Menu...", 0.9f);
 
             float loadTime = Time.time - startTime;

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using MafiaNight.Player;
 
 namespace MafiaNight.Core
 {
@@ -214,8 +215,61 @@ namespace MafiaNight.Core
 
         private void AssignRoles()
         {
-            // TODO: Implement role assignment algorithm
-            Debug.Log("Assigning roles to players...");
+            Debug.Log($"[GameManager] Assigning roles to {alivePlayers.Count} players...");
+
+            // 1. Shuffle players
+            var shuffled = new List<PlayerData>(alivePlayers);
+            int n = shuffled.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = UnityEngine.Random.Range(0, n + 1);
+                var value = shuffled[k];
+                shuffled[k] = shuffled[n];
+                shuffled[n] = value;
+            }
+
+            // 2. Define Count
+            // Example Rule: 1 Mafia for every 4 players, 1 Doctor, 1 Sheriff
+            int mafiaCount = Mathf.Max(1, shuffled.Count / 4);
+            int doctorCount = 1;
+            int sheriffCount = 1;
+
+            // 3. Assign
+            int currentIndex = 0;
+
+            // Assign Mafia
+            for (int i = 0; i < mafiaCount; i++)
+            {
+                if (currentIndex < shuffled.Count)
+                    shuffled[currentIndex++].Role = PlayerRole.Mafia;
+            }
+
+            // Assign Doctor
+            for (int i = 0; i < doctorCount; i++)
+            {
+                if (currentIndex < shuffled.Count)
+                    shuffled[currentIndex++].Role = PlayerRole.Doctor;
+            }
+
+            // Assign Sheriff
+            for (int i = 0; i < sheriffCount; i++)
+            {
+                if (currentIndex < shuffled.Count)
+                    shuffled[currentIndex++].Role = PlayerRole.Sheriff;
+            }
+
+            // Rest are Civilians (Default is Civilian, but let's be explicit)
+            while (currentIndex < shuffled.Count)
+            {
+                shuffled[currentIndex++].Role = PlayerRole.Civilian;
+            }
+
+            // Log Results (Hidden in real game)
+            foreach (var p in shuffled)
+            {
+                Debug.Log($"Player assigned: {p.PlayerName} -> {p.Role}");
+            }
         }
 
         private void EnableNightActions()
@@ -356,11 +410,14 @@ namespace MafiaNight.Core
         public bool IsAlive { get; set; } = true;
         public bool IsHost { get; set; }
 
-        public PlayerData(string name, string playFabId, string eosId)
+        public PlayerPublicData VisualData { get; set; }
+
+        public PlayerData(string name, string playFabId, string eosId, PlayerPublicData visualData = null)
         {
             PlayerName = name;
             PlayFabId = playFabId;
             EOSAccountId = eosId;
+            VisualData = visualData;
         }
     }
 

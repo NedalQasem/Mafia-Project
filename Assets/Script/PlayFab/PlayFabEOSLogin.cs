@@ -68,7 +68,7 @@ public class PlayFabEOSLogin : MonoBehaviour
         Debug.Log($"New Account: {result.NewlyCreated}");
         
         // Save CustomID for fallback login (testing/development)
-        PlayerPrefs.SetString("SavedEOSCustomID", _eosAccountIdString);
+        PlayerPrefs.SetString(MafiaNight.Core.GameConstants.PREF_SAVED_EOS_CUSTOM_ID, _eosAccountIdString);
         PlayerPrefs.Save();
         Debug.Log($"[PlayFab] Saved CustomID for fallback: {_eosAccountIdString}");
         
@@ -77,6 +77,13 @@ public class PlayFabEOSLogin : MonoBehaviour
         if (currencyManager != null)
         {
             currencyManager.FetchCurrencies();
+        }
+        
+        // Load player profile data
+        var profileManager = MafiaNight.Managers.PlayerProfileManager.Instance;
+        if (profileManager != null)
+        {
+            profileManager.LoadProfile(result.PlayFabId);
         }
         
         // Optional: Update display name with EOS username
@@ -137,7 +144,7 @@ public class PlayFabEOSLogin : MonoBehaviour
     {
         // Priority order:
         // 1. Custom name from PlayerPrefs (if user set it)
-        string customName = PlayerPrefs.GetString("PlayerCustomName", "");
+        string customName = PlayerPrefs.GetString(MafiaNight.Core.GameConstants.PREF_PLAYER_CUSTOM_NAME, "");
         if (!string.IsNullOrEmpty(customName))
         {
             Debug.Log($"[PlayFab] Using custom name: {customName}");
@@ -275,6 +282,58 @@ public class PlayFabEOSLogin : MonoBehaviour
                 Debug.LogError($"Failed to get display name: {error.GenerateErrorReport()}");
                 callback?.Invoke("Error");
             });
+    }
+
+    #region Singleton
+    public static PlayFabEOSLogin Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+    #endregion
+
+    /// <summary>
+    /// Attempt to login directly using a saved Custom ID (Fallback if EOS is not available)
+    /// </summary>
+    public void TryDirectLoginWithSavedId(System.Action onSuccess, System.Action<string> onFailure)
+    {
+        // Try to get saved CustomID from PlayerPrefs
+        string savedCustomId = PlayerPrefs.GetString(MafiaNight.Core.GameConstants.PREF_SAVED_EOS_CUSTOM_ID, "");
+        
+        if (!string.IsNullOrEmpty(savedCustomId))
+        {
+            Debug.Log($"[PlayFabEOSLogin] Found saved CustomID: {savedCustomId} - attempting direct login");
+            
+            var request = new LoginWithCustomIDRequest
+            {
+                CustomId = savedCustomId,
+                CreateAccount = false // Don't create - account should exist
+            };
+            
+            PlayFabClientAPI.LoginWithCustomID(request, 
+                (result) =>
+                {
+                    OnPlayFabLoginSuccess(result);
+                    onSuccess?.Invoke();
+                },
+                (error) =>
+                {
+                    Debug.LogError($"[PlayFabEOSLogin] Direct login failed: {error.ErrorMessage}");
+                    onFailure?.Invoke(error.ErrorMessage);
+                });
+        }
+        else
+        {
+            Debug.LogWarning("[PlayFabEOSLogin] No saved CustomID - cannot direct login");
+            onFailure?.Invoke("No saved CustomID");
+        }
     }
 }
 

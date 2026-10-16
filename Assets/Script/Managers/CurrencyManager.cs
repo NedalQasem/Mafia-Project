@@ -70,11 +70,24 @@ namespace MafiaNight.Economy
                 }
 
                 Debug.Log($"[CurrencyManager] Fetched: {currentCoins} Coins, {currentGems} Gems");
+                
+                // Sync with PlayerProfile
+                SyncWithPlayerProfile();
 
             }, error =>
             {
                 Debug.LogError($"[CurrencyManager] Fetch failed: {error.ErrorMessage}");
             });
+        }
+        
+        private void SyncWithPlayerProfile()
+        {
+            var profileManager = MafiaNight.Managers.PlayerProfileManager.Instance;
+            if (profileManager != null && profileManager.LocalProfile != null)
+            {
+                profileManager.LocalProfile.Coins = currentCoins;
+                profileManager.LocalProfile.Gems = currentGems;
+            }
         }
 
         #endregion

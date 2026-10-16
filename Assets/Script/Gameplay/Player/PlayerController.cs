@@ -52,16 +52,25 @@ namespace MafiaNight.Player
 
         #region Initialization
 
-        public void Initialize(string name, string playFabId, string eosId, bool isLocal)
+        [Header("Visuals")]
+        [SerializeField] private PlayerVisuals playerVisuals;
+
+        public void Initialize(string name, string playFabId, string eosId, bool isLocal, PlayerPublicData visualData = null)
         {
             playerName = name;
             isLocalPlayer = isLocal;
 
-            playerData = new PlayerData(name, playFabId, eosId);
+            playerData = new PlayerData(name, playFabId, eosId, visualData);
             
             if (gameManager != null)
             {
                 gameManager.RegisterPlayer(playerData);
+            }
+
+            // Init Visuals
+            if (playerVisuals != null && visualData != null)
+            {
+                playerVisuals.SetVisuals(visualData);
             }
 
             Debug.Log($"Player {playerName} initialized (Local: {isLocal})");

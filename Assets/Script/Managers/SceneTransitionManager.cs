@@ -91,19 +91,28 @@ namespace MafiaNight.Core
         #region Scene Loading
 
         /// <summary>
-        /// تحميل Scene مع Async + Loading Screen
+        /// تحميل Scene مع Async + Fade Transition
         /// </summary>
         private IEnumerator LoadSceneAsync(string sceneName)
         {
             isTransitioning = true;
 
-            // ================== Fade Out ==================
-            if (fadeImage != null)
+            // ================== Fade Out using Animation System ==================
+            if (MafiaNight.Animations.SceneTransitionAnimator.Instance != null)
             {
-                yield return StartCoroutine(FadeOut());
+                var fadeOutTask = MafiaNight.Animations.SceneTransitionAnimator.Instance.FadeOut(fadeDuration);
+                yield return new WaitUntil(() => fadeOutTask.IsCompleted);
+            }
+            else
+            {
+                // Fallback to old system
+                if (fadeImage != null)
+                {
+                    yield return StartCoroutine(FadeOut());
+                }
             }
 
-            // ================== عرض Loading Screen ==================
+            // ================== عرض Loading Screen (Optional) ==================
             if (showLoadingScreen && loadingCanvas != null)
             {
                 loadingCanvas.SetActive(true);
@@ -112,24 +121,22 @@ namespace MafiaNight.Core
 
             // ================== بدء Async Loading ==================
             AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
-            asyncLoad.allowSceneActivation = false; // ما نفعل Scene إلا لما نخلص
+            asyncLoad.allowSceneActivation = false;
 
             // ================== انتظار التحميل ==================
             while (!asyncLoad.isDone)
             {
-                // Progress من 0 إلى 0.9 (Unity limitation)
                 float progress = Mathf.Clamp01(asyncLoad.progress / 0.9f);
                 
                 if (progressBar != null)
                     progressBar.value = progress;
 
-                // لما يوصل 90%، Scene جاهز
                 if (asyncLoad.progress >= 0.9f)
                 {
-                    UpdateLoadingText("Press any key to continue...");
+                    UpdateLoadingText("Ready!");
                     
-                    // انتظار لحظة أو Input (اختياري)
-                    yield return new WaitForSeconds(0.5f);
+                    // انتظار قليلاً
+                    yield return new WaitForSeconds(0.3f);
                     
                     // تفعيل Scene
                     asyncLoad.allowSceneActivation = true;
@@ -140,10 +147,19 @@ namespace MafiaNight.Core
 
             Debug.Log($"[SceneTransition] ✅ Loaded scene: {sceneName}");
 
-            // ================== Fade In ==================
-            if (fadeImage != null)
+            // ================== Fade In using Animation System ==================
+            if (MafiaNight.Animations.SceneTransitionAnimator.Instance != null)
             {
-                yield return StartCoroutine(FadeIn());
+                var fadeInTask = MafiaNight.Animations.SceneTransitionAnimator.Instance.FadeIn(fadeDuration);
+                yield return new WaitUntil(() => fadeInTask.IsCompleted);
+            }
+            else
+            {
+                // Fallback
+                if (fadeImage != null)
+                {
+                    yield return StartCoroutine(FadeIn());
+                }
             }
 
             // ================== إخفاء Loading Screen ==================
