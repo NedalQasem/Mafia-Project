@@ -1,17 +1,16 @@
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using MafiaNight.Core;
 
-namespace MafiaNight.Animations
+namespace MafiaNight.UI.Animations
 {
     /// <summary>
     /// Handles smooth scene transition animations
     /// Supports: Fade, Slide, Scale transitions
     /// </summary>
-    public class SceneTransitionAnimator : MonoBehaviour
+    public class SceneTransitionAnimator : PersistentService<SceneTransitionAnimator>
     {
-        public static SceneTransitionAnimator Instance { get; private set; }
-        
         [Header("Transition Settings")]
         [SerializeField] private CanvasGroup transitionCanvasGroup;
         [SerializeField] private Image transitionImage;
@@ -20,21 +19,8 @@ namespace MafiaNight.Animations
         [Header("Transition Colors")]
         [SerializeField] private Color fadeColor = Color.black;
         
-        private void Awake()
+        protected override void OnServiceAwake()
         {
-            // Singleton pattern
-            if (Instance == null)
-            {
-                Instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
-            else
-            {
-                Destroy(gameObject);
-                return;
-            }
-            
-            // Initialize
             if (transitionCanvasGroup != null)
             {
                 transitionCanvasGroup.alpha = 0;

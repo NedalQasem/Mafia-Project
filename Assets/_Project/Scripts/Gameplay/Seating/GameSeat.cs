@@ -1,7 +1,7 @@
 using UnityEngine;
-using MafiaNight.Player;
+using MafiaNight.Gameplay.Player;
 
-namespace MafiaNight.Gameplay
+namespace MafiaNight.Gameplay.Seating
 {
     /// <summary>
     /// Represents a static seat at the game table.

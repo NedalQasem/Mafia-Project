@@ -2,9 +2,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using MafiaNight.Core;
-using MafiaNight.Economy;
+using MafiaNight.Services.Economy;
+using MafiaNight.Services.Scenes;
 
-namespace MafiaNight.UI
+namespace MafiaNight.UI.Screens
 {
     /// <summary>
     /// Manages the Results Scene UI - displays game outcome, rewards, and navigation
@@ -32,7 +33,7 @@ namespace MafiaNight.UI
         [SerializeField] private float rewardAnimationDuration = 2f;
         
         // State
-        private CurrencyManager currencyManager;
+        private ICurrencyService currencyManager;
         private int coinsEarned = 0;
         private int gemsEarned = 0;
         
@@ -45,7 +46,7 @@ namespace MafiaNight.UI
         
         private void Start()
         {
-            currencyManager = CurrencyManager.Instance;
+            ServiceLocator.TryGet(out currencyManager);
             SetupButtonListeners();
             
             // Initialize with placeholder data
@@ -243,14 +244,14 @@ namespace MafiaNight.UI
             Debug.Log("[ResultsUI] Play Again clicked");
             
             // Return to main menu to select room again
-            SceneTransitionManager.Instance.LoadScene("MainMenu");
+            ServiceLocator.Get<ISceneLoader>().LoadScene(GameConstants.SCENE_MAIN_MENU);
         }
         
         private void OnMainMenuClicked()
         {
             Debug.Log("[ResultsUI] Main Menu clicked");
             
-            SceneTransitionManager.Instance.LoadScene("MainMenu");
+            ServiceLocator.Get<ISceneLoader>().LoadScene(GameConstants.SCENE_MAIN_MENU);
         }
         
         #endregion

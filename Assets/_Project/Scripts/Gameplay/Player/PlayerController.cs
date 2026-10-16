@@ -1,7 +1,9 @@
 using UnityEngine;
 using MafiaNight.Core;
+using MafiaNight.Data.Player;
+using MafiaNight.Gameplay.Match;
 
-namespace MafiaNight.Player
+namespace MafiaNight.Gameplay.Player
 {
     /// <summary>
     /// Represents individual player in the game
@@ -29,7 +31,7 @@ namespace MafiaNight.Player
 
         private void Awake()
         {
-            gameManager = GameManager.Instance;
+            ServiceLocator.TryGet(out gameManager);
         }
 
         private void Start()

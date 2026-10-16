@@ -1,128 +1,101 @@
-using UnityEngine;
-using MafiaNight.Player;
-using MafiaNight.Managers;
-using MafiaNight.Systems;
-using MafiaNight.Economy;
-using MafiaNight.Gameplay;
-using MafiaNight.Core;
-using MafiaNight.Data.Customization;
 using System.Collections.Generic;
+using MafiaNight.Core;
+using MafiaNight.Data.Player;
+using MafiaNight.Gameplay.Match;
+using MafiaNight.Gameplay.Seating;
+using MafiaNight.Services.Profile;
+using MafiaNight.Services.Scenes;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
-namespace MafiaNight.Testing
+namespace MafiaNight.DebugTools
 {
     /// <summary>
-    /// Test script for PlayerProfile system - With GUI Support
-    /// Attach to any GameObject in scene for testing
+    /// Debug panel for the profile / match / seating systems (OnGUI window + F1-F4 shortcuts).
+    /// Requires the services from the Bootstrap scene (Play always starts there in the Editor).
     /// </summary>
     public class PlayerProfileTester : MonoBehaviour
     {
         [Header("Test Settings")]
         [SerializeField] private bool testOnStart = false;
-        [SerializeField] private KeyCode testLoadKey = KeyCode.F1;
-        [SerializeField] private KeyCode testSaveKey = KeyCode.F2;
-        [SerializeField] private KeyCode testAddXPKey = KeyCode.F3;
-        [SerializeField] private KeyCode testWinGameKey = KeyCode.F4;
-        
+        [SerializeField] private Key loadProfileKey = Key.F1;
+        [SerializeField] private Key saveProfileKey = Key.F2;
+        [SerializeField] private Key addXPKey = Key.F3;
+        [SerializeField] private Key winGameKey = Key.F4;
+
         [Header("Test Values")]
         [SerializeField] private int xpToAdd = 150;
-        [SerializeField] private int rankPointsToAdd = 100; // New for Rank Test
         [SerializeField] private bool testAsMafia = false;
         [SerializeField] private bool testAsMVP = false;
-        
+
         [Header("GUI")]
         [SerializeField] private bool showGUI = true;
-        
-        // Window Rect for dragging
+
+        [Header("Seat Testing")]
+        [SerializeField] private int debugSeatCount = 6;
+
         private Rect windowRect = new Rect(20, 20, 250, 450);
-        
+        private readonly List<PlayerData> _debugSeatPlayers = new List<PlayerData>();
+
+        private static IPlayerProfileService Profile => ServiceLocator.TryGet<IPlayerProfileService>(out var s) ? s : null;
+        private static GameManager Game => ServiceLocator.TryGet<GameManager>(out var s) ? s : null;
+        private static SeatManager Seats => ServiceLocator.TryGet<SeatManager>(out var s) ? s : null;
+
         private void Start()
         {
-            // Auto-create manager if missing (For testing in MainMenu without Bootstrap)
-            if (PlayerProfileManager.Instance == null)
+            if (Profile == null)
             {
-                Debug.LogWarning("⚠️ [TEST] PlayerProfileManager not found! Creating temporary instance for testing...");
-                var go = new GameObject("PlayerProfileManager_TEMP");
-                go.AddComponent<PlayerProfileManager>();
-                
-                // Also need CurrencyManager probably
-                if (CurrencyManager.Instance == null)
-                {
-                    var cmGo = new GameObject("CurrencyManager_TEMP");
-                    cmGo.AddComponent<CurrencyManager>();
-                }
-                
-                // Need PlayerRankManager for Rank tests
-                if (PlayerRankManager.Instance == null)
-                {
-                    var prGo = new GameObject("PlayerRankManager_TEMP");
-                    prGo.AddComponent<PlayerRankManager>();
-                }
+                Debug.LogWarning("⚠️ [TEST] Services not found - start Play from the Bootstrap scene.");
             }
-            
-            if (testOnStart)
-            {
-                TestLoadProfile();
-            }
+
+            if (testOnStart) TestLoadProfile();
         }
-        
+
         private void Update()
         {
-            if (Input.GetKeyDown(testLoadKey)) TestLoadProfile();
-            if (Input.GetKeyDown(testSaveKey)) TestSaveProfile();
-            if (Input.GetKeyDown(testAddXPKey)) TestAddXP();
-            if (Input.GetKeyDown(testWinGameKey)) TestWinGame();
+            var keyboard = Keyboard.current;
+            if (keyboard == null) return;
+
+            if (keyboard[loadProfileKey].wasPressedThisFrame) TestLoadProfile();
+            if (keyboard[saveProfileKey].wasPressedThisFrame) TestSaveProfile();
+            if (keyboard[addXPKey].wasPressedThisFrame) TestAddXP();
+            if (keyboard[winGameKey].wasPressedThisFrame) TestWinGame();
         }
-        
+
         private void OnGUI()
         {
             if (!showGUI) return;
-            
-            // Draggable Window
             windowRect = GUILayout.Window(0, windowRect, DrawTesterWindow, "Profile Tester");
         }
-        
-        [Header("Scene Testing")]
-        [SerializeField] private string gameplaySceneName = "Gameplay";
 
         private void DrawTesterWindow(int windowID)
         {
             GUILayout.BeginVertical();
-            
-            // --- SCENES ---
+
             GUILayout.Label("<b>Scene Navigation</b>");
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Main Menu")) SafeLoadScene(GameConstants.SCENE_MAIN_MENU);
             if (GUILayout.Button("Lobby")) SafeLoadScene(GameConstants.SCENE_LOBBY);
-            if (GUILayout.Button("Gameplay")) SafeLoadScene(gameplaySceneName);
+            if (GUILayout.Button("Gameplay")) SafeLoadScene(GameConstants.SCENE_GAMEPLAY);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(5);
-
-            // --- GAME FLOW (Lobby/Game) ---
             GUILayout.Label("<b>Game Flow</b>");
-            if (GUILayout.Button("Fill Lobby (Add 5 Players)")) TestFillLobby();
-            
+            if (GUILayout.Button("Fill Lobby (Add 5 Bots)")) TestFillLobby();
+
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Start Game")) 
-            {
-                if (GameManager.Instance != null) GameManager.Instance.StartGame();
-            }
-            if (GUILayout.Button("End Game (Force Result)")) 
-            {
-                if (GameManager.Instance != null) GameManager.Instance.ChangeGameState(GameState.GameOver);
-            }
+            if (GUILayout.Button("Start Game")) Game?.StartGame();
+            if (GUILayout.Button("End Game (Force Result)")) Game?.ChangeGameState(GameState.GameOver);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(10);
-            
-            // --- PROFILE ACTIONS ---
             GUILayout.Label("<b>Profile Actions</b>");
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Save")) TestSaveProfile();
             if (GUILayout.Button("Load")) TestLoadProfile();
             GUILayout.EndHorizontal();
-            
-            // --- PROGRESSION ---
+
             GUILayout.Space(5);
             GUILayout.Label("<b>Progression</b>");
             GUILayout.BeginHorizontal();
@@ -131,176 +104,110 @@ namespace MafiaNight.Testing
             if (GUILayout.Button("Lose")) TestLoseGame();
             GUILayout.EndHorizontal();
 
-            // --- STATS DISPLAY ---
             GUILayout.Space(10);
             GUILayout.Label("<b>Current Stats</b>");
-            
-            if (PlayerProfileManager.Instance != null && PlayerProfileManager.Instance.LocalProfile != null)
+
+            var profile = Profile?.LocalProfile;
+            if (profile != null)
             {
-                var p = PlayerProfileManager.Instance.LocalProfile;
-                GUILayout.Label($"Name: {p.DisplayName}");
-                GUILayout.Label($"Level: {p.Level} (XP: {p.CurrentXP}/{p.XPToNextLevel})");
-                GUILayout.Label($"<color=yellow>Rank: {p.Rank}</color> ({p.RankPoints})");
+                GUILayout.Label($"Name: {profile.DisplayName}");
+                GUILayout.Label($"Level: {profile.Level} (XP: {profile.CurrentXP}/{profile.XPToNextLevel})");
+                GUILayout.Label($"<color=yellow>Rank: {profile.Rank}</color> ({profile.RankPoints})");
             }
             else
             {
                 GUILayout.Label("<color=red>No Profile Loaded</color>");
             }
-            
+
             GUILayout.EndVertical();
-            
-            // Make window draggable
             GUI.DragWindow();
         }
 
-        private void SafeLoadScene(string sceneName)
+        private static void SafeLoadScene(string sceneName)
         {
-            if (SceneTransitionManager.Instance != null)
-            {
-                SceneTransitionManager.Instance.LoadScene(sceneName);
-            }
-            else
-            {
-                // Fallback if Manager missing
-                Debug.LogWarning("SceneTransitionManager not found, using direct SceneManager");
-                UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
-            }
+            if (ServiceLocator.TryGet<ISceneLoader>(out var loader)) loader.LoadScene(sceneName);
+            else SceneManager.LoadScene(sceneName);
         }
 
-        private void TestFillLobby()
+        private static void TestFillLobby()
         {
-            if (GameManager.Instance == null) return;
-            
-            // Add 1 local + 5 dummies = 6 players
-            // Ensure Local Player is registered first
-            var localProfile = PlayerProfileManager.Instance.LocalProfile;
-            if (localProfile != null)
-            {
-                // Verify local player is in GameManager
-                // (Usually MainMenu logic does this, but for testing we assume it might not be)
-            }
+            var game = Game;
+            if (game == null) return;
 
-            // Add Dummies
             for (int i = 0; i < 5; i++)
             {
-                var dummyVis = new PlayerPublicData 
-                { 
-                    DisplayName = $"Bot {i+1}", 
-                    IsVIP = (i % 2 == 0),
+                var visuals = new PlayerPublicData
+                {
+                    DisplayName = $"Bot {i + 1}",
+                    IsVIP = i % 2 == 0,
                     ProfilePictureID = "default",
                     ProfileFrameID = "default"
                 };
-                
-                var dummy = new PlayerData($"Bot {i+1}", $"BOT_ID_{i}", $"BOT_EOS_{i}", dummyVis);
-                
-                GameManager.Instance.RegisterPlayer(dummy);
+                game.RegisterPlayer(new PlayerData($"Bot {i + 1}", $"BOT_ID_{i}", $"BOT_EOS_{i}", visuals));
             }
-            
-            Debug.Log("✅ [TEST] Added 5 Bots to Game Manager");
+
+            Debug.Log("✅ [TEST] Added 5 bots to GameManager");
         }
-        
+
         [ContextMenu("Test Load Profile")]
         public void TestLoadProfile()
         {
-            var manager = PlayerProfileManager.Instance;
-            if (manager == null) return;
-            
-            if (manager.LocalProfile != null) DisplayProfile(manager.LocalProfile);
-            else
+            var profile = Profile;
+            if (profile == null) return;
+
+            if (profile.HasProfile)
             {
-                manager.OnProfileLoaded += DisplayProfileOnce;
-                manager.RefreshProfile();
+                LogProfile(profile.LocalProfile);
+                return;
             }
+
+            void OnLoaded(PlayerProfile p)
+            {
+                profile.OnProfileLoaded -= OnLoaded;
+                LogProfile(p);
+            }
+            profile.OnProfileLoaded += OnLoaded;
+            profile.RefreshProfile();
         }
 
-        private void DisplayProfileOnce(PlayerProfile profile)
+        private static void LogProfile(PlayerProfile profile)
         {
-            PlayerProfileManager.Instance.OnProfileLoaded -= DisplayProfileOnce;
-            DisplayProfile(profile);
+            Debug.Log($"✅ [TEST] Profile: {profile.DisplayName}, Lvl {profile.Level}, {profile.Rank}");
         }
 
-        private void DisplayProfile(PlayerProfile profile)
-        {
-            Debug.Log($"✅ [TEST] Profile Loaded: {profile.DisplayName}, Lvl {profile.Level}, {profile.Rank}");
-        }
-        
         [ContextMenu("Test Save Profile")]
-        public void TestSaveProfile()
-        {
-            if (PlayerProfileManager.Instance != null) { PlayerProfileManager.Instance.SaveProfile(); Debug.Log("✅ Saved"); }
-        }
-        
+        public void TestSaveProfile() => Profile?.SaveProfile();
+
         [ContextMenu("Test Add XP")]
-        public void TestAddXP()
-        {
-            if (PlayerProfileManager.Instance != null) { PlayerProfileManager.Instance.AddXP(xpToAdd); }
-        }
-        
+        public void TestAddXP() => Profile?.AddXP(xpToAdd);
+
         [ContextMenu("Test Win Game")]
-        public void TestWinGame()
-        {
-            if (CheckManagers())
-            {
-                var profile = PlayerProfileManager.Instance.LocalProfile;
-                PlayerRankManager.Instance.AddRankPoints(profile, true, testAsMVP);
-                PlayerProfileManager.Instance.RecordGameResult(true, testAsMafia);
-                Debug.Log($"✅ [TEST] Win Game: {profile.Rank} ({profile.RankPoints} pts)");
-            }
-        }
-        
+        public void TestWinGame() => RecordTestMatch(won: true);
+
         [ContextMenu("Test Lose Game")]
-        public void TestLoseGame()
+        public void TestLoseGame() => RecordTestMatch(won: false);
+
+        private void RecordTestMatch(bool won)
         {
-            if (CheckManagers())
+            var profile = Profile;
+            if (profile == null || !profile.HasProfile)
             {
-                var profile = PlayerProfileManager.Instance.LocalProfile;
-                PlayerRankManager.Instance.AddRankPoints(profile, false, false);
-                PlayerProfileManager.Instance.RecordGameResult(false, testAsMafia);
-                Debug.Log($"❌ [TEST] Lose Game: {profile.Rank} ({profile.RankPoints} pts)");
+                Debug.LogError("[TEST] Profile not loaded!");
+                return;
             }
-        }
-        
-        public void TestChangeRankPoints(int amount)
-        {
-            if (CheckManagers())
-            {
-                var profile = PlayerProfileManager.Instance.LocalProfile;
-                profile.RankPoints += amount;
-                if (profile.RankPoints < 0) profile.RankPoints = 0;
-                
-                // Update Rank Enum based on new points
-                profile.Rank = PlayerRankManager.Instance.GetRankFromPoints(profile.RankPoints);
-                
-                Debug.Log($"⚖️ [TEST] Manual Adjust: {amount} pts. New: {profile.Rank} ({profile.RankPoints})");
-                PlayerProfileManager.Instance.SaveProfile(); // Save changes
-            }
-        }
-        
-        private bool CheckManagers()
-        {
-            if (PlayerProfileManager.Instance == null || PlayerRankManager.Instance == null)
-            {
-                Debug.LogError("Managers missing!");
-                return false;
-            }
-            if (PlayerProfileManager.Instance.LocalProfile == null)
-            {
-                Debug.LogError("Profile not loaded!");
-                return false;
-            }
-            return true;
+
+            profile.RecordMatchResult(won, testAsMafia, won && testAsMVP);
+            var p = profile.LocalProfile;
+            Debug.Log($"{(won ? "✅ Win" : "❌ Lose")} [TEST]: {p.Rank} ({p.RankPoints} pts)");
         }
 
-        #region Seat / Layou Testing
-
-        [Header("Seat Testing")]
-        [SerializeField] private int debugSeatCount = 6;
-        private List<PlayerData> _debugSeatPlayers = new List<PlayerData>();
+        #region Seat / Layout Testing
 
         [ContextMenu("Test: Generate Layout")]
         public void TestGenerateLayout()
         {
-            if (SeatManager.Instance == null)
+            var seats = Seats;
+            if (seats == null)
             {
                 Debug.LogError("SeatManager not found!");
                 return;
@@ -309,43 +216,33 @@ namespace MafiaNight.Testing
             _debugSeatPlayers.Clear();
             for (int i = 0; i < debugSeatCount; i++)
             {
-                var dummyVis = new PlayerPublicData 
-                { 
-                    DisplayName = $"Test Player {i+1}", 
-                    IsVIP = (i % 3 == 0) 
-                };
-                
-                var dummy = new PlayerData($"Test Player {i+1}", $"ID_{i}", $"EOS_{i}", dummyVis);
-                _debugSeatPlayers.Add(dummy);
+                var visuals = new PlayerPublicData { DisplayName = $"Test Player {i + 1}", IsVIP = i % 3 == 0 };
+                _debugSeatPlayers.Add(new PlayerData($"Test Player {i + 1}", $"ID_{i}", $"EOS_{i}", visuals));
             }
-            
-            SeatManager.Instance.SetupSeats(_debugSeatPlayers);
-            Debug.Log($"Generated Layout for {debugSeatCount} players");
+
+            seats.SetupSeats(_debugSeatPlayers);
         }
 
         [ContextMenu("Test: Add Player to Seat")]
         public void TestAddSeatPlayer()
         {
-            if (SeatManager.Instance == null) return;
+            var seats = Seats;
+            if (seats == null) return;
 
             int nextId = _debugSeatPlayers.Count + 1;
-            var dummyVis = new PlayerPublicData { DisplayName = $"New Player {nextId}" };
-            var dummy = new PlayerData($"New Player {nextId}", $"ID_{nextId}", $"EOS_{nextId}", dummyVis);
-            
-            _debugSeatPlayers.Add(dummy);
-            SeatManager.Instance.SetupSeats(_debugSeatPlayers);
+            var visuals = new PlayerPublicData { DisplayName = $"New Player {nextId}" };
+            _debugSeatPlayers.Add(new PlayerData($"New Player {nextId}", $"ID_{nextId}", $"EOS_{nextId}", visuals));
+            seats.SetupSeats(_debugSeatPlayers);
         }
 
         [ContextMenu("Test: Remove Player from Seat")]
         public void TestRemoveSeatPlayer()
         {
-            if (SeatManager.Instance == null) return;
+            var seats = Seats;
+            if (seats == null || _debugSeatPlayers.Count == 0) return;
 
-            if (_debugSeatPlayers.Count > 0)
-            {
-                _debugSeatPlayers.RemoveAt(_debugSeatPlayers.Count - 1);
-                SeatManager.Instance.SetupSeats(_debugSeatPlayers);
-            }
+            _debugSeatPlayers.RemoveAt(_debugSeatPlayers.Count - 1);
+            seats.SetupSeats(_debugSeatPlayers);
         }
 
         #endregion

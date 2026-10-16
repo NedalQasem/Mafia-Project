@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MafiaNight.Animations
+namespace MafiaNight.UI.Animations
 {
     /// <summary>
     /// Predefined animation curves and presets

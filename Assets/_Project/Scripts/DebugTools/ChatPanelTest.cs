@@ -1,6 +1,7 @@
 using UnityEngine;
+using MafiaNight.UI.Components;
 
-namespace MafiaNight.UI
+namespace MafiaNight.DebugTools
 {
     /// <summary>
     /// Simple test script to open chat panel on start
@@ -17,7 +18,7 @@ namespace MafiaNight.UI
         private void TestChat()
         {
             // Find ChatPanel
-            ChatPanel chatPanel = FindObjectOfType<ChatPanel>();
+            ChatPanel chatPanel = FindAnyObjectByType<ChatPanel>();
             
             if (chatPanel != null)
             {

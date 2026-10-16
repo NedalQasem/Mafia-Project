@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using MafiaNight.Data.Customization;
+using MafiaNight.Data.Player;
 
-namespace MafiaNight.Player
+namespace MafiaNight.Gameplay.Player
 {
     /// <summary>
     /// Handles visual representation of the player (Avatar, Frame, Nameplate)

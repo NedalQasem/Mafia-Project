@@ -7,19 +7,24 @@ namespace MafiaNight.Core
     {
         #region PlayerPrefs Keys
         public const string PREF_SAVED_EOS_CUSTOM_ID = "SavedEOSCustomID";
-        public const string PREF_SELECTED_ROOM_TIER = "SelectedRoomTier";
         public const string PREF_PLAYER_CUSTOM_NAME = "PlayerCustomName";
         #endregion
 
-        #region Scene Names
-        public const string SCENE_LOBBY = "Lobby";
+        #region Scene Names (must match Build Settings)
+        public const string SCENE_BOOTSTRAP = "Bootstrap";
         public const string SCENE_MAIN_MENU = "MainMenu";
+        public const string SCENE_LOBBY = "Lobby";
+        public const string SCENE_GAMEPLAY = "Gameplay";
+        public const string SCENE_RESULTS = "Results";
         #endregion
 
-        #region UI Elements
-        // Ideally avoid using these for GameObject.Find, use SerializeField instead
-        public const string UI_HEADER_PANEL = "HeaderPanel";
-        public const string UI_DOWN_BAR = "DownBar";
+        #region Editor
+        /// <summary>SessionState key: scene to return to after Bootstrap when Play is pressed in another scene.</summary>
+        public const string EDITOR_RETURN_SCENE_KEY = "MafiaNight.EditorReturnScene";
+        #endregion
+
+        #region Match Rules
+        public const int MIN_PLAYERS_TO_START = 4;
         #endregion
     }
 }

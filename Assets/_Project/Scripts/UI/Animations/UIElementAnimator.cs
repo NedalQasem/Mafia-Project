@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MafiaNight.Animations
+namespace MafiaNight.UI.Animations
 {
     /// <summary>
     /// Animates UI elements with various effects

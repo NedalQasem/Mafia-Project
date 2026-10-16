@@ -4,7 +4,7 @@ using TMPro;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace MafiaNight.UI
+namespace MafiaNight.UI.Components
 {
     /// <summary>
     /// Chat channel types

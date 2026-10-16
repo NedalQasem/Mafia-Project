@@ -1,10 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using MafiaNight.Player;
+using MafiaNight.Data.Player;
 using MafiaNight.Data.Customization;
 
-namespace MafiaNight.UI
+namespace MafiaNight.UI.Components
 {
     /// <summary>
     /// Displays player info in lobby - compact view

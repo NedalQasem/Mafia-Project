@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MafiaNight.Player
+namespace MafiaNight.Data.Player
 {
     /// <summary>
     /// Player customization data - cosmetic items and preferences

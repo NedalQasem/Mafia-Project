@@ -1,18 +1,20 @@
+using System.Collections;
+using MafiaNight.Core;
+using MafiaNight.UI.Animations;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections;
-using TMPro;
 using UnityEngine.UI;
 
-namespace MafiaNight.Core
+namespace MafiaNight.Services.Scenes
 {
     /// <summary>
-    /// Scene Transition Manager - إدارة الانتقال بين Scenes
-    /// Singleton - يبقى بين الـ Scenes
+    /// Loads scenes asynchronously with a fade transition. Persists across scenes.
+    /// Uses <see cref="SceneTransitionAnimator"/> when available, otherwise its own fade image.
     /// </summary>
-    public class SceneTransitionManager : MonoBehaviour
+    public class SceneTransitionManager : PersistentService<ISceneLoader>, ISceneLoader
     {
-        public static SceneTransitionManager Instance { get; private set; }
+        private const string Tag = "SceneTransition";
 
         [Header("Transition Settings")]
         [SerializeField] private float fadeDuration = 0.5f;
@@ -26,218 +28,106 @@ namespace MafiaNight.Core
 
         private bool isTransitioning = false;
 
-        #region Unity Lifecycle
+        public bool IsTransitioning => isTransitioning;
 
-        private void Awake()
+        protected override void OnServiceAwake()
         {
-            // Singleton Pattern
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-
-            // إخفاء Loading UI في البداية
             if (loadingCanvas != null)
                 loadingCanvas.SetActive(false);
         }
 
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// تحميل Scene جديدة مع Transition
-        /// </summary>
         public void LoadScene(string sceneName)
         {
             if (isTransitioning)
             {
-                Debug.LogWarning("[SceneTransition] Already transitioning to another scene!");
+                Log.Warning($"Already transitioning - ignoring request for '{sceneName}'", Tag);
                 return;
             }
 
-            StartCoroutine(LoadSceneAsync(sceneName));
+            StartCoroutine(LoadSceneRoutine(sceneName));
         }
 
-        /// <summary>
-        /// تحميل Scene بـ build index
-        /// </summary>
-        public void LoadScene(int sceneIndex)
-        {
-            if (isTransitioning)
-            {
-                Debug.LogWarning("[SceneTransition] Already transitioning!");
-                return;
-            }
-
-            StartCoroutine(LoadSceneAsync(sceneIndex));
-        }
-
-        /// <summary>
-        /// Reload Scene الحالية
-        /// </summary>
-        public void ReloadCurrentScene()
-        {
-            Scene currentScene = SceneManager.GetActiveScene();
-            LoadScene(currentScene.name);
-        }
-
-        #endregion
-
-        #region Scene Loading
-
-        /// <summary>
-        /// تحميل Scene مع Async + Fade Transition
-        /// </summary>
-        private IEnumerator LoadSceneAsync(string sceneName)
+        private IEnumerator LoadSceneRoutine(string sceneName)
         {
             isTransitioning = true;
+            ServiceLocator.TryGet<SceneTransitionAnimator>(out var animator);
 
-            // ================== Fade Out using Animation System ==================
-            if (MafiaNight.Animations.SceneTransitionAnimator.Instance != null)
+            // Fade out
+            if (animator != null)
             {
-                var fadeOutTask = MafiaNight.Animations.SceneTransitionAnimator.Instance.FadeOut(fadeDuration);
+                var fadeOutTask = animator.FadeOut(fadeDuration);
                 yield return new WaitUntil(() => fadeOutTask.IsCompleted);
             }
-            else
+            else if (fadeImage != null)
             {
-                // Fallback to old system
-                if (fadeImage != null)
-                {
-                    yield return StartCoroutine(FadeOut());
-                }
+                yield return Fade(0f, 1f);
             }
 
-            // ================== عرض Loading Screen (Optional) ==================
             if (showLoadingScreen && loadingCanvas != null)
             {
                 loadingCanvas.SetActive(true);
-                UpdateLoadingText($"Loading {sceneName}...");
+                SetLoadingText($"Loading {sceneName}...");
             }
 
-            // ================== بدء Async Loading ==================
+            // Load
             AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
             asyncLoad.allowSceneActivation = false;
 
-            // ================== انتظار التحميل ==================
             while (!asyncLoad.isDone)
             {
-                float progress = Mathf.Clamp01(asyncLoad.progress / 0.9f);
-                
                 if (progressBar != null)
-                    progressBar.value = progress;
+                    progressBar.value = Mathf.Clamp01(asyncLoad.progress / 0.9f);
 
-                if (asyncLoad.progress >= 0.9f)
+                if (asyncLoad.progress >= 0.9f && !asyncLoad.allowSceneActivation)
                 {
-                    UpdateLoadingText("Ready!");
-                    
-                    // انتظار قليلاً
+                    SetLoadingText("Ready!");
                     yield return new WaitForSeconds(0.3f);
-                    
-                    // تفعيل Scene
                     asyncLoad.allowSceneActivation = true;
                 }
 
                 yield return null;
             }
 
-            Debug.Log($"[SceneTransition] ✅ Loaded scene: {sceneName}");
+            Log.Info($"✅ Loaded scene: {sceneName}", Tag);
 
-            // ================== Fade In using Animation System ==================
-            if (MafiaNight.Animations.SceneTransitionAnimator.Instance != null)
+            // Fade in
+            if (animator != null)
             {
-                var fadeInTask = MafiaNight.Animations.SceneTransitionAnimator.Instance.FadeIn(fadeDuration);
+                var fadeInTask = animator.FadeIn(fadeDuration);
                 yield return new WaitUntil(() => fadeInTask.IsCompleted);
             }
-            else
+            else if (fadeImage != null)
             {
-                // Fallback
-                if (fadeImage != null)
-                {
-                    yield return StartCoroutine(FadeIn());
-                }
+                yield return Fade(1f, 0f);
             }
 
-            // ================== إخفاء Loading Screen ==================
             if (loadingCanvas != null)
-            {
                 loadingCanvas.SetActive(false);
-            }
 
             isTransitioning = false;
         }
 
-        /// <summary>
-        /// تحميل Scene بـ index
-        /// </summary>
-        private IEnumerator LoadSceneAsync(int sceneIndex)
+        private IEnumerator Fade(float from, float to)
         {
-            string sceneName = SceneManager.GetSceneByBuildIndex(sceneIndex).name;
-            yield return StartCoroutine(LoadSceneAsync(sceneName));
-        }
-
-        #endregion
-
-        #region Fade Effects
-
-        /// <summary>
-        /// Fade to black
-        /// </summary>
-        private IEnumerator FadeOut()
-        {
-            if (fadeImage == null) yield break;
-
             float elapsed = 0f;
             Color color = fadeImage.color;
 
             while (elapsed < fadeDuration)
             {
                 elapsed += Time.deltaTime;
-                color.a = Mathf.Lerp(0f, 1f, elapsed / fadeDuration);
+                color.a = Mathf.Lerp(from, to, elapsed / fadeDuration);
                 fadeImage.color = color;
                 yield return null;
             }
 
-            color.a = 1f;
+            color.a = to;
             fadeImage.color = color;
         }
 
-        /// <summary>
-        /// Fade from black
-        /// </summary>
-        private IEnumerator FadeIn()
-        {
-            if (fadeImage == null) yield break;
-
-            float elapsed = 0f;
-            Color color = fadeImage.color;
-
-            while (elapsed < fadeDuration)
-            {
-                elapsed += Time.deltaTime;
-                color.a = Mathf.Lerp(1f, 0f, elapsed / fadeDuration);
-                fadeImage.color = color;
-                yield return null;
-            }
-
-            color.a = 0f;
-            fadeImage.color = color;
-        }
-
-        #endregion
-
-        #region UI Helpers
-
-        private void UpdateLoadingText(string text)
+        private void SetLoadingText(string text)
         {
             if (loadingText != null)
                 loadingText.text = text;
         }
-
-        #endregion
     }
 }

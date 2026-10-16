@@ -1,394 +1,240 @@
 using System.Linq;
-using UnityEngine;
-using TMPro;
-using MafiaNight.Economy;
-using MafiaNight.Managers;
-using MafiaNight.Player;
+using System.Threading.Tasks;
 using MafiaNight.Core;
+using MafiaNight.Data;
+using MafiaNight.Data.Player;
+using MafiaNight.Services.Economy;
+using MafiaNight.Services.Profile;
+using MafiaNight.Services.Scenes;
+using MafiaNight.Services.Session;
+using MafiaNight.UI.Animations;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
-namespace MafiaNight.UI
+namespace MafiaNight.UI.Screens
 {
     /// <summary>
     /// Main menu UI controller - displays player profile and handles room selection
     /// </summary>
     public class MainMenuUI : MonoBehaviour
     {
+        private const string Tag = "MainMenuUI";
+
         [Header("Profile Display")]
-        [SerializeField] private UnityEngine.UI.Image avatarImage;
+        [SerializeField] private Image avatarImage;
         [SerializeField] private TextMeshProUGUI playerNameText;
         [SerializeField] private TextMeshProUGUI coinsText;
         [SerializeField] private TextMeshProUGUI gemsText;
-        [SerializeField] private UnityEngine.UI.Button settingsButton;
+        [SerializeField] private Button settingsButton;
 
         [Header("Player Profile Display")]
         [SerializeField] private TextMeshProUGUI levelText;
         [SerializeField] private TextMeshProUGUI rankText;
-        [SerializeField] private UnityEngine.UI.Image rankBadgeImage;
-        [SerializeField] private UnityEngine.UI.Scrollbar xpProgressBar;
+        [SerializeField] private Image rankBadgeImage;
+        [SerializeField] private Scrollbar xpProgressBar;
         [SerializeField] private TextMeshProUGUI xpText;
 
         [Header("Room Buttons")] // TODO: Replace with carousel
-        [SerializeField] private UnityEngine.UI.Button starterRoomButton;
-        [SerializeField] private UnityEngine.UI.Button proRoomButton;
-        [SerializeField] private UnityEngine.UI.Button eliteRoomButton;
+        [SerializeField] private Button starterRoomButton;
+        [SerializeField] private Button proRoomButton;
+        [SerializeField] private Button eliteRoomButton;
 
         [Header("Room Tier Data")]
-        [SerializeField] private MafiaNight.Data.RoomTierData starterRoomTier;
-        [SerializeField] private MafiaNight.Data.RoomTierData proRoomTier;
-        [SerializeField] private MafiaNight.Data.RoomTierData eliteRoomTier;
+        [SerializeField] private RoomTierData starterRoomTier;
+        [SerializeField] private RoomTierData proRoomTier;
+        [SerializeField] private RoomTierData eliteRoomTier;
 
         [Header("Layout Elements")]
         [SerializeField] private GameObject headerPanel;
         [SerializeField] private GameObject downBar;
 
-        private CurrencyManager currencyManager;
+        private ICurrencyService _currency;
+        private IPlayerProfileService _profile;
+        private bool _isJoiningRoom;
 
         private async void Start()
         {
-            currencyManager = CurrencyManager.Instance;
+            ServiceLocator.TryGet(out _currency);
+            ServiceLocator.TryGet(out _profile);
 
-            if (currencyManager != null)
+            if (_currency != null)
             {
-                // Subscribe to currency changes
-                currencyManager.OnCoinsChanged += UpdateCoinsDisplay;
-                currencyManager.OnGemsChanged += UpdateGemsDisplay;
-
-                // Initial display
-                UpdateCoinsDisplay(currencyManager.GetCoins());
-                UpdateGemsDisplay(currencyManager.GetGems());
+                _currency.OnCoinsChanged += UpdateCoinsDisplay;
+                _currency.OnGemsChanged += UpdateGemsDisplay;
+                UpdateCoinsDisplay(_currency.Coins);
+                UpdateGemsDisplay(_currency.Gems);
             }
-            
-            // Setup settings button
+
+            if (_profile != null)
+            {
+                _profile.OnProfileLoaded += DisplayProfile;
+                _profile.OnProfileUpdated += DisplayProfile;
+                if (_profile.HasProfile) DisplayProfile(_profile.LocalProfile);
+            }
+
+            if (_profile == null || !_profile.HasProfile)
+            {
+                ShowPlaceholderName();
+            }
+
             if (settingsButton != null)
                 settingsButton.onClick.AddListener(OnSettingsClicked);
 
-            // Setup room button listeners (TODO: Remove when carousel is added)
-            // Ideally should be a dynamic list, but for now fixed buttons
             SetupRoomButton(starterRoomButton, starterRoomTier);
             SetupRoomButton(proRoomButton, proRoomTier);
             SetupRoomButton(eliteRoomButton, eliteRoomTier);
 
-            // Fetch player name from PlayFab
-            FetchPlayerName();
-            
-            // Update player profile display (Level, XP, Rank)
-            UpdateProfileDisplay();
+            Log.Info("Initialized", Tag);
 
-            Debug.Log("[MainMenuUI] Initialized");
-            
-            // Animate UI elements (sequential reveal)
             await AnimateUIElements();
-        }
-
-        private void SetupRoomButton(UnityEngine.UI.Button button, MafiaNight.Data.RoomTierData tierData)
-        {
-            if (button != null && tierData != null)
-            {
-                button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(() => OnRoomButtonClicked(tierData));
-            }
-        }
-
-        private void FetchPlayerName()
-        {
-            // Get name from PlayFabEOSLogin (synced with PlayFab)
-            // Use Singleton if available, otherwise find one (safe fallback)
-            PlayFabEOSLogin eosLogin = PlayFabEOSLogin.Instance;
-            if (eosLogin == null) eosLogin = FindObjectOfType<PlayFabEOSLogin>();
-            
-            if (eosLogin != null && eosLogin.IsPlayFabLoggedIn)
-            {
-                // Primary path: EOS is logged in
-                eosLogin.GetDisplayName((displayName) =>
-                {
-                    if (playerNameText != null)
-                    {
-                        playerNameText.SetText(displayName);
-                        Debug.Log($"[MainMenuUI] Player name loaded from PlayFab: {displayName}");
-                    }
-                });
-            }
-            else if (eosLogin != null)
-            {
-                // Fallback direct login via PlayFabEOSLogin manager
-                Debug.LogWarning("[MainMenuUI] PlayFab not logged in via EOS - attempting direct login via Manager");
-                eosLogin.TryDirectLoginWithSavedId(
-                    onSuccess: () => 
-                    {
-                        Debug.Log("[MainMenuUI] Direct login success, fetching name...");
-                        eosLogin.GetDisplayName(name => playerNameText?.SetText(name));
-                    },
-                    onFailure: (error) => 
-                    {
-                        ShowPlaceholderName();
-                    }
-                );
-            }
-            else
-            {
-                ShowPlaceholderName();
-            }
-        }
-    
-        private void ShowPlaceholderName()
-        {
-            if (playerNameText != null)
-            {
-                playerNameText.SetText("Guest");
-            }
         }
 
         private void OnDestroy()
         {
-            // Cleanup currency manager
-            if (currencyManager != null)
+            if (_currency != null)
             {
-                currencyManager.OnCoinsChanged -= UpdateCoinsDisplay;
-                currencyManager.OnGemsChanged -= UpdateGemsDisplay;
+                _currency.OnCoinsChanged -= UpdateCoinsDisplay;
+                _currency.OnGemsChanged -= UpdateGemsDisplay;
             }
-            
-            // Cleanup profile manager
-            var profileManager = PlayerProfileManager.Instance;
-            if (profileManager != null)
-            {
-                profileManager.OnProfileLoaded -= OnProfileLoaded;
-                profileManager.OnProfileUpdated -= OnProfileUpdated;
-            }
-            
-            if (settingsButton != null)
-                settingsButton.onClick.RemoveAllListeners();
 
+            if (_profile != null)
+            {
+                _profile.OnProfileLoaded -= DisplayProfile;
+                _profile.OnProfileUpdated -= DisplayProfile;
+            }
+
+            if (settingsButton != null) settingsButton.onClick.RemoveAllListeners();
             if (starterRoomButton != null) starterRoomButton.onClick.RemoveAllListeners();
             if (proRoomButton != null) proRoomButton.onClick.RemoveAllListeners();
             if (eliteRoomButton != null) eliteRoomButton.onClick.RemoveAllListeners();
+        }
+
+        private void SetupRoomButton(Button button, RoomTierData tierData)
+        {
+            if (button == null || tierData == null) return;
+
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(() => OnRoomButtonClicked(tierData));
         }
 
         #region Display Updates
 
         private void UpdateCoinsDisplay(int amount)
         {
-            if (coinsText != null)
-            {
-                coinsText.text = $"{amount}";
-            }
+            if (coinsText != null) coinsText.text = amount.ToString();
         }
 
         private void UpdateGemsDisplay(int amount)
         {
-            if (gemsText != null)
-            {
-                gemsText.text = $"{amount}";
-            }
+            if (gemsText != null) gemsText.text = amount.ToString();
         }
 
-        #endregion
-        
-        #region Player Profile Display
-        
-        private void UpdateProfileDisplay()
+        private void ShowPlaceholderName()
         {
-            var profileManager = PlayerProfileManager.Instance;
-            if (profileManager == null || profileManager.LocalProfile == null)
-            {
-                Debug.LogWarning("[MainMenuUI] PlayerProfile not loaded yet - subscribing to event");
-                
-                // Subscribe to profile loaded event
-                if (profileManager != null)
-                {
-                    profileManager.OnProfileLoaded += OnProfileLoaded;
-                    profileManager.OnProfileUpdated += OnProfileUpdated;
-                }
-                return;
-            }
-            
-            DisplayProfile(profileManager.LocalProfile);
+            if (playerNameText != null) playerNameText.SetText("Guest");
         }
-        
-        private void OnProfileLoaded(PlayerProfile profile)
-        {
-            DisplayProfile(profile);
-        }
-        
-        private void OnProfileUpdated(PlayerProfile profile)
-        {
-            DisplayProfile(profile);
-        }
-        
+
         private void DisplayProfile(PlayerProfile profile)
         {
             if (profile == null) return;
-            
-            // Player Name
+
             if (playerNameText != null && !string.IsNullOrEmpty(profile.DisplayName))
-            {
                 playerNameText.text = profile.DisplayName;
-            }
-            
-            // Level Display
+
             if (levelText != null)
                 levelText.text = $"Level {profile.Level}";
-            
-            // Rank Display
+
             if (rankText != null)
                 rankText.text = profile.Rank.ToString();
-            
-            // Rank Badge Color
+
             if (rankBadgeImage != null)
-                rankBadgeImage.color = GetRankColor(profile.Rank);
-            
-            // XP Progress Bar
+                rankBadgeImage.color = RankRules.GetRankColor(profile.Rank);
+
             if (xpProgressBar != null)
-            {
                 xpProgressBar.value = profile.GetLevelProgress();
-            }
-            
-            // XP Text
+
             if (xpText != null)
                 xpText.text = profile.GetLevelProgressText();
-            
-            Debug.Log($"[MainMenuUI] Profile displayed: {profile.DisplayName}, Level {profile.Level}, Rank {profile.Rank}");
         }
-        
-        private UnityEngine.Color GetRankColor(PlayerRank rank)
-        {
-            switch (rank)
-            {
-                case PlayerRank.Bronze:
-                    return new UnityEngine.Color(0.8f, 0.5f, 0.2f); // Bronze
-                case PlayerRank.Silver:
-                    return new UnityEngine.Color(0.75f, 0.75f, 0.75f); // Silver
-                case PlayerRank.Gold:
-                    return new UnityEngine.Color(1f, 0.84f, 0f); // Gold
-                case PlayerRank.Platinum:
-                    return new UnityEngine.Color(0.3f, 0.8f, 0.8f); // Platinum (Teal)
-                case PlayerRank.Diamond:
-                    return new UnityEngine.Color(0.7f, 0.9f, 1f); // Diamond (Light Blue)
-                case PlayerRank.Master:
-                    return new UnityEngine.Color(0.9f, 0.3f, 0.9f); // Master (Purple)
-                case PlayerRank.Grandmaster:
-                    return new UnityEngine.Color(1f, 0.2f, 0.2f); // Grandmaster (Red)
-                default:
-                    return UnityEngine.Color.white;
-            }
-        }
-        
+
         #endregion
 
         #region Button Handlers
 
-        private void OnRoomButtonClicked(MafiaNight.Data.RoomTierData roomTier)
+        private void OnRoomButtonClicked(RoomTierData roomTier)
         {
-            if (roomTier == null)
+            if (_isJoiningRoom) return;
+
+            if (_currency == null || !_currency.HasEnoughCoins(roomTier.EntryFee))
             {
-                Debug.LogError("[MainMenuUI] Room tier data is null!");
+                Log.Warning($"Not enough coins! Need {roomTier.EntryFee}, have {_currency?.Coins}", Tag);
+                // TODO: Show "Not enough coins" popup
                 return;
             }
 
-            Debug.Log($"[MainMenuUI] {roomTier.TierName} Room clicked - Fee: {roomTier.EntryFee}, Players: {roomTier.MaxPlayers}");
+            Log.Info($"{roomTier.TierName} room - Fee: {roomTier.EntryFee}, Players: {roomTier.MaxPlayers}", Tag);
+            _isJoiningRoom = true;
 
-            // Check if player has enough coins
-            if (currencyManager != null && currencyManager.HasEnoughCoins(roomTier.EntryFee))
-            {
-                Debug.Log($"Player has enough coins! Total Pot: {roomTier.GetTotalPot()}, Reward Pool: {roomTier.GetTotalRewardPool()}");
-                currencyManager.DeductCoins(roomTier.EntryFee, () => {
-                    // Store selected room tier for lobby
-                    PlayerPrefs.SetString(GameConstants.PREF_SELECTED_ROOM_TIER, roomTier.TierName);
-                    SceneTransitionManager.Instance.LoadScene(GameConstants.SCENE_LOBBY);
-                }, (error) => {
-                    Debug.LogError($"Failed to deduct coins: {error}");
+            _currency.DeductCoins(roomTier.EntryFee,
+                onSuccess: () =>
+                {
+                    if (ServiceLocator.TryGet<RoomSession>(out var session))
+                        session.Join(roomTier, roomTier.EntryFee);
+
+                    ServiceLocator.Get<ISceneLoader>().LoadScene(GameConstants.SCENE_LOBBY);
+                },
+                onError: error =>
+                {
+                    _isJoiningRoom = false;
+                    Log.Error($"Failed to deduct coins: {error}", Tag);
                 });
-            }
-            else
-            {
-                Debug.LogWarning($"Not enough coins! Need {roomTier.EntryFee}, have {currencyManager?.GetCoins()}");
-                // TODO: Show "Not enough coins" popup
-            }
         }
 
+        private void OnSettingsClicked()
+        {
+            // TODO: Open settings panel (audio, language, account, logout)
+            Log.Info("Settings button clicked", Tag);
+        }
 
         #endregion
-        
+
         #region UI Animations
-        
-        /// <summary>
-        /// Animate UI elements on scene load (sequential reveal)
-        /// </summary>
-        private async System.Threading.Tasks.Task AnimateUIElements()
+
+        /// <summary>Sequential reveal of the main menu elements.</summary>
+        private async Task AnimateUIElements()
         {
-            // Optional: Disable to test without animations
-            bool enableAnimations = true;
-            if (!enableAnimations) return;
-            
-            // Get UI elements (adjust GameObject names as per your hierarchy)
-            GameObject[] roomCards = new GameObject[]
-            {
-                starterRoomButton?.gameObject,
-                proRoomButton?.gameObject,
-                eliteRoomButton?.gameObject
-            };
-            
+            var roomCards = new[] { starterRoomButton, proRoomButton, eliteRoomButton }
+                .Where(b => b != null)
+                .Select(b => b.gameObject)
+                .ToArray();
+
             try
             {
-                // Animate header first
                 if (headerPanel != null)
                 {
-                    await MafiaNight.Animations.UIElementAnimator.ScaleAndFadeIn(
-                        headerPanel, 
-                        MafiaNight.Animations.AnimationPresets.NormalDuration
-                    );
+                    await UIElementAnimator.ScaleAndFadeIn(headerPanel, AnimationPresets.NormalDuration);
                 }
-                
-                // Small delay
-                await System.Threading.Tasks.Task.Delay(100);
-                
-                // Animate room cards sequentially
-                var validCards = System.Linq.Enumerable.Where(roomCards, card => card != null).ToArray();
-                if (validCards.Length > 0)
+
+                await Task.Delay(100);
+
+                if (roomCards.Length > 0)
                 {
-                    await MafiaNight.Animations.UIElementAnimator.AnimateSequential(
-                        validCards,
-                        MafiaNight.Animations.AnimationPresets.ShortDelay,
-                        MafiaNight.Animations.AnimationPresets.QuickDuration
-                    );
+                    await UIElementAnimator.AnimateSequential(roomCards, AnimationPresets.ShortDelay, AnimationPresets.QuickDuration);
                 }
-                
-                // Animate bottom nav last
-                if (downBar != null)
+
+                if (downBar != null && downBar.TryGetComponent<RectTransform>(out var rectTransform))
                 {
-                    var rectTransform = downBar.GetComponent<RectTransform>();
-                    if (rectTransform != null)
-                    {
-                        await MafiaNight.Animations.UIElementAnimator.SlideIn(
-                            rectTransform,
-                            MafiaNight.Animations.UIElementAnimator.SlideDirection.Up,
-                            MafiaNight.Animations.AnimationPresets.NormalDuration,
-                            distance: 200f
-                        );
-                    }
+                    await UIElementAnimator.SlideIn(rectTransform, UIElementAnimator.SlideDirection.Up,
+                        AnimationPresets.NormalDuration, distance: 200f);
                 }
-                
-                Debug.Log("[MainMenuUI] UI animations complete!");
             }
             catch (System.Exception ex)
             {
-                Debug.LogWarning($"[MainMenuUI] Animation error (non-critical): {ex.Message}");
+                Log.Warning($"Animation error (non-critical): {ex.Message}", Tag);
             }
         }
-        
-        #endregion
-        
-        #region Settings
-        
-        private void OnSettingsClicked()
-        {
-            Debug.Log("[MainMenuUI] Settings button clicked");
-            // TODO: Open settings panel
-            // - Audio settings
-            // - Language
-            // - Account management
-            // - Logout
-        }
-        
+
         #endregion
     }
 }

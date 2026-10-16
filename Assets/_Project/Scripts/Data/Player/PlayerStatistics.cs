@@ -1,6 +1,6 @@
 using System;
 
-namespace MafiaNight.Player
+namespace MafiaNight.Data.Player
 {
     /// <summary>
     /// Player statistics tracking

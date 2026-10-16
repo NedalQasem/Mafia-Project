@@ -1,73 +1,70 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
-using MafiaNight.Player;
+using MafiaNight.Core;
+using UnityEngine;
 
-namespace MafiaNight.Core
+namespace MafiaNight.Gameplay.Match
 {
     /// <summary>
-    /// Central game manager controlling game flow and state
-    /// Singleton pattern for global access
+    /// Controls the match flow: Lobby → RoleAssignment → Night → Day → Voting → Results → (Night | GameOver).
+    /// TODO(network): today this runs locally on every client. With EOS it must run only on the
+    /// lobby owner (host), which replicates state/roles to the other players.
     /// </summary>
-    public class GameManager : MonoBehaviour
+    public class GameManager : PersistentService<GameManager>
     {
-        public static GameManager Instance { get; private set; }
+        private const string Tag = "GameManager";
 
         [Header("Game State")]
         [SerializeField] private GameState currentState = GameState.Lobby;
-        
+
         [Header("Round Configuration")]
         [SerializeField] private int currentRound = 0;
         [SerializeField] private float nightDuration = 60f;
         [SerializeField] private float dayDuration = 120f;
         [SerializeField] private float votingDuration = 45f;
 
-        [Header("Player Management")]
-        private List<PlayerData> allPlayers = new List<PlayerData>();
-        private List<PlayerData> alivePlayers = new List<PlayerData>();
+        private readonly List<PlayerData> allPlayers = new List<PlayerData>();
+        private readonly List<PlayerData> alivePlayers = new List<PlayerData>();
+        private float stateTimer;
 
-        // Events
         public event Action<GameState> OnGameStateChanged;
         public event Action<int> OnRoundChanged;
         public event Action<PlayerData> OnPlayerDied;
+        public event Action<PlayerData> OnPlayerRegistered;
 
-        private float stateTimer;
+        public GameState CurrentState => currentState;
+        public int CurrentRound => currentRound;
+        public float StateTimer => stateTimer;
+        public IReadOnlyList<PlayerData> AllPlayers => allPlayers;
+        public IReadOnlyList<PlayerData> AlivePlayers => alivePlayers;
 
-        #region Unity Lifecycle
-
-        private void Awake()
+        protected override void OnServiceAwake()
         {
-            // Singleton pattern
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            
-            Debug.Log($"[GameManager] Initialized - Current State: {currentState}");
+            Log.Info($"Initialized - Current State: {currentState}", Tag);
         }
 
         private void Update()
         {
-            UpdateGameState();
-        }
-
-        #endregion
-
-        #region Game State Management
-
-        private void UpdateGameState()
-        {
-            if (currentState == GameState.Lobby) return;
+            if (currentState == GameState.Lobby || currentState == GameState.GameOver) return;
 
             stateTimer -= Time.deltaTime;
-
             if (stateTimer <= 0f)
             {
                 AdvanceGameState();
+            }
+        }
+
+        #region Public API
+
+        public void StartGame()
+        {
+            if (currentState == GameState.Lobby && allPlayers.Count >= GameConstants.MIN_PLAYERS_TO_START)
+            {
+                ChangeGameState(GameState.RoleAssignment);
+            }
+            else
+            {
+                Log.Warning($"Cannot start game - state {currentState}, {allPlayers.Count} players", Tag);
             }
         }
 
@@ -80,15 +77,54 @@ namespace MafiaNight.Core
             EnterState(newState);
 
             OnGameStateChanged?.Invoke(newState);
-            Debug.Log($"Game State Changed: {newState}");
+            Log.Info($"Game State Changed: {newState}", Tag);
         }
+
+        public void RegisterPlayer(PlayerData player)
+        {
+            if (player == null || allPlayers.Contains(player)) return;
+
+            allPlayers.Add(player);
+            alivePlayers.Add(player);
+            Log.Info($"Player registered: {player.PlayerName}", Tag);
+            OnPlayerRegistered?.Invoke(player);
+        }
+
+        public void UnregisterPlayer(PlayerData player)
+        {
+            allPlayers.Remove(player);
+            alivePlayers.Remove(player);
+        }
+
+        public void KillPlayer(PlayerData player)
+        {
+            if (!alivePlayers.Remove(player)) return;
+
+            player.IsAlive = false;
+            OnPlayerDied?.Invoke(player);
+            Log.Info($"Player {player.PlayerName} has died", Tag);
+        }
+
+        /// <summary>Clears players and returns to the Lobby state (e.g. after leaving a match).</summary>
+        public void ResetMatch()
+        {
+            allPlayers.Clear();
+            alivePlayers.Clear();
+            currentRound = 0;
+            currentState = GameState.Lobby;
+            stateTimer = 0f;
+        }
+
+        #endregion
+
+        #region State Machine
 
         private void EnterState(GameState state)
         {
             switch (state)
             {
                 case GameState.Lobby:
-                    stateTimer = -1f; // Infinite wait
+                    stateTimer = -1f;
                     break;
 
                 case GameState.RoleAssignment:
@@ -100,326 +136,109 @@ namespace MafiaNight.Core
                     currentRound++;
                     OnRoundChanged?.Invoke(currentRound);
                     stateTimer = nightDuration;
-                    EnableNightActions();
                     break;
 
                 case GameState.Day:
                     stateTimer = dayDuration;
                     ProcessNightResults();
-                    EnableDayDiscussion();
                     break;
 
                 case GameState.Voting:
                     stateTimer = votingDuration;
-                    StartVotingPhase();
                     break;
 
                 case GameState.Results:
                     stateTimer = 10f;
                     ProcessVotingResults();
-                    CheckWinCondition();
                     break;
 
                 case GameState.GameOver:
-                    ShowGameResults();
+                    Log.Info("Game Over", Tag);
                     break;
             }
         }
 
         private void ExitState(GameState state)
         {
-            // Cleanup when leaving a state
-            switch (state)
-            {
-                case GameState.Night:
-                    DisableNightActions();
-                    break;
-
-                case GameState.Day:
-                    DisableDayDiscussion();
-                    break;
-
-                case GameState.Voting:
-                    EndVotingPhase();
-                    break;
-            }
+            // Reserved for per-phase cleanup (voice channels, action windows)
         }
 
         private void AdvanceGameState()
         {
             switch (currentState)
             {
-                case GameState.RoleAssignment:
-                    ChangeGameState(GameState.Night);
-                    break;
-
-                case GameState.Night:
-                    ChangeGameState(GameState.Day);
-                    break;
-
-                case GameState.Day:
-                    ChangeGameState(GameState.Voting);
-                    break;
-
-                case GameState.Voting:
-                    ChangeGameState(GameState.Results);
-                    break;
-
+                case GameState.RoleAssignment: ChangeGameState(GameState.Night); break;
+                case GameState.Night: ChangeGameState(GameState.Day); break;
+                case GameState.Day: ChangeGameState(GameState.Voting); break;
+                case GameState.Voting: ChangeGameState(GameState.Results); break;
                 case GameState.Results:
-                    if (CheckWinCondition())
-                    {
-                        ChangeGameState(GameState.GameOver);
-                    }
-                    else
-                    {
-                        ChangeGameState(GameState.Night);
-                    }
+                    ChangeGameState(CheckWinCondition() ? GameState.GameOver : GameState.Night);
                     break;
             }
         }
 
         #endregion
 
-        #region Player Management
-
-        public void RegisterPlayer(PlayerData player)
-        {
-            if (!allPlayers.Contains(player))
-            {
-                allPlayers.Add(player);
-                alivePlayers.Add(player);
-                Debug.Log($"Player registered: {player.PlayerName}");
-            }
-        }
-
-        public void UnregisterPlayer(PlayerData player)
-        {
-            allPlayers.Remove(player);
-            alivePlayers.Remove(player);
-        }
-
-        public void KillPlayer(PlayerData player)
-        {
-            if (alivePlayers.Contains(player))
-            {
-                alivePlayers.Remove(player);
-                player.IsAlive = false;
-                OnPlayerDied?.Invoke(player);
-                Debug.Log($"Player {player.PlayerName} has died");
-            }
-        }
-
-        #endregion
-
-        #region Game Logic Placeholders (To be implemented)
+        #region Game Rules
 
         private void AssignRoles()
         {
-            Debug.Log($"[GameManager] Assigning roles to {alivePlayers.Count} players...");
+            Log.Info($"Assigning roles to {alivePlayers.Count} players...", Tag);
 
-            // 1. Shuffle players
+            // Fisher-Yates shuffle
             var shuffled = new List<PlayerData>(alivePlayers);
-            int n = shuffled.Count;
-            while (n > 1)
+            for (int n = shuffled.Count - 1; n > 0; n--)
             {
-                n--;
                 int k = UnityEngine.Random.Range(0, n + 1);
-                var value = shuffled[k];
-                shuffled[k] = shuffled[n];
-                shuffled[n] = value;
+                (shuffled[k], shuffled[n]) = (shuffled[n], shuffled[k]);
             }
 
-            // 2. Define Count
-            // Example Rule: 1 Mafia for every 4 players, 1 Doctor, 1 Sheriff
+            // Rule: 1 Mafia per 4 players, 1 Doctor, 1 Sheriff, rest Civilians
             int mafiaCount = Mathf.Max(1, shuffled.Count / 4);
-            int doctorCount = 1;
-            int sheriffCount = 1;
+            int index = 0;
 
-            // 3. Assign
-            int currentIndex = 0;
-
-            // Assign Mafia
-            for (int i = 0; i < mafiaCount; i++)
-            {
-                if (currentIndex < shuffled.Count)
-                    shuffled[currentIndex++].Role = PlayerRole.Mafia;
-            }
-
-            // Assign Doctor
-            for (int i = 0; i < doctorCount; i++)
-            {
-                if (currentIndex < shuffled.Count)
-                    shuffled[currentIndex++].Role = PlayerRole.Doctor;
-            }
-
-            // Assign Sheriff
-            for (int i = 0; i < sheriffCount; i++)
-            {
-                if (currentIndex < shuffled.Count)
-                    shuffled[currentIndex++].Role = PlayerRole.Sheriff;
-            }
-
-            // Rest are Civilians (Default is Civilian, but let's be explicit)
-            while (currentIndex < shuffled.Count)
-            {
-                shuffled[currentIndex++].Role = PlayerRole.Civilian;
-            }
-
-            // Log Results (Hidden in real game)
-            foreach (var p in shuffled)
-            {
-                Debug.Log($"Player assigned: {p.PlayerName} -> {p.Role}");
-            }
-        }
-
-        private void EnableNightActions()
-        {
-            // TODO: Enable Mafia chat, special abilities
-            Debug.Log("Night phase started - Mafia can act");
-        }
-
-        private void DisableNightActions()
-        {
-            Debug.Log("Night phase ended");
+            for (int i = 0; i < mafiaCount && index < shuffled.Count; i++) shuffled[index++].Role = PlayerRole.Mafia;
+            if (index < shuffled.Count) shuffled[index++].Role = PlayerRole.Doctor;
+            if (index < shuffled.Count) shuffled[index++].Role = PlayerRole.Sheriff;
+            while (index < shuffled.Count) shuffled[index++].Role = PlayerRole.Civilian;
         }
 
         private void ProcessNightResults()
         {
-            // TODO: Process who died during night
-            Debug.Log("Processing night results...");
-        }
-
-        private void EnableDayDiscussion()
-        {
-            // TODO: Enable public voice chat
-            Debug.Log("Day discussion started - Everyone can talk");
-        }
-
-        private void DisableDayDiscussion()
-        {
-            Debug.Log("Day discussion ended");
-        }
-
-        private void StartVotingPhase()
-        {
-            // TODO: Open voting UI
-            Debug.Log("Voting phase started");
-        }
-
-        private void EndVotingPhase()
-        {
-            Debug.Log("Voting phase ended");
+            // TODO: Resolve Mafia kill vs Doctor save, Sheriff investigation
         }
 
         private void ProcessVotingResults()
         {
-            // TODO: Execute the voted player
-            Debug.Log("Processing voting results...");
+            // TODO: Eliminate the most-voted player
         }
 
         private bool CheckWinCondition()
         {
-            // TODO: Check if Mafia or Town won
             int mafiaCount = 0;
             int townCount = 0;
 
             foreach (var player in alivePlayers)
             {
-                if (player.Role == PlayerRole.Mafia)
-                    mafiaCount++;
-                else
-                    townCount++;
+                if (player.Role == PlayerRole.Mafia) mafiaCount++;
+                else townCount++;
             }
 
-            // Mafia wins if they equal or outnumber town
-            if (mafiaCount >= townCount)
+            if (mafiaCount == 0)
             {
-                Debug.Log("Mafia Wins!");
+                Log.Info("Town Wins!", Tag);
                 return true;
             }
 
-            // Town wins if all mafia are dead
-            if (mafiaCount == 0)
+            if (mafiaCount >= townCount)
             {
-                Debug.Log("Town Wins!");
+                Log.Info("Mafia Wins!", Tag);
                 return true;
             }
 
             return false;
         }
 
-        private void ShowGameResults()
-        {
-            Debug.Log("Game Over - Showing results");
-            // TODO: Show win screen
-        }
-
-        #endregion
-
-        #region Public API
-
-        public void StartGame()
-        {
-            if (currentState == GameState.Lobby && allPlayers.Count >= 4)
-            {
-                ChangeGameState(GameState.RoleAssignment);
-            }
-            else
-            {
-                Debug.LogWarning("Cannot start game - not enough players");
-            }
-        }
-
-        public GameState GetCurrentState() => currentState;
-        public int GetCurrentRound() => currentRound;
-        public float GetStateTimer() => stateTimer;
-        public List<PlayerData> GetAlivePlayers() => new List<PlayerData>(alivePlayers);
-        public List<PlayerData> GetAllPlayers() => new List<PlayerData>(allPlayers);
-
         #endregion
     }
-
-    #region Enums and Data Classes
-
-    public enum GameState
-    {
-        Lobby,
-        RoleAssignment,
-        Night,
-        Day,
-        Voting,
-        Results,
-        GameOver
-    }
-
-    public enum PlayerRole
-    {
-        Civilian,
-        Mafia,
-        Doctor,
-        Sheriff
-    }
-
-    [System.Serializable]
-    public class PlayerData
-    {
-        public string PlayerName { get; set; }
-        public string PlayFabId { get; set; }
-        public string EOSAccountId { get; set; }
-        public PlayerRole Role { get; set; }
-        public bool IsAlive { get; set; } = true;
-        public bool IsHost { get; set; }
-
-        public PlayerPublicData VisualData { get; set; }
-
-        public PlayerData(string name, string playFabId, string eosId, PlayerPublicData visualData = null)
-        {
-            PlayerName = name;
-            PlayFabId = playFabId;
-            EOSAccountId = eosId;
-            VisualData = visualData;
-        }
-    }
-
-    #endregion
 }

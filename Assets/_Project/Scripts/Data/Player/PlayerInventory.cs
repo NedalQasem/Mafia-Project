@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MafiaNight.Player
+namespace MafiaNight.Data.Player
 {
     /// <summary>
     /// Player inventory - gifts, emotes, badges

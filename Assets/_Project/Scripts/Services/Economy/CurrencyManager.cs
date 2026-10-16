@@ -1,216 +1,128 @@
-using UnityEngine;
+using System;
+using MafiaNight.Core;
 using PlayFab;
 using PlayFab.ClientModels;
-using System;
-using System.Collections.Generic;
+using UnityEngine;
 
-namespace MafiaNight.Economy
+namespace MafiaNight.Services.Economy
 {
     /// <summary>
-    /// Manages player currencies (Coins and Gems) via PlayFab
-    /// Singleton for global access
+    /// Manages player currencies (Coins and Gems) via PlayFab virtual currency.
     /// </summary>
-    public class CurrencyManager : MonoBehaviour
+    public class CurrencyManager : PersistentService<ICurrencyService>, ICurrencyService
     {
-        public static CurrencyManager Instance { get; private set; }
+        private const string Tag = "Currency";
 
         // Currency codes (must match PlayFab Virtual Currency setup)
         private const string COINS_CODE = "CO";
         private const string GEMS_CODE = "GM";
 
-        [Header("Current Balances")]
+        [Header("Current Balances (read-only)")]
         [SerializeField] private int currentCoins = 0;
         [SerializeField] private int currentGems = 0;
 
-        // Events
+        public int Coins => currentCoins;
+        public int Gems => currentGems;
+
         public event Action<int> OnCoinsChanged;
         public event Action<int> OnGemsChanged;
-
-        #region Unity Lifecycle
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-
-        private void Start()
-        {
-            // Don't fetch here - wait for PlayFab login to complete first
-            // FetchCurrencies will be called from PlayFabEOSLogin after successful login
-        }
-
-        #endregion
-
-        #region Fetch Currencies
-
-        public void FetchCurrencies()
-        {
-            var request = new GetUserInventoryRequest();
-
-            PlayFabClientAPI.GetUserInventory(request, result =>
-            {
-                // Update local balances
-                if (result.VirtualCurrency.ContainsKey(COINS_CODE))
-                {
-                    currentCoins = result.VirtualCurrency[COINS_CODE];
-                    OnCoinsChanged?.Invoke(currentCoins);
-                }
-
-                if (result.VirtualCurrency.ContainsKey(GEMS_CODE))
-                {
-                    currentGems = result.VirtualCurrency[GEMS_CODE];
-                    OnGemsChanged?.Invoke(currentGems);
-                }
-
-                Debug.Log($"[CurrencyManager] Fetched: {currentCoins} Coins, {currentGems} Gems");
-                
-                // Sync with PlayerProfile
-                SyncWithPlayerProfile();
-
-            }, error =>
-            {
-                Debug.LogError($"[CurrencyManager] Fetch failed: {error.ErrorMessage}");
-            });
-        }
-        
-        private void SyncWithPlayerProfile()
-        {
-            var profileManager = MafiaNight.Managers.PlayerProfileManager.Instance;
-            if (profileManager != null && profileManager.LocalProfile != null)
-            {
-                profileManager.LocalProfile.Coins = currentCoins;
-                profileManager.LocalProfile.Gems = currentGems;
-            }
-        }
-
-        #endregion
-
-        #region Add Currency
-
-        public void AddCoins(int amount, Action onSuccess = null, Action<string> onError = null)
-        {
-            var request = new AddUserVirtualCurrencyRequest
-            {
-                VirtualCurrency = COINS_CODE,
-                Amount = amount
-            };
-
-            PlayFabClientAPI.AddUserVirtualCurrency(request, result =>
-            {
-                currentCoins = result.Balance;
-                OnCoinsChanged?.Invoke(currentCoins);
-                Debug.Log($"[CurrencyManager] Added {amount} coins. New balance: {currentCoins}");
-                onSuccess?.Invoke();
-
-            }, error =>
-            {
-                Debug.LogError($"[CurrencyManager] Add coins failed: {error.ErrorMessage}");
-                onError?.Invoke(error.ErrorMessage);
-            });
-        }
-
-        public void AddGems(int amount, Action onSuccess = null, Action<string> onError = null)
-        {
-            var request = new AddUserVirtualCurrencyRequest
-            {
-                VirtualCurrency = GEMS_CODE,
-                Amount = amount
-            };
-
-            PlayFabClientAPI.AddUserVirtualCurrency(request, result =>
-            {
-                currentGems = result.Balance;
-                OnGemsChanged?.Invoke(currentGems);
-                Debug.Log($"[CurrencyManager] Added {amount} gems. New balance: {currentGems}");
-                onSuccess?.Invoke();
-
-            }, error =>
-            {
-                Debug.LogError($"[CurrencyManager] Add gems failed: {error.ErrorMessage}");
-                onError?.Invoke(error.ErrorMessage);
-            });
-        }
-
-        #endregion
-
-        #region Deduct Currency
-
-        public void DeductCoins(int amount, Action onSuccess = null, Action<string> onError = null)
-        {
-            // Check balance first
-            if (currentCoins < amount)
-            {
-                Debug.LogWarning($"[CurrencyManager] Insufficient coins! Need {amount}, have {currentCoins}");
-                onError?.Invoke("Insufficient coins");
-                return;
-            }
-
-            var request = new SubtractUserVirtualCurrencyRequest
-            {
-                VirtualCurrency = COINS_CODE,
-                Amount = amount
-            };
-
-            PlayFabClientAPI.SubtractUserVirtualCurrency(request, result =>
-            {
-                currentCoins = result.Balance;
-                OnCoinsChanged?.Invoke(currentCoins);
-                Debug.Log($"[CurrencyManager] Deducted {amount} coins. New balance: {currentCoins}");
-                onSuccess?.Invoke();
-
-            }, error =>
-            {
-                Debug.LogError($"[CurrencyManager] Deduct coins failed: {error.ErrorMessage}");
-                onError?.Invoke(error.ErrorMessage);
-            });
-        }
-
-        public void DeductGems(int amount, Action onSuccess = null, Action<string> onError = null)
-        {
-            if (currentGems < amount)
-            {
-                Debug.LogWarning($"[CurrencyManager] Insufficient gems! Need {amount}, have {currentGems}");
-                onError?.Invoke("Insufficient gems");
-                return;
-            }
-
-            var request = new SubtractUserVirtualCurrencyRequest
-            {
-                VirtualCurrency = GEMS_CODE,
-                Amount = amount
-            };
-
-            PlayFabClientAPI.SubtractUserVirtualCurrency(request, result =>
-            {
-                currentGems = result.Balance;
-                OnGemsChanged?.Invoke(currentGems);
-                Debug.Log($"[CurrencyManager] Deducted {amount} gems. New balance: {currentGems}");
-                onSuccess?.Invoke();
-
-            }, error =>
-            {
-                Debug.LogError($"[CurrencyManager] Deduct gems failed: {error.ErrorMessage}");
-                onError?.Invoke(error.ErrorMessage);
-            });
-        }
-
-        #endregion
-
-        #region Public Getters
-
-        public int GetCoins() => currentCoins;
-        public int GetGems() => currentGems;
 
         public bool HasEnoughCoins(int amount) => currentCoins >= amount;
         public bool HasEnoughGems(int amount) => currentGems >= amount;
 
+        #region Fetch
+
+        public void FetchCurrencies(Action<bool> onComplete = null)
+        {
+            PlayFabClientAPI.GetUserInventory(new GetUserInventoryRequest(), result =>
+            {
+                if (result.VirtualCurrency.TryGetValue(COINS_CODE, out int coins)) SetCoins(coins);
+                if (result.VirtualCurrency.TryGetValue(GEMS_CODE, out int gems)) SetGems(gems);
+
+                Log.Info($"Fetched: {currentCoins} Coins, {currentGems} Gems", Tag);
+                onComplete?.Invoke(true);
+            }, error =>
+            {
+                Log.Error($"Fetch failed: {error.ErrorMessage}", Tag);
+                onComplete?.Invoke(false);
+            });
+        }
+
         #endregion
+
+        #region Add / Deduct
+
+        public void AddCoins(int amount, Action onSuccess = null, Action<string> onError = null) =>
+            AddCurrency(COINS_CODE, amount, SetCoins, onSuccess, onError);
+
+        public void AddGems(int amount, Action onSuccess = null, Action<string> onError = null) =>
+            AddCurrency(GEMS_CODE, amount, SetGems, onSuccess, onError);
+
+        public void DeductCoins(int amount, Action onSuccess = null, Action<string> onError = null)
+        {
+            if (!HasEnoughCoins(amount))
+            {
+                Log.Warning($"Insufficient coins! Need {amount}, have {currentCoins}", Tag);
+                onError?.Invoke("Insufficient coins");
+                return;
+            }
+            SubtractCurrency(COINS_CODE, amount, SetCoins, onSuccess, onError);
+        }
+
+        public void DeductGems(int amount, Action onSuccess = null, Action<string> onError = null)
+        {
+            if (!HasEnoughGems(amount))
+            {
+                Log.Warning($"Insufficient gems! Need {amount}, have {currentGems}", Tag);
+                onError?.Invoke("Insufficient gems");
+                return;
+            }
+            SubtractCurrency(GEMS_CODE, amount, SetGems, onSuccess, onError);
+        }
+
+        // TODO(security): AddUserVirtualCurrency must be disabled for clients in PlayFab and replaced by CloudScript.
+        private void AddCurrency(string code, int amount, Action<int> setBalance, Action onSuccess, Action<string> onError)
+        {
+            var request = new AddUserVirtualCurrencyRequest { VirtualCurrency = code, Amount = amount };
+            PlayFabClientAPI.AddUserVirtualCurrency(request, result =>
+            {
+                setBalance(result.Balance);
+                Log.Info($"Added {amount} {code}. New balance: {result.Balance}", Tag);
+                onSuccess?.Invoke();
+            }, error =>
+            {
+                Log.Error($"Add {code} failed: {error.ErrorMessage}", Tag);
+                onError?.Invoke(error.ErrorMessage);
+            });
+        }
+
+        private void SubtractCurrency(string code, int amount, Action<int> setBalance, Action onSuccess, Action<string> onError)
+        {
+            var request = new SubtractUserVirtualCurrencyRequest { VirtualCurrency = code, Amount = amount };
+            PlayFabClientAPI.SubtractUserVirtualCurrency(request, result =>
+            {
+                setBalance(result.Balance);
+                Log.Info($"Deducted {amount} {code}. New balance: {result.Balance}", Tag);
+                onSuccess?.Invoke();
+            }, error =>
+            {
+                Log.Error($"Deduct {code} failed: {error.ErrorMessage}", Tag);
+                onError?.Invoke(error.ErrorMessage);
+            });
+        }
+
+        #endregion
+
+        private void SetCoins(int value)
+        {
+            currentCoins = value;
+            OnCoinsChanged?.Invoke(currentCoins);
+        }
+
+        private void SetGems(int value)
+        {
+            currentGems = value;
+            OnGemsChanged?.Invoke(currentGems);
+        }
     }
 }

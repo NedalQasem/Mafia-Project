@@ -1,339 +1,166 @@
-using UnityEngine;
+using System;
 using Epic.OnlineServices;
-using Epic.OnlineServices.Auth;
+using MafiaNight.Core;
 using PlayFab;
 using PlayFab.ClientModels;
+using UnityEngine;
 
-/// <summary>
-/// Integrates Epic Online Services (EOS) authentication with PlayFab.
-/// Logs into EOS first, then uses the EOS Account ID to login to PlayFab.
-/// </summary>
-public class PlayFabEOSLogin : MonoBehaviour
+namespace MafiaNight.Services.Auth
 {
-    [Header("PlayFab Settings")]
-    [SerializeField] private string playFabTitleId = "YOUR_TITLE_ID"; // Set this in Inspector or PlayFab EdEx will auto-configure
-    
-    [Header("Status")]
-    [SerializeField] private bool isEOSLoggedIn = false;
-    [SerializeField] private bool isPlayFabLoggedIn = false;
-    
-    private EpicAccountId _eosAccountId;
-    private string _eosAccountIdString;
-
-    private void Start()
-    {
-        // Configure PlayFab (if not already configured via EdEx)
-        if (!string.IsNullOrEmpty(playFabTitleId) && playFabTitleId != "YOUR_TITLE_ID")
-        {
-            PlayFabSettings.TitleId = playFabTitleId;
-        }
-        
-        Debug.Log("PlayFab EOS Login Manager initialized. Waiting for EOS login...");
-    }
-
     /// <summary>
-    /// Call this method after EOS login succeeds (from EOSSDKComponent callback)
+    /// Bridges EOS authentication to PlayFab: waits for the EOS login on the same GameObject,
+    /// then logs into PlayFab with the EOS Account ID and raises <see cref="OnPlayFabLoggedIn"/>.
+    /// Loading the profile / wallet afterwards is the Bootstrap's job, not this class's.
     /// </summary>
-    public void OnEOSLoginSuccess(EpicAccountId accountId)
+    [RequireComponent(typeof(EOSSDKComponent))]
+    public class PlayFabEOSLogin : PersistentService<IAuthService>, IAuthService
     {
-        _eosAccountId = accountId;
-        _eosAccountIdString = accountId.ToString();
-        isEOSLoggedIn = true;
-        
-        Debug.Log($"EOS Login Success! Account ID: {_eosAccountIdString}");
-        
-        // Now login to PlayFab using EOS Account ID
-        LoginToPlayFab();
-    }
+        private const string Tag = "Auth";
+        private const string DefaultTitleIdPlaceholder = "YOUR_TITLE_ID";
 
-    private void LoginToPlayFab()
-    {
-        Debug.Log("Attempting PlayFab login with EOS Account ID...");
-        
-        // Use CustomID login - EOS Account ID as the unique identifier
-        var request = new LoginWithCustomIDRequest
+        [Header("PlayFab Settings")]
+        [SerializeField] private string playFabTitleId = DefaultTitleIdPlaceholder; // Or configured by PlayFab EdEx
+
+        [Header("Status (read-only)")]
+        [SerializeField] private bool isEOSLoggedIn = false;
+        [SerializeField] private bool isPlayFabLoggedIn = false;
+
+        private EOSSDKComponent _eos;
+        private string _eosAccountIdString;
+        private string _playFabId;
+
+        public bool IsEOSLoggedIn => isEOSLoggedIn;
+        public bool IsPlayFabLoggedIn => isPlayFabLoggedIn;
+        public string EOSAccountId => _eosAccountIdString;
+        public string PlayFabId => _playFabId;
+
+        public event Action<string> OnPlayFabLoggedIn;
+        public event Action<string> OnLoginFailed;
+
+        protected override void OnServiceAwake()
         {
-            CustomId = _eosAccountIdString,
-            CreateAccount = true, // Create account if doesn't exist
-            TitleId = PlayFabSettings.TitleId
-        };
-
-        PlayFabClientAPI.LoginWithCustomID(request, OnPlayFabLoginSuccess, OnPlayFabLoginFailure);
-    }
-
-    private void OnPlayFabLoginSuccess(LoginResult result)
-    {
-        isPlayFabLoggedIn = true;
-        Debug.Log($"PlayFab Login Success! PlayFab ID: {result.PlayFabId}");
-        Debug.Log($"New Account: {result.NewlyCreated}");
-        
-        // Save CustomID for fallback login (testing/development)
-        PlayerPrefs.SetString(MafiaNight.Core.GameConstants.PREF_SAVED_EOS_CUSTOM_ID, _eosAccountIdString);
-        PlayerPrefs.Save();
-        Debug.Log($"[PlayFab] Saved CustomID for fallback: {_eosAccountIdString}");
-        
-        // Fetch currency balances now that we're logged in
-        var currencyManager = MafiaNight.Economy.CurrencyManager.Instance;
-        if (currencyManager != null)
-        {
-            currencyManager.FetchCurrencies();
-        }
-        
-        // Load player profile data
-        var profileManager = MafiaNight.Managers.PlayerProfileManager.Instance;
-        if (profileManager != null)
-        {
-            profileManager.LoadProfile(result.PlayFabId);
-        }
-        
-        // Optional: Update display name with EOS username
-        UpdatePlayFabDisplayName();
-    }
-
-    private void OnPlayFabLoginFailure(PlayFabError error)
-    {
-        isPlayFabLoggedIn = false;
-        Debug.LogError($"PlayFab Login Failed: {error.GenerateErrorReport()}");
-    }
-
-    private void UpdatePlayFabDisplayName()
-    {
-        // First, check if player already has a display name
-        var getProfileRequest = new GetPlayerProfileRequest
-        {
-            ProfileConstraints = new PlayerProfileViewConstraints
+            if (!string.IsNullOrEmpty(playFabTitleId) && playFabTitleId != DefaultTitleIdPlaceholder)
             {
-                ShowDisplayName = true
+                PlayFabSettings.TitleId = playFabTitleId;
             }
-        };
 
-        PlayFabClientAPI.GetPlayerProfile(getProfileRequest, 
-            (profileResult) =>
-            {
-                string existingName = profileResult.PlayerProfile?.DisplayName;
-                
-                // Only update if name is null/empty or still using the old EOSPlayer_ format
-                if (string.IsNullOrEmpty(existingName) || existingName.StartsWith("EOSPlayer_"))
-                {
-                    // Try to get a better name from EOS (you can customize this)
-                    string newDisplayName = GetBetterDisplayName();
-                    
-                    var updateRequest = new UpdateUserTitleDisplayNameRequest
-                    {
-                        DisplayName = newDisplayName
-                    };
-
-                    PlayFabClientAPI.UpdateUserTitleDisplayName(updateRequest, 
-                        OnDisplayNameUpdateSuccess, 
-                        OnDisplayNameUpdateFailure);
-                }
-                else
-                {
-                    Debug.Log($"[PlayFab] Player already has display name: {existingName}");
-                }
-            },
-            (error) =>
-            {
-                Debug.LogWarning($"[PlayFab] Failed to get profile: {error.GenerateErrorReport()}");
-                // Fallback: set default name
-                SetDefaultDisplayName();
-            });
-    }
-    
-    private string GetBetterDisplayName()
-    {
-        // Priority order:
-        // 1. Custom name from PlayerPrefs (if user set it)
-        string customName = PlayerPrefs.GetString(MafiaNight.Core.GameConstants.PREF_PLAYER_CUSTOM_NAME, "");
-        if (!string.IsNullOrEmpty(customName))
-        {
-            Debug.Log($"[PlayFab] Using custom name: {customName}");
-            return customName;
-        }
-        
-        // 2. EOS Display Name (if available)
-        // TODO: Implement EOS UserInfo query to get actual EOS display name
-        
-        // 3. Fallback: Generic Player name
-        return $"Player{UnityEngine.Random.Range(1000, 9999)}";
-    }
-    
-    private void SetDefaultDisplayName()
-    {
-        var request = new UpdateUserTitleDisplayNameRequest
-        {
-            DisplayName = GetBetterDisplayName()
-        };
-
-        PlayFabClientAPI.UpdateUserTitleDisplayName(request, 
-            OnDisplayNameUpdateSuccess, 
-            OnDisplayNameUpdateFailure);
-    }
-
-
-    private void OnDisplayNameUpdateSuccess(UpdateUserTitleDisplayNameResult result)
-    {
-        Debug.Log($"[PlayFab] Display Name Updated: {result.DisplayName}");
-    }
-
-    private void OnDisplayNameUpdateFailure(PlayFabError error)
-    {
-        Debug.LogWarning($"[PlayFab] Failed to update display name: {error.GenerateErrorReport()}");
-    }
-
-    /// <summary>
-    /// Example: Save player data to PlayFab
-    /// </summary>
-    public void SavePlayerData(string key, string value)
-    {
-        if (!isPlayFabLoggedIn)
-        {
-            Debug.LogWarning("Cannot save data - not logged into PlayFab");
-            return;
+            _eos = GetComponent<EOSSDKComponent>();
+            _eos.OnLoggedIn += HandleEOSLoggedIn;
+            _eos.OnLoginFailed += HandleEOSLoginFailed;
         }
 
-        var request = new UpdateUserDataRequest
+        protected override void OnDestroy()
         {
-            Data = new System.Collections.Generic.Dictionary<string, string>
+            if (_eos != null)
             {
-                { key, value }
+                _eos.OnLoggedIn -= HandleEOSLoggedIn;
+                _eos.OnLoginFailed -= HandleEOSLoginFailed;
             }
-        };
-
-        PlayFabClientAPI.UpdateUserData(request, OnDataSaveSuccess, OnDataSaveFailure);
-    }
-
-    private void OnDataSaveSuccess(UpdateUserDataResult result)
-    {
-        Debug.Log("Player data saved successfully to PlayFab");
-    }
-
-    private void OnDataSaveFailure(PlayFabError error)
-    {
-        Debug.LogError($"Failed to save player data: {error.GenerateErrorReport()}");
-    }
-
-    /// <summary>
-    /// Example: Load player data from PlayFab
-    /// </summary>
-    public void LoadPlayerData(string key, System.Action<string> onSuccess)
-    {
-        if (!isPlayFabLoggedIn)
-        {
-            Debug.LogWarning("Cannot load data - not logged into PlayFab");
-            return;
+            base.OnDestroy();
         }
 
-        var request = new GetUserDataRequest();
-        
-        PlayFabClientAPI.GetUserData(request, 
-            (result) => 
-            {
-                if (result.Data.TryGetValue(key, out var record))
-                {
-                    Debug.Log($"Loaded data for key '{key}': {record.Value}");
-                    onSuccess?.Invoke(record.Value);
-                }
-                else
-                {
-                    Debug.Log($"No data found for key '{key}'");
-                    onSuccess?.Invoke(null);
-                }
-            }, 
-            (error) => 
-            {
-                Debug.LogError($"Failed to load player data: {error.GenerateErrorReport()}");
-                onSuccess?.Invoke(null);
-            });
-    }
+        #region EOS
 
-    // Public getters
-    public bool IsEOSLoggedIn => isEOSLoggedIn;
-    public bool IsPlayFabLoggedIn => isPlayFabLoggedIn;
-    public string EOSAccountId => _eosAccountIdString;
-    
-    /// <summary>
-    /// Get the current PlayFab display name
-    /// </summary>
-    public void GetDisplayName(System.Action<string> callback)
-    {
-        if (!isPlayFabLoggedIn)
+        private void HandleEOSLoggedIn(EpicAccountId accountId)
         {
-            callback?.Invoke("Not Logged In");
-            return;
+            _eosAccountIdString = accountId.ToString();
+            isEOSLoggedIn = true;
+
+            Log.Info($"EOS login success. Account ID: {_eosAccountIdString}", Tag);
+            LoginToPlayFab();
         }
-        
-        var request = new GetPlayerProfileRequest
+
+        private void HandleEOSLoginFailed(Result result)
         {
-            ProfileConstraints = new PlayerProfileViewConstraints
-            {
-                ShowDisplayName = true
-            }
-        };
-
-        PlayFabClientAPI.GetPlayerProfile(request,
-            (result) =>
-            {
-                string displayName = result.PlayerProfile?.DisplayName ?? "Unknown";
-                callback?.Invoke(displayName);
-            },
-            (error) =>
-            {
-                Debug.LogError($"Failed to get display name: {error.GenerateErrorReport()}");
-                callback?.Invoke("Error");
-            });
-    }
-
-    #region Singleton
-    public static PlayFabEOSLogin Instance { get; private set; }
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
+            isEOSLoggedIn = false;
+            OnLoginFailed?.Invoke($"EOS login failed: {result}");
         }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-    #endregion
 
-    /// <summary>
-    /// Attempt to login directly using a saved Custom ID (Fallback if EOS is not available)
-    /// </summary>
-    public void TryDirectLoginWithSavedId(System.Action onSuccess, System.Action<string> onFailure)
-    {
-        // Try to get saved CustomID from PlayerPrefs
-        string savedCustomId = PlayerPrefs.GetString(MafiaNight.Core.GameConstants.PREF_SAVED_EOS_CUSTOM_ID, "");
-        
-        if (!string.IsNullOrEmpty(savedCustomId))
+        #endregion
+
+        #region PlayFab
+
+        private void LoginToPlayFab()
         {
-            Debug.Log($"[PlayFabEOSLogin] Found saved CustomID: {savedCustomId} - attempting direct login");
-            
+            Log.Info("Logging into PlayFab with EOS Account ID...", Tag);
+
+            // TODO(security): CustomID = EOS Account ID is guessable. Move to LoginWithOpenIdConnect
+            // using the EOS ID token so PlayFab verifies the identity server-side.
             var request = new LoginWithCustomIDRequest
             {
-                CustomId = savedCustomId,
-                CreateAccount = false // Don't create - account should exist
+                CustomId = _eosAccountIdString,
+                CreateAccount = true,
+                TitleId = PlayFabSettings.TitleId
             };
-            
-            PlayFabClientAPI.LoginWithCustomID(request, 
-                (result) =>
+
+            PlayFabClientAPI.LoginWithCustomID(request, HandlePlayFabLoginSuccess, HandlePlayFabLoginFailure);
+        }
+
+        private void HandlePlayFabLoginSuccess(LoginResult result)
+        {
+            isPlayFabLoggedIn = true;
+            _playFabId = result.PlayFabId;
+            Log.Info($"PlayFab login success. PlayFab ID: {result.PlayFabId} (new account: {result.NewlyCreated})", Tag);
+
+            PlayerPrefs.SetString(GameConstants.PREF_SAVED_EOS_CUSTOM_ID, _eosAccountIdString);
+            PlayerPrefs.Save();
+
+            EnsureDisplayName();
+            OnPlayFabLoggedIn?.Invoke(result.PlayFabId);
+        }
+
+        private void HandlePlayFabLoginFailure(PlayFabError error)
+        {
+            isPlayFabLoggedIn = false;
+            Log.Error($"PlayFab login failed: {error.GenerateErrorReport()}", Tag);
+            OnLoginFailed?.Invoke($"PlayFab login failed: {error.ErrorMessage}");
+        }
+
+        #endregion
+
+        #region Display Name
+
+        /// <summary>Gives new accounts (or legacy "EOSPlayer_" names) a readable display name.</summary>
+        private void EnsureDisplayName()
+        {
+            var request = new GetPlayerProfileRequest
+            {
+                ProfileConstraints = new PlayerProfileViewConstraints { ShowDisplayName = true }
+            };
+
+            PlayFabClientAPI.GetPlayerProfile(request,
+                result =>
                 {
-                    OnPlayFabLoginSuccess(result);
-                    onSuccess?.Invoke();
+                    string existingName = result.PlayerProfile?.DisplayName;
+                    if (string.IsNullOrEmpty(existingName) || existingName.StartsWith("EOSPlayer_"))
+                    {
+                        SetDisplayName(PickDefaultDisplayName());
+                    }
                 },
-                (error) =>
+                error =>
                 {
-                    Debug.LogError($"[PlayFabEOSLogin] Direct login failed: {error.ErrorMessage}");
-                    onFailure?.Invoke(error.ErrorMessage);
+                    Log.Warning($"Failed to get profile: {error.GenerateErrorReport()}", Tag);
+                    SetDisplayName(PickDefaultDisplayName());
                 });
         }
-        else
+
+        private static string PickDefaultDisplayName()
         {
-            Debug.LogWarning("[PlayFabEOSLogin] No saved CustomID - cannot direct login");
-            onFailure?.Invoke("No saved CustomID");
+            string customName = PlayerPrefs.GetString(GameConstants.PREF_PLAYER_CUSTOM_NAME, "");
+            if (!string.IsNullOrEmpty(customName)) return customName;
+
+            // TODO: Query EOS UserInfo for the real EOS display name
+            return $"Player{UnityEngine.Random.Range(1000, 9999)}";
         }
+
+        private void SetDisplayName(string displayName)
+        {
+            var request = new UpdateUserTitleDisplayNameRequest { DisplayName = displayName };
+            PlayFabClientAPI.UpdateUserTitleDisplayName(request,
+                result => Log.Info($"Display name set: {result.DisplayName}", Tag),
+                error => Log.Warning($"Failed to set display name: {error.GenerateErrorReport()}", Tag));
+        }
+
+        #endregion
     }
 }
-

@@ -2,8 +2,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using MafiaNight.Core;
+using MafiaNight.Gameplay.Match;
+using MafiaNight.Services.Scenes;
 
-namespace MafiaNight.UI
+namespace MafiaNight.UI.Screens
 {
     /// <summary>
     /// Manages the Gameplay Scene UI - phase display, timer, role info, player list
@@ -45,7 +47,7 @@ namespace MafiaNight.UI
         
         private void Start()
         {
-            gameManager = GameManager.Instance;
+            ServiceLocator.TryGet(out gameManager);
             
             if (gameManager != null)
             {
@@ -286,7 +288,7 @@ namespace MafiaNight.UI
             Debug.Log("[GameplayUI] Leaving game...");
             
             // TODO: Properly disconnect from EOS session
-            SceneTransitionManager.Instance.LoadScene("MainMenu");
+            ServiceLocator.Get<ISceneLoader>().LoadScene(GameConstants.SCENE_MAIN_MENU);
         }
         
         #endregion
@@ -310,11 +312,12 @@ namespace MafiaNight.UI
             phaseTimeRemaining = timeRemaining;
         }
         
-public void OnTestResultsClicked()
-{
-    Debug.Log("[GameplayUI] Testing Results Scene");
-    SceneTransitionManager.Instance.LoadScene("Results");
-}
+        /// <summary>Debug button hook (wired in the Gameplay scene).</summary>
+        public void OnTestResultsClicked()
+        {
+            Debug.Log("[GameplayUI] Testing Results Scene");
+            ServiceLocator.Get<ISceneLoader>().LoadScene(GameConstants.SCENE_RESULTS);
+        }
 
         #endregion
     }

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace MafiaNight.Player
+namespace MafiaNight.Data.Player
 {
     /// <summary>
     /// Complete player profile with all data
@@ -29,14 +29,8 @@ namespace MafiaNight.Player
         
         #endregion
         
-        #region Currency
-        
-        [Header("Currency")]
-        public int Coins;
-        public int Gems;
-        
-        #endregion
-        
+        // Coins/Gems are NOT stored here: PlayFab virtual currency (ICurrencyService) is the single source of truth.
+
         #region VIP Status
         
         [Header("VIP")]
@@ -67,8 +61,6 @@ namespace MafiaNight.Player
             XPToNextLevel = 100;
             Rank = PlayerRank.Bronze;
             RankPoints = 0;
-            Coins = 0;
-            Gems = 0;
             IsVIP = false;
             
             Customization = new PlayerCustomization();
@@ -150,13 +142,7 @@ namespace MafiaNight.Player
         
         public void UpdateRank()
         {
-            if (RankPoints >= 6000) Rank = PlayerRank.Grandmaster;
-            else if (RankPoints >= 5000) Rank = PlayerRank.Master;
-            else if (RankPoints >= 4000) Rank = PlayerRank.Diamond;
-            else if (RankPoints >= 3000) Rank = PlayerRank.Platinum;
-            else if (RankPoints >= 2000) Rank = PlayerRank.Gold;
-            else if (RankPoints >= 1000) Rank = PlayerRank.Silver;
-            else Rank = PlayerRank.Bronze;
+            Rank = RankRules.GetRankFromPoints(RankPoints);
         }
         
         public void AddRankPoints(int points)

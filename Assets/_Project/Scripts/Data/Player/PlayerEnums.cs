@@ -1,4 +1,4 @@
-namespace MafiaNight.Player
+namespace MafiaNight.Data.Player
 {
     /// <summary>
     /// Player rank tiers with point thresholds

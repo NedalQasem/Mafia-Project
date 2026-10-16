@@ -1,10 +1,12 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using MafiaNight.Player;
 using MafiaNight.Core;
+using MafiaNight.Gameplay.Match;
+using MafiaNight.Gameplay.Player;
+using MafiaNight.Services.Auth;
 
-namespace MafiaNight.Gameplay
+namespace MafiaNight.Gameplay.Seating
 {
     /// <summary>
     /// Manages all seats in the game scene.
@@ -12,7 +14,7 @@ namespace MafiaNight.Gameplay
     /// </summary>
     public class SeatManager : MonoBehaviour
     {
-        public static SeatManager Instance { get; private set; }
+        private const string Tag = "SeatManager";
 
         [Header("Configuration")]
         [SerializeField] private List<GameSeat> seats;
@@ -20,9 +22,9 @@ namespace MafiaNight.Gameplay
 
         private void Awake()
         {
-            Instance = this;
-            
-            // Safety check: specific logic for new serialized field
+            // Scene-scoped service (only exists in the Gameplay scene)
+            ServiceLocator.Register(this);
+
             if (playerScale == Vector3.zero)
             {
                 playerScale = new Vector3(0.15f, 0.15f, 0.15f);
@@ -31,25 +33,28 @@ namespace MafiaNight.Gameplay
             // Auto-find seats if not assigned
             if (seats == null || seats.Count == 0)
             {
-                seats = FindObjectsOfType<GameSeat>().OrderBy(s => s.SeatIndex).ToList();
+                seats = FindObjectsByType<GameSeat>().OrderBy(s => s.SeatIndex).ToList();
             }
+        }
+
+        private void OnDestroy()
+        {
+            ServiceLocator.Unregister(this);
         }
 
         private void Start()
         {
-            // Auto-setup if we have players in GameManager
-            if (GameManager.Instance != null)
+            if (!ServiceLocator.TryGet<GameManager>(out var gameManager)) return;
+
+            var players = gameManager.AllPlayers;
+            if (players.Count > 0)
             {
-                var players = GameManager.Instance.GetAllPlayers();
-                if (players != null && players.Count > 0)
-                {
-                    Debug.Log($"[SeatManager] Found {players.Count} players in GameManager. Setting up seats...");
-                    SetupSeats(players);
-                }
-                else
-                {
-                    Debug.LogWarning("[SeatManager] No players found in GameManager!");
-                }
+                Log.Info($"Found {players.Count} players in GameManager. Setting up seats...", Tag);
+                SetupSeats(new List<PlayerData>(players));
+            }
+            else
+            {
+                Log.Warning("No players found in GameManager!", Tag);
             }
         }
 
@@ -184,7 +189,7 @@ namespace MafiaNight.Gameplay
 
             if (controller != null)
             {
-                bool isLocal = (data.PlayFabId == MafiaNight.Managers.PlayerProfileManager.Instance.LocalProfile.PlayFabId);
+                bool isLocal = ServiceLocator.TryGet<IAuthService>(out var auth) && data.PlayFabId == auth.PlayFabId;
                 controller.Initialize(data.PlayerName, data.PlayFabId, data.EOSAccountId, isLocal, data.VisualData);
                 seat.AssignPlayer(controller);
             }
