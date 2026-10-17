@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading.Tasks;
 using MafiaNight.Core;
 using MafiaNight.Data;
@@ -8,6 +7,7 @@ using MafiaNight.Services.Profile;
 using MafiaNight.Services.Scenes;
 using MafiaNight.Services.Session;
 using MafiaNight.UI.Animations;
+using MafiaNight.UI.Components;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -35,10 +35,15 @@ namespace MafiaNight.UI.Screens
         [SerializeField] private Scrollbar xpProgressBar;
         [SerializeField] private TextMeshProUGUI xpText;
 
-        [Header("Room Buttons")] // TODO: Replace with carousel
+        [Header("Room Cards (children of the carousel)")]
         [SerializeField] private Button starterRoomButton;
         [SerializeField] private Button proRoomButton;
         [SerializeField] private Button eliteRoomButton;
+
+        [Header("Room Carousel")]
+        [SerializeField] private RoomCarousel roomCarousel;
+        [SerializeField] private Button playButton;
+        [SerializeField] private TextMeshProUGUI selectedRoomText;
 
         [Header("Room Tier Data")]
         [SerializeField] private RoomTierData starterRoomTier;
@@ -51,6 +56,7 @@ namespace MafiaNight.UI.Screens
 
         private ICurrencyService _currency;
         private IPlayerProfileService _profile;
+        private RoomTierData[] _roomTiers = new RoomTierData[3];
         private bool _isJoiningRoom;
 
         private async void Start()
@@ -81,9 +87,17 @@ namespace MafiaNight.UI.Screens
             if (settingsButton != null)
                 settingsButton.onClick.AddListener(OnSettingsClicked);
 
-            SetupRoomButton(starterRoomButton, starterRoomTier);
-            SetupRoomButton(proRoomButton, proRoomTier);
-            SetupRoomButton(eliteRoomButton, eliteRoomTier);
+            _roomTiers = new[] { starterRoomTier, proRoomTier, eliteRoomTier };
+            SetupRoomButton(starterRoomButton, 0);
+            SetupRoomButton(proRoomButton, 1);
+            SetupRoomButton(eliteRoomButton, 2);
+
+            if (playButton != null) playButton.onClick.AddListener(OnPlayClicked);
+            if (roomCarousel != null)
+            {
+                roomCarousel.OnIndexChanged += UpdateSelectedRoomText;
+                UpdateSelectedRoomText(roomCarousel.CurrentIndex);
+            }
 
             Log.Info("Initialized", Tag);
 
@@ -104,18 +118,44 @@ namespace MafiaNight.UI.Screens
                 _profile.OnProfileUpdated -= DisplayProfile;
             }
 
+            if (roomCarousel != null) roomCarousel.OnIndexChanged -= UpdateSelectedRoomText;
+            if (playButton != null) playButton.onClick.RemoveListener(OnPlayClicked);
             if (settingsButton != null) settingsButton.onClick.RemoveAllListeners();
             if (starterRoomButton != null) starterRoomButton.onClick.RemoveAllListeners();
             if (proRoomButton != null) proRoomButton.onClick.RemoveAllListeners();
             if (eliteRoomButton != null) eliteRoomButton.onClick.RemoveAllListeners();
         }
 
-        private void SetupRoomButton(Button button, RoomTierData tierData)
+        private void SetupRoomButton(Button button, int index)
         {
-            if (button == null || tierData == null) return;
+            if (button == null || _roomTiers[index] == null) return;
 
             button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() => OnRoomButtonClicked(tierData));
+            button.onClick.AddListener(() => OnRoomCardClicked(index));
+        }
+
+        /// <summary>Side card → bring it to the center. Center card → join.</summary>
+        private void OnRoomCardClicked(int index)
+        {
+            if (roomCarousel != null && roomCarousel.CurrentIndex != index)
+            {
+                roomCarousel.GoTo(index);
+                return;
+            }
+            OnRoomButtonClicked(_roomTiers[index]);
+        }
+
+        private void OnPlayClicked()
+        {
+            int index = roomCarousel != null ? roomCarousel.CurrentIndex : 0;
+            if (_roomTiers[index] != null) OnRoomButtonClicked(_roomTiers[index]);
+        }
+
+        private void UpdateSelectedRoomText(int index)
+        {
+            if (selectedRoomText == null || index < 0 || index >= _roomTiers.Length || _roomTiers[index] == null) return;
+            var tier = _roomTiers[index];
+            selectedRoomText.text = $"{tier.TierName} • {tier.MaxPlayers} Players";
         }
 
         #region Display Updates
@@ -204,11 +244,6 @@ namespace MafiaNight.UI.Screens
         /// <summary>Sequential reveal of the main menu elements.</summary>
         private async Task AnimateUIElements()
         {
-            var roomCards = new[] { starterRoomButton, proRoomButton, eliteRoomButton }
-                .Where(b => b != null)
-                .Select(b => b.gameObject)
-                .ToArray();
-
             try
             {
                 if (headerPanel != null)
@@ -218,9 +253,10 @@ namespace MafiaNight.UI.Screens
 
                 await Task.Delay(100);
 
-                if (roomCards.Length > 0)
+                // The carousel scales its own cards, so animate the carousel as a whole
+                if (roomCarousel != null)
                 {
-                    await UIElementAnimator.AnimateSequential(roomCards, AnimationPresets.ShortDelay, AnimationPresets.QuickDuration);
+                    await UIElementAnimator.ScaleAndFadeIn(roomCarousel.gameObject, AnimationPresets.NormalDuration);
                 }
 
                 if (downBar != null && downBar.TryGetComponent<RectTransform>(out var rectTransform))
