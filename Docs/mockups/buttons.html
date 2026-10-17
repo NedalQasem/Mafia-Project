@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تصاميم الأزرار</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:28px 16px 70px;background:radial-gradient(ellipse at 50% 0,#1d1511,#070605 70%);color:#d9d0bd;font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 4px;font-size:2rem}
+.sub{text-align:center;color:#8f8777;margin:0 0 24px;font-size:.9rem}
+.grid{max-width:900px;margin:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.cell{padding:22px 18px 16px;border:1px solid #ffffff10;border-radius:12px;background:#0d0b0a;display:grid;gap:16px;justify-items:center}
+.cell h2{margin:0;font-size:.95rem;color:#a98f62;font-weight:600;justify-self:start}
+.cell p{margin:0;font-size:.78rem;color:#7d756a;justify-self:start}
+button{font-family:inherit;border:0;cursor:pointer;color:inherit;position:relative;touch-action:manipulation;user-select:none}
+button:focus-visible{outline:2px solid #d9d0bd;outline-offset:3px}
+.b{width:100%;font-weight:800;font-size:1.15rem;padding:16px;overflow:hidden}
+.rip{position:absolute;border-radius:50%;pointer-events:none;translate:-50% -50%;width:10px;height:10px;background:radial-gradient(circle,#ffd9a0aa,#ff8a3c00 70%);animation:rip .7s ease-out forwards}
+@keyframes rip{to{width:420px;height:420px;opacity:0}}
+
+/* 1 leather + cigarette ember edge */
+.b1{border-radius:10px;color:#f0dcd8;transition:transform .1s,box-shadow .1s;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000,0 12px 22px #000b}
+.b1::after{content:"";position:absolute;inset:5px;border:1.5px dashed #e6c9a0;opacity:.5;border-radius:6px;pointer-events:none;transition:opacity .2s}
+.b1 .ember{position:absolute;left:12%;right:12%;bottom:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,transparent,#ff8a2a,#ffd27a,#ff8a2a,transparent);filter:blur(.4px);box-shadow:0 0 14px 3px #ff6a1a88;animation:ember 2.4s ease-in-out infinite}
+@keyframes ember{0%,100%{opacity:.45}40%{opacity:1}60%{opacity:.7}}
+.b1:active{transform:translateY(3px);box-shadow:inset 0 2px 8px #000a,0 1px 0 #000}
+.b1:active::after{opacity:1}
+.b1.dark{background:var(--grain),linear-gradient(180deg,#3b2a20,#2b1e17 55%,#1a110d);background-blend-mode:multiply,normal;color:#e6d9bd}
+.b1.dark::after{border-color:#a98f62}
+
+/* 2 brass plate with engraving + glint */
+.b2{border-radius:6px;color:#2a1a08;font-family:Lalezar;font-weight:400;letter-spacing:.03em;font-size:1.35rem;background:linear-gradient(100deg,#6e5224 0%,#b99048 18%,#8a6a30 40%,#d2ad60 55%,#8a6a30 72%,#a98340 100%);box-shadow:inset 0 1px 0 #ffe8a8aa,inset 0 -2px 3px #0006,0 4px 0 #2a1c08,0 12px 20px #000b;text-shadow:0 1px 0 #ffe0908a,0 -1px 0 #0005;transition:transform .1s}
+.b2::before,.b2::after{content:"";position:absolute;top:50%;width:8px;height:8px;border-radius:50%;translate:0 -50%;background:radial-gradient(circle at 35% 30%,#f0d898,#4a3512);box-shadow:0 1px 1px #000}
+.b2::before{right:11px}.b2::after{left:11px}
+.b2 .glint{position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,#fff9 50%,transparent 65%);translate:-130% 0;pointer-events:none}
+.b2.go .glint{animation:glint .8s ease-out}
+@keyframes glint{to{translate:130% 0}}
+.b2:active{transform:translateY(3px);box-shadow:inset 0 2px 6px #0008,0 1px 0 #2a1c08}
+
+/* 3 card flip */
+.cardwrap{perspective:700px;width:128px;height:178px}
+.card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,1.4,.5,1)}
+.cardwrap.flip .card{transform:rotateY(180deg) translateY(-8px)}
+.face,.back{position:absolute;inset:0;border-radius:11px;backface-visibility:hidden;box-shadow:0 10px 20px #000c}
+.back{border:3px solid #d9d0bd;background:repeating-linear-gradient(45deg,#0005 0 2px,transparent 2px 9px),repeating-linear-gradient(-45deg,#0005 0 2px,transparent 2px 9px),#7a1820;display:grid;place-items:center}
+.back i{width:44px;height:64px;border:2px solid #d9d0bd;border-radius:50%/40%;opacity:.8}
+.face{background:#ddd4c0;color:#111;rotate:y 180deg;display:grid;place-items:center;font-family:Lalezar;text-align:center;font-size:1.6rem;line-height:1.2}
+.face small{position:absolute;top:8px;right:10px;font-size:1rem;color:#8a1c24}
+.face b{font-weight:400;color:#8a1c24}
+.cardwrap button{position:absolute;inset:0;background:none}
+
+/* 4 wax seal stamp */
+.sealwrap{position:relative;width:110px;height:110px;display:grid;place-items:center}
+.seal{width:96px;height:96px;border-radius:50% 46% 52% 48%/48% 52% 46% 50%;color:#f2d6d3;font-family:Lalezar;font-weight:400;font-size:1.3rem;background:radial-gradient(circle at 35% 30%,#b23038,#7f1820 55%,#4a0b10);box-shadow:inset 0 2px 3px #ffffff33,inset 0 -4px 8px #0008,0 6px 12px #000b}
+.seal::after{content:"";position:absolute;inset:11px;border-radius:50%;border:2px solid #0004;box-shadow:inset 0 0 0 1px #ffffff1a}
+.sealwrap .wave{position:absolute;inset:6px;border-radius:50%;border:2px solid #c0353d;opacity:0;pointer-events:none}
+.sealwrap.go .seal{animation:stamp .55s cubic-bezier(.2,.9,.3,1)}
+.sealwrap.go .wave{animation:wave .7s ease-out}
+@keyframes stamp{0%{transform:scale(1.5) rotate(-8deg);opacity:.2}55%{transform:scale(.88)}100%{transform:scale(1) rotate(0)}}
+@keyframes wave{0%{transform:scale(.9);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+
+/* 5 classified dossier + slam stamp */
+.b5{border-radius:4px 14px 4px 4px;color:#2a1c10;font-weight:800;font-size:1.2rem;padding:18px;background:var(--grain),linear-gradient(180deg,#b79a68,#a1834f);background-blend-mode:multiply,normal;box-shadow:inset 0 0 0 1px #0004,0 4px 0 #3a2a14,0 12px 20px #000b;overflow:visible}
+.b5::before{content:"";position:absolute;top:-9px;right:14px;width:84px;height:12px;border-radius:5px 5px 0 0;background:var(--grain),#a1834f;background-blend-mode:multiply,normal;box-shadow:inset 0 0 0 1px #0004}
+.b5 .tape{position:absolute;left:-8px;top:50%;width:34px;height:12px;rotate:-8deg;background:#d6cfae99;translate:0 -50%}
+.b5 .stamp{position:absolute;left:14px;top:50%;translate:0 -50%;rotate:-14deg;padding:2px 12px;border:3px solid #8a1c24;border-radius:4px;color:#8a1c24;font-family:Lalezar;font-weight:400;font-size:1.3rem;opacity:0;mix-blend-mode:multiply;pointer-events:none}
+.b5.go .stamp{animation:slam .6s cubic-bezier(.2,.9,.3,1) forwards}
+.b5.go{animation:shake .25s .12s}
+@keyframes slam{0%{opacity:0;transform:scale(2.6) rotate(8deg)}60%{opacity:1;transform:scale(.92)}100%{opacity:.88;transform:scale(1)}}
+@keyframes shake{25%{transform:translateY(2px)}50%{transform:translateY(-1px)}}
+
+/* 6 lighter */
+.b6{border-radius:8px;color:#d8d2c6;background:linear-gradient(180deg,#4a4a48,#232322 50%,#111);box-shadow:inset 0 1px 0 #ffffff33,inset 0 0 0 1px #000,0 4px 0 #000,0 12px 20px #000b;overflow:visible;font-size:1.1rem;padding:16px 16px 16px 60px;transition:box-shadow .3s}
+.b6::before{content:"";position:absolute;inset:0;border-radius:8px;background:repeating-linear-gradient(90deg,#ffffff08 0 1px,transparent 1px 4px);pointer-events:none}
+.b6 .flame{position:absolute;right:20px;top:-26px;width:26px;height:40px;opacity:0;transform-origin:50% 100%;pointer-events:none}
+.b6 .wheel{position:absolute;left:16px;top:50%;translate:0 -50%;width:26px;height:26px;border-radius:50%;background:repeating-conic-gradient(#888 0 12deg,#333 12deg 24deg);box-shadow:0 0 0 2px #000}
+.b6.go{box-shadow:inset 0 1px 0 #ffffff33,inset 0 0 0 1px #000,0 4px 0 #000,0 12px 20px #000b,0 -16px 50px 6px #ff9a3a55}
+.b6.go .flame{opacity:1;animation:flick .18s ease-in-out infinite alternate}
+.b6.go .wheel{animation:spin .4s linear}
+@keyframes flick{from{transform:scale(1,1) rotate(-3deg)}to{transform:scale(.88,1.12) rotate(4deg)}}
+@keyframes spin{to{rotate:240deg}}
+/* 7 steel plate with bullet holes */
+.b7{border-radius:6px;color:#cfd2d4;font-size:1.15rem;background:var(--grain), linear-gradient(180deg,#5a5e60,#35393b 50%,#222526);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff33,inset 0 0 0 1px #000,0 4px 0 #000,0 12px 20px #000b;text-shadow:0 1px 0 #000}
+.b7::before,.b7::after{content:"";position:absolute;top:8px;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#aaa,#222);box-shadow:0 1px 1px #000}
+.b7::before{right:9px}.b7::after{left:9px}
+.hole{position:absolute;width:30px;height:30px;translate:-50% -50%;pointer-events:none;animation:pop .18s ease-out}
+.hole::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#000 0 28%,#0009 32%,#9aa0a2 36% 42%,transparent 56%)}
+.hole::after{content:"";position:absolute;inset:-14px;background:repeating-conic-gradient(from 10deg,#000a 0 1.5deg,transparent 1.5deg 40deg);-webkit-mask:radial-gradient(circle,#000 20%,transparent 68%);mask:radial-gradient(circle,#000 20%,transparent 68%)}
+.b7.hit{animation:recoil .14s}
+@keyframes pop{from{transform:scale(2.4);opacity:0}}
+@keyframes recoil{30%{transform:translate(2px,-2px) rotate(.5deg)}}
+.spark{position:absolute;width:3px;height:3px;border-radius:50%;background:#ffd27a;box-shadow:0 0 8px 2px #ffb04a;pointer-events:none;animation:spark .35s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy));opacity:0}}
+
+/* 8 revolver cylinder */
+.b8{border-radius:8px;color:#e1ddd2;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--grain),linear-gradient(180deg,#2e2e2f,#171717);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,inset 0 0 0 1px #000,0 4px 0 #000,0 12px 20px #000b;overflow:visible}
+.cyl{width:46px;height:46px;flex:none;transition:transform .9s cubic-bezier(.1,.8,.2,1)}
+.b8.go .cyl{transform:rotate(var(--r))}
+
+/* 9 bullet-proof glass */
+.b9{border-radius:10px;color:#e8f1f5;font-size:1.15rem;background:linear-gradient(115deg,#ffffff1f 0 18%,transparent 18% 24%,#ffffff12 24% 30%,transparent 30%),linear-gradient(180deg,#6f8c98aa,#2c3f48cc 55%,#1a262ccc);box-shadow:inset 0 1px 0 #ffffff55,inset 0 0 0 1px #ffffff30,inset 0 0 22px #9fd0e022,0 4px 0 #0b1316,0 12px 20px #000b;text-shadow:0 1px 0 #000a}
+.b9 .label{position:relative;z-index:2;transition:opacity .2s}
+.b9 .crk{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;transition:opacity .8s}
+.b9 .crk path{fill:none;stroke:#e9f6ff;stroke-width:1.2;stroke-linecap:round;stroke-dasharray:var(--l);stroke-dashoffset:var(--l);animation:draw .28s ease-out forwards;filter:drop-shadow(0 0 2px #bfe6ff)}
+.b9 .crk path.fine{stroke-width:.7;opacity:.7}
+.b9 .crk.fade{opacity:0}
+@keyframes draw{to{stroke-dashoffset:0}}
+.b9 .trail{position:absolute;height:2px;pointer-events:none;z-index:3;background:linear-gradient(90deg,transparent,#fff 80%,#ffd27a);box-shadow:0 0 8px 2px #ffd27a88;transform-origin:right center;animation:trail .16s ease-in forwards}
+@keyframes trail{from{clip-path:inset(0 0 0 100%)}to{clip-path:inset(0)}}
+.b9.hit{animation:recoil .16s}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="flame" viewBox="0 0 26 40"><defs><linearGradient id="fg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#3a7bff"/><stop offset=".25" stop-color="#ffd25a"/><stop offset=".7" stop-color="#ff7a1a"/><stop offset="1" stop-color="#ff4a0a"/></linearGradient></defs><path d="M13 1c2 8 10 13 10 23 0 8-5 15-10 15S3 32 3 24C3 18 8 15 9 8c2 3 3 5 4 7 1-4 0-9 0-14z" fill="url(#fg)"/></symbol>
+</defs></svg>
+
+<h1>تصاميم الأزرار</h1>
+<p class="sub">اضغط على كل زر وشوف حركته. بعضها يشتغل بلمسة وحدة</p>
+<div class="grid">
+
+  <div class="cell"><h2>١. جلد بجمرة سيجارة</h2>
+    <button class="b b1 rippler"><span class="ember"></span>ادخل الطاولة</button>
+    <button class="b b1 dark rippler">طاولتي</button>
+    <p>جمرة تتوهّج بحافة الزر الرئيسي، وحدود الخياطة تظهر أكثر عند الضغط، وموجة ضوء دافئة من مكان لمستك.</p></div>
+
+  <div class="cell"><h2>٢. لوحة نحاس منقوشة</h2>
+    <button class="b b2" data-fx="glint"><span class="glint"></span>ابدأ السهرة</button>
+    <p>الخط محفور بالنحاس، ولمعة تعبر اللوحة مع الضغط.</p></div>
+
+  <div class="cell"><h2>٣. ورقة تنقلب</h2>
+    <div class="cardwrap" id="cw"><div class="card"><div class="back"><i></i></div><div class="face"><small>♥</small><span>صوّت<br><b>الآن</b></span></div></div><button aria-label="اقلب الورقة"></button></div>
+    <p>ظهر الورقة مزخرف، والضغط يقلبها وتكشف الإجراء. تعود وحدها بعد ثانيتين.</p></div>
+
+  <div class="cell"><h2>٤. ختم شمع يُدقّ</h2>
+    <div class="sealwrap" id="sw"><span class="wave"></span><button class="seal" aria-label="صوّت">صوّت</button></div>
+    <p>الختم ينزل بقوة، ويهتز، وموجة تنتشر منه. للأفعال الحاسمة.</p></div>
+
+  <div class="cell"><h2>٥. ملف سرّي</h2>
+    <button class="b b5" data-fx="slam"><span class="tape"></span>الملف الأمني<span class="stamp">سرّي</span></button>
+    <p>الزر غلاف ملف بتبويب، والضغط يدقّ عليه ختم أحمر "سرّي" ويهتز الملف.</p></div>
+
+  <div class="cell"><h2>٦. ولّاعة</h2>
+    <button class="b b6" data-fx="lighter"><svg class="flame" aria-hidden="true"><use href="#flame"/></svg><span class="wheel"></span>أشعل السهرة</button>
+    <p>عجلة تدور وشعلة صغيرة تطلع وتضيء حوالين الزر.</p></div>
+
+  <div class="cell"><h2>٧. صفيحة فولاذ بثقوب رصاص</h2>
+    <button class="b b7" id="plate">أطلق صوتك</button>
+    <p>كل ضغطة تترك ثقب رصاصة بشقوق وشرارة، وتهتز الصفيحة. الثقوب تتراكم ثم تنظف نفسها.</p></div>
+
+  <div class="cell"><h2>٨. أسطوانة المسدس</h2>
+    <button class="b b8" id="rev"><span>جاهز للجولة؟</span>
+      <svg class="cyl" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#3a3a3a" stroke="#000" stroke-width="2"/><circle cx="24" cy="24" r="5" fill="#111"/>
+        <g fill="#0a0a0a"><circle cx="24" cy="9" r="5"/><circle cx="37" cy="16.5" r="5"/><circle cx="37" cy="31.5" r="5"/><circle cx="24" cy="39" r="5"/><circle cx="11" cy="31.5" r="5"/><circle cx="11" cy="16.5" r="5"/></g>
+        <circle cx="24" cy="9" r="3.4" fill="#c79a45"/></svg></button>
+    <p>الأسطوانة تدور ست خانات وتقف، وفيها رصاصة نحاسية بخانة وحدة.</p></div>
+
+  <div class="cell"><h2>٩. زجاج مضاد للرصاص</h2>
+    <button class="b b9" id="glass"><span class="label">اكسر الصمت</span></button>
+    <p>رصاصة تعبر الزجاج بلمح البصر وتتشقق شبكة من نقطة الإصابة، ثم يلتئم الزجاج وحده.</p></div>
+
+</div>
+<script>
+(function(){
+  function once(el,cls,ms){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);setTimeout(function(){el.classList.remove(cls)},ms)}
+  document.querySelectorAll(".rippler").forEach(function(b){
+    b.addEventListener("pointerdown",function(e){var r=b.getBoundingClientRect(),s=document.createElement("span");s.className="rip";s.style.left=(e.clientX-r.left)+"px";s.style.top=(e.clientY-r.top)+"px";b.appendChild(s);setTimeout(function(){s.remove()},700)});
+  });
+  document.querySelectorAll("[data-fx]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var f=b.dataset.fx;
+      if(f==="glint")once(b,"go",850);
+      if(f==="slam")once(b,"go",1800);
+      if(f==="lighter")once(b,"go",1700);
+    });
+  });
+  var cw=document.getElementById("cw"),t;
+  cw.querySelector("button").addEventListener("click",function(){cw.classList.toggle("flip");clearTimeout(t);if(cw.classList.contains("flip"))t=setTimeout(function(){cw.classList.remove("flip")},2000)});
+  var plate=document.getElementById("plate"),holes=[];
+  plate.addEventListener("pointerdown",function(e){
+    var r=plate.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+    if(holes.length>=5){holes.forEach(function(h){h.remove()});holes=[]}
+    var h=document.createElement("span");h.className="hole";h.style.left=x+"px";h.style.top=y+"px";plate.appendChild(h);holes.push(h);
+    for(var i=0;i<6;i++){var s=document.createElement("span");s.className="spark";s.style.left=x+"px";s.style.top=y+"px";var a=Math.random()*6.28,d=14+Math.random()*22;s.style.setProperty("--dx",Math.cos(a)*d+"px");s.style.setProperty("--dy",Math.sin(a)*d+"px");plate.appendChild(s);(function(s){setTimeout(function(){s.remove()},380)})(s)}
+    once(plate,"hit",160);
+  });
+  var rev=document.getElementById("rev"),rot=0;
+  rev.addEventListener("click",function(){rot+=360+60;rev.style.setProperty("--r",rot+"deg");rev.classList.add("go")});
+  var glass=document.getElementById("glass"),gt;
+  function crackSVG(x,y,w,h){
+    var NS="http://www.w3.org/2000/svg",s=document.createElementNS(NS,"svg");s.setAttribute("class","crk");s.setAttribute("viewBox","0 0 "+w+" "+h);s.setAttribute("preserveAspectRatio","none");
+    function path(d,len,fine){var p=document.createElementNS(NS,"path");p.setAttribute("d",d);if(fine)p.setAttribute("class","fine");p.style.setProperty("--l",len);s.appendChild(p)}
+    var n=11,a0=Math.random()*6.28;
+    for(var i=0;i<n;i++){
+      var a=a0+i*6.28/n+(Math.random()-.5)*.35,len=60+Math.random()*130,px=x,py=y,d="M"+x+" "+y,tot=0;
+      for(var k=0;k<4;k++){var st=len/4*(0.7+Math.random()*.6),aa=a+(Math.random()-.5)*.45;px+=Math.cos(aa)*st;py+=Math.sin(aa)*st;d+=" L"+px.toFixed(1)+" "+py.toFixed(1);tot+=st;
+        if(k==1&&Math.random()<.7){var ba=aa+(Math.random()<.5?-1:1)*(.7+Math.random()*.5),bx=px+Math.cos(ba)*32,by=py+Math.sin(ba)*32;path("M"+px.toFixed(1)+" "+py.toFixed(1)+" L"+bx.toFixed(1)+" "+by.toFixed(1),40,true)}}
+      path(d,tot*1.3,false);
+    }
+    [14,30,52].forEach(function(r){var d="",m=9;for(var i=0;i<=m;i++){var aa=a0+i*6.28/m,rr=r*(0.8+Math.random()*.4);d+=(i?" L":"M")+(x+Math.cos(aa)*rr).toFixed(1)+" "+(y+Math.sin(aa)*rr).toFixed(1)}path(d+" Z",r*7,true)});
+    return s;
+  }
+  glass.addEventListener("pointerdown",function(e){
+    var r=glass.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+    glass.querySelectorAll(".crk,.trail").forEach(function(n){n.remove()});clearTimeout(gt);
+    var t=document.createElement("span");t.className="trail";t.style.left=x+"px";t.style.top=(y-1)+"px";t.style.width=(r.width-x)+"px";glass.appendChild(t);
+    var c=crackSVG(x,y,r.width,r.height);glass.appendChild(c);
+    for(var i=0;i<5;i++){var s=document.createElement("span");s.className="spark";s.style.left=x+"px";s.style.top=y+"px";var a=Math.random()*6.28,d=10+Math.random()*20;s.style.setProperty("--dx",Math.cos(a)*d+"px");s.style.setProperty("--dy",Math.sin(a)*d+"px");glass.appendChild(s);(function(s){setTimeout(function(){s.remove()},380)})(s)}
+    once(glass,"hit",170);
+    gt=setTimeout(function(){c.classList.add("fade");setTimeout(function(){c.remove();t.remove()},850)},2200);
+  });
+  var sw=document.getElementById("sw");
+  sw.querySelector("button").addEventListener("click",function(){once(sw,"go",800)});
+})();
+</script>
+</body>
+</html>

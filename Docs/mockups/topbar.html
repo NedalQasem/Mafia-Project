@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الشريط العلوي</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+--crimson:#8a1c24;--brass:#b99048;--ivory:#d9d0bd;--teal:#4fa58b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:26px 14px 70px;background:radial-gradient(ellipse at 50% 0,#1d1511,#070605 70%);color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 4px;font-size:2rem}
+.sub{text-align:center;color:#8f8777;margin:0 0 22px;font-size:.9rem}
+.wrap{max-width:430px;margin:auto;display:grid;gap:26px}
+.opt h2{font-family:Lalezar;font-weight:400;font-size:1.15rem;color:#a98f62;margin:0 0 8px}
+.note{color:#7d756a;font-size:.76rem;margin:8px 2px 0}
+.scene{height:150px;border-radius:14px;position:relative;overflow:hidden;background:radial-gradient(ellipse 80% 120% at 50% -20%,#e8c27a25,transparent 60%),linear-gradient(180deg,#14100e,#080605);box-shadow:inset 0 0 0 1px #ffffff10}
+button{font-family:inherit;border:0;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
+svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* parts */
+.avatar{position:relative;width:58px;height:58px;border-radius:50%;flex:none;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);display:grid;place-items:center;color:#9a8e78;box-shadow:0 0 0 2px #000,0 0 0 4px #6b5a3f,0 4px 8px #000a}
+.avatar svg{width:42px;height:42px}
+.avatar.vip{box-shadow:0 0 0 2px #000,0 0 0 4px var(--brass),0 0 0 5px #3a2a0c,0 0 14px 2px #b9904855}
+.lvl{position:absolute;bottom:-5px;right:-5px;min-width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:Lalezar;font-size:.85rem;color:#2a1a08;background:linear-gradient(145deg,#e8cc8c,#9a7632);box-shadow:0 0 0 2px #000,0 2px 3px #000a}
+.xp{height:8px;border-radius:5px;background:#000a;box-shadow:inset 0 1px 2px #000,0 1px 0 #ffffff14;position:relative;overflow:hidden}
+.xp i{position:absolute;inset:0 auto 0 0;width:var(--p,60%);border-radius:5px;background:linear-gradient(180deg,#e8cc8c,#b99048 55%,#7a5a22);box-shadow:0 0 8px #b9904888;transition:width 1.2s cubic-bezier(.2,.9,.3,1)}
+.xp::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 19%,#0007 19% 20%)}
+.pname{font-family:"Aref Ruqaa";font-size:1.15rem;line-height:1.1;white-space:nowrap}
+.title{font-size:.7rem;color:#a98f62;font-weight:700}
+.coins{display:inline-flex;align-items:center;gap:8px;padding:4px 4px 4px 12px;border-radius:20px;background:#000a;box-shadow:inset 0 0 0 1px #ffffff18,inset 0 2px 4px #000}
+.coins b{font-family:Lalezar;font-weight:400;font-size:1.05rem;font-variant-numeric:tabular-nums;min-width:3ch;text-align:center;color:#f0dca0}
+.coin{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000,inset 0 0 0 3px #00000022;position:relative}
+.coin::after{content:"";position:absolute;inset:5px;border-radius:50%;border:1px solid #6e4b1c99}
+.plus{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#a2262f,#561016);box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff33;color:#f4dcd8}
+.plus svg{width:14px;height:14px;stroke-width:2.4}
+.plus:active{transform:scale(.88)}
+.ic{position:relative;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#cfc6b2;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff1c,0 3px 0 #000}
+.ic:active{transform:translateY(2px);box-shadow:0 0 0 1px #000,0 1px 0 #000}
+.ic .dot{position:absolute;top:2px;right:3px;width:10px;height:10px;border-radius:50%;background:#d6313b;box-shadow:0 0 0 2px #1a110d,0 0 8px #d6313b99}
+.leather{background:var(--grain),linear-gradient(180deg,#3b2a20,#2b1e17 55%,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 4px 0 #000,0 12px 22px #000b}
+.stitch::after{content:"";position:absolute;inset:4px;border:1.5px dashed #a98f62;opacity:.45;border-radius:inherit;pointer-events:none}
+.fly{position:fixed;width:18px;height:18px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000;transition:transform .7s cubic-bezier(.5,0,.8,.6),opacity .7s}
+
+/* A: leather strap, avatar overlaps */
+.A{position:absolute;top:34px;left:10px;right:10px;height:64px;border-radius:14px;display:flex;align-items:center;gap:10px;padding:0 92px 0 8px}
+.A .avatar{position:absolute;right:8px;top:-12px;width:70px;height:70px}
+.A .avatar svg{width:50px;height:50px}
+.A .info{flex:1;min-width:0;display:grid;gap:4px}
+.A .row1{display:flex;align-items:baseline;gap:8px}
+.A .xpwrap{display:flex;align-items:center;gap:6px;font-size:.62rem;color:#a79d88}
+.A .xpwrap .xp{flex:1}
+
+/* B: compact */
+.B{position:absolute;top:34px;left:10px;right:10px;display:flex;align-items:center;gap:10px}
+.B .avatar{width:46px;height:46px}.B .avatar svg{width:34px;height:34px}
+.B .info{display:grid;gap:1px}
+.B .lvl{width:20px;min-width:20px;height:20px;font-size:.72rem}
+.B .sp{flex:1}
+
+/* C: VIP brass frame */
+.C{position:absolute;top:30px;left:10px;right:10px;height:72px;border-radius:14px;display:flex;align-items:center;gap:10px;padding:0 100px 0 8px;background:radial-gradient(ellipse at 30% 0,#a2262f55,transparent 60%),var(--grain),linear-gradient(180deg,#5a1119,#3c0a10 55%,#25060a);background-blend-mode:normal,multiply,normal;box-shadow:inset 0 1px 0 #ffffff25,0 0 0 2px #000,0 0 0 4px var(--brass),0 0 0 5px #3a2a0c,0 14px 24px #000c;overflow:visible}
+.C::before{content:"";position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:linear-gradient(110deg,transparent 40%,#ffe8a838 50%,transparent 60%);translate:-120% 0;animation:shine 5s ease-in-out infinite;pointer-events:none}
+@keyframes shine{0%,60%{translate:-120% 0}100%{translate:120% 0}}
+.C .avatar{position:absolute;right:10px;top:-10px;width:76px;height:76px}.C .avatar svg{width:54px;height:54px}
+.C .info{flex:1;min-width:0;display:grid;gap:4px}
+.C .pname{background:linear-gradient(180deg,#f5e2a8,#b99048 60%,#8a6a30);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.C .badge{font-family:Lalezar;font-size:.62rem;padding:0 8px 1px;border-radius:3px;background:linear-gradient(180deg,#e8cc8c,#9a7632);color:#2a1a08}
+.C .xpwrap{display:flex;gap:6px;align-items:center;font-size:.62rem;color:#e0b8bb}.C .xpwrap .xp{flex:1}
+.row1{display:flex;align-items:baseline;gap:8px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="fed" viewBox="0 0 48 48"><path d="M16 17c0-6 3-10 8-10s8 4 8 10z" fill="currentColor"/><path d="M6 19c4 2 10 3 18 3s14-1 18-3c-1 4-8 6-18 6S7 23 6 19z" fill="currentColor"/><path d="M14 29c0-3 4-5 10-5s10 2 10 5v4H14z" fill="currentColor" opacity=".55"/><path d="M6 46c0-8 7-12 18-12s18 4 18 12z" fill="currentColor" opacity=".8"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4"/></symbol>
+<symbol id="gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+</defs></svg>
+
+<h1>الشريط العلوي</h1>
+<p class="sub">معلومات اللاعب: الصورة، الاسم، المستوى، الخبرة، الكوينز. اضغط على + لتشوف حركة الكوينز</p>
+
+<div class="wrap">
+
+<div class="opt"><h2>أ. الشريط الكامل (للرئيسية)</h2>
+<div class="scene">
+  <div class="A leather stitch">
+    <div class="avatar"><svg><use href="#fed"/></svg><span class="lvl">٧</span></div>
+    <div class="info">
+      <div class="row1"><span class="pname">أبو سالم</span><span class="title">صاحب كلمة</span></div>
+      <div class="xpwrap"><div class="xp" style="--p:62%"><i></i></div><span>٦٢٠ / ١٠٠٠</span></div>
+    </div>
+    <div class="coins"><b class="cv">١٬٢٥٠</b><span class="coin"></span><button class="plus" aria-label="شراء كوينز"><svg class="i"><use href="#plus"/></svg></button></div>
+  </div>
+</div>
+<p class="note">جلد مخيّط والصورة تبرز فوق حافته. الخبرة مسطرة نحاسية بتدريجات، والكوينز بخانة غائرة مع زر شراء أحمر.</p></div>
+
+<div class="opt"><h2>ب. الشريط المصغّر (داخل الغرفة)</h2>
+<div class="scene">
+  <div class="B">
+    <div class="avatar"><svg><use href="#fed"/></svg><span class="lvl">٧</span></div>
+    <div class="info"><span class="pname">أبو سالم</span><span class="title">صاحب كلمة</span></div>
+    <span class="sp"></span>
+    <div class="coins"><b class="cv">١٬٢٥٠</b><span class="coin"></span><button class="plus" aria-label="شراء كوينز"><svg class="i"><use href="#plus"/></svg></button></div>
+    <button class="ic" aria-label="الإشعارات"><svg class="i"><use href="#bell"/></svg><span class="dot"></span></button>
+  </div>
+</div>
+<p class="note">بدون خبرة ولا إطار، لتترك مساحة للطاولة والمقاعد. الجرس فيه نقطة حمراء للإشعارات.</p></div>
+
+<div class="opt"><h2>ج. شريط VIP</h2>
+<div class="scene">
+  <div class="C">
+    <div class="avatar vip"><svg><use href="#fed"/></svg><span class="lvl">٢٦</span></div>
+    <div class="info">
+      <div class="row1"><span class="pname">الحج حسن</span><span class="badge">VIP</span></div>
+      <div class="xpwrap"><div class="xp" style="--p:35%"><i></i></div><span>٣٥٠ / ١٠٠٠</span></div>
+    </div>
+    <div class="coins"><b class="cv">٨٬٤٠٠</b><span class="coin"></span><button class="plus" aria-label="شراء كوينز"><svg class="i"><use href="#plus"/></svg></button></div>
+  </div>
+</div>
+<p class="note">مخمل قرمزي بإطار نحاسي واسم مذهّب ولمعة تعبر الشريط، ونفس ترتيب عناصر الشريط العادي.</p></div>
+
+</div>
+<script>
+(function(){
+  function fmt(n){return n.toLocaleString("ar-EG")}
+  document.querySelectorAll(".plus").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var box=btn.closest(".coins"),cv=box.querySelector(".cv"),coin=box.querySelector(".coin");
+      var from=parseInt(cv.dataset.v||(cv.textContent.replace(/[^٠-٩\d]/g,"").replace(/[٠-٩]/g,function(d){return d.charCodeAt(0)-1632})),10);
+      var to=from+100,t0=performance.now();cv.dataset.v=to;
+      var r=btn.getBoundingClientRect();
+      for(var i=0;i<6;i++){(function(i){var f=document.createElement("span");f.className="fly";f.style.left=(r.left+r.width/2-9)+"px";f.style.top=(r.top-6)+"px";document.body.appendChild(f);
+        requestAnimationFrame(function(){requestAnimationFrame(function(){f.style.transform="translate("+((i-2.5)*14)+"px,"+(-60-Math.random()*30)+"px)";f.style.opacity="0"})});setTimeout(function(){f.remove()},800)})(i)}
+      coin.animate([{transform:"rotateY(0)"},{transform:"rotateY(360deg) scale(1.25)"},{transform:"rotateY(720deg)"}],{duration:700,easing:"ease-out"});
+      (function tick(now){var k=Math.min(1,(now-t0)/700);cv.textContent=fmt(Math.round(from+(to-from)*k));if(k<1)requestAnimationFrame(tick)})(t0);
+    });
+  });
+  document.querySelectorAll(".xp i").forEach(function(i){var w=i.parentNode.style.getPropertyValue("--p");i.style.width="0";setTimeout(function(){i.style.width=w},300)});
+})();
+</script>
+</body>
+</html>

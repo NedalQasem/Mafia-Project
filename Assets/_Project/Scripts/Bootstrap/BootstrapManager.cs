@@ -149,7 +149,7 @@ namespace MafiaNight.Bootstrap
                 return returnScene;
             }
 #endif
-            return GameConstants.SCENE_MAIN_MENU;
+            return GameConstants.SCENE_HOME;
         }
 
         private static IEnumerator WaitUntilOrTimeout(Func<bool> condition, float timeout)

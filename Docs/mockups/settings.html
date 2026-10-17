@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الإعدادات</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--crim:#8a1c24;--teal:#4fa58b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:12px 8px 30px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif;display:grid;justify-items:center;gap:8px}
+.cap{color:#6f685c;font-size:.78rem;margin:0}
+button{font-family:inherit;border:0;color:inherit;cursor:pointer;background:none}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
+.phone{width:min(390px,100%);height:790px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 90% 30% at 50% 0,#e8c27a18,transparent 70%),linear-gradient(180deg,#15100d,#090605);box-shadow:0 0 0 7px #14100e,0 0 0 8px #ffffff14,0 24px 50px #000}
+.top{position:absolute;top:0;left:0;right:0;padding:30px 12px 8px;display:flex;align-items:center;gap:10px;z-index:8;background:linear-gradient(180deg,#0a0705f2 70%,transparent)}
+.ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff1c,0 3px 0 #000}
+.ic svg{width:18px;height:18px;stroke:#cfc6b2;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ttl{flex:1;font-family:Lalezar;font-size:1.5rem;line-height:1}
+.ttl small{display:block;font-family:Cairo;font-weight:600;font-size:.62rem;color:#8d744a}
+.scroll{position:absolute;inset:0;overflow-y:auto;padding:84px 12px 40px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+
+/* profile card (ID style) */
+.me{position:relative;display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--paper);color:var(--ink);border-radius:6px;box-shadow:inset 0 0 22px #8a7a5a99,0 10px 18px #000b;rotate:-.8deg;margin-bottom:16px}
+.me::before{content:"";position:absolute;right:16px;top:-10px;width:22px;height:18px;background:#7a1820;clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
+.me .av{width:54px;height:54px;border-radius:50%;padding:3px;flex:none;background:conic-gradient(#f5e2a8,#8a6a30,#d2ad60,#6a4c1c,#f5e2a8);box-shadow:0 0 0 2px var(--ink)}
+.me .av i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:#14100e;color:#8f8573}
+.me .av svg{width:72%;height:72%}
+.me b{font-family:"Aref Ruqaa";font-size:1.3rem;line-height:1.1;display:block}
+.me small{font-size:.66rem;font-weight:800;color:#6a5a3a}
+.me .idc{margin-inline-start:auto;display:grid;gap:2px;text-align:center;font-size:.58rem;font-weight:800;color:#6a5a3a}
+.me .idc button{padding:3px 10px;border-radius:12px;background:#1c170f18;box-shadow:inset 0 0 0 1px #1c170f55;font-family:Lalezar;font-size:.82rem;color:var(--ink)}
+
+/* drawers */
+.sec{margin-bottom:12px;border-radius:12px;background:var(--grain),linear-gradient(180deg,#2a1e17,#17100c);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #000,0 8px 14px #000a;overflow:hidden}
+.sh{width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;text-align:start;position:relative}
+.sh svg.k{width:30px;height:30px;flex:none}
+.sh b{font-family:Lalezar;font-weight:400;font-size:1.05rem;line-height:1.1;flex:1}
+.sh b small{display:block;font-family:Cairo;font-weight:600;font-size:.62rem;color:#8f8777}
+.sh .cv{width:18px;height:18px;stroke:#b99048;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .35s}
+.sec.open .cv{transform:rotate(90deg)}
+.sec.open .sh::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,#b9904888,transparent)}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.2,.9,.3,1)}
+.sec.open .body{grid-template-rows:1fr}
+.body>div{overflow:hidden}
+.in{padding:12px 14px 14px;display:grid;gap:12px}
+
+/* rows + brass lever toggle */
+.r{display:flex;align-items:center;gap:10px;font-size:.84rem;font-weight:700}
+.r .t{flex:1;line-height:1.3}
+.r .t small{display:block;font-size:.64rem;color:#8f8777;font-weight:600}
+.tg{position:relative;width:52px;height:28px;border-radius:14px;flex:none;background:#000b;box-shadow:inset 0 2px 4px #000,0 0 0 1.5px #3a2e22,0 1px 0 #ffffff14;transition:background .3s}
+.tg i{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff0b8,#c9a050 55%,#6e4b1c);box-shadow:0 2px 3px #000a,inset 0 0 0 1px #0005;transition:right .3s cubic-bezier(.3,1.6,.5,1)}
+.tg[aria-checked="true"]{background:linear-gradient(180deg,#143a2a,#0a2418);box-shadow:inset 0 2px 4px #000,0 0 0 1.5px #2d7a60,0 0 10px #4fa58b55}
+.tg[aria-checked="true"] i{right:27px}
+.tg:active i{width:26px}
+
+/* segmented */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;padding:3px;border-radius:9px;background:#000a;box-shadow:inset 0 2px 4px #000}
+.seg button{padding:7px 4px;border-radius:7px;font-weight:800;font-size:.72rem;color:#8f8777;transition:all .25s}
+.seg button.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:inset 0 1px 0 #fff9,0 2px 0 #000}
+.lab{font-size:.74rem;font-weight:800;color:#a98f62;margin-bottom:-4px}
+
+/* radio panel */
+.radio{position:relative;padding:14px 12px 12px;border-radius:12px;background:var(--grain),linear-gradient(180deg,#4a3022,#24160e 70%,#1a100a);background-blend-mode:multiply,normal;box-shadow:inset 0 0 0 2px #14090a,inset 0 0 0 3px #7a5a38,inset 0 2px 8px #000,0 6px 12px #000a}
+.radio::before,.radio::after{content:"";position:absolute;top:7px;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#d9c08c,#3a2a0c)}
+.radio::before{right:8px}.radio::after{left:8px}
+.knobs{display:grid;grid-template-columns:1fr 1fr;gap:6px;justify-items:center}
+.kb{display:grid;justify-items:center;gap:6px;touch-action:none}
+.dial{position:relative;width:104px;height:104px}
+.dial .ticks{position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(from -135deg,#d9d0bd88 0 1deg,transparent 1deg 27deg);-webkit-mask:radial-gradient(circle,transparent 62%,#000 63%,#000 72%,transparent 73%);mask:radial-gradient(circle,transparent 62%,#000 63%,#000 72%,transparent 73%);clip-path:polygon(50% 50%,0 0,0 100%,100% 100%,100% 0)}
+.dial .ticks::after{content:"";position:absolute;inset:0;background:#24160e;clip-path:polygon(50% 50%,38% 100%,62% 100%)}
+.dial .face{position:absolute;inset:13px;border-radius:50%;cursor:grab;background:repeating-conic-gradient(#1a1a1a 0 4deg,#3a3a3a 4deg 8deg);box-shadow:0 6px 10px #000c,0 0 0 2px #000}
+.dial .face::before{content:"";position:absolute;inset:7px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff0b8,#c9a050 45%,#6e4b1c);box-shadow:inset 0 0 0 1.5px #0006,inset 0 -3px 6px #0006}
+.dial .ptr{position:absolute;left:50%;top:6px;width:4px;height:20px;margin-left:-2px;border-radius:2px;background:#1a0f08;box-shadow:0 0 0 1px #fff3;transform-origin:50% 33px}
+.dial .face{transition:none}
+.kb .val{font-family:Lalezar;font-size:1.05rem;color:#ffb35a;text-shadow:0 0 8px #ff8a2a88;background:#000b;padding:0 12px;border-radius:5px;box-shadow:inset 0 0 0 1px #3a2a1c;min-width:56px;text-align:center}
+.kb .nm{font-weight:800;font-size:.72rem;margin-top:-2px}
+.vu{display:flex;gap:3px;align-items:flex-end;height:30px;margin:12px 0 4px;padding:6px 8px;border-radius:6px;background:#050403;box-shadow:inset 0 2px 6px #000,0 0 0 1px #3a2e22}
+.vu i{flex:1;border-radius:1.5px;background:#222;height:30%;transition:background .08s,height .08s}
+.vu i.on{background:#43c08a;height:100%}.vu i.on.w{background:#e0b040}.vu i.on.h{background:#e0434b}
+.mic{width:100%;padding:11px;border-radius:9px;font-weight:800;font-size:.9rem;color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#d2ad60 50%,#7a5a22);box-shadow:inset 0 1px 0 #fff8,0 4px 0 #2a1c08;display:flex;justify-content:center;align-items:center;gap:8px}
+.mic:active{transform:translateY(3px);box-shadow:0 1px 0 #2a1c08}
+.mic .rec{width:9px;height:9px;border-radius:50%;background:#c0323a;display:none}
+.mic.run .rec{display:block;animation:bl .8s steps(2) infinite}
+@keyframes bl{50%{opacity:.2}}
+
+/* rows as links */
+.lk{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #ffffff10;font-size:.84rem;font-weight:700;width:100%;text-align:start}
+.lk:first-child{border-top:0}
+.lk span{flex:1}.lk em{font-style:normal;font-size:.7rem;color:#8f8777}
+.lk svg{width:15px;height:15px;stroke:#6f685c;fill:none;stroke-width:2.4;stroke-linecap:round}
+/* danger */
+.danger{display:grid;gap:10px;margin:6px 0 10px}
+.out{padding:13px;border-radius:10px;font-weight:800;color:#e6d9bd;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 4px 0 #000}
+.out:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
+.del{position:relative;padding:13px;border-radius:10px;font-weight:800;color:#e6a0a4;background:#1a0809;box-shadow:inset 0 0 0 1.5px #8a1c24;overflow:hidden;user-select:none;touch-action:none}
+.del i{position:absolute;inset:0;width:0;background:linear-gradient(90deg,#8a1c2488,#c0323a99)}
+.del span{position:relative}
+.ver{text-align:center;font-size:.66rem;color:#5f584d;padding:6px 0 4px}
+.toast{position:absolute;left:50%;bottom:22px;translate:-50% 30px;padding:7px 18px;background:var(--paper);color:var(--ink);font-weight:800;font-size:.78rem;border-radius:3px;box-shadow:0 8px 14px #000c;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.2,.9,.3,1.2);z-index:30;rotate:-2deg}
+.toast.on{opacity:1;translate:-50% 0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4cc"/><stop offset=".45" stop-color="#d2ad60"/><stop offset="1" stop-color="#6a4c1c"/></linearGradient>
+<linearGradient id="gh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a4018"/><stop offset=".3" stop-color="#fff0b8"/><stop offset=".6" stop-color="#c9a050"/><stop offset="1" stop-color="#4a3510"/></linearGradient>
+<linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0535c"/><stop offset="1" stop-color="#5c0f16"/></linearGradient>
+<linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fe0c6"/><stop offset="1" stop-color="#1d5a48"/></linearGradient>
+<symbol id="fed" viewBox="0 0 48 48"><path d="M16 17c0-6 3-10 8-10s8 4 8 10z" fill="currentColor"/><path d="M6 19c4 2 10 3 18 3s14-1 18-3c-1 4-8 6-18 6S7 23 6 19z" fill="currentColor"/><path d="M14 29c0-3 4-5 10-5s10 2 10 5v4H14z" fill="currentColor" opacity=".55"/><path d="M6 46c0-8 7-12 18-12s18 4 18 12z" fill="currentColor" opacity=".8"/></symbol>
+<symbol id="back" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="cv" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="k-mic" viewBox="0 0 48 48"><rect x="16" y="4" width="16" height="26" rx="8" fill="url(#gh)" stroke="#1a1006" stroke-width="1.3"/><path d="M20 12h8M20 17h8M20 22h8" stroke="#4a3510" stroke-width="1.4"/><path d="M10 24a14 14 0 0 0 28 0M24 38v6M16 44h16" fill="none" stroke="url(#gg)" stroke-width="3" stroke-linecap="round"/></symbol>
+<symbol id="k-bell" viewBox="0 0 48 48"><path d="M10 34V22a14 14 0 0 1 28 0v12l4 5H6z" fill="url(#gg)" stroke="#1a1006" stroke-width="1.3" stroke-linejoin="round"/><path d="M19 42a5 5 0 0 0 10 0z" fill="url(#gh)" stroke="#1a1006" stroke-width="1.2"/><circle cx="24" cy="7" r="2.500" fill="url(#gh)"/></symbol>
+<symbol id="k-lock" viewBox="0 0 48 48"><rect x="9" y="21" width="30" height="22" rx="3" fill="url(#gg)" stroke="#1a1006" stroke-width="1.3"/><path d="M15 21v-6a9 9 0 0 1 18 0v6" fill="none" stroke="url(#gh)" stroke-width="4"/><circle cx="24" cy="31" r="3.500" fill="#1a0f08"/><path d="M24 33v5" stroke="#1a0f08" stroke-width="2.500" stroke-linecap="round"/></symbol>
+<symbol id="k-eye" viewBox="0 0 48 48"><path d="M3 24s8-14 21-14 21 14 21 14-8 14-21 14S3 24 3 24z" fill="url(#gg)" stroke="#1a1006" stroke-width="1.3"/><circle cx="24" cy="24" r="9" fill="#1a110d" stroke="#1a1006" stroke-width="1.2"/><circle cx="24" cy="24" r="4" fill="url(#gt)"/><circle cx="21" cy="21" r="1.500" fill="#fff"/></symbol>
+<symbol id="k-user" viewBox="0 0 48 48"><circle cx="24" cy="16" r="9" fill="url(#gg)" stroke="#1a1006" stroke-width="1.3"/><path d="M6 44c0-11 7-17 18-17s18 6 18 17z" fill="url(#gh)" stroke="#1a1006" stroke-width="1.3" stroke-linejoin="round"/></symbol>
+<symbol id="k-help" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="url(#gg)" stroke="#1a1006" stroke-width="1.3"/><circle cx="24" cy="24" r="14.500" fill="#1a110d"/><path d="M18.500 20c0-8 11-8 11 0 0 5-5 5-5 10" fill="none" stroke="url(#gg)" stroke-width="3.200" stroke-linecap="round"/><circle cx="24.500" cy="36" r="2.200" fill="url(#gg)"/></symbol>
+</defs></svg>
+
+<p class="cap">لف المقبضين بإصبعك، وافتح الأدراج، وجرّب المايك</p>
+<div class="phone" id="ph">
+  <div class="top">
+    <button class="ic" aria-label="رجوع"><svg viewBox="0 0 24 24"><use href="#back"/></svg></button>
+    <div class="ttl">الإعدادات<small>الإصدار ١٫٠٫٠</small></div>
+  </div>
+
+  <div class="scroll" id="sc">
+    <div class="me">
+      <div class="av"><i><svg><use href="#fed"/></svg></i></div>
+      <div><b>أبو سالم</b><small>الجندي · المستوى ٧</small></div>
+      <div class="idc">رقم الهوية<button id="copy">٠٤٢٧٧١</button></div>
+    </div>
+
+    <section class="sec open" data-s="voice">
+      <button class="sh"><svg class="k"><use href="#k-mic"/></svg><b>الصوت<small>المايك والسماعة والكتم</small></b><svg class="cv"><use href="#cv"/></svg></button>
+      <div class="body"><div><div class="in">
+        <div class="radio">
+          <div class="knobs">
+            <div class="kb"><div class="dial" id="d-mic" data-v="72"><div class="ticks"></div><div class="face"><div class="ptr"></div></div></div><div class="val" id="v-mic">٧٢٪</div><div class="nm">المايك</div></div>
+            <div class="kb"><div class="dial" id="d-spk" data-v="85"><div class="ticks"></div><div class="face"><div class="ptr"></div></div></div><div class="val" id="v-spk">٨٥٪</div><div class="nm">السماعة</div></div>
+          </div>
+          <div class="vu" id="vu"></div>
+          <button class="mic" id="mictest"><span class="rec"></span><span id="mt">جرّب المايك</span></button>
+        </div>
+        <div class="lab">حساسية المايك</div>
+        <div class="seg" data-k="sens"><button>عالية</button><button class="on">متوسطة</button><button>منخفضة</button></div>
+        <div class="r"><div class="t">عزل الضجيج<small>يخفف أصوات الخلفية</small></div><button class="tg" role="switch" aria-checked="true" aria-label="عزل الضجيج"><i></i></button></div>
+        <div class="r"><div class="t">الضغط للتحدث<small>المايك مغلق حتى تضغط الزر</small></div><button class="tg" role="switch" aria-checked="false" aria-label="الضغط للتحدث"><i></i></button></div>
+        <div class="r"><div class="t">كتم المايك عند الدخول<small>تدخل الروم صامتاً</small></div><button class="tg" role="switch" aria-checked="true" aria-label="كتم عند الدخول"><i></i></button></div>
+        <div class="r"><div class="t">صوت الراوي<small>تعليق الليل والنهار</small></div><button class="tg" role="switch" aria-checked="true" aria-label="صوت الراوي"><i></i></button></div>
+      </div></div></div>
+    </section>
+
+    <section class="sec" data-s="notif">
+      <button class="sh"><svg class="k"><use href="#k-bell"/></svg><b>الإشعارات<small>ما يصلك وما لا يصلك</small></b><svg class="cv"><use href="#cv"/></svg></button>
+      <div class="body"><div><div class="in">
+        <div class="r"><div class="t">دعوات الغرف</div><button class="tg" role="switch" aria-checked="true" aria-label="دعوات"><i></i></button></div>
+        <div class="r"><div class="t">طلبات الصداقة</div><button class="tg" role="switch" aria-checked="true" aria-label="صداقة"><i></i></button></div>
+        <div class="r"><div class="t">أصدقائي دخلوا غرفة<small>تنبيه عند دخول صديق</small></div><button class="tg" role="switch" aria-checked="false" aria-label="دخول الأصدقاء"><i></i></button></div>
+        <div class="r"><div class="t">هدية أو جائزة تصنيف</div><button class="tg" role="switch" aria-checked="true" aria-label="هدايا"><i></i></button></div>
+        <div class="r"><div class="t">عروض المتجر</div><button class="tg" role="switch" aria-checked="false" aria-label="عروض"><i></i></button></div>
+      </div></div></div>
+    </section>
+
+    <section class="sec" data-s="privacy">
+      <button class="sh"><svg class="k"><use href="#k-lock"/></svg><b>الخصوصية والأمان<small>من يقدر يوصلك</small></b><svg class="cv"><use href="#cv"/></svg></button>
+      <div class="body"><div><div class="in">
+        <div class="lab">من يستطيع دعوتك للغرف</div>
+        <div class="seg" data-k="inv"><button class="on">الجميع</button><button>الأصدقاء</button><button>لا أحد</button></div>
+        <div class="lab">من يستطيع مراسلتك</div>
+        <div class="seg" data-k="msg"><button>الجميع</button><button class="on">الأصدقاء</button><button>لا أحد</button></div>
+        <div class="r"><div class="t">إخفاء رتبتي وإحصائياتي<small>تظهر "مخفي" لغير الأصدقاء</small></div><button class="tg" role="switch" aria-checked="false" aria-label="إخفاء الرتبة"><i></i></button></div>
+        <div class="r"><div class="t">أظهر أني متصل<small>يراك أصدقاؤك بالقائمة</small></div><button class="tg" role="switch" aria-checked="true" aria-label="متصل"><i></i></button></div>
+        <div><button class="lk"><span>اللاعبون المحظورون</span><em>٣</em><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button><button class="lk"><span>بلاغاتي</span><em>٢ قيد المراجعة</em><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button></div>
+      </div></div></div>
+    </section>
+
+    <section class="sec" data-s="display">
+      <button class="sh"><svg class="k"><use href="#k-eye"/></svg><b>العرض والأداء<small>البطارية والحركة</small></b><svg class="cv"><use href="#cv"/></svg></button>
+      <div class="body"><div><div class="in">
+        <div class="lab">جودة الرسوم</div>
+        <div class="seg" data-k="gfx"><button>منخفضة</button><button class="on">متوسطة</button><button>عالية</button></div>
+        <div class="r"><div class="t">توفير البطارية<small>يخفض الحركة وسرعة الرسم</small></div><button class="tg" role="switch" aria-checked="false" aria-label="توفير البطارية"><i></i></button></div>
+        <div class="r"><div class="t">تقليل الحركة<small>يوقف التأرجح والومضات</small></div><button class="tg" role="switch" aria-checked="false" aria-label="تقليل الحركة"><i></i></button></div>
+        <div class="r"><div class="t">الاهتزاز</div><button class="tg" role="switch" aria-checked="true" aria-label="الاهتزاز"><i></i></button></div>
+      </div></div></div>
+    </section>
+
+    <section class="sec" data-s="acct">
+      <button class="sh"><svg class="k"><use href="#k-user"/></svg><b>الحساب<small>الاسم واللغة والربط</small></b><svg class="cv"><use href="#cv"/></svg></button>
+      <div class="body"><div><div class="in">
+        <div><button class="lk"><span>تغيير الاسم</span><em>مرة كل ٣٠ يوماً</em><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button><button class="lk"><span>ربط الحساب (حفظ تقدمك)</span><em>غير مربوط</em><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button><button class="lk"><span>استعادة المشتريات</span><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button></div>
+        <div class="lab">اللغة</div>
+        <div class="seg" data-k="lang"><button class="on">العربية</button><button>English</button></div>
+      </div></div></div>
+    </section>
+
+    <section class="sec" data-s="help">
+      <button class="sh"><svg class="k"><use href="#k-help"/></svg><b>المساعدة<small>القواعد والدعم</small></b><svg class="cv"><use href="#cv"/></svg></button>
+      <div class="body"><div><div class="in"><div>
+        <button class="lk"><span>كيف تُلعب المافيا؟</span><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button>
+        <button class="lk"><span>قواعد السهرة وآدابها</span><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button>
+        <button class="lk"><span>تواصل مع الدعم</span><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button>
+        <button class="lk"><span>الإبلاغ عن مشكلة</span><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button>
+        <button class="lk"><span>الشروط والخصوصية</span><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button>
+        <button class="lk"><span>عن اللعبة والفريق</span><svg viewBox="0 0 24 24"><use href="#cv"/></svg></button>
+      </div></div></div></div>
+    </section>
+
+    <div class="danger">
+      <button class="out">تسجيل الخروج</button>
+      <button class="del" id="del"><i id="deli"></i><span id="delt">حذف الحساب: اضغط مطولاً ٣ ثوانٍ</span></button>
+    </div>
+    <div class="ver">المافيا · الإصدار ١٫٠٫٠ · الحساب ٠٤٢٧٧١</div>
+  </div>
+
+  <div class="toast" id="toast">تم الحفظ</div>
+</div>
+
+<script>
+(function(){
+  function ar(n){return n.toLocaleString("ar-EG")}
+  var toast=document.getElementById("toast"),tt;
+  function say(m){toast.textContent=m;toast.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove("on")},1400)}
+  /* drawers: only one open at a time */
+  var secs=[].slice.call(document.querySelectorAll(".sec"));
+  secs.forEach(function(s){s.querySelector(".sh").addEventListener("click",function(){var o=s.classList.contains("open");secs.forEach(function(x){x.classList.remove("open")});if(!o){s.classList.add("open");setTimeout(function(){s.scrollIntoView({block:"nearest",behavior:"smooth"})},300)}})});
+  /* toggles */
+  [].forEach.call(document.querySelectorAll(".tg"),function(t){t.addEventListener("click",function(){var on=t.getAttribute("aria-checked")!=="true";t.setAttribute("aria-checked",on);say(on?"تم التشغيل":"تم الإيقاف");if(navigator.vibrate)navigator.vibrate(8)})});
+  /* segmented */
+  [].forEach.call(document.querySelectorAll(".seg"),function(sg){[].forEach.call(sg.children,function(b){b.addEventListener("click",function(){[].forEach.call(sg.children,function(x){x.classList.toggle("on",x===b)});say("تم الحفظ")})})});
+  /* dials */
+  function dial(id,vid){
+    var d=document.getElementById(id),face=d.querySelector(".face"),ptr=d.querySelector(".ptr"),val=document.getElementById(vid),v=+d.dataset.v,drag=false;
+    function set(x){v=Math.max(0,Math.min(100,Math.round(x)));ptr.style.transform="rotate("+(-135+v*2.7)+"deg)";val.textContent=ar(v)+"٪"}
+    function pos(e){var r=d.getBoundingClientRect(),a=Math.atan2(e.clientX-(r.left+r.width/2),-(e.clientY-(r.top+r.height/2)))*180/Math.PI;if(a<-135)a=a<-157?135:-135;if(a>135)a=135;set((a+135)/2.7)}
+    d.addEventListener("pointerdown",function(e){drag=true;d.setPointerCapture(e.pointerId);pos(e)});
+    d.addEventListener("pointermove",function(e){if(drag)pos(e)});
+    d.addEventListener("pointerup",function(){if(drag){drag=false;say("تم الحفظ")}});
+    d.setAttribute("tabindex","0");d.setAttribute("role","slider");
+    d.addEventListener("keydown",function(e){if(e.key==="ArrowLeft"||e.key==="ArrowDown")set(v-5);if(e.key==="ArrowRight"||e.key==="ArrowUp")set(v+5)});
+    set(v)}
+  dial("d-mic","v-mic");dial("d-spk","v-spk");
+  /* VU meter + mic test */
+  var vu=document.getElementById("vu"),bars=[];for(var i=0;i<24;i++){var b=document.createElement("i");vu.appendChild(b);bars.push(b)}
+  var run=false,mt=document.getElementById("mictest"),lbl=document.getElementById("mt"),lvl=0,tick;
+  function frame(){var micv=+document.getElementById("d-mic").dataset.v;var t=run?(.25+Math.random()*.75)*(parseInt(document.getElementById("v-mic").textContent.replace(/[٠-٩]/g,function(d){return d.charCodeAt(0)-1632}))/100):0;lvl+=(t-lvl)*.45;var n=Math.round(lvl*24);bars.forEach(function(b,i){var on=i<n;b.className=on?"on"+(i>17?" h":i>12?" w":""):""});}
+  mt.addEventListener("click",function(){
+    if(run){stop();return}
+    run=true;mt.classList.add("run");lbl.textContent="تكلّم الآن... (اضغط للإيقاف)";tick=setInterval(frame,90);setTimeout(function(){if(run)stop()},5000)});
+  function stop(){run=false;mt.classList.remove("run");lbl.textContent="جرّب المايك";clearInterval(tick);var k=setInterval(function(){frame();if(lvl<.02){clearInterval(k);bars.forEach(function(b){b.className=""})}},60)}
+  /* copy id */
+  document.getElementById("copy").addEventListener("click",function(){say("نُسخ رقم الهوية")});
+  /* hold to delete */
+  var del=document.getElementById("del"),di=document.getElementById("deli"),dt=document.getElementById("delt"),hold=null,t0=0;
+  function startHold(e){e.preventDefault();t0=performance.now();(function f(n){var p=Math.min(1,(n-t0)/3000);di.style.width=(p*100)+"%";dt.textContent=p<1?"استمر بالضغط... "+ar(Math.ceil((1-p)*3)):"";if(p<1)hold=requestAnimationFrame(f);else{dt.textContent="هذا تجريبي: لن يُحذف شيء";setTimeout(reset,1600)}})(t0)}
+  function reset(){cancelAnimationFrame(hold);di.style.width="0";dt.textContent="حذف الحساب: اضغط مطولاً ٣ ثوانٍ"}
+  del.addEventListener("pointerdown",startHold);["pointerup","pointerleave","pointercancel"].forEach(function(ev){del.addEventListener(ev,function(){if(dt.textContent.indexOf("تجريبي")<0)reset()})});
+})();
+</script>
+</body>
+</html>

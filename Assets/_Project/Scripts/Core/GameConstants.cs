@@ -15,6 +15,8 @@ namespace MafiaNight.Core
         public const string SCENE_LOBBY = "Lobby";
         public const string SCENE_GAMEPLAY = "Gameplay";
         public const string SCENE_RESULTS = "Results";
+        /// <summary>First screen after the Bootstrap (the rooms list of the new UI kit). Set back to SCENE_MAIN_MENU to use the old menu.</summary>
+        public const string SCENE_HOME = "UIKitRooms";
         #endregion
 
         #region Editor

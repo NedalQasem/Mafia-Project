@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المافيا - نموذج الاتجاه</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@400;600;800&display=swap">
+<style>
+:root{
+  --coal:#0b0a09; --smoke:#171413; --leather:#2b1e17; --leather-hi:#3b2a20; --leather-lo:#1a110d;
+  --crimson:#8a1c24; --crimson-lo:#561016; --bronze:#8d7448; --stitch:#a98f62;
+  --ivory:#d9d0bd; --ivory-dim:#8f8777; --felt:#16251d; --walnut:#3a2416;
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box}
+body{margin:0;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif;padding:24px 12px 48px;display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+.phone{width:390px;height:844px;border-radius:38px;position:relative;overflow:hidden;background:var(--coal);box-shadow:0 0 0 8px #14100e,0 0 0 9px #ffffff14,0 30px 70px #000}
+.lbl{width:100%;text-align:center;color:var(--ivory-dim);font-size:.85rem;margin:-8px 0 -16px}
+.lamp{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 45% at 50% 38%,#e8c27a30,transparent 70%),radial-gradient(120% 90% at 50% 30%,transparent 35%,#000 100%);z-index:3}
+.grain{position:absolute;inset:0;background:var(--grain);opacity:.35;mix-blend-mode:overlay;pointer-events:none;z-index:4}
+.icon{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* leather piece with real stitching */
+.leather{position:relative;background:var(--grain),linear-gradient(180deg,var(--leather-hi),var(--leather) 55%,var(--leather-lo));background-blend-mode:multiply,normal;
+  box-shadow:inset 0 1px 0 #ffffff14,0 3px 0 #000,0 10px 20px #000a;border-radius:10px}
+.leather::after{content:"";position:absolute;inset:5px;border:1.5px dashed var(--stitch);opacity:.55;border-radius:6px;pointer-events:none}
+.leather.red{background:var(--grain),linear-gradient(180deg,#a2262f,var(--crimson) 55%,var(--crimson-lo));background-blend-mode:multiply,normal}
+button{font-family:inherit;color:inherit;cursor:pointer;border:0}
+button:focus-visible{outline:2px solid var(--ivory);outline-offset:3px}
+
+/* HOME */
+#home .room{position:absolute;inset:0;background:linear-gradient(180deg,#0e0c0b,#15100d 60%,#0a0807)}
+#home .wall{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#ffffff05 0 2px,transparent 2px 46px)}
+.cord{position:absolute;top:0;left:50%;width:2px;height:96px;background:#000;box-shadow:0 0 0 1px #ffffff10}
+.shade{position:absolute;top:94px;left:50%;translate:-50% 0;width:130px;height:46px;border-radius:65px 65px 6px 6px/46px 46px 6px 6px;background:linear-gradient(180deg,#2c2c28,#101010);box-shadow:0 12px 50px 18px #e8c27a40}
+.cone{position:absolute;top:138px;left:50%;translate:-50% 0;width:420px;height:560px;clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);background:linear-gradient(180deg,#e8c27a30,transparent 85%);z-index:1}
+.hud{position:absolute;top:44px;left:16px;right:16px;display:flex;gap:10px;align-items:center;z-index:5}
+.tag{padding:7px 14px;font-weight:600;font-size:.88rem}
+.tag small{display:block;color:var(--stitch);font-size:.68rem;font-weight:400}
+.purse{margin-inline-start:auto;display:flex;gap:8px}
+.logo{position:absolute;top:168px;left:0;right:0;text-align:center;z-index:2}
+.logo b{display:block;font-family:Lalezar,Cairo;font-size:4.6rem;line-height:1;color:#c9bfa8;letter-spacing:.02em;text-shadow:0 1px 0 #fff3,0 4px 0 #000,0 14px 30px #000}
+.logo span{display:inline-block;margin-top:6px;padding:0 14px;color:var(--bronze);font-size:.85rem;letter-spacing:.35em;border-block:1px solid #8d744855}
+.boss{position:absolute;left:50%;translate:-50% 0;bottom:300px;width:230px;z-index:2}
+.cig{position:absolute;bottom:392px;left:calc(50% + 24px);width:3px;height:3px;border-radius:50%;background:#ff7a2a;box-shadow:0 0 8px 3px #ff7a2a99;z-index:2}
+.menu{position:absolute;left:22px;right:22px;bottom:104px;display:grid;gap:12px;z-index:5}
+.menu .leather{padding:15px;font-weight:800;font-size:1.15rem;text-align:center}
+.menu .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.menu .row .leather{font-size:.95rem;padding:12px;font-weight:600}
+.nav{position:absolute;left:0;right:0;bottom:0;height:84px;z-index:5;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:6px 8px 14px;
+  background:var(--grain),linear-gradient(180deg,#1d1511,#0d0908);background-blend-mode:multiply,normal;border-top:1px solid #000;box-shadow:0 -1px 0 #ffffff0d}
+.nav button{background:none;color:var(--ivory-dim);display:grid;justify-items:center;gap:3px;font-size:.74rem}
+.nav .on{color:var(--ivory)} .nav .on .icon{stroke:var(--crimson);filter:drop-shadow(0 0 6px #8a1c2488)}
+
+/* TABLE */
+#table .room{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,#1d140f,#080605 75%)}
+.rim{position:absolute;left:50%;top:51%;translate:-50% -50%;width:244px;height:366px;border-radius:50%;background:var(--grain),linear-gradient(145deg,#5a3a24,var(--walnut) 40%,#1c0f08);background-blend-mode:multiply,normal;box-shadow:0 24px 50px #000,inset 0 2px 0 #ffffff1a;z-index:1}
+.felt{position:absolute;inset:16px;border-radius:50%;background:var(--grain),radial-gradient(ellipse at 50% 40%,#264535,var(--felt) 70%);background-blend-mode:multiply,normal;box-shadow:inset 0 0 40px #000c,inset 0 0 0 2px #00000066}
+.top2{position:absolute;top:44px;left:16px;right:16px;display:flex;gap:10px;align-items:center;z-index:6}
+.top2 .plate{flex:1;text-align:center;padding:7px}
+.top2 .plate b{display:block;font-family:Lalezar;font-weight:400;font-size:1.25rem;line-height:1.1}
+.top2 .plate small{color:var(--stitch);font-size:.7rem}
+.round{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--ivory)}
+.round::after{border-radius:50%;inset:4px}
+.props{position:absolute;inset:0;z-index:2;pointer-events:none}
+.deck{position:absolute;left:50%;top:51%;translate:-50% -50%;width:42px;height:60px;rotate:8deg}
+.card{position:absolute;width:42px;height:60px;border-radius:5px;border:2px solid var(--ivory);background:
+  repeating-linear-gradient(45deg,#0004 0 2px,transparent 2px 8px),repeating-linear-gradient(-45deg,#0004 0 2px,transparent 2px 8px),var(--crimson);box-shadow:0 2px 3px #000b}
+.card.b{translate:2px -2px}.card.c{translate:4px -4px}
+.dallah{position:absolute;left:calc(50% - 82px);top:38%;width:36px}
+.cup{position:absolute;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#2a160b 0 40%,#e6dcc6 42% 60%,#9b8b6a 62%);box-shadow:0 2px 3px #000b}
+.tray{position:absolute;left:calc(50% + 46px);top:60%;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle,#0c0c0c 0 45%,#4b4b48 47% 70%,#222 72%);box-shadow:0 2px 4px #000}
+.tray i{position:absolute;left:7px;top:12px;width:20px;height:2.5px;background:#e9e1d0;rotate:-18deg;border-radius:2px}
+.tray i::after{content:"";position:absolute;right:-1px;top:0;width:4px;height:100%;background:#ff7a2a;border-radius:1px;box-shadow:0 0 6px #ff7a2a}
+.smoke{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff;filter:blur(5px);opacity:0;animation:rise 7s linear infinite}
+@keyframes rise{0%{opacity:0;transform:translate(0,0) scale(1)}20%{opacity:.22}100%{opacity:0;transform:translate(14px,-90px) scale(7)}}
+.steam{background:#e9dcc0}
+
+.ring{position:absolute;inset:0;z-index:5}
+.seat{position:absolute;translate:-50% -50%;display:grid;justify-items:center;background:none;width:76px}
+.seat .chair{position:absolute;inset:-4px 8px auto;height:52px;border-radius:22px 22px 8px 8px;background:var(--grain),linear-gradient(180deg,#34241b,#150d09);background-blend-mode:multiply,normal;box-shadow:0 5px 8px #000c;z-index:0}
+.seat .who{position:relative;z-index:1;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);box-shadow:0 0 0 2px #000,0 0 0 3px #5b4a33;color:#9a8e78}
+.seat .who svg{width:34px;height:34px}
+.seat .nm{position:relative;z-index:1;margin-top:3px;padding:0 9px 1px;font-size:.7rem;font-weight:600;background:#0c0a09;border:1px solid #3a2e22;border-radius:3px;white-space:nowrap}
+.seat.talk .who{box-shadow:0 0 0 2px #000,0 0 0 3px #d9d0bd,0 0 16px 2px #d9d0bd66}
+.seat.host .nm{border-color:var(--crimson);color:#e6b9bc}
+.seat.empty .who{background:none;box-shadow:0 0 0 1.5px #5b4a3366;border:1px dashed #5b4a33;color:#5b4a33}
+.seat.empty .nm{color:#5b4a33;border-color:#2a2119;background:none}
+.seat.muted .who::after{content:"";position:absolute;width:12px;height:12px;border-radius:50%;background:var(--crimson);right:-1px;top:-1px;box-shadow:0 0 0 2px #000}
+.mycards{position:absolute;z-index:6;left:50%;bottom:112px;translate:-50% 0;display:flex}
+.mycards .pc{width:46px;height:66px;border-radius:5px;border:2px solid var(--ivory);margin-inline:-6px;background:var(--ivory);box-shadow:0 4px 8px #000b;position:relative;color:#111;font-family:Lalezar;font-size:1.1rem;padding:2px 4px;line-height:1}
+.mycards .pc:nth-child(1){rotate:-9deg;translate:0 4px}.mycards .pc:nth-child(2){rotate:-3deg}.mycards .pc:nth-child(3){rotate:3deg}.mycards .pc:nth-child(4){rotate:9deg;translate:0 4px}
+.pc.r{color:#a01d24}
+.pc i{position:absolute;bottom:3px;inset-inline:0;text-align:center;font-style:normal;font-size:1.6rem}
+.bottom{position:absolute;left:0;right:0;bottom:0;padding:34px 16px 22px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;z-index:7;background:linear-gradient(180deg,transparent,#000e 40%)}
+.mic{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;color:var(--ivory)}
+.mic::after{border-radius:50%}
+.mic[aria-pressed="false"]{color:#7d746a}
+.mic[aria-pressed="false"]::before{content:"";position:absolute;width:3px;height:36px;background:var(--crimson);rotate:45deg;z-index:2;border-radius:2px}
+.bottom .go{padding:15px;font-weight:800;font-size:1.1rem;text-align:center}
+.speak{position:absolute;left:0;right:0;bottom:100px;z-index:6;text-align:center;font-size:.78rem;color:var(--ivory-dim)}
+.speak b{color:var(--ivory)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="fedora" viewBox="0 0 48 48"><path d="M16 17c0-6 3-10 8-10s8 4 8 10z" fill="currentColor"/><path d="M6 19c4 2 10 3 18 3s14-1 18-3c-1 4-8 6-18 6S7 23 6 19z" fill="currentColor"/><path d="M14 29c0-3 4-5 10-5s10 2 10 5v4H14z" fill="currentColor" opacity=".55"/><path d="M6 46c0-8 7-12 18-12s18 4 18 12z" fill="currentColor" opacity=".8"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-shop" viewBox="0 0 24 24"><path d="M4 9h16l-1 11H5z"/><path d="M8 9V7a4 4 0 0 1 8 0v2"/></symbol>
+<symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15 14.5c3 0 6 1.5 6 4.5"/></symbol>
+<symbol id="i-door" viewBox="0 0 24 24"><path d="M6 21V4h12v17M4 21h16"/><circle cx="15" cy="13" r=".8"/></symbol>
+<symbol id="i-rank" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></symbol>
+<symbol id="dallah" viewBox="0 0 40 56"><path d="M17 4h6v5h-6z" fill="#b58a3a"/><path d="M20 9c-8 0-13 9-13 22 0 8 2 14 2 18h22c0-4 2-10 2-18C33 18 28 9 20 9z" fill="#a8742a"/><path d="M9 49h22v4H9z" fill="#6b4416"/><path d="M33 20c6-1 8 3 6 8l-3 8" fill="none" stroke="#b58a3a" stroke-width="2.5"/><path d="M7 32c-4 0-6-6-3-12" fill="none" stroke="#7d5320" stroke-width="2.5"/><path d="M12 24c4 3 12 3 16 0" stroke="#e0b565" stroke-width="1" fill="none" opacity=".6"/></symbol>
+</defs></svg>
+
+<p class="lbl">الرئيسية · طاولة الشدة (نموذج اتجاه، مو تصميم نهائي)</p>
+
+<!-- HOME -->
+<div class="phone" id="home">
+  <div class="room"><div class="wall"></div></div>
+  <div class="cord"></div><div class="shade"></div><div class="cone"></div>
+  <div class="hud">
+    <div class="leather tag">أبو سالم<small>المستوى ٧ · رتبة: صاحب كلمة</small></div>
+    <div class="purse"><div class="leather tag">١٬٢٥٠</div></div>
+  </div>
+  <div class="logo"><b>المافيا</b><span>الليلة لا ترحم</span></div>
+  <svg class="boss" viewBox="0 0 230 330" aria-hidden="true">
+    <defs><linearGradient id="sw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d1a18"/><stop offset="1" stop-color="#050505"/></linearGradient></defs>
+    <path d="M30 330c0-70 28-100 85-110 57 10 85 40 85 110z" fill="url(#sw)"/>
+    <path d="M115 220l-26 40 26 70 26-70z" fill="#0a0a0a"/><path d="M115 222l-10 18 10 6 10-6z" fill="#8a1c24"/>
+    <rect x="101" y="190" width="28" height="34" fill="#171412"/>
+    <ellipse cx="115" cy="160" rx="34" ry="42" fill="#141110"/>
+    <path d="M62 128c8 6 28 10 53 10s45-4 53-10c-2 12-24 20-53 20S64 140 62 128z" fill="#0c0b0b"/>
+    <path d="M82 128c0-34 14-56 33-56s33 22 33 56z" fill="#0c0b0b"/>
+    <path d="M82 118h66v9H82z" fill="#2a2420"/>
+    <path d="M115 176l36 8" stroke="#d9d0bd" stroke-width="3" stroke-linecap="round"/>
+  </svg>
+  <div class="menu">
+    <button class="leather red">ادخل الطاولة</button>
+    <div class="row"><button class="leather">طاولتي</button><button class="leather">ادعُ العائلة</button></div>
+  </div>
+  <nav class="nav">
+    <button><svg class="icon"><use href="#i-shop"/></svg>السوق</button>
+    <button><svg class="icon"><use href="#i-people"/></svg>العائلة</button>
+    <button class="on"><svg class="icon"><use href="#i-door"/></svg>الرئيسية</button>
+    <button><svg class="icon"><use href="#i-rank"/></svg>الرتب</button>
+    <button><svg class="icon"><use href="#i-gear"/></svg>الإعدادات</button>
+  </nav>
+  <div class="lamp"></div><div class="grain"></div>
+</div>
+
+<!-- TABLE -->
+<div class="phone" id="table">
+  <div class="room"></div>
+  <div class="top2">
+    <button class="leather round" aria-label="رجوع"><svg class="icon"><use href="#i-back"/></svg></button>
+    <div class="leather plate"><b>طاولة أبو سالم</b><small>٧ من ١٠ · K7Q2</small></div>
+    <button class="leather round" aria-label="دعوة"><svg class="icon"><use href="#i-plus"/></svg></button>
+  </div>
+  <div class="rim"><div class="felt"></div></div>
+  <div class="props">
+    <div class="deck"><div class="card"></div><div class="card b"></div><div class="card c"></div></div>
+    <svg class="dallah" viewBox="0 0 40 56"><use href="#dallah"/></svg>
+    <span class="cup" style="left:calc(50% - 40px);top:44%"></span>
+    <span class="cup" style="left:calc(50% - 56px);top:48%"></span>
+    <i class="smoke steam" style="left:calc(50% - 66px);top:36%;animation-delay:-1s"></i>
+    <i class="smoke steam" style="left:calc(50% - 62px);top:37%;animation-delay:-4s"></i>
+    <div class="tray"><i></i></div>
+    <i class="smoke" style="left:calc(50% + 66px);top:59%;animation-delay:-2s"></i>
+    <i class="smoke" style="left:calc(50% + 68px);top:59%;animation-delay:-5s"></i>
+  </div>
+  <div class="ring" id="ring"></div>
+  <div class="speak" id="speak">يتكلّم الآن: <b>أم سعيد</b></div>
+  <div class="mycards">
+    <div class="pc">٧<i>♠</i></div><div class="pc r">ك<i>♥</i></div><div class="pc">١٠<i>♣</i></div><div class="pc r">آ<i>♦</i></div>
+  </div>
+  <div class="bottom">
+    <button class="leather mic" id="mic" aria-pressed="true" aria-label="المايك شغّال"><svg class="icon" style="width:26px;height:26px"><use href="#i-mic"/></svg></button>
+    <button class="leather red go">جاهز</button>
+  </div>
+  <div class="lamp"></div><div class="grain"></div>
+</div>
+
+<script>
+(function(){
+  var P=[{n:"أبو سالم",h:1},{n:"أم سعيد"},{n:"البيك"},{n:"أبو فارس"},{n:"لينا",m:1},{n:"الحج حسن"},{n:"سارة"},null,null,null];
+  var ring=document.getElementById("ring");
+  P.forEach(function(p,i){
+    var a=(-90+i*36)*Math.PI/180, b=document.createElement("button");
+    b.className="seat"+(p?"":" empty")+(p&&p.h?" host":"")+(p&&p.m?" muted":"");
+    b.style.left=(50+45*Math.cos(a))+"%"; b.style.top=(51+30.5*Math.sin(a))+"%"; b.dataset.i=i;
+    b.innerHTML='<span class="chair"></span><span class="who">'+(p?'<svg><use href="#fedora"/></svg>':'+')+'</span><span class="nm">'+(p?p.n:'شاغر')+'</span>';
+    ring.appendChild(b);
+  });
+  var order=[1,5,2,3],k=0,sp=document.getElementById("speak");
+  function nx(){ring.querySelectorAll(".talk").forEach(function(e){e.classList.remove("talk")});var i=order[k++%order.length];ring.querySelector('[data-i="'+i+'"]').classList.add("talk");sp.innerHTML='يتكلّم الآن: <b>'+P[i].n+'</b>';}
+  nx();setInterval(nx,2800);
+  var m=document.getElementById("mic");m.addEventListener("click",function(){var on=m.getAttribute("aria-pressed")!=="true";m.setAttribute("aria-pressed",on);});
+})();
+</script>
+</body>
+</html>

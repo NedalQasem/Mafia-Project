@@ -21,9 +21,22 @@ namespace MafiaNight.Data.Player
         /// <summary>Earned badge IDs</summary>
         public List<string> Badges;
         
+        // ==================== STORE ITEMS ====================
+        /// <summary>Owned store items by store ID (frames, backgrounds, bubbles, titles, ...)</summary>
+        public List<string> StoreItems;
+
+        public bool OwnsStoreItem(string id) => StoreItems != null && StoreItems.Contains(id);
+
+        public void AddStoreItem(string id)
+        {
+            if (StoreItems == null) StoreItems = new List<string>();
+            if (!StoreItems.Contains(id)) StoreItems.Add(id);
+        }
+
         // ==================== CONSTRUCTOR ====================
         public PlayerInventory()
         {
+            StoreItems = new List<string>();
             Gifts = new List<GiftItem>();
             Emotes = new List<string>();
             Badges = new List<string>();

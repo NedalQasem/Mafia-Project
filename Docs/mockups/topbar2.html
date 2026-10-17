@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الشريط العلوي - أفكار ثانية</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+--crimson:#8a1c24;--brass:#b99048;--ivory:#d9d0bd}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:26px 14px 70px;background:radial-gradient(ellipse at 50% 0,#1d1511,#070605 70%);color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 4px;font-size:2rem}
+.sub{text-align:center;color:#8f8777;margin:0 0 22px;font-size:.9rem}
+.wrap{max-width:430px;margin:auto;display:grid;gap:26px}
+.opt h2{font-family:Lalezar;font-weight:400;font-size:1.15rem;color:#a98f62;margin:0 0 8px}
+.note{color:#7d756a;font-size:.76rem;margin:8px 2px 0}
+.scene{height:190px;border-radius:14px;position:relative;overflow:hidden;background:radial-gradient(ellipse 80% 90% at 50% 10%,#e8c27a30,transparent 62%),linear-gradient(180deg,#171210,#080605);box-shadow:inset 0 0 0 1px #ffffff10}
+button{font-family:inherit;border:0;color:inherit;cursor:pointer}
+.av{position:relative;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);display:grid;place-items:center;color:#9a8e78}
+.av svg{width:72%;height:72%}
+.pname{font-family:"Aref Ruqaa";font-size:1.15rem;line-height:1.1}
+.ttl{font-size:.7rem;color:#a98f62;font-weight:700}
+.coin{width:20px;height:20px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000;position:relative}
+.coin::after{content:"";position:absolute;inset:5px;border-radius:50%;border:1px solid #6e4b1c99}
+.cv{font-family:Lalezar;font-weight:400;font-variant-numeric:tabular-nums;color:#f0dca0}
+.plus{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#a2262f,#561016);box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff33}
+.plus svg{width:13px;height:13px;stroke:#f4dcd8;fill:none;stroke-width:2.6;stroke-linecap:round}
+.plus:active{transform:scale(.88)}
+
+/* A: hanging press ID badge */
+.A{position:absolute;top:0;right:22px;transform-origin:50% -4px;animation:sw 6s ease-in-out infinite}
+@keyframes sw{0%,100%{rotate:-1.8deg}50%{rotate:1.8deg}}
+.A .strap{position:absolute;top:-2px;left:50%;width:44px;height:30px;translate:-50% 0;background:linear-gradient(90deg,transparent 0 4px,#7a1820 4px 8px,transparent 8px calc(100% - 8px),#7a1820 calc(100% - 8px) calc(100% - 4px),transparent calc(100% - 4px));clip-path:polygon(0 0,100% 0,55% 100%,45% 100%)}
+.A .clip{position:absolute;top:24px;left:50%;translate:-50% 0;width:26px;height:14px;border-radius:3px;background:linear-gradient(180deg,#d7d9da,#7a7d7f);box-shadow:0 2px 3px #000a;z-index:2}
+.A .card{margin-top:32px;width:152px;padding:20px 10px 10px;border-radius:8px;position:relative;background:#d9cfb4;color:#1c170f;box-shadow:inset 0 0 18px #8a7a5a88,0 10px 18px #000b;text-align:center}
+.A .card::before{content:"";position:absolute;top:8px;left:50%;translate:-50% 0;width:34px;height:6px;border-radius:3px;background:#2a2217;box-shadow:inset 0 1px 2px #000}
+.A .head{display:flex;justify-content:space-between;font-size:.58rem;font-weight:800;color:#8a1c24;border-bottom:1px solid #1c170f55;padding:0 0 3px;margin-bottom:6px}
+.A .av{width:62px;height:62px;margin:0 auto 6px;box-shadow:0 0 0 2px #1c170f}
+.A .pname{color:#1c170f;font-size:1.2rem}
+.A .ttl{color:#6a5a3a}
+.A .lv{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:.62rem;font-weight:800}
+.A .lv .xp{flex:1;height:6px;background:#1c170f33;border-radius:3px;overflow:hidden}.A .lv .xp i{display:block;height:100%;width:var(--p);background:#8a1c24;transition:width 1.2s cubic-bezier(.2,.9,.3,1)}
+.A .bar{height:14px;margin-top:7px;background:repeating-linear-gradient(90deg,#1c170f 0 2px,transparent 2px 4px,#1c170f 4px 5px,transparent 5px 8px,#1c170f 8px 11px,transparent 11px 13px);opacity:.75}
+.A .wallet{position:absolute;left:-168px;top:48px}
+.ticket{position:relative;display:flex;align-items:center;gap:8px;padding:8px 12px 8px 16px;background:#d9cfb4;color:#1c170f;border-radius:4px;box-shadow:inset 0 0 12px #8a7a5a66,0 6px 10px #000a;rotate:3deg}
+.ticket::before,.ticket::after{content:"";position:absolute;top:50%;width:10px;height:10px;border-radius:50%;translate:0 -50%;background:#0d0a09}
+.ticket::before{right:-5px}.ticket::after{left:-5px}
+.ticket .cv{color:#1c170f;font-size:1.1rem}
+.A-row{position:absolute;inset:0}
+.ticket .plus{margin-inline-start:2px}
+
+/* B: medallion with XP ring, no container */
+.B{position:absolute;top:34px;left:14px;right:14px;display:flex;align-items:center;gap:12px}
+.B .med{position:relative;width:74px;height:74px;flex:none}
+.B .med svg.ring{position:absolute;inset:0;width:100%;height:100%;rotate:-90deg}
+.B .med .trk{fill:none;stroke:#000b;stroke-width:5}
+.B .med .arc{fill:none;stroke:url(#gold);stroke-width:5;stroke-linecap:round;stroke-dasharray:213;stroke-dashoffset:213;transition:stroke-dashoffset 1.4s cubic-bezier(.2,.9,.3,1);filter:drop-shadow(0 0 4px #b9904888)}
+.B .med .av{position:absolute;inset:8px;box-shadow:0 0 0 2px #000}
+.B .med .lvl{position:absolute;bottom:-2px;left:50%;translate:-50% 0;padding:0 9px 1px;border-radius:9px;font-family:Lalezar;font-size:.8rem;color:#2a1a08;background:linear-gradient(145deg,#e8cc8c,#9a7632);box-shadow:0 0 0 2px #000}
+.B .info{display:grid;gap:2px;flex:1;min-width:0}
+.B .info small{font-size:.66rem;color:#8f8777}
+.B .pill{display:inline-flex;align-items:center;gap:8px;padding:5px 5px 5px 12px;border-radius:18px;background:#000a;box-shadow:inset 0 0 0 1px #ffffff18}
+
+/* C: ultra light, text only over the scene */
+.C{position:absolute;top:30px;left:16px;right:16px;display:flex;align-items:center;gap:10px;padding-bottom:10px}
+.C::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,#b9904888 15%,#b9904888 85%,transparent)}
+.C .xpline{position:absolute;right:0;bottom:-1px;height:3px;width:var(--p);background:linear-gradient(90deg,#8a6a30,#f5e2a8);box-shadow:0 0 10px #f5e2a8aa;transition:width 1.4s cubic-bezier(.2,.9,.3,1);width:0}
+.C .av{width:44px;height:44px;box-shadow:0 0 0 1.5px #b99048}
+.C .info{display:grid;gap:0;flex:1}
+.C .info .pname{font-size:1.05rem}
+.C .cn{display:flex;align-items:center;gap:6px}
+.C .cn .cv{font-size:1.05rem}
+.C .lvtxt{font-family:Lalezar;font-size:.8rem;color:#2a1a08;background:linear-gradient(145deg,#e8cc8c,#9a7632);padding:0 7px 1px;border-radius:9px}
+.fly{position:fixed;width:18px;height:18px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000;transition:transform .7s cubic-bezier(.5,0,.8,.6),opacity .7s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5e2a8"/><stop offset=".5" stop-color="#b99048"/><stop offset="1" stop-color="#7a5a22"/></linearGradient>
+<symbol id="fed" viewBox="0 0 48 48"><path d="M16 17c0-6 3-10 8-10s8 4 8 10z" fill="currentColor"/><path d="M6 19c4 2 10 3 18 3s14-1 18-3c-1 4-8 6-18 6S7 23 6 19z" fill="currentColor"/><path d="M14 29c0-3 4-5 10-5s10 2 10 5v4H14z" fill="currentColor" opacity=".55"/><path d="M6 46c0-8 7-12 18-12s18 4 18 12z" fill="currentColor" opacity=".8"/></symbol>
+</defs></svg>
+
+<h1>الشريط العلوي: أفكار ثانية</h1>
+<p class="sub">بدون الحزام الجلد. ثلاث فكر مختلفة تماماً</p>
+
+<div class="wrap">
+
+<div class="opt"><h2>١. بطاقة هوية معلّقة</h2>
+<div class="scene" style="height:270px">
+  <div class="A">
+    <div class="strap"></div><div class="clip"></div>
+    <div class="card">
+      <div class="head"><span>هوية العائلة</span><span>رقم ٠٤٢</span></div>
+      <div class="av"><svg><use href="#fed"/></svg></div>
+      <div class="pname">أبو سالم</div><div class="ttl">صاحب كلمة</div>
+      <div class="lv"><span>م٧</span><span class="xp"><i style="--p:62%"></i></span></div>
+      <div class="bar"></div>
+    </div>
+    <div class="wallet"><div class="ticket"><span class="cv">١٬٢٥٠</span><span class="coin"></span><button class="plus" aria-label="شراء"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
+  </div>
+</div>
+<p class="note">بطاقة هوية بشريط أحمر تتأرجح بخفة على الشاشة. الكوينز على تذكرة ورقية مثقوبة من الجانبين.</p></div>
+
+<div class="opt"><h2>٢. ميدالية بحلقة خبرة</h2>
+<div class="scene">
+  <div class="B">
+    <div class="med">
+      <svg class="ring" viewBox="0 0 74 74"><circle class="trk" cx="37" cy="37" r="34"/><circle class="arc" cx="37" cy="37" r="34" data-p=".62"/></svg>
+      <div class="av"><svg><use href="#fed"/></svg></div><span class="lvl">٧</span>
+    </div>
+    <div class="info"><span class="pname">أبو سالم</span><span class="ttl">صاحب كلمة</span><small>٦٢٠ / ١٠٠٠ خبرة</small></div>
+    <div class="pill"><span class="cv">١٬٢٥٠</span><span class="coin"></span><button class="plus" aria-label="شراء"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+  </div>
+</div>
+<p class="note">بدون حزام ولا إطار. الخبرة حلقة نحاسية تلتف حول الصورة وتمتلئ عند الفتح، والمستوى بشارة تحتها.</p></div>
+
+<div class="opt"><h2>٣. شفاف وخفيف</h2>
+<div class="scene">
+  <div class="C">
+    <div class="av"><svg><use href="#fed"/></svg></div>
+    <div class="info"><span class="pname">أبو سالم</span><span class="ttl">صاحب كلمة</span></div>
+    <span class="lvtxt">م٧</span>
+    <div class="cn"><span class="cv">١٬٢٥٠</span><span class="coin"></span><button class="plus" aria-label="شراء"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+    <span class="xpline" data-w="62%"></span>
+  </div>
+</div>
+<p class="note">لا يوجد إطار، فقط النص فوق المشهد وخط نحاسي رفيع تحته. الخبرة هي خط ضوء يمتد على الخط نفسه. أخف وأوسع للمشهد.</p></div>
+
+</div>
+<script>
+(function(){
+  setTimeout(function(){
+    document.querySelectorAll(".A .xp i").forEach(function(i){var w=i.style.getPropertyValue("--p");i.style.width="0";requestAnimationFrame(function(){i.style.width=w})});
+    document.querySelectorAll(".B .arc").forEach(function(a){a.style.strokeDashoffset=213*(1-parseFloat(a.dataset.p))});
+    document.querySelectorAll(".C .xpline").forEach(function(l){l.style.width=l.dataset.w});
+  },250);
+  document.querySelectorAll(".plus").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var box=btn.parentNode,cv=box.querySelector(".cv"),coin=box.querySelector(".coin");
+      var from=parseInt((cv.dataset.v||cv.textContent.replace(/[٠-٩]/g,function(d){return d.charCodeAt(0)-1632}).replace(/\D/g,"")),10),to=from+100,t0=performance.now();cv.dataset.v=to;
+      var r=btn.getBoundingClientRect();
+      for(var i=0;i<6;i++){(function(i){var f=document.createElement("span");f.className="fly";f.style.left=(r.left+r.width/2-9)+"px";f.style.top=(r.top-6)+"px";document.body.appendChild(f);requestAnimationFrame(function(){requestAnimationFrame(function(){f.style.transform="translate("+((i-2.5)*14)+"px,"+(-60-Math.random()*30)+"px)";f.style.opacity="0"})});setTimeout(function(){f.remove()},800)})(i)}
+      coin.animate([{transform:"rotateY(0)"},{transform:"rotateY(360deg) scale(1.25)"},{transform:"rotateY(720deg)"}],{duration:700,easing:"ease-out"});
+      (function tick(now){var k=Math.min(1,(now-t0)/700);cv.textContent=Math.round(from+(to-from)*k).toLocaleString("ar-EG");if(k<1)requestAnimationFrame(tick)})(t0);
+    });
+  });
+})();
+</script>
+</body>
+</html>

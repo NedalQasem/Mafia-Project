@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إطارات الغرف</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+--crimson:#8a1c24;--brass:#b99048;--ivory:#d9d0bd;--teal:#4fa58b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:26px 16px 70px;background:radial-gradient(ellipse at 50% 0,#1d1511,#070605 70%);color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 4px;font-size:2rem}
+.sub{text-align:center;color:#8f8777;margin:0 0 22px;font-size:.9rem}
+.wrap{max-width:980px;margin:auto;display:grid;gap:26px}
+h2{font-family:Lalezar;font-weight:400;font-size:1.25rem;color:#a98f62;margin:0 0 12px;padding-bottom:6px;border-bottom:1px solid #ffffff12}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.note{color:#7d756a;font-size:.76rem;margin:6px 2px 0}
+.col{display:grid;gap:4px;align-content:start}
+
+/* shared card body */
+.room{position:relative;padding:14px 16px 14px;border-radius:12px;cursor:pointer;display:grid;gap:10px;transition:transform .15s,filter .2s;isolation:isolate}
+.room:hover{transform:translateY(-3px)} .room:active{transform:translateY(1px)}
+.r1{display:flex;align-items:center;gap:10px}
+.avatar{width:44px;height:44px;border-radius:50%;flex:none;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);box-shadow:0 0 0 2px #000,0 0 0 3px #6b5a3f;display:grid;place-items:center;color:#9a8e78}
+.avatar svg{width:32px;height:32px}
+.nm{flex:1;min-width:0}
+.nm b{display:block;font-family:"Aref Ruqaa";font-size:1.2rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm small{color:#a79d88;font-size:.74rem}
+.cnt{font-family:Lalezar;font-size:1.2rem;text-align:center;line-height:1;padding:6px 10px;border-radius:6px;background:#0008;box-shadow:inset 0 0 0 1px #ffffff18}
+.cnt small{display:block;font-family:Cairo;font-size:.6rem;color:#8f8777;margin-top:2px}
+.seats{display:flex;gap:4px;flex-wrap:wrap}
+.seats i{width:15px;height:15px;border-radius:50%;background:#0008;box-shadow:inset 0 0 0 1.5px #ffffff22}
+.seats i.f{background:radial-gradient(circle at 35% 30%,#d9d0bd,#8f8777);box-shadow:0 0 0 1px #000}
+.seats i.t{background:radial-gradient(circle at 35% 30%,#8fe0c6,var(--teal));box-shadow:0 0 0 1px #000,0 0 8px 1px #4fa58b99;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 1px #000,0 0 3px 0 #4fa58b66}}
+.meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.72rem}
+.chip{padding:2px 9px;border-radius:3px;font-weight:700;background:#0009;box-shadow:inset 0 0 0 1px #ffffff1c;color:#cfc6b2}
+.chip.mf{color:#e6b3b6;box-shadow:inset 0 0 0 1px #8a1c24}
+.go{margin-inline-start:auto;padding:7px 18px;border-radius:6px;font-family:inherit;font-weight:800;font-size:.9rem;border:0;cursor:pointer;color:#f0dcd8;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000}
+.go:active{transform:translateY(2px);box-shadow:0 1px 0 #000}
+
+/* 1 PUBLIC: stitched leather */
+.public{background:var(--grain),linear-gradient(180deg,#3b2a20,#2b1e17 55%,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 4px 0 #000,0 14px 24px #000b}
+.public::after{content:"";position:absolute;inset:6px;border:1.5px dashed #a98f62;opacity:.5;border-radius:8px;pointer-events:none}
+
+/* 2 PRIVATE: steel safe door with dial */
+.private{background:var(--grain),linear-gradient(180deg,#44494b,#2a2e30 50%,#1b1e1f);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff30,inset 0 0 0 1px #000,0 4px 0 #000,0 14px 24px #000b}
+.private::before,.private::after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#bbb,#222);box-shadow:0 1px 1px #000;top:7px}
+.private::before{right:8px}.private::after{left:8px;}
+.private .avatar{box-shadow:0 0 0 2px #000,0 0 0 3px #777}
+.lock{position:absolute;left:14px;top:12px;width:30px;height:30px;color:#cfd2d4}
+.lock svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.code{font-family:"Courier New",monospace;font-weight:700;letter-spacing:.25em;padding:2px 10px;border-radius:3px;background:#0b0d0e;color:#ffb35a;text-shadow:0 0 8px #ff8a2a;box-shadow:inset 0 0 0 1px #000,0 1px 0 #ffffff22}
+
+/* 3 VIP: crimson velvet + brass frame */
+.vip{background:radial-gradient(ellipse at 30% 0,#a2262f55,transparent 60%),var(--grain),linear-gradient(180deg,#5a1119,#3c0a10 55%,#25060a);background-blend-mode:normal,multiply,normal;box-shadow:inset 0 1px 0 #ffffff25,0 0 0 2px #000,0 0 0 4px var(--brass),0 0 0 5px #3a2a0c,0 16px 28px #000c;overflow:hidden}
+.vip::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,#ffe8a838 50%,transparent 60%);translate:-120% 0;animation:shine 5s ease-in-out infinite;z-index:-1}
+@keyframes shine{0%,60%{translate:-120% 0}100%{translate:120% 0}}
+.vip .corner{position:absolute;width:22px;height:22px;border:2px solid var(--brass);pointer-events:none}
+.vip .corner.a{top:4px;right:4px;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.vip .corner.b{top:4px;left:4px;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+.vip .corner.c{bottom:4px;right:4px;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.vip .corner.d{bottom:4px;left:4px;border-right:0;border-top:0;border-radius:0 0 0 8px}
+.vip .nm b{color:transparent;background:linear-gradient(180deg,#f5e2a8,#b99048 60%,#8a6a30);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1px 0 #000)}
+.vip .avatar{box-shadow:0 0 0 2px #000,0 0 0 3px var(--brass)}
+.vip .go{background:linear-gradient(180deg,#e8cc8c,#b99048 55%,#6e5224);color:#2a1a08;box-shadow:inset 0 1px 0 #fff9,0 3px 0 #2a1c08}
+.crown{position:absolute;top:-1px;left:50%;translate:-50% 0;font-family:Lalezar;font-size:.7rem;padding:0 12px 1px;background:linear-gradient(180deg,#e8cc8c,#9a7632);color:#2a1a08;border-radius:0 0 6px 6px;box-shadow:0 2px 3px #000a}
+
+/* states */
+.full{filter:saturate(.35) brightness(.78);cursor:not-allowed}
+.full:hover{transform:none}
+.full .go{background:#2a2523;color:#7d746a;box-shadow:0 3px 0 #000}
+.stamp{position:absolute;left:50%;top:44%;translate:-50% -50%;rotate:-9deg;padding:2px 16px;font-family:Lalezar;font-size:1.5rem;color:#c0323a;border:3px solid #c0323a;border-radius:4px;opacity:.9;mix-blend-mode:screen;pointer-events:none;background:#0004}
+.match{box-shadow:inset 0 1px 0 #ffffff1c,0 4px 0 #000,0 14px 24px #000b,0 0 0 1px #8a1c24}
+.match .go{background:#26201e;color:#d9a0a4;box-shadow:inset 0 0 0 1px #8a1c24,0 3px 0 #000}
+.live{display:inline-flex;align-items:center;gap:5px;color:#e6b3b6;font-weight:800}
+.live i{width:7px;height:7px;border-radius:50%;background:#e0343f;box-shadow:0 0 8px 2px #e0343f99;animation:bl 1.2s steps(2) infinite}
+@keyframes bl{50%{opacity:.2}}
+.new{position:absolute;top:-6px;right:12px;padding:0 10px 1px;border-radius:3px;font-weight:800;font-size:.68rem;background:var(--teal);color:#06231a;box-shadow:0 2px 3px #000a;z-index:2}
+
+/* quick join + create */
+.quick{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px 16px;border-radius:12px;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000,0 14px 24px #000b;cursor:pointer;position:relative}
+.quick::after{content:"";position:absolute;inset:6px;border:1.5px dashed #e6c9a0;opacity:.45;border-radius:8px;pointer-events:none}
+.quick b{font-family:Lalezar;font-weight:400;font-size:1.4rem;display:block;line-height:1.1}
+.quick small{color:#f0c9c4;font-size:.76rem}
+.quick span{font-family:Lalezar;font-size:2rem}
+.create{display:grid;place-items:center;gap:6px;padding:22px;border-radius:12px;border:2px dashed #a98f6288;color:#a98f62;background:#ffffff05;cursor:pointer;min-height:110px}
+.create b{font-family:Lalezar;font-weight:400;font-size:1.2rem}
+.create svg{width:30px;height:30px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round}
+.create:hover{background:#ffffff0a}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="fed" viewBox="0 0 48 48"><path d="M16 17c0-6 3-10 8-10s8 4 8 10z" fill="currentColor"/><path d="M6 19c4 2 10 3 18 3s14-1 18-3c-1 4-8 6-18 6S7 23 6 19z" fill="currentColor"/><path d="M14 29c0-3 4-5 10-5s10 2 10 5v4H14z" fill="currentColor" opacity=".55"/><path d="M6 46c0-8 7-12 18-12s18 4 18 12z" fill="currentColor" opacity=".8"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><circle cx="12" cy="16" r="1.2"/></symbol>
+</defs></svg>
+
+<h1>إطارات الغرف</h1>
+<p class="sub">ثلاثة أنواع (عامة، خاصة، VIP) وحالاتها، بنفس أسلوب الجلد والنحاس</p>
+
+<div class="wrap">
+
+<section><h2>الأنواع الثلاثة</h2>
+<div class="cards">
+  <div class="col">
+    <div class="room public">
+      <div class="r1"><div class="avatar"><svg><use href="#fed"/></svg></div><div class="nm"><b>سهرة الشباب</b><small>أبو سالم · المستوى ٧</small></div><div class="cnt">٩<small>من ١٦</small></div></div>
+      <div class="seats"><i class="t"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="meta"><span class="chip">سهرة</span><span class="live"><i></i>يتكلّم أحدهم</span><button class="go">انضم</button></div>
+    </div><p class="note">عامة: جلد بخياطة. الدوائر المضيئة هي المقاعد، والفيروزي لمن يتكلّم الآن.</p></div>
+
+  <div class="col">
+    <div class="room private">
+      <span class="lock"><svg><use href="#lock"/></svg></span>
+      <div class="r1"><div class="avatar"><svg><use href="#fed"/></svg></div><div class="nm"><b>غرفة الأصحاب</b><small>لينا · المستوى ٣</small></div></div>
+      <div class="seats"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="meta"><span class="chip">مباراة مافيا</span><span class="code">K7Q2</span><button class="go">ادخل بالكود</button></div>
+    </div><p class="note">خاصة: صفيحة فولاذ بمسامير وقفل، وكود الدخول بأرقام مضيئة. ما تظهر بالقائمة العامة.</p></div>
+
+  <div class="col">
+    <div class="room vip">
+      <span class="corner a"></span><span class="corner b"></span><span class="corner c"></span><span class="corner d"></span><span class="crown">VIP</span>
+      <div class="r1"><div class="avatar"><svg><use href="#fed"/></svg></div><div class="nm"><b>مجلس الكبار</b><small>الحج حسن · المستوى ٢٦</small></div><div class="cnt">١٤<small>من ١٦</small></div></div>
+      <div class="seats"><i class="t"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></div>
+      <div class="meta"><span class="chip">سهرة</span><span class="live"><i></i>يتكلّم أحدهم</span><button class="go">انضم</button></div>
+    </div><p class="note">VIP: مخمل قرمزي بإطار نحاسي بزوايا، واسم مذهّب، ولمعة تعبر الإطار كل بضع ثوانٍ. يظهر أول القائمة.</p></div>
+</div></section>
+
+<section><h2>الحالات</h2>
+<div class="cards">
+  <div class="col">
+    <div class="room public full"><span class="stamp">ممتلئة</span>
+      <div class="r1"><div class="avatar"><svg><use href="#fed"/></svg></div><div class="nm"><b>ديوانية العيلة</b><small>البيك · المستوى ١٢</small></div><div class="cnt">١٦<small>من ١٦</small></div></div>
+      <div class="seats"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></div>
+      <div class="meta"><span class="chip">سهرة</span><button class="go" disabled>ممتلئة</button></div>
+    </div><p class="note">ممتلئة: تبهت ويظهر ختم أحمر، والزر معطّل.</p></div>
+
+  <div class="col">
+    <div class="room public match">
+      <div class="r1"><div class="avatar"><svg><use href="#fed"/></svg></div><div class="nm"><b>ليلة المافيا</b><small>سارة · المستوى ٩</small></div><div class="cnt">١٠<small>من ١٦</small></div></div>
+      <div class="seats"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="meta"><span class="chip mf">في مباراة · الليلة ٢</span><button class="go">تفرّج</button></div>
+    </div><p class="note">في مباراة: حد قرمزي رفيع وشارة المرحلة. الزر يتحول إلى "تفرّج".</p></div>
+
+  <div class="col">
+    <div class="room public"><span class="new">جديدة</span>
+      <div class="r1"><div class="avatar"><svg><use href="#fed"/></svg></div><div class="nm"><b>أول سهرة</b><small>مازن · المستوى ٥</small></div><div class="cnt">١<small>من ١٦</small></div></div>
+      <div class="seats"><i class="t"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="meta"><span class="chip">سهرة</span><button class="go">انضم</button></div>
+    </div><p class="note">جديدة: لسان فيروزي صغير، لتشجيع الناس تدخل الغرف الفاضية.</p></div>
+</div></section>
+
+<section><h2>انضم سريع وإنشاء غرفة</h2>
+<div class="cards">
+  <div class="col"><div class="quick"><div><b>انضم سريع</b><small>أقرب غرفة فيها ناس ومكان</small></div><span>›</span></div></div>
+  <div class="col"><div class="create"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><b>افتح طاولتك</b></div></div>
+</div></section>
+
+</div>
+</body>
+</html>
