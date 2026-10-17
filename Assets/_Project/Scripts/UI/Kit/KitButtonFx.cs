@@ -14,7 +14,7 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private float sink = 8f;
         [SerializeField] private float pressedScale = 0.985f;
 
-        private Vector2 restPos;
+        private Vector2 applied;     // the sink offset currently added on top of whatever position a layout gave us
         private float t;          // 0 = rest, 1 = pressed
         private float target;
         private float velocity;
@@ -24,7 +24,6 @@ namespace MafiaNight.UI.Kit
         {
             if (cached) return;
             if (face == null) face = transform as RectTransform;
-            restPos = face.anchoredPosition;
             cached = true;
         }
 
@@ -45,7 +44,10 @@ namespace MafiaNight.UI.Kit
         private void Apply()
         {
             if (face == null) return;
-            face.anchoredPosition = restPos + Vector2.down * (sink * t);
+            // relative, never absolute: buttons inside layout groups must not jump back to a stale position
+            var off = Vector2.down * (sink * t);
+            face.anchoredPosition += off - applied;
+            applied = off;
             float s = Mathf.Lerp(1f, pressedScale, t);
             face.localScale = new Vector3(s, s, 1f);
         }

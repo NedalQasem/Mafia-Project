@@ -18,7 +18,7 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private RectTransform sheet, preview;
         [SerializeField] private ArabicText sheetName, sheetDesc, sheetChip, sheetPrice, sheetMsg;
         [SerializeField] private Button sheetBuy, sheetClose;
-        [SerializeField] private Image sheetBuyImage;
+        [SerializeField] private Image sheetBuyImage, sheetChipBg;
         [SerializeField] private int playerRank = 3;
 
         public event Action<int> OnCoinsChanged;
@@ -151,10 +151,24 @@ namespace MafiaNight.UI.Kit
             StoreArt.Create(item, preview, th);
             sheetName.Text = item.name; sheetDesc.Text = item.desc;
             sheetChip.Text = item.rarity == Rarity.Common ? "عادي" : item.rarity == Rarity.Rare ? "نادر" : item.rarity == Rarity.Epic ? "ملحمي" : "أسطوري";
+            // HTML .chip c-l / c-e / c-r: outline and text tinted by rarity
+            Color32 outline, txt;
+            switch (item.rarity)
+            {
+                case Rarity.Legendary: outline = new Color32(0xB9, 0x90, 0x48, 255); txt = new Color32(0xF5, 0xD0, 0x70, 255); break;
+                case Rarity.Epic: outline = new Color32(0x8A, 0x1C, 0x24, 255); txt = new Color32(0xE6, 0xB3, 0xB6, 255); break;
+                case Rarity.Rare: outline = new Color32(0x2D, 0x7A, 0x60, 255); txt = new Color32(0x8F, 0xE0, 0xC6, 255); break;
+                default: outline = new Color32(0x4A, 0x44, 0x3E, 255); txt = new Color32(0xD9, 0xD0, 0xBD, 255); break;
+            }
+            if (sheetChipBg != null) sheetChipBg.color = outline;
+            sheetChip.GetComponent<TMPro.TMP_Text>().color = txt;
             bool locked = item.lockRank > playerRank;
             sheetMsg.Text = locked ? "يفتح عند رتبة " + KitTheme.RankNames[item.lockRank - 1] : "";
             sheetPrice.Text = item.owned ? "استخدمه" : locked ? "مقفل" : (string.IsNullOrEmpty(item.priceText) ? CoinPill.Format(item.price) : item.priceText);
             sheetBuy.interactable = !locked;
+            var coinIcon = sheetBuy.transform.Find("Coin"); if (coinIcon != null) coinIcon.gameObject.SetActive(!item.owned && !locked && string.IsNullOrEmpty(item.priceText));
+            var buyLabel = sheetPrice.GetComponent<RectTransform>(); buyLabel.offsetMax = new Vector2(coinIcon != null && coinIcon.gameObject.activeSelf ? -60f : -6f, buyLabel.offsetMax.y);
+            sheetBuyImage.color = locked ? new Color(1f, 1f, 1f, 0.5f) : Color.white;
             gameObject.SetActive(true);
             if (sheetAnim != null) StopCoroutine(sheetAnim);
             sheetAnim = StartCoroutine(Slide(true));

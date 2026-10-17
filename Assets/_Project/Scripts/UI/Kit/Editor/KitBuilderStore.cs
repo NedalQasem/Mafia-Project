@@ -185,29 +185,40 @@ namespace MafiaNight.UI.Kit.Editor
             // ---------- buy sheet (above the bars)
             var overlay = Go("StoreOverlay", canvasGo.transform); Stretch(Rt(overlay));
             var dim = Go("Dim", overlay.transform); Stretch(Rt(dim));
-            var dimImg = dim.AddComponent<Image>(); dimImg.color = new Color(0, 0, 0, 0.82f);
+            var dimImg = dim.AddComponent<Image>(); dimImg.color = new Color(0, 0, 0, 0.67f);
             dim.AddComponent<Button>().targetGraphic = dimImg;
             var dcg = dim.AddComponent<CanvasGroup>(); dcg.alpha = 0f; dcg.blocksRaycasts = false;
             var sheet = Go("Sheet", dim.transform);
-            var shRt = Rt(sheet); shRt.anchorMin = new Vector2(0, 0); shRt.anchorMax = new Vector2(1, 0); shRt.pivot = new Vector2(0.5f, 0); shRt.sizeDelta = new Vector2(0, 1050); shRt.anchoredPosition = new Vector2(0, -1130);
-            Img(sheet, th.leatherDark, true, 1f, true);
-            var prev = Go("Preview", sheet.transform); PlaceTop(Rt(prev), 0, -70, 320, 320);
-            var sn = Txt(sheet.transform, "Name", "اسم", th.fontCalligraphy, 84, th.leatherText); PlaceTop(Rt(sn.gameObject), 0, -400, 900, 110);
-            var chip = Go("Chip", sheet.transform); PlaceTop(Rt(chip), 0, -520, 240, 60); Img(chip, th.slotDark, true, 2f);
-            var chipT = Txt(chip.transform, "T", "نادر", th.fontBody, 30, th.leatherText); Stretch(Rt(chipT.gameObject), 4, 4, 4, 8);
-            var sd = Txt(sheet.transform, "Desc", "وصف", th.fontBody, 36, th.ivoryDim, TextAlignmentOptions.Top, true); PlaceTop(Rt(sd.gameObject), 0, -600, 860, 120);
-            var sm = Txt(sheet.transform, "Msg", "", th.fontBody, 30, new Color32(0xE6, 0xA0, 0xA4, 255)); PlaceTop(Rt(sm.gameObject), 0, -720, 860, 50);
-            var close = InstChild("KitButton_Secondary", sheet.transform, "Close");
-            Place(Rt(close), new Vector2(0.5f, 0f), new Vector2(-250, 150), new Vector2(380, 150));
-            close.GetComponentInChildren<ArabicText>().Text = "لاحقاً";
-            var sbuy = InstChild("KitButton_Brass", sheet.transform, "Buy");
-            Place(Rt(sbuy), new Vector2(0.5f, 0f), new Vector2(200, 150), new Vector2(520, 160));
+            var shRt = Rt(sheet); shRt.anchorMin = new Vector2(0, 0); shRt.anchorMax = new Vector2(1, 0); shRt.pivot = new Vector2(0.5f, 0); shRt.sizeDelta = new Vector2(0, 980); shRt.anchoredPosition = new Vector2(0, -1060);
+            var sheetImg = Img(sheet, th.sheetBg, true, 1f, true);
+            var handle = Go("Handle", sheet.transform); PlaceTop(Rt(handle), 0, -22, 122, 11); Img(handle, th.sheetHandle).raycastTarget = false;
+            // stage: a cone of light with the item floating in it
+            var stageCone = Go("StageCone", sheet.transform); PlaceTop(Rt(stageCone), 0, -64, 650, 384); var scI = Img(stageCone, th.itemCone); scI.preserveAspect = false; scI.raycastTarget = false; scI.color = new Color(1f, 1f, 1f, 1f);
+            var prev = Go("Preview", sheet.transform); PlaceTop(Rt(prev), 0, -112, 300, 300); prev.AddComponent<KitBob>(); prev.transform.localScale = Vector3.one * 1.42f;
+            var sn = Txt(sheet.transform, "Name", "اسم", th.fontCalligraphy, 76, th.leatherText); PlaceTop(Rt(sn.gameObject), 0, -452, 900, 100);
+            var chip = Go("Chip", sheet.transform); PlaceTop(Rt(chip), 0, -566, 190, 54); var chipImg = Img(chip, th.chipSheet, true, 1f); chipImg.raycastTarget = false;
+            var chipT = Txt(chip.transform, "T", "نادر", th.fontHeading, 26, th.leatherText); Stretch(Rt(chipT.gameObject), 4, 2, 4, 6);
+            var sd = Txt(sheet.transform, "Desc", "وصف", th.fontBody, 32, new Color32(0xA7, 0x9D, 0x88, 255), TextAlignmentOptions.Top, true); PlaceTop(Rt(sd.gameObject), 0, -640, 860, 100);
+            var sm = Txt(sheet.transform, "Msg", "", th.fontHeading, 28, new Color32(0xE6, 0xA0, 0xA4, 255)); PlaceTop(Rt(sm.gameObject), 0, -745, 860, 50);
+            // buttons: dark "later" on the right, wide gold buy on the left (RTL), like the mockup
+            var close = Go("Close", sheet.transform); var clRt = Rt(close); clRt.anchorMin = clRt.anchorMax = new Vector2(0.5f, 0f); clRt.pivot = new Vector2(0.5f, 0f); clRt.anchoredPosition = new Vector2(300, 50); clRt.sizeDelta = new Vector2(380, 150);
+            var closeImg = Img(close, th.btnDark, true, 1f, true);
+            var closeBtn = close.AddComponent<Button>(); closeBtn.targetGraphic = closeImg; closeBtn.transition = Selectable.Transition.None;
+            var closeFx = close.AddComponent<KitButtonFx>(); SetRef(closeFx, "face", clRt);
+            var closeT = Txt(close.transform, "Label", "لاحقاً", th.fontHeading, 42, new Color32(0xE6, 0xD9, 0xBD, 255)); Stretch(Rt(closeT.gameObject), 6, 22, 6, 8);
+            var sbuy = Go("Buy", sheet.transform); var bl = Rt(sbuy); bl.anchorMin = bl.anchorMax = new Vector2(0.5f, 0f); bl.pivot = new Vector2(0.5f, 0f); bl.anchoredPosition = new Vector2(-205, 50); bl.sizeDelta = new Vector2(570, 150);
+            var buyImg = Img(sbuy, th.btnGold, true, 1f, true);
+            var buyBtn = sbuy.AddComponent<Button>(); buyBtn.targetGraphic = buyImg; buyBtn.transition = Selectable.Transition.None;
+            var buyFx = sbuy.AddComponent<KitButtonFx>(); SetRef(buyFx, "face", bl);
+            var buyT = Txt(sbuy.transform, "Label", "٤٠٠", th.fontHeading, 46, new Color32(0x2A, 0x1A, 0x08, 255)); Stretch(Rt(buyT.gameObject), 6, 22, 6, 8);
+            var buyCoin = Go("Coin", sbuy.transform); Place(Rt(buyCoin), new Vector2(0.5f, 0.55f), new Vector2(60, 0), new Vector2(54, 54)); Img(buyCoin, th.coin).raycastTarget = false;
+            buyT.alignment = TextAlignmentOptions.Center; Rt(buyT.gameObject).offsetMax = new Vector2(-60, Rt(buyT.gameObject).offsetMax.y);
 
             SetRef(store, "dim", dcg); SetRef(store, "sheet", shRt); SetRef(store, "preview", Rt(prev));
             SetRef(store, "sheetName", sn.GetComponent<ArabicText>()); SetRef(store, "sheetDesc", sd.GetComponent<ArabicText>());
-            SetRef(store, "sheetChip", chipT.GetComponent<ArabicText>()); SetRef(store, "sheetPrice", sbuy.GetComponentInChildren<ArabicText>());
-            SetRef(store, "sheetMsg", sm.GetComponent<ArabicText>());
-            SetRef(store, "sheetBuy", sbuy.GetComponent<Button>()); SetRef(store, "sheetClose", close.GetComponent<Button>());
+            SetRef(store, "sheetChip", chipT.GetComponent<ArabicText>()); SetRef(store, "sheetPrice", buyT.GetComponent<ArabicText>());
+            SetRef(store, "sheetMsg", sm.GetComponent<ArabicText>()); SetRef(store, "sheetChipBg", chipImg); SetRef(store, "sheetBuyImage", buyImg);
+            SetRef(store, "sheetBuy", buyBtn); SetRef(store, "sheetClose", closeBtn);
             store.Build();
             LayoutRebuilder.ForceRebuildLayoutImmediate(cRt);
 

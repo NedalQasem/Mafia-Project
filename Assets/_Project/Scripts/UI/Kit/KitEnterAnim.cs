@@ -11,7 +11,7 @@ namespace MafiaNight.UI.Kit
     {
         private RectTransform rt;
         private CanvasGroup cg;
-        private float delay, duration, fade, fromX, fromY, t, baseX, baseY, lastSetX = float.NaN, lastSetY = float.NaN;
+        private float delay, duration, fade, fromX, fromY, endAlpha = 1f, t, baseX, baseY, lastSetX = float.NaN, lastSetY = float.NaN;
         private bool running;
 
         public static void Play(GameObject go, float delay, float fromX, float duration = 0.4f, float fade = 0.35f, float fromY = 0f)
@@ -26,6 +26,7 @@ namespace MafiaNight.UI.Kit
         {
             rt = (RectTransform)transform;
             cg = GetComponent<CanvasGroup>();
+            endAlpha = cg != null ? cg.alpha : 1f;   // keep a dimmed state (e.g. locked items) after the entrance
             if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
             this.delay = delay; this.fromX = fromX; this.fromY = fromY; this.duration = duration; this.fade = fade;
             t = 0f; lastSetX = lastSetY = float.NaN; running = true;
@@ -38,7 +39,7 @@ namespace MafiaNight.UI.Kit
             t += Time.unscaledDeltaTime;
             float k = Mathf.Clamp01((t - delay) / duration);
             float ease = 1f - Mathf.Pow(1f - k, 3f);
-            cg.alpha = Mathf.Clamp01((t - delay) / fade);
+            cg.alpha = endAlpha * Mathf.Clamp01((t - delay) / fade);
 
             var p = rt.anchoredPosition;
             if (float.IsNaN(lastSetX) || !Mathf.Approximately(p.x, lastSetX)) baseX = p.x;   // first frame, or the layout moved us
@@ -49,11 +50,11 @@ namespace MafiaNight.UI.Kit
 
             if (k >= 1f && cg.alpha >= 1f)
             {
-                p.x = baseX; p.y = baseY; rt.anchoredPosition = p; cg.alpha = 1f;
+                p.x = baseX; p.y = baseY; rt.anchoredPosition = p; cg.alpha = endAlpha;
                 running = false;
             }
         }
 
-        private void OnDisable() { if (running && cg != null) { cg.alpha = 1f; running = false; } }
+        private void OnDisable() { if (running && cg != null) { cg.alpha = endAlpha; running = false; } }
     }
 }

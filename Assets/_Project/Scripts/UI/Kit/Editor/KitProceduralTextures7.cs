@@ -16,6 +16,22 @@ namespace MafiaNight.UI.Kit.Editor
             return (p - (a + ab * t)).magnitude;
         }
 
+        // rounded button with a flat drop shadow underneath (HTML .btn: radius 9, shadow 0 4px 0)
+        private static void Btn(string name, Color top, Color mid, Color bottom, Color shadow, bool shine)
+        {
+            Make(name, 256, 120, (x, y) =>
+            {
+                float d = RoundRectSdf(x, y, 128f, 54f, 128f, 54f, 26f);
+                float ds = RoundRectSdf(x, y - 11f, 128f, 54f, 128f, 54f, 26f);
+                if (d > 0f) return ds <= 0f ? shadow : Color.clear;
+                float t = Mathf.Clamp01(y / 108f);
+                Color c = t < .5f ? Color.Lerp(top, mid, t / .5f) : Color.Lerp(mid, bottom, (t - .5f) / .5f);
+                float g = (Hash((int)x, (int)y) - .5f) * (shine ? 0f : .05f); c = new Color(c.r + g, c.g + g * .8f, c.b + g * .6f, 1f);
+                if (d > -3.5f && y < 54f) c = Over(C(0xffffff, shine ? .55f : .14f), c);
+                return c;
+            });
+        }
+
         private static void Door(string name, Color top, Color bottom, Color border, float borderPx, bool grain)
         {
             Make(name, 256, 128, (x, y) =>
@@ -212,6 +228,30 @@ namespace MafiaNight.UI.Kit.Editor
                 if (r > 59f) return C(0x000000, .55f);
                 float k = Mathf.Clamp01(Mathf.Sqrt((x - 45f) * (x - 45f) + (y - 38f) * (y - 38f)) / 78f);
                 return k < .55f ? Color.Lerp(C(0xfff0b8), C(0xc9a050), k / .55f) : Color.Lerp(C(0xc9a050), C(0x6e4b1c), (k - .55f) / .45f);
+            });
+
+            // ---- buy sheet (HTML .sheet / .btn / .chip)
+            Make("sheet_bg", 256, 256, (x, y) =>
+            {
+                // rounded top corners only (radius 60), vertical gradient, light top edge
+                float cx = x < 60f ? 60f : (x > 196f ? 196f : x);
+                if (y < 60f && (x - cx) * (x - cx) + (y - 60f) * (y - 60f) > 3600f) return Color.clear;
+                float t = y / 256f;
+                Color c = t < .6f ? Color.Lerp(C(0x34251b), C(0x1a110d), t / .6f) : Color.Lerp(C(0x1a110d), C(0x0e0806), (t - .6f) / .4f);
+                float g = (Hash((int)x, (int)y) - .5f) * .03f; c = new Color(c.r + g, c.g + g * .8f, c.b + g * .6f, 1f);
+                float edge = y < 60f ? 60f - Mathf.Sqrt(Mathf.Max(0f, 3600f - (x - cx) * (x - cx))) : 0f;
+                if (y - edge < 3f && y < 60f + 0.1f) c = Over(C(0xffffff, .16f), c);
+                return c;
+            });
+            Make("sheet_handle", 128, 12, (x, y) => RoundRectSdf(x, y, 64f, 6f, 64f, 6f, 6f) <= 0f ? C(0xffffff, .19f) : Color.clear);
+            Btn("btn_gold", C(0xf5e2a8), C(0xd2ad60), C(0x7a5a22), C(0x2a1c08), true);
+            Btn("btn_dark", C(0x3b2a20), C(0x1a110d), C(0x1a110d), C(0x000000), false);
+            Make("chip_sheet", 128, 52, (x, y) =>
+            {
+                float d = RoundRectSdf(x, y, 64f, 26f, 64f, 26f, 8f);
+                if (d > 0f) return Color.clear;
+                if (d > -3f) return Color.white;
+                return C(0x000000, .6f);
             });
 
             Make("dash_h", 24, 4, (x, y) => (x % 24f) < 14f ? Color.white : Color.clear);
