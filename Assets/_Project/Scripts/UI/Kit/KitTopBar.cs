@@ -16,6 +16,7 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private ArabicText titleLabel;
         [SerializeField] private ArabicText levelLabel;
         [SerializeField] private RectTransform xpFill;
+        [SerializeField] private Image xpRing;      // radial-filled ring around the medal
         [SerializeField] private CoinPill coins;
 
         public event Action OnProfileClicked;
@@ -37,8 +38,9 @@ namespace MafiaNight.UI.Kit
 
         public void SetXp(float xp01)
         {
-            if (xpFill == null) return;
             xp01 = Mathf.Clamp01(xp01);
+            if (xpRing != null) xpRing.fillAmount = xp01;
+            if (xpFill == null) return;
             xpFill.anchorMin = new Vector2(1f - xp01, 0f);   // fills from the right (RTL)
             xpFill.anchorMax = new Vector2(1f, 1f);
             xpFill.offsetMin = xpFill.offsetMax = Vector2.zero;

@@ -29,6 +29,7 @@ namespace MafiaNight.UI.Kit
 
         [Header("Small parts")]
         public Sprite coin, bulletOn, bulletOff;
+        public Sprite xpRing, medalDisc;
 
         [Header("Bottom navigation parts")]
         public Sprite navBarTile, navShadow, navSeal, navSealGlow, navSpot, livePill, badgeDot;

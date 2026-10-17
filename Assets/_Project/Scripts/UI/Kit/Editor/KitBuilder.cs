@@ -30,6 +30,7 @@ namespace MafiaNight.UI.Kit.Editor
             KitProceduralTextures3.Generate();
             KitProceduralTextures4.Generate();
             KitProceduralTextures5.Generate();
+            KitProceduralTextures6.Generate();
             KitProceduralTextures.ConfigureSprites();
             var theme = BuildTheme();
             BuildPrefabs(theme);
@@ -74,7 +75,7 @@ namespace MafiaNight.UI.Kit.Editor
             th.knobFace = Spr("knob_face"); th.dialTicks = Spr("dial_ticks"); th.chalkboard = Spr("chalkboard"); th.wallTile = Spr("wall_tile"); th.goldFrame = Spr("gold_frame"); th.iconGift = Spr("icon_gift"); th.iconSend = Spr("icon_send"); th.triUp = Spr("tri_up");
             th.steelPlate = Spr("steel_plate"); th.vipFrame = Spr("vip_frame"); th.tableTop = Spr("table_top"); th.chair = Spr("chair"); th.propCup = Spr("prop_cup"); th.propAshtray = Spr("prop_ashtray"); th.propDeck = Spr("prop_deck"); th.propDallah = Spr("prop_dallah"); th.iconMic = Spr("icon_mic"); th.iconMicOff = Spr("icon_mic_off"); th.hostStar = Spr("host_star"); th.seatDashed = Spr("seat_dashed"); th.dotWhite = Spr("dot_white"); th.talkGlow = Spr("talk_glow");
             th.dotsTile = Spr("dots_tile"); th.avatarDefault = Spr("avatar_default"); th.ribbonRed = Spr("ribbon_red"); th.strapRed = Spr("strap_red"); th.clipMetal = Spr("clip_metal"); th.levelSeal = Spr("level_seal"); th.barcodeTile = Spr("barcode_tile"); th.stampFrame = Spr("stamp_frame");
-            th.coin = Spr("coin"); th.bulletOn = Spr("bullet_on"); th.bulletOff = Spr("bullet_off");
+            th.xpRing = Spr("xp_ring"); th.medalDisc = Spr("medal_disc"); th.coin = Spr("coin"); th.bulletOn = Spr("bullet_on"); th.bulletOff = Spr("bullet_off");
             for (int i = 0; i < 8; i++) { th.ringByRank[i] = Spr("ring_r" + (i + 1)); th.medalByRank[i] = Spr("medal_r" + (i + 1)); }
             th.navIcons = new[] { Spr("nav_shop"), Spr("nav_family"), Spr("nav_rooms"), Spr("nav_ranks"), Spr("nav_settings") };
             th.fontBody = FindFont("cairo") ?? th.fontBody;
@@ -390,7 +391,7 @@ namespace MafiaNight.UI.Kit.Editor
             SetRef(pill, "label", val.GetComponent<ArabicText>());
             SetRef(pill, "coinIcon", Rt(coin));
 
-            // paper tag (right) = the profile button
+            // paper tag (right) = the profile button; the avatar sits in a medal whose ring fills with XP
             var tag = Go("Tag", root.transform);
             Place(Rt(tag), new Vector2(1, 1), new Vector2(-(32 + 350), -150), new Vector2(700, 150));
             var tagImg = Img(tag, th.paper, true, 1f, true);
@@ -398,34 +399,33 @@ namespace MafiaNight.UI.Kit.Editor
             var fx = tag.AddComponent<KitButtonFx>(); SetRef(fx, "face", Rt(tag));
 
             var ribbon = Go("Ribbon", tag.transform);
-            Place(Rt(ribbon), new Vector2(1, 1), new Vector2(-40, 6), new Vector2(56, 44));
+            Place(Rt(ribbon), new Vector2(1, 1), new Vector2(-250, 6), new Vector2(56, 44));
             Img(ribbon, th.ribbonRed);
 
-            var avGo = (GameObject)PrefabUtility.InstantiatePrefab(LoadPrefab("AvatarFrame"), tag.transform);
+            var medal = Go("Medal", tag.transform);
+            Place(Rt(medal), new Vector2(1, 0.5f), new Vector2(-100, 0), new Vector2(176, 176));
+            var disc = Img(medal, th.medalDisc); disc.raycastTarget = false;
+            var track = Go("XpTrack", medal.transform); Stretch(Rt(track));
+            var ti2 = Img(track, th.xpRing); ti2.color = new Color(1f, 1f, 1f, 0.10f); ti2.raycastTarget = false;
+            var ringGo = Go("XpRing", medal.transform); Stretch(Rt(ringGo));
+            var ringImg = Img(ringGo, th.xpRing); ringImg.color = new Color32(0xD2, 0xAD, 0x60, 255); ringImg.raycastTarget = false;
+            ringImg.type = Image.Type.Filled; ringImg.fillMethod = Image.FillMethod.Radial360; ringImg.fillOrigin = (int)Image.Origin360.Top; ringImg.fillClockwise = true; ringImg.fillAmount = 0.62f;
+            var avGo = (GameObject)PrefabUtility.InstantiatePrefab(LoadPrefab("AvatarFrame"), medal.transform);
             avGo.name = "Avatar";
-            Place(Rt(avGo), new Vector2(1, 0.5f), new Vector2(-84, 2), new Vector2(124, 124));
-
-            var lvl = Go("Level", tag.transform);
-            Place(Rt(lvl), new Vector2(1, 0.5f), new Vector2(-30, -40), new Vector2(54, 54));
+            Place(Rt(avGo), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(124, 124));
+            var lvl = Go("Level", medal.transform);
+            Place(Rt(lvl), new Vector2(0.5f, 0f), new Vector2(-14, 10), new Vector2(60, 60));
             Img(lvl, th.levelSeal);
-            var lvlTxt = Txt(lvl.transform, "N", "٧", th.fontHeading, 28, th.brassText);
+            var lvlTxt = Txt(lvl.transform, "N", "٧", th.fontHeading, 30, th.brassText);
             Stretch(Rt(lvlTxt.gameObject), 0, 3, 0, 0);
 
-            var nm = Txt(tag.transform, "Name", "أبو سالم", th.fontCalligraphy, 58, th.paperInk, TextAlignmentOptions.MidlineRight);
-            Place(Rt(nm.gameObject), new Vector2(1, 0.5f), new Vector2(-330, 22), new Vector2(340, 68));
-            var ti = Txt(tag.transform, "Title", "صاحب كلمة", th.fontBody, 28, paperInkSoft, TextAlignmentOptions.MidlineRight);
-            Place(Rt(ti.gameObject), new Vector2(1, 0.5f), new Vector2(-330, -26), new Vector2(340, 40));
-
-            var xpBg = Go("XpBg", tag.transform);
-            var xr = Rt(xpBg); xr.anchorMin = new Vector2(0, 0); xr.anchorMax = new Vector2(1, 0); xr.pivot = new Vector2(0.5f, 0);
-            xr.offsetMin = new Vector2(36, 16); xr.offsetMax = new Vector2(-36, 24);
-            var xbi = xpBg.AddComponent<Image>(); xbi.color = new Color(0.11f, 0.09f, 0.06f, 0.2f); xbi.raycastTarget = false;
-            var fill = Go("Fill", xpBg.transform);
-            var fr = Rt(fill); fr.anchorMin = new Vector2(0.38f, 0); fr.anchorMax = new Vector2(1, 1); fr.offsetMin = fr.offsetMax = Vector2.zero;
-            var fi = fill.AddComponent<Image>(); fi.color = new Color32(0x8A, 0x1C, 0x24, 255); fi.raycastTarget = false;
+            var nm = Txt(tag.transform, "Name", "أبو سالم", th.fontCalligraphy, 62, th.paperInk, TextAlignmentOptions.MidlineRight);
+            Place(Rt(nm.gameObject), new Vector2(1, 0.5f), new Vector2(-390, 20), new Vector2(340, 72));
+            var ti = Txt(tag.transform, "Title", "صاحب كلمة", th.fontBody, 30, paperInkSoft, TextAlignmentOptions.MidlineRight);
+            Place(Rt(ti.gameObject), new Vector2(1, 0.5f), new Vector2(-390, -30), new Vector2(340, 42));
 
             var chev = Go("Chevron", tag.transform);
-            Place(Rt(chev), new Vector2(0, 0.5f), new Vector2(54, 6), new Vector2(40, 40));
+            Place(Rt(chev), new Vector2(0, 0.5f), new Vector2(54, 0), new Vector2(40, 40));
             var ci = Img(chev, arrow); ci.color = new Color32(0x8A, 0x1C, 0x24, 255);
 
             var bar = root.AddComponent<KitTopBar>();
@@ -434,7 +434,7 @@ namespace MafiaNight.UI.Kit.Editor
             SetRef(bar, "nameLabel", nm.GetComponent<ArabicText>());
             SetRef(bar, "titleLabel", ti.GetComponent<ArabicText>());
             SetRef(bar, "levelLabel", lvlTxt.GetComponent<ArabicText>());
-            SetRef(bar, "xpFill", fr);
+            SetRef(bar, "xpRing", ringImg);
             SetRef(bar, "coins", pill);
             Save(root, "KitTopBar");
         }
