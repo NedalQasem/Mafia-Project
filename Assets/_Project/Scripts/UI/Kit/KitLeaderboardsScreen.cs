@@ -21,6 +21,8 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private RectTransform mineFill;
         [SerializeField] private GameObject mineBar;
         [SerializeField] private ArabicText mineWall;
+        [SerializeField] private ArabicText mineCaption;
+        [SerializeField] private RectTransform mineBarTrack;
 
         private int period = 0, cat = 0;           // period: 0 day, 1 week, 2 wall
         private readonly List<Button> chips = new List<Button>();
@@ -64,6 +66,7 @@ namespace MafiaNight.UI.Kit
             bool wall = period == 2, paper = period == 1;
             boardView.SetActive(!wall); wallView.SetActive(wall); chipsRow.SetActive(!wall);
             mineBar.SetActive(true);
+            FitMineBar(wall);
             for (int i = 0; i < doors.Length; i++)
             {
                 bool on = i == period;
@@ -78,11 +81,11 @@ namespace MafiaNight.UI.Kit
             if (wall)
             {
                 mineWall.Text = "تدخل القاعة بالوصول إلى المركز الأول بموسم أو بتحطيم رقم قياسي";
-                mineRank.Text = "—"; mineNeed.Text = ""; mineValue.Text = "";
+                mineRank.Text = "—"; mineNeed.Text = ""; mineValue.Text = ""; if (mineCaption != null) mineCaption.Text = "غير مصنف";
                 SetFill(0.12f);
                 resetLabel.Text = ""; SetResetVisible(false); return;
             }
-            mineWall.Text = ""; SetResetVisible(true);
+            mineWall.Text = ""; SetResetVisible(true); if (mineCaption != null) mineCaption.Text = "ترتيبك";
             resetLabel.Text = period == 0 ? "يتجدد خلال ٠٣:٤٢:١٠" : "يتجدد خلال ٢ يوم ٠٥:١٨";
             boardBg.sprite = paper ? th.paper : th.boardDay;
             // newspaper = bold display type and a solid ink rule; chalkboard = calligraphy and a dashed chalk line
@@ -165,6 +168,18 @@ namespace MafiaNight.UI.Kit
         }
 
         private void SetResetVisible(bool on) { if (resetLabel != null && resetLabel.transform.parent != null && resetLabel.transform.parent.name == "ResetPill") resetLabel.transform.parent.gameObject.SetActive(on); }
+
+        // the pinned bar grows upward when it has to hold a two-line note; its content keeps its distance from the bottom edge
+        private void FitMineBar(bool tall)
+        {
+            var r = (RectTransform)mineBar.transform;
+            float extra = tall ? 44f : 0f;
+            r.offsetMax = new Vector2(r.offsetMax.x, 168f + extra);
+            if (mineWall != null) ((RectTransform)mineWall.transform).anchoredPosition = new Vector2(-10f, 24f + extra * 0.1f);
+            if (mineBarTrack != null) mineBarTrack.anchoredPosition = new Vector2(-10f, -44f - extra * 0.5f);
+            if (mineCaption != null) ((RectTransform)mineCaption.transform).anchoredPosition = new Vector2(-170f, -44f - extra * 0.5f);
+            if (mineRank != null) ((RectTransform)mineRank.transform).anchoredPosition = new Vector2(-170f, 20f - extra * 0.5f + extra * 0.5f);
+        }
 
         private void SetFill(float v)
         {

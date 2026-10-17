@@ -236,7 +236,7 @@ namespace MafiaNight.UI.Kit.Editor
                 imp.filterMode = FilterMode.Bilinear;
                 imp.spritePixelsPerUnit = 100;
                 imp.maxTextureSize = 1024;
-                imp.wrapMode = (name == "skyline_far" || name == "skyline_near" || name == "road_dash" || name == "dash_h" || name == "curb_tile") ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
+                imp.wrapMode = (name == "skyline_far" || name == "skyline_near" || name == "road_dash" || name == "dash_h" || name == "wall_lines" || name == "curb_tile") ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
                 imp.textureCompression = TextureImporterCompression.Compressed;
                 var s = new TextureImporterSettings();
                 imp.ReadTextureSettings(s);
@@ -257,6 +257,12 @@ namespace MafiaNight.UI.Kit.Editor
                     s.spriteBorder = new Vector4(30, 24, 56, 24);
                 else if (name == "stamp_frame")
                     s.spriteBorder = new Vector4(24, 24, 24, 24);
+                else if (name == "wall_vignette")
+                    s.spriteBorder = new Vector4(125, 125, 125, 125);
+                else if (name == "plaque_gold")
+                    s.spriteBorder = new Vector4(36, 28, 36, 28);
+                else if (name == "rec_card")
+                    s.spriteBorder = new Vector4(48, 48, 48, 48);
                 else if (name == "mine_bar")
                     s.spriteBorder = new Vector4(48, 48, 48, 48);
                 else if (name.StartsWith("door_"))
