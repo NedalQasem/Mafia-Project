@@ -100,6 +100,8 @@ EOS_RESULT_VALUE(EOS_ApplicationSuspended, 40)
 EOS_RESULT_VALUE(EOS_NetworkDisconnected, 41)
 /** Given output buffer is insufficient to complete the operation */
 EOS_RESULT_VALUE(EOS_InsufficientOutputBuffer, 42)
+/** The associated feature or action is not enabled in the client policy */
+EOS_RESULT_VALUE(EOS_ClientPolicyMissingAction, 43)
 /** Account locked due to login failures */
 EOS_RESULT_VALUE(EOS_Auth_AccountLocked, 1001)
 /** Account locked by update operation. */
@@ -238,6 +240,10 @@ EOS_RESULT_VALUE(EOS_Ecom_CatalogOfferPriceInvalid, 4003)
 EOS_RESULT_VALUE(EOS_Ecom_CheckoutLoadError, 4004)
 /** The player closed the purchase flow overlay after clicking the purchase button. The purchase may still go through, and the game needs to query unredeemed entitlements for a short time. */
 EOS_RESULT_VALUE(EOS_Ecom_PurchaseProcessing, 4005)
+/** The offer is not valid in the catalog for the current sandbox */
+EOS_RESULT_VALUE(EOS_Ecom_CatalogOfferInvalid, 4006)
+/** The purchase was blocked because the external purchase (CTC) token required for this paid purchase could not be resolved on this device (for example, the OS version cannot determine the catalog region). */
+EOS_RESULT_VALUE(EOS_Ecom_CheckoutCTCUnavailable, 4007)
 /** Session is already in progress */
 EOS_RESULT_VALUE(EOS_Sessions_SessionInProgress, 5000)
 /** Too many players to register with this session */

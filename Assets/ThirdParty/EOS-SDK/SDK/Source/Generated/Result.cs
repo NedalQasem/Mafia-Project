@@ -184,6 +184,10 @@ namespace Epic.OnlineServices
 		/// </summary>
 		InsufficientOutputBuffer = 42,
 		/// <summary>
+		/// The associated feature or action is not enabled in the client policy
+		/// </summary>
+		ClientPolicyMissingAction = 43,
+		/// <summary>
 		/// Account locked due to login failures
 		/// </summary>
 		AuthAccountLocked = 1001,
@@ -459,6 +463,14 @@ namespace Epic.OnlineServices
 		/// The player closed the purchase flow overlay after clicking the purchase button. The purchase may still go through, and the game needs to query unredeemed entitlements for a short time.
 		/// </summary>
 		EcomPurchaseProcessing = 4005,
+		/// <summary>
+		/// The offer is not valid in the catalog for the current sandbox
+		/// </summary>
+		EcomCatalogOfferInvalid = 4006,
+		/// <summary>
+		/// The purchase was blocked because the external purchase (CTC) token required for this paid purchase could not be resolved on this device (for example, the OS version cannot determine the catalog region).
+		/// </summary>
+		EcomCheckoutCTCUnavailable = 4007,
 		/// <summary>
 		/// Session is already in progress
 		/// </summary>

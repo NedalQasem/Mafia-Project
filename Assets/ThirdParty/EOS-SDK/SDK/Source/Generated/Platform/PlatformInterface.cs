@@ -56,11 +56,11 @@ namespace Epic.OnlineServices.Platform
 		/// <summary>
 		/// The most recent version of the <see cref="Initialize" /> API.
 		/// </summary>
-		public const int INITIALIZE_API_LATEST = 4;
+		public const int INITIALIZE_API_LATEST = 5;
 		/// <summary>
 		/// The most recent version of the <see cref="InitializeThreadAffinity" /> API.
 		/// </summary>
-		public const int INITIALIZE_THREADAFFINITY_API_LATEST = 3;
+		public const int INITIALIZE_THREADAFFINITY_API_LATEST = 4;
 		/// <summary>
 		/// The maximum length of a Locale Code buffer
 		/// </summary>
@@ -72,7 +72,7 @@ namespace Epic.OnlineServices.Platform
 		/// <summary>
 		/// The most recent version of the <see cref="Options" /> API.
 		/// </summary>
-		public const int OPTIONS_API_LATEST = 14;
+		public const int OPTIONS_API_LATEST = 15;
 		/// <summary>
 		/// Max length of a deployment id, not including the terminating <see langword="null" />.
 		/// </summary>
@@ -248,10 +248,10 @@ namespace Epic.OnlineServices.Platform
 		/// </param>
 		/// <returns>
 		/// An <see cref="Result" /> that indicates whether the active country code <see cref="Utf8String" /> was copied into the OutBuffer.
-		/// <see cref="Result.Success" /> if the information is available and passed out in OutBuffer
-		/// <see cref="Result.InvalidParameters" /> if you pass a <see langword="null" /> <see cref="IntPtr" /> for the out parameter
-		/// <see cref="Result.NotFound" /> if there is not an override country code for the user.
-		/// <see cref="Result.LimitExceeded" /> - The OutBuffer is not large enough to receive the country code <see cref="Utf8String" />. InOutBufferLength contains the required minimum length to perform the operation successfully.
+		/// - <see cref="Result.Success" /> if the information is available and passed out in OutBuffer
+		/// - <see cref="Result.InvalidParameters" /> if you pass a <see langword="null" /> <see cref="IntPtr" /> for the out parameter
+		/// - <see cref="Result.NotFound" /> if there is not an override country code for the user.
+		/// - <see cref="Result.LimitExceeded" /> - The OutBuffer is not large enough to receive the country code <see cref="Utf8String" />. InOutBufferLength contains the required minimum length to perform the operation successfully.
 		/// </returns>
 		public Result GetActiveCountryCode(EpicAccountId localUserId, out Utf8String outBuffer)
 		{
@@ -286,10 +286,10 @@ namespace Epic.OnlineServices.Platform
 		/// </param>
 		/// <returns>
 		/// An <see cref="Result" /> that indicates whether the active locale code <see cref="Utf8String" /> was copied into the OutBuffer.
-		/// <see cref="Result.Success" /> if the information is available and passed out in OutBuffer
-		/// <see cref="Result.InvalidParameters" /> if you pass a <see langword="null" /> <see cref="IntPtr" /> for the out parameter
-		/// <see cref="Result.NotFound" /> if there is neither an override nor an available locale code for the user.
-		/// <see cref="Result.LimitExceeded" /> - The OutBuffer is not large enough to receive the locale code <see cref="Utf8String" />. InOutBufferLength contains the required minimum length to perform the operation successfully.
+		/// - <see cref="Result.Success" /> if the information is available and passed out in OutBuffer
+		/// - <see cref="Result.InvalidParameters" /> if you pass a <see langword="null" /> <see cref="IntPtr" /> for the out parameter
+		/// - <see cref="Result.NotFound" /> if there is neither an override nor an available locale code for the user.
+		/// - <see cref="Result.LimitExceeded" /> - The OutBuffer is not large enough to receive the locale code <see cref="Utf8String" />. InOutBufferLength contains the required minimum length to perform the operation successfully.
 		/// </returns>
 		public Result GetActiveLocaleCode(EpicAccountId localUserId, out Utf8String outBuffer)
 		{
@@ -412,6 +412,8 @@ namespace Epic.OnlineServices.Platform
 		/// 
 		/// On Windows, the desktop crossplay functionality is required to use Epic accounts login
 		/// with applications that are distributed outside the Epic Games Store.
+		/// <see cref="GetDesktopCrossplayStatusOptions" />
+		/// <see cref="DesktopCrossplayStatusInfo" />
 		/// </summary>
 		/// <param name="options">
 		/// input structure that specifies the API version.
@@ -421,7 +423,7 @@ namespace Epic.OnlineServices.Platform
 		/// </param>
 		/// <returns>
 		/// An <see cref="Result" /> is returned to indicate success or an error.
-		/// <see cref="Result.NotImplemented" /> is returned on non-Windows platforms.
+		/// - <see cref="Result.NotImplemented" /> is returned on non-Windows platforms.
 		/// </returns>
 		public Result GetDesktopCrossplayStatus(ref GetDesktopCrossplayStatusOptions options, out DesktopCrossplayStatusInfo outDesktopCrossplayStatusInfo)
 		{
@@ -604,9 +606,9 @@ namespace Epic.OnlineServices.Platform
 		/// </param>
 		/// <returns>
 		/// An <see cref="Result" /> that indicates whether the override country code <see cref="Utf8String" /> was copied into the OutBuffer.
-		/// <see cref="Result.Success" /> if the information is available and passed out in OutBuffer
-		/// <see cref="Result.InvalidParameters" /> if you pass a <see langword="null" /> <see cref="IntPtr" /> for the out parameter
-		/// <see cref="Result.LimitExceeded" /> - The OutBuffer is not large enough to receive the country code <see cref="Utf8String" />. InOutBufferLength contains the required minimum length to perform the operation successfully.
+		/// - <see cref="Result.Success" /> if the information is available and passed out in OutBuffer
+		/// - <see cref="Result.InvalidParameters" /> if you pass a <see langword="null" /> <see cref="IntPtr" /> for the out parameter
+		/// - <see cref="Result.LimitExceeded" /> - The OutBuffer is not large enough to receive the country code <see cref="Utf8String" />. InOutBufferLength contains the required minimum length to perform the operation successfully.
 		/// </returns>
 		public Result GetOverrideCountryCode(out Utf8String outBuffer)
 		{
@@ -637,9 +639,9 @@ namespace Epic.OnlineServices.Platform
 		/// </param>
 		/// <returns>
 		/// An <see cref="Result" /> that indicates whether the override locale code <see cref="Utf8String" /> was copied into the OutBuffer.
-		/// <see cref="Result.Success" /> if the information is available and passed out in OutBuffer
-		/// <see cref="Result.InvalidParameters" /> if you pass a <see langword="null" /> <see cref="IntPtr" /> for the out parameter
-		/// <see cref="Result.LimitExceeded" /> - The OutBuffer is not large enough to receive the locale code <see cref="Utf8String" />. InOutBufferLength contains the required minimum length to perform the operation successfully.
+		/// - <see cref="Result.Success" /> if the information is available and passed out in OutBuffer
+		/// - <see cref="Result.InvalidParameters" /> if you pass a <see langword="null" /> <see cref="IntPtr" /> for the out parameter
+		/// - <see cref="Result.LimitExceeded" /> - The OutBuffer is not large enough to receive the locale code <see cref="Utf8String" />. InOutBufferLength contains the required minimum length to perform the operation successfully.
 		/// </returns>
 		public Result GetOverrideLocaleCode(out Utf8String outBuffer)
 		{
@@ -706,9 +708,6 @@ namespace Epic.OnlineServices.Platform
 		}
 
 		/// <summary>
-		/// Get the active country code that the SDK will send to services which require it.
-		/// This returns the override value otherwise it will use the country code of the given user.
-		/// This is currently used for determining pricing.
 		/// Get a handle to the ProgressionSnapshot Interface.
 		/// eos_progressionsnapshot.h
 		/// eos_progressionsnapshot_types.h
@@ -728,7 +727,7 @@ namespace Epic.OnlineServices.Platform
 		/// <summary>
 		/// Get a handle to the RTC Admin interface
 		/// eos_rtc_admin.h
-		/// eos_admin_types.h
+		/// eos_rtc_admin_types.h
 		/// </summary>
 		/// <returns>
 		/// <see cref="RTCAdmin.RTCAdminInterface" /> handle
@@ -901,9 +900,9 @@ namespace Epic.OnlineServices.Platform
 		/// </param>
 		/// <returns>
 		/// An <see cref="Result" /> that indicates whether we changed the application status successfully.
-		/// <see cref="Result.Success" /> if the application was changed successfully.
-		/// <see cref="Result.InvalidParameters" /> if the value of NewStatus is invalid.
-		/// <see cref="Result.NotImplemented" /> if <see cref="ApplicationStatus.BackgroundConstrained" /> or <see cref="ApplicationStatus.BackgroundUnconstrained" /> are attempted to be set on platforms that do not have such application states.
+		/// - <see cref="Result.Success" /> if the application was changed successfully.
+		/// - <see cref="Result.InvalidParameters" /> if the value of NewStatus is invalid.
+		/// - <see cref="Result.NotImplemented" /> if <see cref="ApplicationStatus.BackgroundConstrained" /> or <see cref="ApplicationStatus.BackgroundUnconstrained" /> are attempted to be set on platforms that do not have such application states.
 		/// </returns>
 		public Result SetApplicationStatus(ApplicationStatus newStatus)
 		{
@@ -920,8 +919,8 @@ namespace Epic.OnlineServices.Platform
 		/// </param>
 		/// <returns>
 		/// An <see cref="Result" /> that indicates whether we changed the network status successfully.
-		/// <see cref="Result.Success" /> if the network was changed successfully.
-		/// <see cref="Result.InvalidParameters" /> if the value of NewStatus is invalid.
+		/// - <see cref="Result.Success" /> if the network was changed successfully.
+		/// - <see cref="Result.InvalidParameters" /> if the value of NewStatus is invalid.
 		/// </returns>
 		public Result SetNetworkStatus(NetworkStatus newStatus)
 		{
@@ -938,8 +937,8 @@ namespace Epic.OnlineServices.Platform
 		/// </summary>
 		/// <returns>
 		/// An <see cref="Result" /> that indicates whether the override country code <see cref="Utf8String" /> was saved.
-		/// <see cref="Result.Success" /> if the country code was overridden
-		/// <see cref="Result.InvalidParameters" /> if you pass an invalid country code
+		/// - <see cref="Result.Success" /> if the country code was overridden
+		/// - <see cref="Result.InvalidParameters" /> if you pass an invalid country code
 		/// </returns>
 		public Result SetOverrideCountryCode(Utf8String newCountryCode)
 		{
@@ -961,8 +960,8 @@ namespace Epic.OnlineServices.Platform
 		/// </summary>
 		/// <returns>
 		/// An <see cref="Result" /> that indicates whether the override locale code <see cref="Utf8String" /> was saved.
-		/// <see cref="Result.Success" /> if the locale code was overridden
-		/// <see cref="Result.InvalidParameters" /> if you pass an invalid locale code
+		/// - <see cref="Result.Success" /> if the locale code was overridden
+		/// - <see cref="Result.InvalidParameters" /> if you pass an invalid locale code
 		/// </returns>
 		public Result SetOverrideLocaleCode(Utf8String newLocaleCode)
 		{

@@ -1,4 +1,5 @@
 #pragma once
+#include <EOSSDK/eos_IOS.h>
 #include <EOSSDK/eos_IOS_base.h>
 #include <EOSSDK/eos_achievements.h>
 #include <EOSSDK/eos_achievements_types.h>
@@ -22,7 +23,6 @@
 #include <EOSSDK/eos_init.h>
 #include <EOSSDK/eos_integratedplatform.h>
 #include <EOSSDK/eos_integratedplatform_types.h>
-#include <EOSSDK/eos_ios.h>
 #include <EOSSDK/eos_kws.h>
 #include <EOSSDK/eos_kws_types.h>
 #include <EOSSDK/eos_leaderboards.h>
