@@ -8,6 +8,7 @@
 | [04-technical-debt.md](04-technical-debt.md) | مشاكل الأمان والكود اللي لازم تتصلّح قبل الإطلاق |
 | [05-rooms-design.md](05-rooms-design.md) | تصميم الغرف الصوتية: الحدود، الأنواع، والقواعد |
 | [06-architecture.md](06-architecture.md) | المعمارية الحالية والمستهدفة للشبكة، ونسخ الـ SDK |
+| [07-art-direction.md](07-art-direction.md) | الاتجاه الفني "سهرة الحارة": ألوان، خطوط، وPrompts جاهزة لتوليد الصور |
 
 ## الخلاصة
 
