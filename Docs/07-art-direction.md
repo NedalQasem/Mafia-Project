@@ -120,3 +120,29 @@
 5. **التحميل + النتيجة**
 
 الصور ممكن تتولّد بالتوازي: ابدأ بالخلفيات الثلاث + الإطارات + بطاقات الأدوار.
+
+---
+
+## 6. إحساس اللعبة (مش موقع) — تحديث 2026-10-17
+
+**المشكلة اللي صلّحناها:** النسخة الأولى كانت قوائم وبطاقات، فطلعت شكلها موقع. اللعبة لازم تكون **مشاهد**.
+
+| القاعدة | التطبيق |
+|---|---|
+| **كل شاشة مشهد مرسوم** | الحارة بالليل، داخل الديوانية، خريطة البيوت. مش خلفية لون واحد |
+| **الواجهة طايفة فوق المشهد** | شريط علوي (صورة + عملات بزر +)، أزرار جانبية بتطفو، شريط جلد تحت |
+| **أزرار سميكة بتنضغط** | ذهبي = الزر الأهم، أخضر = تأكيد/دعوة، خشب = ثانوي |
+| **أماكن مش جداول** | الديوانية: اللاعبين **حوالين سجادة**. اللعب: كل لاعب إله **بيت** بالحارة |
+| **حركة دايمة خفيفة** | فوانيس بتتمايل، نجوم بتلمع، أزرار بتطفو، الزر الرئيسي بينبض، موجة فيروزية حوالين اللي عم يحكي |
+| **شارات ومكافآت** | رقم أحمر على الهدية والمهام، شريط "فاز!" مع أشعة ونجوم وصناديق مكافآت |
+
+### صور إضافية لازمة
+
+| الصورة | Prompt |
+|---|---|
+| **بيت لاعب** (خريطة الليل، ٣ ألوان) | `Single small old Levantine house facade with arched wooden door and round window, gold trim edges, front view, isolated, game map piece` |
+| **بيت معتم** (لاعب مات) | نفس الـ Prompt + `all lights off, cracked window, dark and gloomy` |
+| **سجادة الديوانية** (من فوق) | `Top-down view of an oval traditional red Persian-style carpet with gold medallion in the center, isolated` |
+| **وسادة مقعد** | `Top-down view of a round floor cushion of red velvet with gold tassels, isolated` |
+| **صندوق مكافأة** | `Treasure chest of dark leather and gold metal straps, slightly open with warm glow, front view, isolated` |
+| **شمس وقمر** | `Stylized crescent moon with soft glow, isolated` / `Stylized warm sun with soft rays, isolated` |
