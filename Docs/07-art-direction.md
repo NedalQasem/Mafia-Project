@@ -9,6 +9,8 @@
 
 **المافيا مش كازينو، المافيا سهرة بالحارة.** فوانيس معلّقة، مشربيات خشب، حجر قديم، وديوانية فيها الكل بيحكي.
 
+**المواد:** جلد مدبوغ بخياطة ذهبية وإطارات ذهب مصقول، مثل دفتر مختار قديم. هذا الطابع الفخم من التصميم الأصلي، بس حطيناه بجو الحارة.
+
 ---
 
 ## 1. الألوان
@@ -17,7 +19,9 @@
 |---|---|---|
 | ليل الحارة | `#120F1F` | الخلفية الأساسية |
 | جدران بالعتمة | `#1C1730` | البطاقات والمساحات |
-| خشب المشربية | `#3B2418` / `#57351F` | الإطارات |
+| جلد مدبوغ | `#3A2216` / `#5B3521` | البطاقات والأشرطة (مع ملمس حبيبي وخياطة ذهبية) |
+| ذهب مصقول | `#FFF0B3` → `#E0AD4A` → `#8A5A1C` | الإطارات، الأزرار، حلقات الصور (تدرّج معدني) |
+| خشب المشربية | `#3B2418` / `#57351F` | الأقواس والزخارف |
 | ضو الفانوس | `#F4A83A` | الأزرار المهمة، العملات، العناوين المضيئة |
 | زليج فيروزي | `#2F9A92` | **مين عم يحكي**، جاهز، الأمان |
 | طين أحمر | `#C2563B` | المافيا، الكتم، التصويت، الخطر |
@@ -44,8 +48,9 @@
 1. **الديوانية هي القلب:** مقاعد بصور اللاعبين، وحلقة فيروزية حوالين اللي عم يحكي.
 2. **الليل والنهار:** الليل عتمة وفوانيس، والنهار حجر فاتح. اللاعب بيعرف المرحلة من أول نظرة.
 3. **الراوي:** كل حدث بجملة قصصية بخط Reem Kufi.
-4. **قوس المشربية** للإطارات المهمة بس (شاشة التحميل، النتيجة، بطاقة الدور).
-5. **زر واحد بلون الفانوس** بكل شاشة.
+4. **جلد وذهب:** كل بطاقة جلد بإطار ذهبي وخياطة. الذهب للحواف والأزرار بس، مش للمساحات الكبيرة.
+5. **قوس المشربية** للإطارات المهمة بس (شاشة التحميل، النتيجة، بطاقة الدور).
+6. **زر ذهبي واحد** بكل شاشة.
 
 ---
 
@@ -53,7 +58,7 @@
 
 ### طريقة التوليد (مهم للتناسق)
 - **أضف هالجملة بآخر كل Prompt** عشان كل الصور تطلع بنفس الستايل:
-  > `, stylized 2.5D mobile game art, warm lantern lighting, deep indigo night palette with amber and turquoise accents, Levantine old-town heritage, clean shapes, soft painterly shading, high detail, no text`
+  > `, stylized 2.5D mobile game art, Levantine old-town heritage, tooled dark brown leather with fine gold stitching, polished gold metal trim, warm lantern lighting, deep indigo night palette with amber and turquoise accents, clean shapes, soft painterly shading, high detail, no text`
 - **عناصر الواجهة (أيقونات، إطارات، أزرار):** اطلب خلفية شفافة أو خلفية لون واحد سادة (`isolated on plain dark background`) عشان نقصّها بسهولة.
 - **ممنوع نص بالصور**، النص بنكتبه بالكود (عشان العربي يطلع صح).
 - ولّد **٣ نسخ** من كل صورة واختار الأحلى.
@@ -72,10 +77,11 @@
 | العنصر | Prompt | ملاحظة Unity |
 |---|---|---|
 | **إطار قوس مشربية** | `Ornate wooden mashrabiya arch frame, empty center, front view, symmetrical, isolated on plain dark background` | 9-Slice |
-| **لوحة خشب للبطاقات** | `Rectangular dark walnut wood panel with thin brass edge and subtle geometric inlay, front view, isolated` | 9-Slice |
+| **لوحة جلد للبطاقات** | `Rectangular dark brown tooled leather panel with polished gold frame and fine gold saddle stitching along the inner edge, subtle geometric embossing, front view, isolated` | 9-Slice |
 | **زر فانوس (ذهبي)** | `Rounded rectangular game button made of polished brass with warm glow, empty, front view, isolated` | 9-Slice |
-| **زر ثانوي** | `Rounded rectangular game button of dark wood with brass outline, empty, front view, isolated` | 9-Slice |
-| **إطار صورة اللاعب** | `Circular avatar frame of brass with small geometric star pattern, empty center, front view, isolated` | فوق الصورة |
+| **زر ثانوي** | `Rounded rectangular game button of dark brown leather with polished gold outline and gold stitching, empty, front view, isolated` | 9-Slice |
+| **شريط جلد (القائمة السفلية)** | `Long horizontal dark leather strip with gold top edge and gold stitching, slight curve, front view, isolated` | 9-Slice |
+| **إطار صورة اللاعب** | `Circular avatar frame of polished gold with small geometric star engraving, empty center, front view, isolated` | فوق الصورة |
 | **فانوس** | `Single traditional Arabic brass lantern with colored glass glowing amber, front view, isolated` | حركة تمايل |
 
 ### ج. الأيقونات (مربع 1:1)
