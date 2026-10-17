@@ -30,7 +30,7 @@ namespace MafiaNight.UI.Kit
         [Header("Small parts")]
         public Sprite coin, bulletOn, bulletOff;
         public Sprite xpRing, medalDisc;
-        public Sprite doorD1, doorD2, doorD3, doorRing, boardDay, chipOff, chipOn, rowBg, iconDay, iconWeek, iconWall;
+        public Sprite mineBar, barRed, dashH, doorD1, doorD2, doorD3, doorRing, boardDay, chipOff, chipOn, rowBg, iconDay, iconWeek, iconWall;
 
         [Header("Bottom navigation parts")]
         public Sprite navBarTile, navShadow, navSeal, navSealGlow, navSpot, livePill, badgeDot;

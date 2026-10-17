@@ -36,7 +36,8 @@ namespace MafiaNight.UI.Kit
                 var go = Instantiate(chipPrefab, chipsRoot);
                 go.GetComponentInChildren<ArabicText>().Text = LeaderboardData.Categories[i];
                 var b = go.GetComponent<Button>(); b.onClick.AddListener(() => SetCategory(idx));
-                float w = Mathf.Max(170f, LeaderboardData.Categories[i].Length * 27f + 90f);
+                var lbl = go.GetComponentInChildren<TMPro.TMP_Text>(); lbl.ForceMeshUpdate();
+                float w = Mathf.Max(110f, lbl.preferredWidth + 78f);
                 go.GetComponent<LayoutElement>().preferredWidth = w; ((RectTransform)go.transform).sizeDelta = new Vector2(w, 76f);
                 chips.Add(b);
             }

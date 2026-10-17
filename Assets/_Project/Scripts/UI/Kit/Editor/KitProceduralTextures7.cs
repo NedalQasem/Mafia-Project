@@ -58,6 +58,23 @@ namespace MafiaNight.UI.Kit.Editor
                 return dIn > 0f ? Color.white : Color.clear;
             });
 
+            // the pinned "my rank" bar: warm leather, grain, light top edge and a dashed brass stitch (HTML .mine)
+            Make("mine_bar", 384, 128, (x, y) =>
+            {
+                float d = RoundRectSdf(x, y, 192f, 64f, 192f, 64f, 34f);
+                if (d > 0f) return Color.clear;
+                if (d > -2.2f) return C(0x000000);
+                Color c = Color.Lerp(C(0x3b2a20), C(0x1a110d), Mathf.Clamp01(y / 128f));
+                float g = (Hash((int)x, (int)y) - .5f) * .03f; c = new Color(c.r + g, c.g + g * .8f, c.b + g * .6f, 1f);
+                if (d > -4.6f && y < 64f) c = Color.Lerp(c, Color.white, .18f);
+                float di = RoundRectSdf(x, y, 192f, 64f, 181f, 53f, 24f);
+                if (Mathf.Abs(di) < 1.6f && ((x + y) % 20f) < 11f) c = Over(C(0xa98f62, .4f), c);
+                return c;
+            });
+            Make("bar_red", 64, 8, (x, y) => Color.Lerp(C(0x8a1c24), C(0xe0525a), x / 64f));
+
+            Make("dash_h", 24, 4, (x, y) => (x % 24f) < 14f ? Color.white : Color.clear);
+
             // pill chips: translucent outline / gold
             Make("chip_pill", 128, 64, (x, y) =>
             {
@@ -71,8 +88,9 @@ namespace MafiaNight.UI.Kit.Editor
                 float d = RoundRectSdf(x, y, 64f, 30f, 64f, 30f, 30f);
                 float ds = RoundRectSdf(x, y, 64f, 33f, 64f, 30f, 30f);   // hard shadow under the pill
                 if (d > 0f) return ds <= 0f ? C(0x000000) : Color.clear;
+                if (d > -2.4f) return C(0x000000);                                  // thin black outline all round
                 Color c = Color.Lerp(C(0xf5e2a8), C(0xc9a050), Mathf.Clamp01(y / 60f));
-                if (d > -2f && y < 30f) c = Color.Lerp(c, Color.white, .45f);
+                if (d > -4.6f && y < 30f) c = Color.Lerp(c, Color.white, .45f);
                 return c;
             });
 
