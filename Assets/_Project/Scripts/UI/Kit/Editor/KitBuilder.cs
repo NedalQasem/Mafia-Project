@@ -403,18 +403,22 @@ namespace MafiaNight.UI.Kit.Editor
             Img(ribbon, th.ribbonRed);
 
             var medal = Go("Medal", tag.transform);
-            Place(Rt(medal), new Vector2(1, 0.5f), new Vector2(-100, 0), new Vector2(176, 176));
-            var disc = Img(medal, th.medalDisc); disc.raycastTarget = false;
-            var track = Go("XpTrack", medal.transform); Stretch(Rt(track));
-            var ti2 = Img(track, th.xpRing); ti2.color = new Color(1f, 1f, 1f, 0.10f); ti2.raycastTarget = false;
-            var ringGo = Go("XpRing", medal.transform); Stretch(Rt(ringGo));
+            // layers, inside out: dark disc, XP ring, avatar picture, and on top the store frame (the outer ring of the medal)
+            Place(Rt(medal), new Vector2(1, 0.5f), new Vector2(-104, 0), new Vector2(200, 200));
+            var discGo = Go("Disc", medal.transform); Place(Rt(discGo), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(158, 158));
+            var disc = Img(discGo, th.medalDisc); disc.raycastTarget = false;
+            var track = Go("XpTrack", medal.transform); Place(Rt(track), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(152, 152));
+            var ti2 = Img(track, th.xpRing); ti2.color = new Color(1f, 1f, 1f, 0.12f); ti2.raycastTarget = false;
+            var ringGo = Go("XpRing", medal.transform); Place(Rt(ringGo), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(152, 152));
             var ringImg = Img(ringGo, th.xpRing); ringImg.color = new Color32(0xD2, 0xAD, 0x60, 255); ringImg.raycastTarget = false;
             ringImg.type = Image.Type.Filled; ringImg.fillMethod = Image.FillMethod.Radial360; ringImg.fillOrigin = (int)Image.Origin360.Top; ringImg.fillClockwise = true; ringImg.fillAmount = 0.62f;
             var avGo = (GameObject)PrefabUtility.InstantiatePrefab(LoadPrefab("AvatarFrame"), medal.transform);
             avGo.name = "Avatar";
-            Place(Rt(avGo), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(124, 124));
+            Place(Rt(avGo), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(200, 200));
+            var avPic = avGo.transform.Find("Avatar");
+            if (avPic != null) { var ar = (RectTransform)avPic; ar.offsetMin = new Vector2(48, 48); ar.offsetMax = new Vector2(-48, -48); }
             var lvl = Go("Level", medal.transform);
-            Place(Rt(lvl), new Vector2(0.5f, 0f), new Vector2(-14, 10), new Vector2(60, 60));
+            Place(Rt(lvl), new Vector2(0.5f, 0f), new Vector2(-16, 4), new Vector2(60, 60));
             Img(lvl, th.levelSeal);
             var lvlTxt = Txt(lvl.transform, "N", "٧", th.fontHeading, 30, th.brassText);
             Stretch(Rt(lvlTxt.gameObject), 0, 3, 0, 0);
