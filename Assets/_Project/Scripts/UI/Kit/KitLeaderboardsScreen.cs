@@ -9,6 +9,7 @@ namespace MafiaNight.UI.Kit
     {
         [SerializeField] private Button[] doors = new Button[3];
         [SerializeField] private Button backButton;
+        [SerializeField] private Image headerLine;
         public event System.Action OnBack;
         [SerializeField] private GameObject boardView, wallView, chipsRow;
         [SerializeField] private Image boardBg;
@@ -48,7 +49,13 @@ namespace MafiaNight.UI.Kit
 
         private static void Del(GameObject g) { if (Application.isPlaying) Destroy(g); else DestroyImmediate(g); }
 
-        public void SetPeriod(int p) { period = p; Apply(); }
+        public void SetPeriod(int p)
+        {
+            if (p == period) { Apply(); return; }
+            bool toHigher = p > period; period = p; Apply();
+            // HTML .view: the new board fades in while sliding ~30px from the side of the door that was pressed
+            KitEnterAnim.Play(period == 2 ? wallView : boardView, 0f, toHigher ? -83f : 83f, 0.45f, 0.35f);
+        }
         public void SetCategory(int c) { cat = c; Apply(); }
 
         private void Apply()
@@ -78,6 +85,21 @@ namespace MafiaNight.UI.Kit
             mineWall.Text = ""; SetResetVisible(true);
             resetLabel.Text = period == 0 ? "يتجدد خلال ٠٣:٤٢:١٠" : "يتجدد خلال ٢ يوم ٠٥:١٨";
             boardBg.sprite = paper ? th.paper : th.boardDay;
+            // newspaper = bold display type and a solid ink rule; chalkboard = calligraphy and a dashed chalk line
+            var tt = boardTitle.GetComponent<TMPro.TMP_Text>();
+            tt.font = paper ? th.fontHeading : th.fontCalligraphy; tt.fontStyle = paper ? TMPro.FontStyles.Bold : TMPro.FontStyles.Normal; tt.fontSize = paper ? 48f : 56f;
+            var ut = boardUnit.GetComponent<TMPro.TMP_Text>(); ut.fontStyle = TMPro.FontStyles.Bold; ut.fontSize = paper ? 30f : 34f;
+            if (headerLine != null)
+            {
+                headerLine.sprite = paper ? null : th.dashH; headerLine.type = paper ? Image.Type.Simple : Image.Type.Tiled;
+                headerLine.color = paper ? new Color(0.11f, 0.09f, 0.06f, 0.9f) : new Color(0.91f, 0.9f, 0.86f, 0.3f);
+            }
+            for (int s = 0; s < 3; s++)
+            {
+                var st = boardView.transform.Find("Stand" + (s + 1)); if (st == null) continue;
+                st.GetComponent<Image>().color = paper ? new Color(0.11f, 0.09f, 0.06f, 0.07f) : new Color(1f, 1f, 1f, 0.01f);
+                var hl = st.Find("Hl"); if (hl != null) hl.GetComponent<Image>().color = paper ? new Color(0.11f, 0.09f, 0.06f, 0.04f) : new Color(1f, 1f, 1f, 0.025f);
+            }
             var list = LeaderboardData.Make(period, cat);
             boardTitle.Text = (paper ? "جريدة الأسبوع · " : "سبورة الليلة · ") + LeaderboardData.Categories[cat];
             boardUnit.Text = LeaderboardData.Units[cat];
@@ -89,10 +111,13 @@ namespace MafiaNight.UI.Kit
             {
                 var go = Instantiate(rowPrefab, rowsRoot);
                 go.GetComponent<LeaderRowView>().Bind(list[i], i + 1, paper);
+                KitEnterAnim.Play(go, (i - 3) * 0.04f, 38f, 0.4f, 0.4f);
             }
             var me = LeaderboardData.Me(period, cat);
             var meGo = Instantiate(rowPrefab, rowsRoot);
             meGo.GetComponent<LeaderRowView>().Bind(me, 42, paper);
+            KitEnterAnim.Play(meGo, (list.Count - 3) * 0.04f, 38f, 0.4f, 0.4f);
+            boardView.transform.localRotation = paper ? Quaternion.Euler(0f, 0f, 0.6f) : Quaternion.identity;   // the newspaper lies slightly crooked
             rewardLabel.Text = period == 0 ? "جائزة الليلة: ٣٠٠ كوينز وشارة \"سيّد الليلة\" للأول" : "جوائز الأسبوع: ١: إطار \"ملك الأسبوع\" + ٥٬٠٠٠  ·  ٢: ٢٬٥٠٠  ·  ٣: ١٬٠٠٠";
             mineRank.Text = "#" + CoinPill.Format(42);
             mineNeed.Text = "تحتاج " + CoinPill.Format(period == 0 ? 320 : 1850) + " " + LeaderboardData.Units[cat] + " لتدخل أول ١٠";
@@ -107,10 +132,36 @@ namespace MafiaNight.UI.Kit
         private static void StyleDoor(Button door, int i, bool on)
         {
             var rt = (RectTransform)door.transform;
-            rt.anchoredPosition = new Vector2(0f, on ? 14f : 0f);
+            if (!Application.isPlaying) rt.anchoredPosition = new Vector2(0f, on ? 14f : 0f);   // in play mode Update eases it
             var ring = rt.Find("Ring"); if (ring != null) ring.gameObject.SetActive(on);
             var label = rt.Find("Label"); if (label != null) label.GetComponent<TMPro.TMP_Text>().color = on ? DoorOn[i] : DoorOff[i];
             var icon = rt.Find("Icon"); if (icon != null) icon.GetComponent<Image>().color = on ? Color.white : new Color(0.62f, 0.6f, 0.58f, 1f);
+        }
+
+        private float resetSeconds = 3 * 3600 + 42 * 60 + 10, resetTick;
+
+        private static string Ar2(int v) => v < 10 ? "٠" + CoinPill.Format(v) : CoinPill.Format(v);
+
+        private void Update()
+        {
+            if (!Application.isPlaying) return;
+            for (int i = 0; i < doors.Length; i++)
+            {
+                var rt = (RectTransform)doors[i].transform;
+                float target = i == period ? 14f : 0f;
+                float y = Mathf.Lerp(rt.anchoredPosition.y, target, 1f - Mathf.Exp(-16f * Time.unscaledDeltaTime));
+                rt.anchoredPosition = new Vector2(0f, Mathf.Abs(y - target) < 0.05f ? target : y);
+            }
+            if (period == 0)
+            {
+                resetTick += Time.unscaledDeltaTime;
+                if (resetTick >= 1f)
+                {
+                    resetTick -= 1f; resetSeconds = Mathf.Max(0f, resetSeconds - 1f);
+                    int s = (int)resetSeconds;
+                    resetLabel.Text = "يتجدد خلال " + Ar2(s / 3600) + ":" + Ar2(s % 3600 / 60) + ":" + Ar2(s % 60);
+                }
+            }
         }
 
         private void SetResetVisible(bool on) { if (resetLabel != null && resetLabel.transform.parent != null && resetLabel.transform.parent.name == "ResetPill") resetLabel.transform.parent.gameObject.SetActive(on); }

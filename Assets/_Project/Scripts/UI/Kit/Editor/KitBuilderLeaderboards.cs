@@ -157,11 +157,14 @@ namespace MafiaNight.UI.Kit.Editor
             wall.AddComponent<LayoutElement>().preferredHeight = 2200;
             var wallBg = wall.AddComponent<Image>(); wallBg.sprite = th.wallTile; wallBg.type = Image.Type.Tiled; wallBg.raycastTarget = false;
             void Heading(string text, float y) { var h = Txt(wall.transform, "H", text, th.fontCalligraphy, 64, th.brassLight); PlaceTop(Rt(h.gameObject), 0, y, 900, 90); }
+            int hangCount = 0;
             void Framed(string name, string sub, float x, float y, float w, float hgt, float plaqueW)
             {
-                var f = Go("Frame", wall.transform); PlaceTop(Rt(f), x, y, w, hgt); Img(f, th.goldFrame, true, 1f);
+                var hang = Go("Hang", wall.transform); PlaceTop(Rt(hang), x, y, Mathf.Max(w, plaqueW), hgt + 14 + 120);
+                var sway = hang.AddComponent<KitSway>(); var swo = new SerializedObject(sway); swo.FindProperty("phase").floatValue = (hangCount++ % 2 == 0) ? 0f : -3f; swo.ApplyModifiedPropertiesWithoutUndo();
+                var f = Go("Frame", hang.transform); PlaceTop(Rt(f), 0, 0, w, hgt); Img(f, th.goldFrame, true, 1f);
                 var p = Go("Pic", f.transform); Place(Rt(p), new Vector2(0.5f, 0.5f), new Vector2(0, -6), new Vector2(w * 0.62f, w * 0.62f)); Img(p, th.avatarDefault).color = new Color(1, 1, 1, 0.9f);
-                var pl = Go("Plaque", wall.transform); PlaceTop(Rt(pl), x, y - hgt - 14, plaqueW, 120); Img(pl, th.brassPlate, true, 2.2f);
+                var pl = Go("Plaque", hang.transform); PlaceTop(Rt(pl), 0, -hgt - 14, plaqueW, 120); Img(pl, th.brassPlate, true, 2.2f);
                 var pn = Txt(pl.transform, "N", name, th.fontHeading, 38, th.brassText); Place(Rt(pn.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, 16), new Vector2(plaqueW - 30, 50));
                 var ps = Txt(pl.transform, "S", sub, th.fontBody, 24, th.brassText); Place(Rt(ps.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -24), new Vector2(plaqueW - 30, 36));
             }
@@ -202,7 +205,7 @@ namespace MafiaNight.UI.Kit.Editor
             var da = so.FindProperty("doors"); da.arraySize = 3; for (int i = 0; i < 3; i++) da.GetArrayElementAtIndex(i).objectReferenceValue = doors[i];
             var pa = so.FindProperty("podium"); pa.arraySize = 3; for (int i = 0; i < 3; i++) pa.GetArrayElementAtIndex(i).objectReferenceValue = slots[i];
             so.ApplyModifiedPropertiesWithoutUndo();
-            SetRef(lb, "backButton", backBtn); SetRef(lb, "boardView", board); SetRef(lb, "wallView", wall); SetRef(lb, "chipsRow", chipsRowGo); SetRef(lb, "boardBg", boardBg);
+            SetRef(lb, "backButton", backBtn); SetRef(lb, "headerLine", dashImg); SetRef(lb, "boardView", board); SetRef(lb, "wallView", wall); SetRef(lb, "chipsRow", chipsRowGo); SetRef(lb, "boardBg", boardBg);
             SetRef(lb, "boardTitle", title.GetComponent<ArabicText>()); SetRef(lb, "boardUnit", unit.GetComponent<ArabicText>());
             SetRef(lb, "rewardLabel", reward.GetComponent<ArabicText>()); SetRef(lb, "resetLabel", reset.GetComponent<ArabicText>());
             SetRef(lb, "rowsRoot", Rt(rowsRoot)); SetRef(lb, "chipsRoot", ccr); SetRef(lb, "rowPrefab", LoadPrefab("LbRow")); SetRef(lb, "chipPrefab", LoadPrefab("LbChip"));
