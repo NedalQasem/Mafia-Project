@@ -79,12 +79,18 @@ namespace MafiaNight.UI.Kit.Editor
             // ---------- category drawer, shelf header, ad page, ad dot
             {
                 var root = new GameObject("StoreCat", typeof(RectTransform));
-                Rt(root).sizeDelta = new Vector2(250, 112);
-                var img = Img(root, th.leatherDark, true, 1.5f, true);
-                var b = root.AddComponent<Button>(); b.targetGraphic = img; b.transition = Selectable.Transition.None;
-                var le = root.AddComponent<LayoutElement>(); le.preferredWidth = 250; le.preferredHeight = 112;
-                var t = Txt(root.transform, "Label", "الإطارات", th.fontHeading, 34, th.ivoryDim); Stretch(Rt(t.gameObject), 8, 14, 8, 10);
-                t.enableAutoSizing = true; t.fontSizeMin = 22; t.fontSizeMax = 34; t.textWrappingMode = TextWrappingModes.NoWrap;
+                Rt(root).sizeDelta = new Vector2(190, 150);
+                var hit = root.AddComponent<Image>(); hit.color = Color.clear; hit.raycastTarget = true;
+                var b = root.AddComponent<Button>(); b.targetGraphic = hit; b.transition = Selectable.Transition.None;
+                var le = root.AddComponent<LayoutElement>(); le.preferredWidth = 190; le.preferredHeight = 150;
+                var body = Go("Body", root.transform); Stretch(Rt(body));
+                var bodyImg = Img(body, th.catOff, true, 1f); bodyImg.raycastTarget = false;
+                var icon = Go("Icon", body.transform); PlaceTop(Rt(icon), 0, -14, 66, 66); Img(icon, th.catIcons[1]).raycastTarget = false;
+                var t = Txt(body.transform, "Label", "الإطارات", th.fontHeading, 32, new Color32(0x8F, 0x87, 0x77, 255)); var tr = Rt(t.gameObject);
+                tr.anchorMin = new Vector2(0, 0); tr.anchorMax = new Vector2(1, 0); tr.pivot = new Vector2(0.5f, 0); tr.offsetMin = new Vector2(4, 12); tr.offsetMax = new Vector2(-4, 56);
+                t.textWrappingMode = TextWrappingModes.NoWrap; t.overflowMode = TextOverflowModes.Overflow;
+                var ptr = Go("Pointer", body.transform); Place(Rt(ptr), new Vector2(0.5f, 0f), new Vector2(0, -8), new Vector2(36, 20)); ptr.transform.localRotation = Quaternion.Euler(0, 0, 180f);
+                var ptrImg = Img(ptr, th.triUp); ptrImg.color = new Color32(0x8A, 0x6A, 0x30, 255); ptrImg.raycastTarget = false; ptr.SetActive(false);
                 Save(root, "StoreCat");
             }
             {
@@ -156,15 +162,15 @@ namespace MafiaNight.UI.Kit.Editor
             var carousel = adSec.AddComponent<StoreAdCarousel>(); SetRef(carousel, "progress", bf);
             SetRef(carousel, "pagesRoot", pg); SetRef(carousel, "dotsRoot", dr); SetRef(carousel, "pagePrefab", LoadPrefab("StoreAdPage")); SetRef(carousel, "dotPrefab", LoadPrefab("StoreAdDot"));
 
-            var catsScroll = Go("CatsScroll", content.transform); Rt(catsScroll).sizeDelta = new Vector2(1080, 140);
-            catsScroll.AddComponent<LayoutElement>().preferredHeight = 140;
+            var catsScroll = Go("CatsScroll", content.transform); Rt(catsScroll).sizeDelta = new Vector2(1080, 195);
+            catsScroll.AddComponent<LayoutElement>().preferredHeight = 195;
             var csr = catsScroll.AddComponent<ScrollRect>(); csr.vertical = false; csr.movementType = ScrollRect.MovementType.Elastic;
             var cvp = Go("Viewport", catsScroll.transform); Stretch(Rt(cvp)); cvp.AddComponent<RectMask2D>();
             var cvpi = cvp.AddComponent<Image>(); cvpi.color = Color.clear;
             var catsRoot = Go("Cats", cvp.transform);
             var ccr = Rt(catsRoot); ccr.anchorMin = new Vector2(0, 0); ccr.anchorMax = new Vector2(0, 1); ccr.pivot = new Vector2(1, 0.5f); ccr.anchoredPosition = Vector2.zero; ccr.sizeDelta = new Vector2(0, 0);
             ccr.anchorMin = new Vector2(1, 0); ccr.anchorMax = new Vector2(1, 1); ccr.pivot = new Vector2(1, 0.5f);   // grows to the left (RTL)
-            var chl = catsRoot.AddComponent<HorizontalLayoutGroup>(); chl.spacing = 14; chl.padding = new RectOffset(30, 30, 10, 10); chl.childAlignment = TextAnchor.MiddleRight;
+            var chl = catsRoot.AddComponent<HorizontalLayoutGroup>(); chl.spacing = 19; chl.padding = new RectOffset(38, 38, 30, 14); chl.childAlignment = TextAnchor.MiddleRight;
             chl.childControlWidth = false; chl.childControlHeight = false; chl.childForceExpandWidth = false; chl.reverseArrangement = true;
             catsRoot.AddComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             csr.viewport = Rt(cvp); csr.content = ccr;
@@ -189,7 +195,7 @@ namespace MafiaNight.UI.Kit.Editor
             dim.AddComponent<Button>().targetGraphic = dimImg;
             var dcg = dim.AddComponent<CanvasGroup>(); dcg.alpha = 0f; dcg.blocksRaycasts = false;
             var sheet = Go("Sheet", dim.transform);
-            var shRt = Rt(sheet); shRt.anchorMin = new Vector2(0, 0); shRt.anchorMax = new Vector2(1, 0); shRt.pivot = new Vector2(0.5f, 0); shRt.sizeDelta = new Vector2(0, 980); shRt.anchoredPosition = new Vector2(0, -1060);
+            var shRt = Rt(sheet); shRt.anchorMin = new Vector2(0, 0); shRt.anchorMax = new Vector2(1, 0); shRt.pivot = new Vector2(0.5f, 0); shRt.sizeDelta = new Vector2(0, 1050); shRt.anchoredPosition = new Vector2(0, -1130);
             var sheetImg = Img(sheet, th.sheetBg, true, 1f, true);
             var handle = Go("Handle", sheet.transform); PlaceTop(Rt(handle), 0, -22, 122, 11); Img(handle, th.sheetHandle).raycastTarget = false;
             // stage: a cone of light with the item floating in it
@@ -199,7 +205,7 @@ namespace MafiaNight.UI.Kit.Editor
             var chip = Go("Chip", sheet.transform); PlaceTop(Rt(chip), 0, -566, 190, 54); var chipImg = Img(chip, th.chipSheet, true, 1f); chipImg.raycastTarget = false;
             var chipT = Txt(chip.transform, "T", "نادر", th.fontHeading, 26, th.leatherText); Stretch(Rt(chipT.gameObject), 4, 2, 4, 6);
             var sd = Txt(sheet.transform, "Desc", "وصف", th.fontBody, 32, new Color32(0xA7, 0x9D, 0x88, 255), TextAlignmentOptions.Top, true); PlaceTop(Rt(sd.gameObject), 0, -640, 860, 100);
-            var sm = Txt(sheet.transform, "Msg", "", th.fontHeading, 28, new Color32(0xE6, 0xA0, 0xA4, 255)); PlaceTop(Rt(sm.gameObject), 0, -745, 860, 50);
+            var sm = Txt(sheet.transform, "Msg", "", th.fontHeading, 28, new Color32(0xE6, 0xA0, 0xA4, 255)); PlaceTop(Rt(sm.gameObject), 0, -762, 860, 50);
             // buttons: dark "later" on the right, wide gold buy on the left (RTL), like the mockup
             var close = Go("Close", sheet.transform); var clRt = Rt(close); clRt.anchorMin = clRt.anchorMax = new Vector2(0.5f, 0f); clRt.pivot = new Vector2(0.5f, 0f); clRt.anchoredPosition = new Vector2(300, 50); clRt.sizeDelta = new Vector2(380, 150);
             var closeImg = Img(close, th.btnDark, true, 1f, true);

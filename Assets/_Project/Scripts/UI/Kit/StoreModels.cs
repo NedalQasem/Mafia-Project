@@ -26,8 +26,11 @@ namespace MafiaNight.UI.Kit
 
     public static class StoreData
     {
-        public static readonly string[] CategoryNames = { "الإطارات", "خلفية الروم", "خلفية الدردشة", "فقاعات الدردشة", "فقاعات الدخول", "الهدايا", "أوراق الطاولة", "الألقاب", "الكوينز" };
-        public static readonly string[] CategoryHints = { "ترافقك في كل غرفة", "شكل المكان الذي تجلسون فيه", "لون مجلسك", "شكل رسائلك", "ما يظهر للجميع عند دخولك", "أرسلها للاعبين بالغرفة", "شكل ظهر الورق", "تظهر تحت اسمك", "للهدايا والزينة فقط" };
+        public static readonly string[] CategoryNames = { "الإطارات", "خلفية الروم", "خلفية الدردشة", "فقاعات الدردشة", "فقاعات الدخول", "الهدايا", "أوراق الطاولة", "الألقاب", "الكوينز", "حصري الرتب" };
+        /// <summary>Order of the drawers in the tab row (the rank-exclusive one comes first) and the icon of each category id.</summary>
+        public static readonly int[] TabOrder = { 9, 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+        public static readonly int[] IconOf = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
+        public static readonly string[] CategoryHints = { "ترافقك في كل غرفة", "شكل المكان الذي تجلسون فيه", "لون مجلسك", "شكل رسائلك", "ما يظهر للجميع عند دخولك", "أرسلها للاعبين بالغرفة", "شكل ظهر الورق", "تظهر تحت اسمك", "للهدايا والزينة فقط", "لا يفتحها إلا الترقّي" };
 
         private static StoreItem I(string name, string art, int idx, int price, Rarity r, string desc, bool owned = false, bool isNew = false, int lockRank = 0, Color? c = null, string text = null)
             => new StoreItem { name = name, art = art, idx = idx, price = price, rarity = r, desc = desc, owned = owned, isNew = isNew, lockRank = lockRank, c1 = c ?? Color.white, text = text };
@@ -36,6 +39,13 @@ namespace MafiaNight.UI.Kit
 
         public static List<StoreItem> Items(int category)
         {
+            if (category == 9)
+            {
+                var all = new List<StoreItem>();
+                for (int c = 0; c < 8; c++) foreach (var it in Items(c)) if (it.lockRank > 0) all.Add(it);
+                all.Sort((a, b) => a.lockRank.CompareTo(b.lockRank));
+                return all;
+            }
             var list = Raw(category);
             for (int i = 0; i < list.Count; i++) list[i].id = "c" + category + "_" + i;
             return list;

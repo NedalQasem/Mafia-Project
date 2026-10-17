@@ -57,12 +57,17 @@ namespace MafiaNight.UI.Kit
             // categories
             for (int i = catsRoot.childCount - 1; i >= 0; i--) DestroyAny(catsRoot.GetChild(i).gameObject);
             catButtons.Clear();
-            for (int i = 0; i < StoreData.CategoryNames.Length; i++)
+            for (int i = 0; i < StoreData.TabOrder.Length; i++)
             {
-                int idx = i;
+                int catId = StoreData.TabOrder[i];
                 var go = Instantiate(catPrefab, catsRoot);
-                go.GetComponentInChildren<ArabicText>().Text = StoreData.CategoryNames[i];
-                var b = go.GetComponent<Button>(); b.onClick.AddListener(() => Select(idx));
+                var label = go.transform.Find("Body/Label").GetComponent<ArabicText>();
+                label.Text = StoreData.CategoryNames[catId];
+                go.transform.Find("Body/Icon").GetComponent<Image>().sprite = th.catIcons[StoreData.IconOf[catId]];
+                var tmp = label.GetComponent<TMPro.TMP_Text>(); tmp.ForceMeshUpdate();
+                float w = Mathf.Max(150f, tmp.preferredWidth + 62f);   // HTML .cat: the label sets the width, padding 12px
+                go.GetComponent<LayoutElement>().preferredWidth = w; ((RectTransform)go.transform).sizeDelta = new Vector2(w, 150f);
+                var b = go.GetComponent<Button>(); b.onClick.AddListener(() => Select(catId));
                 catButtons.Add(b);
             }
             // ads
@@ -80,9 +85,10 @@ namespace MafiaNight.UI.Kit
         private static void DestroyAny(GameObject g) { if (Application.isPlaying) Destroy(g); else DestroyImmediate(g); }
 
         // slide the category row so the chosen drawer is in view (HTML scrolls the tab strip too)
-        private System.Collections.IEnumerator ScrollTabsTo(int idx)
+        private System.Collections.IEnumerator ScrollTabsTo(int catId)
         {
             yield return null;
+            int idx = System.Array.IndexOf(StoreData.TabOrder, catId);
             if (idx < 0 || idx >= catButtons.Count) yield break;
             var sr = catsRoot.GetComponentInParent<ScrollRect>(); if (sr == null) yield break;
             var vp = sr.viewport != null ? sr.viewport : (RectTransform)sr.transform;
@@ -110,13 +116,15 @@ namespace MafiaNight.UI.Kit
             var th = KitTheme.Current;
             for (int i = 0; i < catButtons.Count; i++)
             {
-                var img = catButtons[i].GetComponent<Image>();
-                bool on = i == cat;
-                img.sprite = on ? th.brassPlate : th.leatherDark;
-                var tx = catButtons[i].GetComponentInChildren<TMPro.TMP_Text>();
-                tx.color = on ? th.brassText : th.ivoryDim;
-                ((RectTransform)catButtons[i].transform).anchoredPosition = new Vector2(((RectTransform)catButtons[i].transform).anchoredPosition.x, 0);
-                catButtons[i].transform.localScale = Vector3.one * (on ? 1.08f : 1f);
+                bool on = StoreData.TabOrder[i] == cat;
+                var body = (RectTransform)catButtons[i].transform.Find("Body");
+                body.GetComponent<Image>().sprite = on ? th.catOn : th.catOff;
+                body.anchoredPosition = new Vector2(0f, on ? 11f : 0f);                // HTML .cat.on: lifts 4px
+                var tx = body.Find("Label").GetComponent<TMPro.TMP_Text>();
+                tx.color = on ? new Color32(0x2A, 0x1A, 0x08, 255) : new Color32(0x8F, 0x87, 0x77, 255);
+                var icon = body.Find("Icon").GetComponent<Image>();
+                icon.color = on ? Color.white : new Color(0.55f, 0.52f, 0.5f, 0.85f);   // grayscale + dim when not picked
+                body.Find("Pointer").gameObject.SetActive(on);
             }
             for (int i = shelvesRoot.childCount - 1; i >= 0; i--) DestroyAny(shelvesRoot.GetChild(i).gameObject);
             var header = Instantiate(headerPrefab, shelvesRoot);
