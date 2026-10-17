@@ -71,8 +71,9 @@ namespace MafiaNight.UI.Kit.Editor
             var backFx = backGo.AddComponent<KitButtonFx>(); SetRef(backFx, "face", Rt(backGo));
             var backArrow = Go("Arrow", backGo.transform); Place(Rt(backArrow), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(34, 34)); backArrow.transform.localRotation = Quaternion.Euler(0, 0, -90f);
             var baI = Img(backArrow, th.triUp); baI.color = th.leatherText; baI.raycastTarget = false;
-            var resetPill = Go("ResetPill", hdr.transform); Place(Rt(resetPill), new Vector2(0, 0.5f), new Vector2(230, 0), new Vector2(440, 72)); Img(resetPill, th.chipOff, true, 1.4f).color = new Color(1f, 1f, 1f, 0.03f);
-            var resetText = Txt(resetPill.transform, "T", "يتجدد خلال ٠٣:٤٢:١٠", th.fontBody, 28, new Color32(0xFF, 0xB3, 0x5A, 255)); Stretch(Rt(resetText.gameObject), 10, 4, 10, 4);
+            var resetPill = Go("ResetPill", hdr.transform); var rpr = Rt(resetPill); rpr.anchorMin = rpr.anchorMax = new Vector2(0, 0.5f); rpr.pivot = new Vector2(0, 0.5f); rpr.anchoredPosition = new Vector2(8, 0); rpr.sizeDelta = new Vector2(420, 64); Img(resetPill, th.resetPill, true, 1.4f).raycastTarget = false;
+            var resetCap = Txt(resetPill.transform, "Caption", "يصفّر خلال", th.fontHeading, 25, new Color32(0xA7, 0x9D, 0x88, 255), TextAlignmentOptions.MidlineRight); var rcr = Rt(resetCap.gameObject); rcr.anchorMin = rcr.anchorMax = new Vector2(1, 0.5f); rcr.pivot = new Vector2(1, 0.5f); rcr.anchoredPosition = new Vector2(-24, 0); rcr.sizeDelta = new Vector2(200, 50);
+            var resetText = Txt(resetPill.transform, "Value", "٠٣:٤٢:١٠", th.fontHeading, 38, new Color32(0xFF, 0xB3, 0x5A, 255), TextAlignmentOptions.MidlineRight); var rvr = Rt(resetText.gameObject); rvr.anchorMin = rvr.anchorMax = new Vector2(1, 0.5f); rvr.pivot = new Vector2(1, 0.5f); rvr.anchoredPosition = new Vector2(-230, 0); rvr.sizeDelta = new Vector2(240, 56);
 
             // doors
             var doorsRow = Go("Doors", content.transform); Rt(doorsRow).sizeDelta = new Vector2(1040, 200);
@@ -231,7 +232,7 @@ namespace MafiaNight.UI.Kit.Editor
             so.ApplyModifiedPropertiesWithoutUndo();
             SetRef(lb, "backButton", backBtn); SetRef(lb, "mineBarTrack", Rt(mbar)); SetRef(lb, "mineCaption", mcap.GetComponent<ArabicText>()); SetRef(lb, "headerLine", dashImg); SetRef(lb, "boardView", board); SetRef(lb, "wallView", wall); SetRef(lb, "chipsRow", chipsRowGo); SetRef(lb, "boardBg", boardBg);
             SetRef(lb, "boardTitle", title.GetComponent<ArabicText>()); SetRef(lb, "boardUnit", unit.GetComponent<ArabicText>());
-            SetRef(lb, "rewardLabel", reward.GetComponent<ArabicText>()); SetRef(lb, "resetLabel", reset.GetComponent<ArabicText>());
+            SetRef(lb, "rewardLabel", reward.GetComponent<ArabicText>()); SetRef(lb, "resetLabel", reset.GetComponent<ArabicText>()); SetRef(lb, "resetCaption", resetCap.GetComponent<ArabicText>());
             SetRef(lb, "rowsRoot", Rt(rowsRoot)); SetRef(lb, "chipsRoot", ccr); SetRef(lb, "rowPrefab", LoadPrefab("LbRow")); SetRef(lb, "chipPrefab", LoadPrefab("LbChip"));
             SetRef(lb, "mineRank", mrank.GetComponent<ArabicText>()); SetRef(lb, "mineNeed", mneed.GetComponent<ArabicText>()); SetRef(lb, "mineValue", mval.GetComponent<ArabicText>());
             SetRef(lb, "mineFill", mfr); SetRef(lb, "mineBar", mine); SetRef(lb, "mineWall", mwall.GetComponent<ArabicText>());

@@ -257,6 +257,8 @@ namespace MafiaNight.UI.Kit.Editor
                     s.spriteBorder = new Vector4(30, 24, 56, 24);
                 else if (name == "stamp_frame")
                     s.spriteBorder = new Vector4(24, 24, 24, 24);
+                else if (name == "reset_pill")
+                    s.spriteBorder = new Vector4(30, 30, 30, 30);
                 else if (name == "wall_vignette")
                     s.spriteBorder = new Vector4(125, 125, 125, 125);
                 else if (name == "plaque_gold")

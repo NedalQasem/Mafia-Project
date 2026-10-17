@@ -13,7 +13,7 @@ namespace MafiaNight.UI.Kit
         public event System.Action OnBack;
         [SerializeField] private GameObject boardView, wallView, chipsRow;
         [SerializeField] private Image boardBg;
-        [SerializeField] private ArabicText boardTitle, boardUnit, rewardLabel, resetLabel;
+        [SerializeField] private ArabicText boardTitle, boardUnit, rewardLabel, resetLabel, resetCaption;
         [SerializeField] private LeaderPodiumSlot[] podium = new LeaderPodiumSlot[3];    // [0]=1st, [1]=2nd, [2]=3rd
         [SerializeField] private RectTransform rowsRoot, chipsRoot;
         [SerializeField] private GameObject rowPrefab, chipPrefab;
@@ -86,7 +86,7 @@ namespace MafiaNight.UI.Kit
                 resetLabel.Text = ""; SetResetVisible(false); return;
             }
             mineWall.Text = ""; SetResetVisible(true); if (mineCaption != null) mineCaption.Text = "ترتيبك";
-            resetLabel.Text = period == 0 ? "يتجدد خلال ٠٣:٤٢:١٠" : "يتجدد خلال ٢ يوم ٠٥:١٨";
+            SetReset(period == 0 ? "٠٣:٤٢:١٠" : "٢ يوم ٠٥:١٨");
             boardBg.sprite = paper ? th.paper : th.boardDay;
             // newspaper = bold display type and a solid ink rule; chalkboard = calligraphy and a dashed chalk line
             var tt = boardTitle.GetComponent<TMPro.TMP_Text>();
@@ -162,9 +162,21 @@ namespace MafiaNight.UI.Kit
                 {
                     resetTick -= 1f; resetSeconds = Mathf.Max(0f, resetSeconds - 1f);
                     int s = (int)resetSeconds;
-                    resetLabel.Text = "يتجدد خلال " + Ar2(s / 3600) + ":" + Ar2(s % 3600 / 60) + ":" + Ar2(s % 60);
+                    SetReset(Ar2(s / 3600) + ":" + Ar2(s % 3600 / 60) + ":" + Ar2(s % 60));
                 }
             }
+        }
+
+        // caption on the right, the amber countdown to its left; the pill is as wide as both
+        private void SetReset(string value)
+        {
+            resetLabel.Text = value;
+            var cap = resetCaption.GetComponent<TMPro.TMP_Text>(); var val = resetLabel.GetComponent<TMPro.TMP_Text>();
+            cap.ForceMeshUpdate(); val.ForceMeshUpdate();
+            float cw = cap.preferredWidth, vw = val.preferredWidth;
+            ((RectTransform)resetCaption.transform).sizeDelta = new Vector2(cw + 4f, 50f);
+            var vr = (RectTransform)resetLabel.transform; vr.sizeDelta = new Vector2(vw + 4f, 56f); vr.anchoredPosition = new Vector2(-(24f + cw + 14f), 0f);
+            ((RectTransform)resetLabel.transform.parent).sizeDelta = new Vector2(24f + cw + 14f + vw + 24f, 64f);
         }
 
         private void SetResetVisible(bool on) { if (resetLabel != null && resetLabel.transform.parent != null && resetLabel.transform.parent.name == "ResetPill") resetLabel.transform.parent.gameObject.SetActive(on); }

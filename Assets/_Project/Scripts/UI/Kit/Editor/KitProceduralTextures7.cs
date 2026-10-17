@@ -152,6 +152,15 @@ namespace MafiaNight.UI.Kit.Editor
                 return c;
             });
 
+            // reset pill (HTML .reset): black 67%, 1px light outline, 14px radius
+            Make("reset_pill", 128, 64, (x, y) =>
+            {
+                float d = RoundRectSdf(x, y, 64f, 32f, 64f, 32f, 28f);
+                if (d > 0f) return Color.clear;
+                if (d > -2.4f) return C(0xffffff, .11f);
+                return C(0x000000, .67f);
+            });
+
             Make("dash_h", 24, 4, (x, y) => (x % 24f) < 14f ? Color.white : Color.clear);
 
             // pill chips: translucent outline / gold
