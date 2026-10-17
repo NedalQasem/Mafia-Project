@@ -236,7 +236,7 @@ namespace MafiaNight.UI.Kit.Editor
                 imp.filterMode = FilterMode.Bilinear;
                 imp.spritePixelsPerUnit = 100;
                 imp.maxTextureSize = 1024;
-                imp.wrapMode = (name == "skyline_far" || name == "skyline_near" || name == "road_dash" || name == "dash_h" || name == "wall_lines" || name == "curb_tile") ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
+                imp.wrapMode = (name == "skyline_far" || name == "skyline_near" || name == "road_dash" || name == "dash_h" || name == "shine_band" || name == "wall_lines" || name == "curb_tile") ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
                 imp.textureCompression = TextureImporterCompression.Compressed;
                 var s = new TextureImporterSettings();
                 imp.ReadTextureSettings(s);

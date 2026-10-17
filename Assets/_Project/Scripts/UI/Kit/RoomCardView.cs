@@ -34,6 +34,10 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private Button joinButton;
         [SerializeField] private Image joinImage;
         [SerializeField] private CanvasGroup group;
+        [SerializeField] private GameObject shineClip;
+        [SerializeField] private RectTransform shine;
+        [SerializeField] private Image liveDot;
+        private float phase;
 
         public event Action<RoomInfo> OnJoin;
         public RoomInfo Info { get; private set; }
@@ -80,6 +84,34 @@ namespace MafiaNight.UI.Kit
             if (joinImage != null) joinImage.sprite = info.IsFull || watch ? th.leatherDark : (info.type == RoomType.Vip ? th.brassPlate : th.leatherRed);
             joinLabel.GetComponent<TMPro.TMP_Text>().color = info.type == RoomType.Vip && !watch && !info.IsFull ? th.brassText : (info.IsFull ? th.ivoryDim : th.ivory);
             if (group != null) group.alpha = info.IsFull ? 0.62f : 1f;
+            if (shineClip != null) shineClip.SetActive(info.type == RoomType.Vip);
+            phase = UnityEngine.Random.value * 5f;   // cards do not all pulse in step
+        }
+
+        // HTML rooms.html: the speaker's seat dot pulses (1.6s), the red live dot blinks (1.2s), the VIP card gets a gold sheen every 5s
+        private void Update()
+        {
+            if (!Application.isPlaying || Info == null) return;
+            float t = Time.unscaledTime + phase;
+            var th = KitTheme.Current;
+            int s = Info.speakingSeat;
+            if (s >= 0 && s < seatDots.Length && s < Info.count && seatDots[s] != null && th != null)
+            {
+                float k = 0.5f + 0.5f * Mathf.Cos(t / 1.6f * Mathf.PI * 2f);   // 1 -> 0 -> 1
+                seatDots[s].transform.localScale = Vector3.one * Mathf.Lerp(0.8f, 1.12f, k);
+                seatDots[s].color = Color.Lerp(th.teal * 0.7f, th.teal, k);
+            }
+            if (liveDot != null && live != null && live.activeSelf)
+            {
+                var c = liveDot.color; c.a = (t % 1.2f) < 0.6f ? 1f : 0.2f; liveDot.color = c;
+            }
+            if (shine != null && shineClip != null && shineClip.activeSelf)
+            {
+                float p = (t % 5f) / 5f, x;
+                if (p < 0.6f) x = -1.2f;
+                else { float q = (p - 0.6f) / 0.4f; float e = q < .5f ? 2f * q * q : 1f - Mathf.Pow(-2f * q + 2f, 2f) / 2f; x = Mathf.Lerp(-1.2f, 1.2f, e); }
+                shine.anchoredPosition = new Vector2(x * 1000f, 0f);
+            }
         }
     }
 }

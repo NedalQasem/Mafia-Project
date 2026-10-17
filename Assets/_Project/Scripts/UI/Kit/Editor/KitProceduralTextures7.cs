@@ -161,6 +161,15 @@ namespace MafiaNight.UI.Kit.Editor
                 return C(0x000000, .67f);
             });
 
+            // VIP card shine (HTML .vip::before, linear-gradient 110deg: clear 40%, gold .22 at 50%, clear 60%)
+            Make("shine_band", 256, 87, (x, y) =>
+            {
+                float X = x / 256f * 1000f, Y = y / 87f * 340f;
+                float t = (X * .94f + Y * .34f) / (1000f * .94f + 340f * .34f);
+                float a = Mathf.Clamp01(1f - Mathf.Abs(t - .5f) / .1f);
+                return C(0xffe8a8, .22f * a);
+            });
+
             Make("dash_h", 24, 4, (x, y) => (x % 24f) < 14f ? Color.white : Color.clear);
 
             // pill chips: translucent outline / gold
