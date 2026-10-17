@@ -58,7 +58,7 @@
 
 ### طريقة التوليد (مهم للتناسق)
 - **أضف هالجملة بآخر كل Prompt** عشان كل الصور تطلع بنفس الستايل:
-  > `, stylized 2.5D mobile game art, Levantine old-town heritage, tooled dark brown leather with fine gold stitching, polished gold metal trim, warm lantern lighting, deep indigo night palette with amber and turquoise accents, clean shapes, soft painterly shading, high detail, no text`
+  > `, elegant and serious mobile game art, semi-realistic painterly style, Levantine old-town heritage at night, tooled dark brown leather with fine gold stitching, engraved antique gold trim, dim warm lantern light, deep indigo and black palette with muted amber, cinematic mood, restrained detail, no cartoon style, no text`
 - **عناصر الواجهة (أيقونات، إطارات، أزرار):** اطلب خلفية شفافة أو خلفية لون واحد سادة (`isolated on plain dark background`) عشان نقصّها بسهولة.
 - **ممنوع نص بالصور**، النص بنكتبه بالكود (عشان العربي يطلع صح).
 - ولّد **٣ نسخ** من كل صورة واختار الأحلى.
@@ -146,3 +146,24 @@
 | **وسادة مقعد** | `Top-down view of a round floor cushion of red velvet with gold tassels, isolated` |
 | **صندوق مكافأة** | `Treasure chest of dark leather and gold metal straps, slightly open with warm glow, front view, isolated` |
 | **شمس وقمر** | `Stylized crescent moon with soft glow, isolated` / `Stylized warm sun with soft rays, isolated` |
+
+---
+
+## 7. الطابع الرسمي — تحديث 2026-10-17 (يلغي الأجزاء المرحة بالقسم 6)
+
+**الطابع:** مجلس كبار بليل الحارة. فخامة هادية، مش حفلة.
+
+| البند | القرار |
+|---|---|
+| **الخطوط** | **Aref Ruqaa** (رقعة) للشعار وأسماء الديوانيات والحكم والأدوار · **Reem Kufi** للعناوين والأزرار والراوي · **Tajawal** للنصوص الصغيرة. (ألغينا Lalezar) |
+| **الأزرار** | ذهب محفور (حافة داخلية رفيعة) للفعل الأهم، وجلد بحافة ذهبية للباقي. **لا أخضر ولا ألوان صارخة** |
+| **الأيقونات** | خطوط ذهبية رفيعة بسماكة واحدة. **لا إيموجي** |
+| **الألوان** | ليل أسود/نيلي، جلد، ذهب، عاجي للنص. فيروزي للصوت بس، وقرمزي (`#9E2F22`) للمافيا والخطر |
+| **اللغة** | فصحى بسيطة بالعناوين والراوي ("انتصر أهل الحارة")، وعامية خفيفة بالتلميحات |
+| **الحركة** | تمايل فوانيس بطيء، وهج بيرتجف، حلقة فيروزية ثابتة حوالين المتكلّم. **ولا شي بينط أو بينبض** |
+| **الشارات** | نقطة قرمزية صغيرة بدل الأرقام الحمرا الكبيرة |
+| **شاشة الحكم** | شعار (درع) + عنوان بخط الرقعة + سجل الأدوار، بدل الكأس والأشعة والنجوم |
+| **الديوانية** | مقاعد حوالين السجادة بلوحات أسماء جلدية، و"يتكلّم الآن" تحت. بدون فقاعات كلام وإيموجي |
+
+**الـ Prompts:** نفس القوائم فوق، مع جملة الستايل الجديدة (شبه واقعي، رسمي، سينمائي). للأيقونات استخدم:
+`Thin-line icon of [object], engraved antique gold line art on transparent background, single stroke weight, elegant, no fill`
