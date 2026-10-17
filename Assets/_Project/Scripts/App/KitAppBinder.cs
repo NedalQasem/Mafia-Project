@@ -27,6 +27,7 @@ namespace MafiaNight.App
         private KitNavBar navBar;
         private KitProfileCard card;
         private KitStoreScreen store;
+        private KitScreenHeader header;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Hook()
@@ -40,7 +41,7 @@ namespace MafiaNight.App
 
         private static void Attach()
         {
-            if ((FindAnyObjectByType<KitTopBar>() == null && FindAnyObjectByType<KitLeaderboardsScreen>() == null) || FindAnyObjectByType<KitAppBinder>() != null) return;
+            if ((FindAnyObjectByType<KitTopBar>() == null && FindAnyObjectByType<KitLeaderboardsScreen>() == null && FindAnyObjectByType<KitScreenHeader>() == null) || FindAnyObjectByType<KitAppBinder>() != null) return;
             new GameObject("KitAppBinder").AddComponent<KitAppBinder>();
         }
 
@@ -65,6 +66,8 @@ namespace MafiaNight.App
             if (store != null) WireStore();
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
             if (lb != null) lb.OnBack += GoHome;
+            header = FindAnyObjectByType<KitScreenHeader>();
+            if (header != null) { header.OnBack += GoHome; header.SetCoins(currency.Coins); }
 
             Refresh();
         }
@@ -81,6 +84,7 @@ namespace MafiaNight.App
         private void OnCoins(int coins)
         {
             if (store != null) store.Coins = coins;
+            if (header != null) header.SetCoins(coins, true);
             if (topBar != null) Refresh(true);
         }
 

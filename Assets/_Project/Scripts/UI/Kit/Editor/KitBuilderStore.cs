@@ -132,13 +132,13 @@ namespace MafiaNight.UI.Kit.Editor
             var canvasGo = NewAppCanvas(th, new Color(0.075f, 0.055f, 0.045f));
             var screen = Go("StoreScreen", canvasGo.transform); Stretch(Rt(screen));
             var scrollGo = Go("Scroll", screen.transform);
-            var sr = Rt(scrollGo); sr.anchorMin = Vector2.zero; sr.anchorMax = Vector2.one; sr.offsetMin = new Vector2(0, 0); sr.offsetMax = new Vector2(0, -250);
+            var sr = Rt(scrollGo); sr.anchorMin = Vector2.zero; sr.anchorMax = Vector2.one; sr.offsetMin = new Vector2(0, 0); sr.offsetMax = new Vector2(0, -150);
             var scroll = scrollGo.AddComponent<ScrollRect>(); scroll.horizontal = false; scroll.movementType = ScrollRect.MovementType.Elastic; scroll.scrollSensitivity = 40f;
             var vp = Go("Viewport", scrollGo.transform); Stretch(Rt(vp)); vp.AddComponent<RectMask2D>();
             var vpi = vp.AddComponent<Image>(); vpi.color = Color.clear;
             var content = Go("Content", vp.transform);
             var cRt = Rt(content); cRt.anchorMin = new Vector2(0, 1); cRt.anchorMax = new Vector2(1, 1); cRt.pivot = new Vector2(0.5f, 1); cRt.anchoredPosition = Vector2.zero; cRt.sizeDelta = Vector2.zero;
-            var vlg = content.AddComponent<VerticalLayoutGroup>(); vlg.spacing = 14; vlg.padding = new RectOffset(0, 0, 24, 380); vlg.childAlignment = TextAnchor.UpperCenter;
+            var vlg = content.AddComponent<VerticalLayoutGroup>(); vlg.spacing = 14; vlg.padding = new RectOffset(0, 0, 24, 90); vlg.childAlignment = TextAnchor.UpperCenter;
             vlg.childControlWidth = false; vlg.childControlHeight = false; vlg.childForceExpandWidth = false; vlg.childForceExpandHeight = false;
             content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             scroll.viewport = Rt(vp); scroll.content = cRt;
@@ -180,7 +180,7 @@ namespace MafiaNight.UI.Kit.Editor
             SetRef(store, "catPrefab", LoadPrefab("StoreCat")); SetRef(store, "shelfPrefab", LoadPrefab("StoreShelf"));
             SetRef(store, "itemPrefab", LoadPrefab("StoreItem")); SetRef(store, "headerPrefab", LoadPrefab("StoreHeader"));
 
-            var demo = AddBars(canvasGo, 0);
+            AddScreenHeader(canvasGo, th, "المتجر", "زينة وهدايا، بدون مزايا لعب", true);
 
             // ---------- buy sheet (above the bars)
             var overlay = Go("StoreOverlay", canvasGo.transform); Stretch(Rt(overlay));

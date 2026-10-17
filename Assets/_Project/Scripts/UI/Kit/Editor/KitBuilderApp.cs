@@ -1,3 +1,4 @@
+using TMPro;
 using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -42,6 +43,33 @@ namespace MafiaNight.UI.Kit.Editor
             var demo = canvasGo.AddComponent<KitBarsDemo>();
             SetRef(demo, "topBar", top.GetComponent<KitTopBar>()); SetRef(demo, "navBar", navComp); SetRef(demo, "card", card.GetComponent<KitProfileCard>());
             return demo;
+        }
+
+        /// <summary>Header for pages that hide the player bar and the bottom nav: back button, title, subtitle, optional coin ticket.</summary>
+        private static KitScreenHeader AddScreenHeader(GameObject canvasGo, KitTheme th, string title, string sub, bool wallet)
+        {
+            var hdr = Go("ScreenHeader", canvasGo.transform); var hr = Rt(hdr);
+            hr.anchorMin = new Vector2(0, 1); hr.anchorMax = new Vector2(1, 1); hr.pivot = new Vector2(0.5f, 1); hr.anchoredPosition = Vector2.zero; hr.sizeDelta = new Vector2(0, 150);
+            var backGo = Go("Back", hdr.transform); Place(Rt(backGo), new Vector2(1, 0.5f), new Vector2(-72, -4), new Vector2(92, 92));
+            var backImg = Img(backGo, th.leatherDark, true, 1.4f, true);
+            var backBtn = backGo.AddComponent<Button>(); backBtn.targetGraphic = backImg; backBtn.transition = Selectable.Transition.None;
+            var fx = backGo.AddComponent<KitButtonFx>(); SetRef(fx, "face", Rt(backGo));
+            var arrow = Go("Arrow", backGo.transform); Place(Rt(arrow), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(34, 34)); arrow.transform.localRotation = Quaternion.Euler(0, 0, -90f);
+            var ai = Img(arrow, th.triUp); ai.color = th.leatherText; ai.raycastTarget = false;
+            var t = Txt(hdr.transform, "Title", title, th.fontHeading, 64, th.ivory, TextAlignmentOptions.MidlineRight); Place(Rt(t.gameObject), new Vector2(1, 0.5f), new Vector2(-450, 18), new Vector2(600, 76));
+            var s = Txt(hdr.transform, "Sub", sub, th.fontBody, 28, th.brass, TextAlignmentOptions.MidlineRight); Place(Rt(s.gameObject), new Vector2(1, 0.5f), new Vector2(-450, -34), new Vector2(600, 40));
+            var comp = hdr.AddComponent<KitScreenHeader>(); SetRef(comp, "backButton", backBtn);
+            if (wallet)
+            {
+                var ticket = Go("Ticket", hdr.transform); Place(Rt(ticket), new Vector2(0, 0.5f), new Vector2(190, -2), new Vector2(300, 118));
+                ticket.transform.localRotation = Quaternion.Euler(0, 0, -2f);
+                Img(ticket, th.paperTicket, true, 1.6f);
+                var coin = Go("Coin", ticket.transform); Place(Rt(coin), new Vector2(1, 0.5f), new Vector2(-52, 0), new Vector2(60, 60)); Img(coin, th.coin);
+                var val = Txt(ticket.transform, "Value", "١٬٢٥٠", th.fontHeading, 50, th.paperInk, TextAlignmentOptions.Center); Stretch(Rt(val.gameObject), 22, 8, 96, 14);
+                var pill = ticket.AddComponent<CoinPill>(); SetRef(pill, "label", val.GetComponent<ArabicText>()); SetRef(pill, "coinIcon", Rt(coin));
+                SetRef(comp, "coins", pill);
+            }
+            return comp;
         }
 
         private static void SaveScene(string path)

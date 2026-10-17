@@ -18,12 +18,12 @@ namespace MafiaNight.UI.Kit.Editor
             var canvasGo = NewAppCanvas(th, new Color(0.075f, 0.055f, 0.045f));
             var screen = Go("SettingsScreen", canvasGo.transform); Stretch(Rt(screen));
             var scrollGo = Go("Scroll", screen.transform);
-            var sr = Rt(scrollGo); sr.anchorMin = Vector2.zero; sr.anchorMax = Vector2.one; sr.offsetMin = new Vector2(0, 0); sr.offsetMax = new Vector2(0, -250);
+            var sr = Rt(scrollGo); sr.anchorMin = Vector2.zero; sr.anchorMax = Vector2.one; sr.offsetMin = new Vector2(0, 0); sr.offsetMax = new Vector2(0, -150);
             var scroll = scrollGo.AddComponent<ScrollRect>(); scroll.horizontal = false; scroll.movementType = ScrollRect.MovementType.Elastic; scroll.scrollSensitivity = 40f;
             var vp = Go("Viewport", scrollGo.transform); Stretch(Rt(vp)); vp.AddComponent<RectMask2D>(); vp.AddComponent<Image>().color = Color.clear;
             var content = Go("Content", vp.transform);
             var cRt = Rt(content); cRt.anchorMin = new Vector2(0, 1); cRt.anchorMax = new Vector2(1, 1); cRt.pivot = new Vector2(0.5f, 1); cRt.anchoredPosition = Vector2.zero; cRt.sizeDelta = Vector2.zero;
-            var vlg = content.AddComponent<VerticalLayoutGroup>(); vlg.spacing = 20; vlg.padding = new RectOffset(0, 0, 26, 400); vlg.childAlignment = TextAnchor.UpperCenter;
+            var vlg = content.AddComponent<VerticalLayoutGroup>(); vlg.spacing = 20; vlg.padding = new RectOffset(0, 0, 26, 90); vlg.childAlignment = TextAnchor.UpperCenter;
             vlg.childControlWidth = false; vlg.childControlHeight = true; vlg.childForceExpandWidth = false; vlg.childForceExpandHeight = false;
             content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             scroll.viewport = Rt(vp); scroll.content = cRt;
@@ -203,7 +203,7 @@ namespace MafiaNight.UI.Kit.Editor
             SetRef(ss, "micKnob", micKnob); SetRef(ss, "speakerKnob", spkKnob); SetRef(ss, "micTestButton", micTest); SetRef(ss, "micTestLabel", micTestLbl);
 
             foreach (var s in sections) { var o = new SerializedObject(s); s.SetOpen(o.FindProperty("openAtStart").boolValue, false); }
-            AddBars(canvasGo, 4);
+            AddScreenHeader(canvasGo, th, "الإعدادات", "الإصدار ١٫٠٫٠", false);
             LayoutRebuilder.ForceRebuildLayoutImmediate(cRt);
             SaveScene(SettingsScenePath);
         }

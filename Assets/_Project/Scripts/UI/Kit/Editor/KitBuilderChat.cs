@@ -109,7 +109,7 @@ namespace MafiaNight.UI.Kit.Editor
 
             // tabs row
             var tabsRow = Go("TabsRow", screen.transform);
-            var trr = Rt(tabsRow); trr.anchorMin = new Vector2(0, 1); trr.anchorMax = new Vector2(1, 1); trr.pivot = new Vector2(0.5f, 1); trr.anchoredPosition = new Vector2(0, -290); trr.sizeDelta = new Vector2(0, 120);
+            var trr = Rt(tabsRow); trr.anchorMin = new Vector2(0, 1); trr.anchorMax = new Vector2(1, 1); trr.pivot = new Vector2(0.5f, 1); trr.anchoredPosition = new Vector2(0, -160); trr.sizeDelta = new Vector2(0, 120);
             var tabsBtn = new Button[3]; var tabBadge = new GameObject[3]; var tabBadgeLbl = new ArabicText[3];
             string[] tn = { "العام", "الخاص", "المجموعات" };
             for (int i = 0; i < 3; i++)
@@ -125,7 +125,7 @@ namespace MafiaNight.UI.Kit.Editor
 
             // conversation header (hidden unless inside a DM / group)
             var header = Go("ConvHeader", screen.transform);
-            var hr = Rt(header); hr.anchorMin = new Vector2(0, 1); hr.anchorMax = new Vector2(1, 1); hr.pivot = new Vector2(0.5f, 1); hr.anchoredPosition = new Vector2(0, -290); hr.sizeDelta = new Vector2(0, 150);
+            var hr = Rt(header); hr.anchorMin = new Vector2(0, 1); hr.anchorMax = new Vector2(1, 1); hr.pivot = new Vector2(0.5f, 1); hr.anchoredPosition = new Vector2(0, -160); hr.sizeDelta = new Vector2(0, 150);
             var back = InstChild("KitButton_Secondary", header.transform, "Back");
             Place(Rt(back), new Vector2(1, 0.5f), new Vector2(-150, 0), new Vector2(260, 130)); back.GetComponentInChildren<ArabicText>().Text = "رجوع"; back.GetComponentInChildren<TextMeshProUGUI>().fontSize = 44;
             var ctitle = Txt(header.transform, "Title", "الاسم", th.fontCalligraphy, 66, th.leatherText); Place(Rt(ctitle.gameObject), new Vector2(0.5f, 0.5f), new Vector2(-40, 22), new Vector2(560, 84));
@@ -134,7 +134,7 @@ namespace MafiaNight.UI.Kit.Editor
 
             // public notice (pinned paper)
             var notice = Go("PublicNotice", screen.transform);
-            var nr = Rt(notice); nr.anchorMin = new Vector2(0, 1); nr.anchorMax = new Vector2(1, 1); nr.pivot = new Vector2(0.5f, 1); nr.anchoredPosition = new Vector2(0, -420); nr.sizeDelta = new Vector2(-60, 92);
+            var nr = Rt(notice); nr.anchorMin = new Vector2(0, 1); nr.anchorMax = new Vector2(1, 1); nr.pivot = new Vector2(0.5f, 1); nr.anchoredPosition = new Vector2(0, -290); nr.sizeDelta = new Vector2(-60, 92);
             Img(notice, th.paper, true, 1.3f);
             var pin = Go("Pin", notice.transform); Place(Rt(pin), new Vector2(1, 0.5f), new Vector2(-40, 0), new Vector2(36, 36)); Img(pin, th.dotWhite).color = new Color32(0xB0, 0x2A, 0x32, 255);
             var nt = Txt(notice.transform, "T", "قواعد الساحة: احترم الجميع. المخالفة ممنوعة.", th.fontBody, 30, th.paperInk, TextAlignmentOptions.MidlineRight); Stretch(Rt(nt.gameObject), 140, 14, 90, 22);
@@ -143,7 +143,7 @@ namespace MafiaNight.UI.Kit.Editor
             RectTransform MakeScroll(string nm, out RectTransform contentRt, out ScrollRect sr, float spacing, int padTop)
             {
                 var g = Go(nm, screen.transform);
-                var r = Rt(g); r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = new Vector2(0, 490); r.offsetMax = new Vector2(0, -520);
+                var r = Rt(g); r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = new Vector2(0, 190); r.offsetMax = new Vector2(0, -390);
                 sr = g.AddComponent<ScrollRect>(); sr.horizontal = false; sr.movementType = ScrollRect.MovementType.Elastic; sr.scrollSensitivity = 40f;
                 var vp = Go("Viewport", g.transform); Stretch(Rt(vp)); vp.AddComponent<RectMask2D>(); vp.AddComponent<Image>().color = Color.clear;
                 var c = Go("Content", vp.transform);
@@ -159,7 +159,7 @@ namespace MafiaNight.UI.Kit.Editor
 
             // composer
             var comp = Go("Composer", screen.transform);
-            var cr = Rt(comp); cr.anchorMin = new Vector2(0, 0); cr.anchorMax = new Vector2(1, 0); cr.pivot = new Vector2(0.5f, 0); cr.anchoredPosition = new Vector2(0, 340); cr.sizeDelta = new Vector2(0, 140);
+            var cr = Rt(comp); cr.anchorMin = new Vector2(0, 0); cr.anchorMax = new Vector2(1, 0); cr.pivot = new Vector2(0.5f, 0); cr.anchoredPosition = new Vector2(0, 40); cr.sizeDelta = new Vector2(0, 140);
             var gift = Go("Gift", comp.transform); Place(Rt(gift), new Vector2(0, 0.5f), new Vector2(90, 0), new Vector2(120, 120)); Img(gift, th.navSeal);
             var gi2 = Go("Icon", gift.transform); Place(Rt(gi2), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(66, 66)); Img(gi2, th.iconGift);
             var send = Go("Send", comp.transform); Place(Rt(send), new Vector2(1, 0.5f), new Vector2(-90, 0), new Vector2(120, 120));
@@ -201,7 +201,7 @@ namespace MafiaNight.UI.Kit.Editor
             SetRef(chat, "cooldownLabel", cool.GetComponent<ArabicText>()); SetRef(chat, "sendIcon", sIcon);
             listSr.gameObject.SetActive(false);
             chat.Init();
-            AddBars(canvasGo, 1);
+            AddScreenHeader(canvasGo, th, "الدردشة", "تكلّم، بس بأدب", false);
             LayoutRebuilder.ForceRebuildLayoutImmediate(msgContent);
             SaveScene(ChatScenePath);
         }
