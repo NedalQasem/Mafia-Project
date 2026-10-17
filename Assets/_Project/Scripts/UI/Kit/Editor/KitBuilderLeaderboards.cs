@@ -21,14 +21,14 @@ namespace MafiaNight.UI.Kit.Editor
                 var le = root.AddComponent<LayoutElement>(); le.preferredWidth = 980; le.preferredHeight = 118;
                 var pos = Txt(root.transform, "Pos", "٤", th.fontHeading, 44, th.leatherText); Place(Rt(pos.gameObject), new Vector2(0.5f, 0.5f), new Vector2(430, 0), new Vector2(90, 80));
                 var av = InstChild("AvatarFrame", root.transform, "Avatar"); Place(Rt(av), new Vector2(0.5f, 0.5f), new Vector2(335, 0), new Vector2(94, 94));
-                var nm = Txt(root.transform, "Name", "الاسم", th.fontBody, 38, th.leatherText, TextAlignmentOptions.MidlineRight);
-                Place(Rt(nm.gameObject), new Vector2(0.5f, 0.5f), new Vector2(115, 20), new Vector2(380, 50));
-                var rk = Txt(root.transform, "Rank", "الجندي", th.fontBody, 26, th.ivoryDim, TextAlignmentOptions.MidlineRight);
-                Place(Rt(rk.gameObject), new Vector2(0.5f, 0.5f), new Vector2(115, -28), new Vector2(380, 36));
+                var nm = Txt(root.transform, "Name", "الاسم", th.fontHeading, 37, th.leatherText, TextAlignmentOptions.MidlineRight);
+                Place(Rt(nm.gameObject), new Vector2(0.5f, 0.5f), new Vector2(72, 20), new Vector2(380, 52));
+                var rk = Txt(root.transform, "Rank", "الجندي", th.fontHeading, 25, th.ivoryDim, TextAlignmentOptions.MidlineRight);
+                Place(Rt(rk.gameObject), new Vector2(0.5f, 0.5f), new Vector2(72, -26), new Vector2(380, 36));
                 var val = Txt(root.transform, "Value", "٢٬٥٠٠", th.fontHeading, 46, gold, TextAlignmentOptions.MidlineLeft);
                 Place(Rt(val.gameObject), new Vector2(0.5f, 0.5f), new Vector2(-150, 0), new Vector2(260, 70));
-                var arrow = Go("Arrow", root.transform); Place(Rt(arrow), new Vector2(0.5f, 0.5f), new Vector2(-330, 8), new Vector2(34, 34)); var ai = Img(arrow, th.triUp);
-                var dl = Txt(root.transform, "Delta", "٣", th.fontHeading, 30, th.teal); Place(Rt(dl.gameObject), new Vector2(0.5f, 0.5f), new Vector2(-330, -26), new Vector2(60, 36));
+                var arrow = Go("Arrow", root.transform); Place(Rt(arrow), new Vector2(0.5f, 0.5f), new Vector2(-312, 0), new Vector2(26, 26)); var ai = Img(arrow, th.triUp);
+                var dl = Txt(root.transform, "Delta", "٣", th.fontHeading, 30, th.teal); Place(Rt(dl.gameObject), new Vector2(0.5f, 0.5f), new Vector2(-356, 0), new Vector2(60, 44));
                 var v = root.AddComponent<LeaderRowView>();
                 SetRef(v, "bg", bg); SetRef(v, "posLabel", pos.GetComponent<ArabicText>()); SetRef(v, "nameLabel", nm.GetComponent<ArabicText>());
                 SetRef(v, "rankLabel", rk.GetComponent<ArabicText>()); SetRef(v, "valueLabel", val.GetComponent<ArabicText>()); SetRef(v, "deltaLabel", dl.GetComponent<ArabicText>());
@@ -138,7 +138,7 @@ namespace MafiaNight.UI.Kit.Editor
                 var apic = a.transform.Find("Avatar"); if (apic != null) { var ar2 = (RectTransform)apic; float ins = avSize[i] * 0.075f; ar2.offsetMin = new Vector2(ins, ins); ar2.offsetMax = new Vector2(-ins, -ins); }
                 var seal = Go("Place", slot.transform); PlaceTop(Rt(seal), 0, -70 - avSize[i] + 30, 64, 64); Img(seal, th.levelSeal);
                 var pt = Txt(seal.transform, "N", "١", th.fontHeading, 34, th.brassText); Stretch(Rt(pt.gameObject), 0, 3, 0, 0);
-                var n = Txt(slot.transform, "Name", "الاسم", th.fontBody, 36, th.leatherText); PlaceTop(Rt(n.gameObject), 0, -70 - avSize[i] - 36, 300, 50);
+                var n = Txt(slot.transform, "Name", "الاسم", th.fontHeading, 36, th.leatherText); PlaceTop(Rt(n.gameObject), 0, -70 - avSize[i] - 36, 300, 50);
                 var vv = Txt(slot.transform, "Value", "٠", th.fontHeading, 44, gold); PlaceTop(Rt(vv.gameObject), 0, -70 - avSize[i] - 92, 300, 56);
                 var r = Txt(slot.transform, "Rank", "", th.fontBody, 26, th.ivoryDim); PlaceTop(Rt(r.gameObject), 0, -70 - avSize[i] - 146, 300, 36);
                 var ps = slot.AddComponent<LeaderPodiumSlot>();
