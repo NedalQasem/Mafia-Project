@@ -24,14 +24,17 @@ namespace MafiaNight.UI.Kit.Editor
                 var le = root.AddComponent<LayoutElement>(); le.preferredWidth = 300; le.preferredHeight = 440;
                 var fx = root.AddComponent<KitButtonFx>(); SetRef(fx, "face", Rt(root));
 
-                var glow = Go("Glow", root.transform); Place(Rt(glow), new Vector2(0.5f, 0.5f), new Vector2(0, -92), new Vector2(250, 62));
-                var glowImg = Img(glow, th.glowFloor); glowImg.preserveAspect = false;
+                var cone = Go("Cone", root.transform); Place(Rt(cone), new Vector2(0.5f, 1f), new Vector2(0, -150), new Vector2(290, 417)); var coneImg = Img(cone, th.itemCone); coneImg.preserveAspect = false; coneImg.raycastTarget = false;
+                var glow = Go("Glow", root.transform); Place(Rt(glow), new Vector2(0.5f, 0.5f), new Vector2(0, -88), new Vector2(330, 84));
+                var glowImg = Img(glow, th.rarGlow); glowImg.preserveAspect = false; glowImg.raycastTarget = false;
                 var art = Go("Art", root.transform); Place(Rt(art), new Vector2(0.5f, 0.5f), new Vector2(0, 52), new Vector2(240, 240));
                 var nm = Txt(root.transform, "Name", "اسم الغرض", th.fontHeading, 32, th.leatherText, TextAlignmentOptions.Top);
                 Place(Rt(nm.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -158), new Vector2(290, 90));
 
                 var tag = Go("Tag", root.transform); Place(Rt(tag), new Vector2(0.5f, 0.5f), new Vector2(76, 172), new Vector2(172, 78));
+                Rt(tag).pivot = new Vector2(1f, 1f); Rt(tag).anchoredPosition = new Vector2(76f + 86f, 172f + 39f);   // swings around its top-right corner
                 tag.transform.localRotation = Quaternion.Euler(0, 0, -5f);
+                tag.AddComponent<KitSwing>();
                 Img(tag, th.priceTag, true, 1f);
                 var coin = Go("Coin", tag.transform); Place(Rt(coin), new Vector2(0, 0.5f), new Vector2(34, 0), new Vector2(34, 34)); Img(coin, th.coin);
                 var price = Txt(tag.transform, "Price", "٢٥٠", th.fontHeading, 34, ink);
@@ -146,7 +149,11 @@ namespace MafiaNight.UI.Kit.Editor
             var dotsRoot = Go("Dots", adSec.transform); var dr = Rt(dotsRoot); dr.anchorMin = new Vector2(0.5f, 0); dr.anchorMax = new Vector2(0.5f, 0); dr.pivot = new Vector2(0.5f, 0); dr.sizeDelta = new Vector2(300, 30); dr.anchoredPosition = new Vector2(0, 0);
             var dl = dotsRoot.AddComponent<HorizontalLayoutGroup>(); dl.spacing = 16; dl.childAlignment = TextAnchor.MiddleCenter; dl.childControlWidth = false; dl.childControlHeight = false; dl.childForceExpandWidth = false;
             var adHit = adSec.AddComponent<Image>(); adHit.color = Color.clear;
-            var carousel = adSec.AddComponent<StoreAdCarousel>();
+            var barTrack = Go("Progress", adSec.transform); var bt = Rt(barTrack); bt.anchorMin = new Vector2(0, 1); bt.anchorMax = new Vector2(1, 1); bt.pivot = new Vector2(0.5f, 1); bt.offsetMin = new Vector2(38, -12); bt.offsetMax = new Vector2(-38, 0); bt.sizeDelta = new Vector2(bt.sizeDelta.x, 8);
+            var btI = barTrack.AddComponent<Image>(); btI.color = new Color(1, 1, 1, 0.08f); btI.raycastTarget = false;
+            var barFill = Go("Fill", barTrack.transform); var bf = Rt(barFill); bf.anchorMin = Vector2.zero; bf.anchorMax = Vector2.one; bf.offsetMin = bf.offsetMax = Vector2.zero;
+            var bfI = barFill.AddComponent<Image>(); bfI.color = new Color32(0xC0, 0x32, 0x3A, 255); bfI.raycastTarget = false;
+            var carousel = adSec.AddComponent<StoreAdCarousel>(); SetRef(carousel, "progress", bf);
             SetRef(carousel, "pagesRoot", pg); SetRef(carousel, "dotsRoot", dr); SetRef(carousel, "pagePrefab", LoadPrefab("StoreAdPage")); SetRef(carousel, "dotPrefab", LoadPrefab("StoreAdDot"));
 
             var catsScroll = Go("CatsScroll", content.transform); Rt(catsScroll).sizeDelta = new Vector2(1080, 140);

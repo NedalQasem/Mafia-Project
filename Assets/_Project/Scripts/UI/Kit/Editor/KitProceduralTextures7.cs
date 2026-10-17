@@ -170,6 +170,21 @@ namespace MafiaNight.UI.Kit.Editor
                 return C(0xffe8a8, .22f * a);
             });
 
+            // soft blurred ellipse under items (HTML .rar: 90x16, blur 7px) and the spotlight cone above them (.slot::before)
+            Make("rar_glow", 128, 40, (x, y) =>
+            {
+                float dx = (x - 64f) / 44f, dy = (y - 20f) / 11f;
+                float r = Mathf.Sqrt(dx * dx + dy * dy);
+                return new Color(1f, 1f, 1f, Mathf.Pow(Mathf.Clamp01(1f - r / 1.45f), 1.6f));
+            });
+            Make("item_cone", 128, 150, (x, y) =>
+            {
+                float t = y / 150f;
+                float half = Mathf.Lerp(.18f, .5f, t) * 128f;      // clip-path: polygon(32% 0, 68% 0, 100% 100%, 0 100%)
+                if (Mathf.Abs(x - 64f) > half) return Color.clear;
+                return C(0xffe9a0, .165f * Mathf.Clamp01(1f - t / .85f));
+            });
+
             Make("dash_h", 24, 4, (x, y) => (x % 24f) < 14f ? Color.white : Color.clear);
 
             // pill chips: translucent outline / gold

@@ -79,9 +79,34 @@ namespace MafiaNight.UI.Kit
 
         private static void DestroyAny(GameObject g) { if (Application.isPlaying) Destroy(g); else DestroyImmediate(g); }
 
+        // slide the category row so the chosen drawer is in view (HTML scrolls the tab strip too)
+        private System.Collections.IEnumerator ScrollTabsTo(int idx)
+        {
+            yield return null;
+            if (idx < 0 || idx >= catButtons.Count) yield break;
+            var sr = catsRoot.GetComponentInParent<ScrollRect>(); if (sr == null) yield break;
+            var vp = sr.viewport != null ? sr.viewport : (RectTransform)sr.transform;
+            float vw = vp.rect.width, cw = catsRoot.rect.width;
+            if (cw <= vw) yield break;
+            var bt = (RectTransform)catButtons[idx].transform;
+            float bx = catsRoot.InverseTransformPoint(bt.position).x;
+            float target = Mathf.Clamp(-vw * 0.5f - bx, 0f, cw - vw);
+            float from = catsRoot.anchoredPosition.x;
+            for (float t = 0; t < 0.35f; t += Time.unscaledDeltaTime)
+            {
+                float e = 1f - Mathf.Pow(1f - t / 0.35f, 3f);
+                catsRoot.anchoredPosition = new Vector2(Mathf.Lerp(from, target, e), catsRoot.anchoredPosition.y);
+                yield return null;
+            }
+            catsRoot.anchoredPosition = new Vector2(target, catsRoot.anchoredPosition.y);
+        }
+
+        private Coroutine tabScroll;
+
         public void Select(int cat)
         {
             category = cat;
+            if (Application.isPlaying && isActiveAndEnabled) { if (tabScroll != null) StopCoroutine(tabScroll); tabScroll = StartCoroutine(ScrollTabsTo(cat)); }
             var th = KitTheme.Current;
             for (int i = 0; i < catButtons.Count; i++)
             {
@@ -113,6 +138,7 @@ namespace MafiaNight.UI.Kit
                     var v = go.GetComponent<StoreItemView>();
                     v.Bind(items[r * per + k], playerRank);
                     v.OnClick += OpenSheet;
+                    KitEnterAnim.Play(go, k * 0.08f + r * 0.12f, 0f, 0.5f, 0.4f, -38f);   // HTML .slot: rises 14px and fades in, staggered
                 }
             }
         }

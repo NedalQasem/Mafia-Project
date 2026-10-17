@@ -20,7 +20,16 @@ namespace MafiaNight.UI.Kit
         public StoreItem Item { get; private set; }
         public event Action<StoreItem> OnClick;
 
-        private void Awake() { if (button != null) button.onClick.AddListener(() => OnClick?.Invoke(Item)); }
+        private Color baseGlow; private bool pulse; private float phase;
+
+        private void Awake() { if (button != null) button.onClick.AddListener(() => OnClick?.Invoke(Item)); phase = UnityEngine.Random.value * 2.4f; var sw = GetComponentInChildren<KitSwing>(true); if (sw != null) sw.Randomize(); }
+
+        private void Update()
+        {
+            if (!pulse || glow == null || !Application.isPlaying) return;
+            float k = 0.75f + 0.25f * Mathf.Cos((Time.unscaledTime + phase) / 2.4f * Mathf.PI * 2f);   // opacity 1 -> .5 -> 1
+            var c = baseGlow; c.a *= k; glow.color = c;
+        }
 
         public void Bind(StoreItem it, int playerRank)
         {
@@ -35,9 +44,15 @@ namespace MafiaNight.UI.Kit
             newFlag.SetActive(it.isNew && !it.owned);
             lockBadge.SetActive(locked);
             if (locked) lockLabel.Text = "رتبة " + KitTheme.RankNames[Mathf.Clamp(it.lockRank - 1, 0, 7)];
-            Color rc;
-            switch (it.rarity) { case Rarity.Rare: rc = th.teal; break; case Rarity.Epic: rc = new Color(0.85f, 0.2f, 0.25f); break; case Rarity.Legendary: rc = new Color(1f, 0.82f, 0.4f); break; default: rc = th.ivory; break; }
-            rc.a = it.rarity == Rarity.Common ? 0.3f : 0.75f; glow.color = rc;
+            // HTML .r-c/.r-r/.r-e/.r-l colours; the legendary glow also pulses (see Update)
+            switch (it.rarity)
+            {
+                case Rarity.Rare: baseGlow = new Color32(0x4F, 0xA5, 0x8B, 0xAA); break;
+                case Rarity.Epic: baseGlow = new Color32(0xC0, 0x32, 0x3A, 0xCC); break;
+                case Rarity.Legendary: baseGlow = new Color32(0xF5, 0xD0, 0x70, 0xDD); break;
+                default: baseGlow = new Color32(0xD9, 0xD0, 0xBD, 0x55); break;
+            }
+            glow.color = baseGlow; pulse = it.rarity == Rarity.Legendary;
             if (group != null) group.alpha = locked ? 0.45f : 1f;
         }
     }

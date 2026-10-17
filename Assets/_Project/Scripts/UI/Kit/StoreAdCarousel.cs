@@ -15,6 +15,7 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private GameObject pagePrefab;
         [SerializeField] private GameObject dotPrefab;
         [SerializeField] private float period = 5.5f;
+        [SerializeField] private RectTransform progress;   // thin red bar above the ad that runs out before the next page
 
         public event Action<StoreItem> OnBuy;
 
@@ -63,7 +64,7 @@ namespace MafiaNight.UI.Kit
             current = 0; timer = 0; Paint();
         }
 
-        private void Paint() { for (int i = 0; i < dots.Count; i++) dots[i].color = i == current ? new Color(0.88f, 0.32f, 0.35f) : new Color(0.3f, 0.26f, 0.2f); }
+        private void Paint() { for (int i = 0; i < dots.Count; i++) { dots[i].color = i == current ? new Color(0.88f, 0.32f, 0.35f) : new Color(0.3f, 0.26f, 0.2f); dots[i].transform.localScale = Vector3.one * (i == current ? 1.3f : 1f); } }
 
         public void Go(int index)
         {
@@ -101,6 +102,7 @@ namespace MafiaNight.UI.Kit
             int s = Mathf.Max(0, (int)secondsLeft);
             string txt = CoinPill.Format(s / 3600).PadLeft(2, '٠') + ":" + CoinPill.Format(s % 3600 / 60).PadLeft(2, '٠') + ":" + CoinPill.Format(s % 60).PadLeft(2, '٠');
             foreach (var c in countdowns) c.Text = txt;
+            if (progress != null) { progress.anchorMin = new Vector2(Mathf.Clamp01(timer / period), 0f); progress.anchorMax = Vector2.one; }
             if (dragging || pages.Count < 2) return;
             timer += Time.unscaledDeltaTime;
             if (timer > period) Go(current + 1);
