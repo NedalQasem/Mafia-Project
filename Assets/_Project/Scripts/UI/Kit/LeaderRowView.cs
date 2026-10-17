@@ -30,7 +30,7 @@ namespace MafiaNight.UI.Kit
             arrow.color = c;
             deltaLabel.Text = up || down ? CoinPill.Format(Mathf.Abs(e.delta)) : "";
             deltaLabel.GetComponent<TMPro.TMP_Text>().color = c;
-            bg.color = e.me ? new Color(0.54f, 0.11f, 0.14f, 0.45f) : (paper ? new Color(0.11f, 0.09f, 0.06f, 0.07f) : new Color(1, 1, 1, 0.05f));
+            bg.color = e.me ? new Color(0.54f, 0.11f, 0.14f, 0.45f) : (paper ? new Color(0.11f, 0.09f, 0.06f, 0.07f) : new Color(1, 1, 1, 0.012f));
         }
     }
 }

@@ -34,6 +34,8 @@ namespace MafiaNight.UI.Kit
                 var go = Instantiate(chipPrefab, chipsRoot);
                 go.GetComponentInChildren<ArabicText>().Text = LeaderboardData.Categories[i];
                 var b = go.GetComponent<Button>(); b.onClick.AddListener(() => SetCategory(idx));
+                float w = Mathf.Max(170f, LeaderboardData.Categories[i].Length * 27f + 90f);
+                go.GetComponent<LayoutElement>().preferredWidth = w; ((RectTransform)go.transform).sizeDelta = new Vector2(w, 76f);
                 chips.Add(b);
             }
             for (int i = 0; i < doors.Length; i++) { int idx = i; doors[i].onClick.AddListener(() => SetPeriod(idx)); }
@@ -60,7 +62,7 @@ namespace MafiaNight.UI.Kit
             for (int i = 0; i < chips.Count; i++)
             {
                 bool on = i == cat;
-                chips[i].GetComponent<Image>().sprite = on ? th.brassPlate : th.slotDark;
+                { var ci = chips[i].GetComponent<Image>(); ci.sprite = on ? th.chipOn : th.chipOff; ci.color = on ? Color.white : new Color(1f, 1f, 1f, 0.03f); }
                 chips[i].GetComponentInChildren<TMPro.TMP_Text>().color = on ? th.brassText : th.ivoryDim;
             }
             if (wall)
@@ -68,11 +70,11 @@ namespace MafiaNight.UI.Kit
                 mineWall.Text = "تدخل القاعة بالوصول إلى المركز الأول بموسم أو بتحطيم رقم قياسي";
                 mineRank.Text = "—"; mineNeed.Text = ""; mineValue.Text = "";
                 SetFill(0.12f);
-                resetLabel.Text = ""; return;
+                resetLabel.Text = ""; SetResetVisible(false); return;
             }
-            mineWall.Text = "";
+            mineWall.Text = ""; SetResetVisible(true);
             resetLabel.Text = period == 0 ? "يتجدد خلال ٠٣:٤٢:١٠" : "يتجدد خلال ٢ يوم ٠٥:١٨";
-            boardBg.sprite = paper ? th.paper : th.chalkboard;
+            boardBg.sprite = paper ? th.paper : th.boardDay;
             var list = LeaderboardData.Make(period, cat);
             boardTitle.Text = (paper ? "جريدة الأسبوع · " : "سبورة الليلة · ") + LeaderboardData.Categories[cat];
             boardUnit.Text = LeaderboardData.Units[cat];
@@ -94,6 +96,8 @@ namespace MafiaNight.UI.Kit
             mineValue.Text = CoinPill.Format(me.value);
             SetFill(period == 0 ? 0.64f : 0.42f);
         }
+
+        private void SetResetVisible(bool on) { if (resetLabel != null && resetLabel.transform.parent != null && resetLabel.transform.parent.name == "ResetPill") resetLabel.transform.parent.gameObject.SetActive(on); }
 
         private void SetFill(float v)
         {

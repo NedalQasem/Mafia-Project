@@ -257,6 +257,12 @@ namespace MafiaNight.UI.Kit.Editor
                     s.spriteBorder = new Vector4(30, 24, 56, 24);
                 else if (name == "stamp_frame")
                     s.spriteBorder = new Vector4(24, 24, 24, 24);
+                else if (name == "board_day")
+                    s.spriteBorder = new Vector4(70, 70, 70, 70);
+                else if (name == "chip_pill" || name == "chip_pill_on")
+                    s.spriteBorder = new Vector4(30, 30, 30, 30);
+                else if (name == "row_bg")
+                    s.spriteBorder = new Vector4(22, 22, 22, 22);
                 else if (name == "live_pill")
                     s.spriteBorder = new Vector4(30, 30, 30, 30);
                 else

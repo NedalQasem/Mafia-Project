@@ -17,7 +17,7 @@ namespace MafiaNight.UI.Kit.Editor
             {
                 var root = new GameObject("LbRow", typeof(RectTransform));
                 Rt(root).sizeDelta = new Vector2(980, 118);
-                var bg = root.AddComponent<Image>(); bg.color = new Color(1, 1, 1, 0.05f); bg.raycastTarget = false;
+                var bg = root.AddComponent<Image>(); bg.sprite = th.rowBg; bg.type = Image.Type.Sliced; bg.pixelsPerUnitMultiplier = 1.6f; bg.color = new Color(1, 1, 1, 0.012f); bg.raycastTarget = false;
                 var le = root.AddComponent<LayoutElement>(); le.preferredWidth = 980; le.preferredHeight = 118;
                 var pos = Txt(root.transform, "Pos", "٤", th.fontHeading, 44, th.leatherText); Place(Rt(pos.gameObject), new Vector2(0.5f, 0.5f), new Vector2(430, 0), new Vector2(90, 80));
                 var av = InstChild("AvatarFrame", root.transform, "Avatar"); Place(Rt(av), new Vector2(0.5f, 0.5f), new Vector2(335, 0), new Vector2(94, 94));
@@ -37,11 +37,11 @@ namespace MafiaNight.UI.Kit.Editor
             }
             {
                 var root = new GameObject("LbChip", typeof(RectTransform));
-                Rt(root).sizeDelta = new Vector2(240, 84);
-                var img = Img(root, th.slotDark, true, 2f, true);
+                Rt(root).sizeDelta = new Vector2(200, 76);
+                var img = Img(root, th.chipOff, true, 1.6f, true); img.color = new Color(1f, 1f, 1f, 0.03f);
                 var b = root.AddComponent<Button>(); b.targetGraphic = img; b.transition = Selectable.Transition.None;
-                var le = root.AddComponent<LayoutElement>(); le.preferredWidth = 240; le.preferredHeight = 84;
-                var t = Txt(root.transform, "Label", "النقاط", th.fontHeading, 30, th.ivoryDim); Stretch(Rt(t.gameObject), 8, 6, 8, 10);
+                var le = root.AddComponent<LayoutElement>(); le.preferredWidth = 200; le.preferredHeight = 76;
+                var t = Txt(root.transform, "Label", "النقاط", th.fontHeading, 32, th.ivoryDim); Stretch(Rt(t.gameObject), 8, 6, 8, 8);
                 Save(root, "LbChip");
             }
 
@@ -60,13 +60,22 @@ namespace MafiaNight.UI.Kit.Editor
             content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             scroll.viewport = Rt(vp); scroll.content = cRt;
 
+            // header: title, subtitle and the reset countdown (the HTML top strip)
+            var hdr = Go("Header", content.transform); Rt(hdr).sizeDelta = new Vector2(1040, 120);
+            hdr.AddComponent<LayoutElement>().preferredHeight = 120;
+            var hTitle = Txt(hdr.transform, "Title", "غرفة التصنيفات", th.fontHeading, 64, th.ivory, TextAlignmentOptions.MidlineRight); Place(Rt(hTitle.gameObject), new Vector2(1, 0.5f), new Vector2(-300, 18), new Vector2(600, 76));
+            var hSub = Txt(hdr.transform, "Sub", "من الأول؟ الليلة تُحسم", th.fontBody, 28, th.brass, TextAlignmentOptions.MidlineRight); Place(Rt(hSub.gameObject), new Vector2(1, 0.5f), new Vector2(-300, -34), new Vector2(600, 40));
+            var resetPill = Go("ResetPill", hdr.transform); Place(Rt(resetPill), new Vector2(0, 0.5f), new Vector2(230, 0), new Vector2(440, 72)); Img(resetPill, th.chipOff, true, 1.4f).color = new Color(1f, 1f, 1f, 0.03f);
+            var resetText = Txt(resetPill.transform, "T", "يتجدد خلال ٠٣:٤٢:١٠", th.fontBody, 28, new Color32(0xFF, 0xB3, 0x5A, 255)); Stretch(Rt(resetText.gameObject), 10, 4, 10, 4);
+
             // doors
             var doorsRow = Go("Doors", content.transform); Rt(doorsRow).sizeDelta = new Vector2(1040, 200);
             doorsRow.AddComponent<LayoutElement>().preferredHeight = 200;
             var dh = doorsRow.AddComponent<HorizontalLayoutGroup>(); dh.spacing = 24; dh.childAlignment = TextAnchor.MiddleCenter; dh.reverseArrangement = true;
             dh.childControlWidth = false; dh.childControlHeight = false; dh.childForceExpandWidth = false;
             var doors = new Button[3]; string[] dn = { "اليوم", "الأسبوع", "قاعة المشاهير" };
-            Sprite[] ds = { th.chalkboard, th.paper, th.vipFrame };
+            Sprite[] ds = { th.boardDay, th.paper, th.vipFrame };
+            Sprite[] di2 = { th.iconDay, th.iconWeek, th.iconWall };
             Color[] dc = { new Color32(0xF2, 0xEF, 0xE4, 255), th.paperInk, th.brassLight };
             for (int i = 0; i < 3; i++)
             {
@@ -74,7 +83,8 @@ namespace MafiaNight.UI.Kit.Editor
                 var di = Img(d, ds[i], true, 1.2f, true);
                 var db = d.AddComponent<Button>(); db.targetGraphic = di; db.transition = Selectable.Transition.None; doors[i] = db;
                 d.AddComponent<LayoutElement>().preferredWidth = i == 2 ? 360 : 310;
-                var dt = Txt(d.transform, "Label", dn[i], th.fontCalligraphy, 54, dc[i]); Stretch(Rt(dt.gameObject), 6, 16, 6, 12);
+                var dIcon = Go("Icon", d.transform); Place(Rt(dIcon), new Vector2(0.5f, 1f), new Vector2(0, -52), new Vector2(76, 76)); Img(dIcon, di2[i]).raycastTarget = false;
+                var dt = Txt(d.transform, "Label", dn[i], th.fontHeading, 36, dc[i]); Place(Rt(dt.gameObject), new Vector2(0.5f, 0f), new Vector2(0, 36), new Vector2(300, 52));
             }
 
             // chips
@@ -90,13 +100,13 @@ namespace MafiaNight.UI.Kit.Editor
             csr.viewport = Rt(cvp); csr.content = ccr;
 
             // board (chalkboard / newspaper)
-            var board = Go("BoardView", content.transform); Rt(board).sizeDelta = new Vector2(1010, 2060);
-            board.AddComponent<LayoutElement>().preferredHeight = 2060;
-            var boardBg = Img(board, th.chalkboard, true, 1f, false);
+            var board = Go("BoardView", content.transform); Rt(board).sizeDelta = new Vector2(1010, 2150);
+            board.AddComponent<LayoutElement>().preferredHeight = 2150;
+            var boardBg = Img(board, th.boardDay, true, 1f, false);
             var title = Txt(board.transform, "Title", "سبورة الليلة · النقاط", th.fontCalligraphy, 56, new Color32(0xE9, 0xE6, 0xDC, 255), TextAlignmentOptions.MidlineRight);
             PlaceTop(Rt(title.gameObject), 80, -70, 700, 80);
             var unit = Txt(board.transform, "Unit", "نقطة", th.fontBody, 34, gold, TextAlignmentOptions.Midline); PlaceTop(Rt(unit.gameObject), -350, -70, 200, 80);
-            var reset = Txt(board.transform, "Reset", "يتجدد خلال ٠٣:٤٢:١٠", th.fontBody, 28, th.ivoryDim, TextAlignmentOptions.MidlineRight); PlaceTop(Rt(reset.gameObject), 60, -148, 700, 44);
+            var reset = resetText;   // the countdown lives in the header pill
 
             var slots = new LeaderPodiumSlot[3];
             float[] sx = { 0, -310, 310 }; float[] top = { -230, -300, -300 }; float[] avSize = { 210, 160, 160 };
@@ -118,7 +128,8 @@ namespace MafiaNight.UI.Kit.Editor
             var rowsRoot = Go("Rows", board.transform); PlaceTop(Rt(rowsRoot), 0, -720, 980, 1230);
             var rvl = rowsRoot.AddComponent<VerticalLayoutGroup>(); rvl.spacing = 8; rvl.childAlignment = TextAnchor.UpperCenter;
             rvl.childControlWidth = false; rvl.childControlHeight = false; rvl.childForceExpandWidth = false; rvl.childForceExpandHeight = false;
-            var reward = Txt(board.transform, "Reward", "جائزة", th.fontBody, 30, gold, TextAlignmentOptions.Center, true); PlaceTop(Rt(reward.gameObject), 0, -1940, 880, 90);
+            var rewardBg = Go("RewardBg", board.transform); PlaceTop(Rt(rewardBg), 0, -2005, 920, 110); Img(rewardBg, th.slotDark, true, 1.4f).raycastTarget = false;
+            var reward = Txt(board.transform, "Reward", "جائزة", th.fontBody, 30, gold, TextAlignmentOptions.Center, true); PlaceTop(Rt(reward.gameObject), 0, -2015, 880, 90);
 
             // hall of fame
             var wall = Go("WallView", content.transform); Rt(wall).sizeDelta = new Vector2(1080, 2200);

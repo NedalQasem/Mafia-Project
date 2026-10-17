@@ -28,18 +28,13 @@ namespace MafiaNight.UI.Kit.Editor
             content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             scroll.viewport = Rt(vp); scroll.content = cRt;
 
-            // ---- identity card
+            // ---- player ID strip (name, level and avatar are already in the top bar)
             {
-                var me = Go("MeCard", content.transform); Rt(me).sizeDelta = new Vector2(1000, 200);
-                me.AddComponent<LayoutElement>().preferredHeight = 200;
-                Img(me, th.paper, true, 1f);
-                var rb = Go("Ribbon", me.transform); Place(Rt(rb), new Vector2(1, 1), new Vector2(-60, 12), new Vector2(60, 48)); Img(rb, th.ribbonRed);
-                var av = InstChild("AvatarFrame", me.transform, "Avatar"); Place(Rt(av), new Vector2(1, 0.5f), new Vector2(-110, 0), new Vector2(150, 150));
-                var nm = Txt(me.transform, "Name", "أبو سالم", th.fontCalligraphy, 70, th.paperInk, TextAlignmentOptions.MidlineRight); Place(Rt(nm.gameObject), new Vector2(1, 0.5f), new Vector2(-440, 26), new Vector2(520, 90));
-                var sub = Txt(me.transform, "Sub", "الجندي · المستوى ٧", th.fontBody, 32, soft, TextAlignmentOptions.MidlineRight); Place(Rt(sub.gameObject), new Vector2(1, 0.5f), new Vector2(-440, -38), new Vector2(520, 44));
-                var idc = Go("Id", me.transform); Place(Rt(idc), new Vector2(0, 0.5f), new Vector2(170, 0), new Vector2(260, 100)); Img(idc, th.slotDark, true, 2f);
-                var idl = Txt(idc.transform, "L", "رقم الهوية", th.fontBody, 22, th.ivoryDim); Place(Rt(idl.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, 26), new Vector2(240, 30));
-                var idv = Txt(idc.transform, "V", "٠٤٢٧٧١", th.fontHeading, 40, th.brassLight); Place(Rt(idv.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -16), new Vector2(240, 56));
+                var me = Go("IdStrip", content.transform); Rt(me).sizeDelta = new Vector2(1000, 110);
+                me.AddComponent<LayoutElement>().preferredHeight = 110;
+                Img(me, th.slotDark, true, 2f);
+                var idl = Txt(me.transform, "L", "رقم الهوية", th.fontBody, 34, th.ivoryDim, TextAlignmentOptions.MidlineRight); Place(Rt(idl.gameObject), new Vector2(1, 0.5f), new Vector2(-230, 0), new Vector2(380, 60));
+                var idv = Txt(me.transform, "V", "٠٤٢٧٧١", th.fontHeading, 52, th.brassLight, TextAlignmentOptions.MidlineLeft); Place(Rt(idv.gameObject), new Vector2(0, 0.5f), new Vector2(230, 0), new Vector2(380, 70));
             }
 
             var sections = new System.Collections.Generic.List<KitSettingsSection>();
