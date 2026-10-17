@@ -185,6 +185,35 @@ namespace MafiaNight.UI.Kit.Editor
                 return C(0xffe9a0, .165f * Mathf.Clamp01(1f - t / .85f));
             });
 
+            // lever toggle (HTML .tg): black pill with inset shadow and dark outline; the on state is deep green with a teal outline
+            Make("tog_off", 256, 140, (x, y) =>
+            {
+                float d = RoundRectSdf(x, y, 128f, 70f, 128f, 70f, 70f);
+                if (d > 0f) return Color.clear;
+                if (d > -3f) return C(0x3a2e22);
+                Color c = C(0x000000, .73f);
+                if (y < 14f + (-d > 3f ? 0f : 0f)) c = Over(C(0x000000, .55f * (1f - (y - 3f) / 11f)), c);   // inner shadow along the top
+                if (d > -5f && y > 70f) c = Over(C(0xffffff, .08f), c);
+                return c;
+            });
+            Make("tog_on", 256, 140, (x, y) =>
+            {
+                float d = RoundRectSdf(x, y, 128f, 70f, 128f, 70f, 70f);
+                if (d > 0f) return Color.clear;
+                if (d > -3f) return C(0x2d7a60);
+                Color c = Color.Lerp(C(0x143a2a), C(0x0a2418), Mathf.Clamp01(y / 140f));
+                if (y < 14f) c = Over(C(0x000000, .5f * (1f - (y - 3f) / 11f)), c);
+                return c;
+            });
+            Make("tog_knob", 128, 128, (x, y) =>
+            {
+                float r = Mathf.Sqrt((x - 64f) * (x - 64f) + (y - 64f) * (y - 64f));
+                if (r > 62f) return Color.clear;
+                if (r > 59f) return C(0x000000, .55f);
+                float k = Mathf.Clamp01(Mathf.Sqrt((x - 45f) * (x - 45f) + (y - 38f) * (y - 38f)) / 78f);
+                return k < .55f ? Color.Lerp(C(0xfff0b8), C(0xc9a050), k / .55f) : Color.Lerp(C(0xc9a050), C(0x6e4b1c), (k - .55f) / .45f);
+            });
+
             Make("dash_h", 24, 4, (x, y) => (x % 24f) < 14f ? Color.white : Color.clear);
 
             // pill chips: translucent outline / gold

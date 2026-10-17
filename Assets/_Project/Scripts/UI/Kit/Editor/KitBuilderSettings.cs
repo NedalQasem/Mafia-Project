@@ -74,10 +74,10 @@ namespace MafiaNight.UI.Kit.Editor
                 var t = Txt(row.transform, "T", title, th.fontBody, 36, th.leatherText, TextAlignmentOptions.MidlineRight); Place(Rt(t.gameObject), new Vector2(1, 0.5f), new Vector2(-330, sub == null ? 0 : 22), new Vector2(620, 50));
                 if (sub != null) { var s2 = Txt(row.transform, "S", sub, th.fontBody, 26, th.ivoryDim, TextAlignmentOptions.MidlineRight); Place(Rt(s2.gameObject), new Vector2(1, 0.5f), new Vector2(-330, -26), new Vector2(620, 36)); }
                 var tg = Go("Toggle", row.transform); Place(Rt(tg), new Vector2(0, 0.5f), new Vector2(90, 0), new Vector2(140, 74));
-                var ti = Img(tg, th.slotDark, true, 1.8f, true);
+                var ti = Img(tg, th.togOff, false, 1f, true); ti.preserveAspect = false;
                 var tb = tg.AddComponent<Button>(); tb.targetGraphic = ti; tb.transition = Selectable.Transition.None;
-                var litGo = Go("Lit", tg.transform); Stretch(Rt(litGo), 10, 10, 10, 10); var litImg = Img(litGo, th.dotWhite); litImg.raycastTarget = false; litImg.color = Color.clear;
-                var kn = Go("Knob", tg.transform); Place(Rt(kn), new Vector2(0.5f, 0.5f), new Vector2(26, 0), new Vector2(54, 54)); Img(kn, th.coin);
+                var litGo = Go("Lit", tg.transform); Stretch(Rt(litGo)); var litImg = Img(litGo, th.togOn); litImg.preserveAspect = false; litImg.raycastTarget = false; litImg.color = new Color(1, 1, 1, 0);
+                var kn = Go("Knob", tg.transform); Place(Rt(kn), new Vector2(0.5f, 0.5f), new Vector2(32, 0), new Vector2(60, 60)); Img(kn, th.togKnob).raycastTarget = false;
                 var comp = tg.AddComponent<KitToggle>();
                 SetRef(comp, "button", tb); SetRef(comp, "track", ti); SetRef(comp, "knob", Rt(kn)); SetRef(comp, "lit", litImg);
                 var so = new SerializedObject(comp); so.FindProperty("isOn").boolValue = on; so.FindProperty("travel").floatValue = 32f; so.ApplyModifiedPropertiesWithoutUndo();
