@@ -16,6 +16,21 @@ namespace MafiaNight.UI.Kit.Editor
             return (p - (a + ab * t)).magnitude;
         }
 
+        private static void Door(string name, Color top, Color bottom, Color border, float borderPx, bool grain)
+        {
+            Make(name, 256, 128, (x, y) =>
+            {
+                float r = y < 64f ? 25f : 8f;
+                float d = RoundRectSdf(x, y, 128f, 64f, 128f, 64f, r);
+                if (d > 0f) return Color.clear;
+                if (d > -2f) return C(0x000000);
+                Color c = Color.Lerp(top, bottom, Mathf.Clamp01(y / 128f));
+                if (grain) { float g = (Hash((int)x, (int)y) - .5f) * .05f; c = new Color(c.r + g, c.g + g, c.b + g, 1f); }
+                if (d > -2f - borderPx) return Over(border, c);
+                return c;
+            });
+        }
+
         public static void Generate()
         {
             // dark chalkboard with a thin wooden frame (the HTML ".board.day" and ".door.d1")
@@ -29,6 +44,18 @@ namespace MafiaNight.UI.Kit.Editor
                 float g = (Hash((int)x, (int)y) - .5f) * .035f;
                 Color c = Color.Lerp(C(0x1c2622), C(0x101714), Mathf.Clamp01(y / 256f));
                 return new Color(c.r + g, c.g + g, c.b + g, 1f);
+            });
+
+            // the three doors (HTML .door.d1/.d2/.d3): top radius 9px, bottom 3px, inset border; and the cream selection ring
+            Door("door_d1", C(0x26302b), C(0x121815), C(0x4a3a2a), 6f, false);
+            Door("door_d2", C(0xbdb08e), C(0x8a7e60), new Color(0f, 0f, 0f, 0.27f), 2.5f, false);
+            Door("door_d3", C(0x3a1218), C(0x1a0609), C(0x6e5224), 4.5f, true);
+            Make("door_ring", 256, 128, (x, y) =>
+            {
+                float dOut = RoundRectSdf(x, y, 128f, 64f, 128f, 64f, y < 64f ? 31f : 13f);
+                if (dOut > 0f) return Color.clear;
+                float dIn = RoundRectSdf(x, y, 128f, 64f, 123f, 59f, y < 64f ? 26f : 8f);
+                return dIn > 0f ? Color.white : Color.clear;
             });
 
             // pill chips: translucent outline / gold

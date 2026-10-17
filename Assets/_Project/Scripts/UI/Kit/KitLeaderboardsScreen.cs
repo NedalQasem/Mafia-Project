@@ -8,6 +8,8 @@ namespace MafiaNight.UI.Kit
     public class KitLeaderboardsScreen : MonoBehaviour
     {
         [SerializeField] private Button[] doors = new Button[3];
+        [SerializeField] private Button backButton;
+        public event System.Action OnBack;
         [SerializeField] private GameObject boardView, wallView, chipsRow;
         [SerializeField] private Image boardBg;
         [SerializeField] private ArabicText boardTitle, boardUnit, rewardLabel, resetLabel;
@@ -39,6 +41,7 @@ namespace MafiaNight.UI.Kit
                 chips.Add(b);
             }
             for (int i = 0; i < doors.Length; i++) { int idx = i; doors[i].onClick.AddListener(() => SetPeriod(idx)); }
+            if (backButton != null) backButton.onClick.AddListener(() => OnBack?.Invoke());
             Apply();
         }
 
@@ -56,8 +59,7 @@ namespace MafiaNight.UI.Kit
             for (int i = 0; i < doors.Length; i++)
             {
                 bool on = i == period;
-                ((RectTransform)doors[i].transform).localScale = Vector3.one * (on ? 1.06f : 0.96f);
-                doors[i].GetComponent<Image>().color = on ? Color.white : new Color(0.62f, 0.58f, 0.55f, 1f);
+                StyleDoor(doors[i], i, on);
             }
             for (int i = 0; i < chips.Count; i++)
             {
@@ -95,6 +97,19 @@ namespace MafiaNight.UI.Kit
             mineNeed.Text = "تحتاج " + CoinPill.Format(period == 0 ? 320 : 1850) + " " + LeaderboardData.Units[cat] + " لتدخل أول ١٠";
             mineValue.Text = CoinPill.Format(me.value);
             SetFill(period == 0 ? 0.64f : 0.42f);
+        }
+
+        // HTML .door: the picked door rises 5px and gets a cream outline; the others keep a dimmed, greyed icon and label
+        private static readonly Color32[] DoorOn = { new Color32(0xF2, 0xEF, 0xE4, 255), new Color32(0x1C, 0x17, 0x0F, 255), new Color32(0xF5, 0xE2, 0xA8, 255) };
+        private static readonly Color32[] DoorOff = { new Color32(0x8F, 0x87, 0x77, 255), new Color32(0x4A, 0x40, 0x30, 255), new Color32(0xC9, 0xA8, 0x6A, 255) };
+
+        private static void StyleDoor(Button door, int i, bool on)
+        {
+            var rt = (RectTransform)door.transform;
+            rt.anchoredPosition = new Vector2(0f, on ? 14f : 0f);
+            var ring = rt.Find("Ring"); if (ring != null) ring.gameObject.SetActive(on);
+            var label = rt.Find("Label"); if (label != null) label.GetComponent<TMPro.TMP_Text>().color = on ? DoorOn[i] : DoorOff[i];
+            var icon = rt.Find("Icon"); if (icon != null) icon.GetComponent<Image>().color = on ? Color.white : new Color(0.62f, 0.6f, 0.58f, 1f);
         }
 
         private void SetResetVisible(bool on) { if (resetLabel != null && resetLabel.transform.parent != null && resetLabel.transform.parent.name == "ResetPill") resetLabel.transform.parent.gameObject.SetActive(on); }

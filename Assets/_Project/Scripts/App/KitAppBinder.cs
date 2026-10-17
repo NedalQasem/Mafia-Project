@@ -40,7 +40,7 @@ namespace MafiaNight.App
 
         private static void Attach()
         {
-            if (FindAnyObjectByType<KitTopBar>() == null || FindAnyObjectByType<KitAppBinder>() != null) return;
+            if ((FindAnyObjectByType<KitTopBar>() == null && FindAnyObjectByType<KitLeaderboardsScreen>() == null) || FindAnyObjectByType<KitAppBinder>() != null) return;
             new GameObject("KitAppBinder").AddComponent<KitAppBinder>();
         }
 
@@ -48,8 +48,7 @@ namespace MafiaNight.App
         {
             topBar = FindAnyObjectByType<KitTopBar>();
             navBar = FindAnyObjectByType<KitNavBar>();
-            if (topBar == null ||
-                !ServiceLocator.TryGet(out profile) || !ServiceLocator.TryGet(out currency))
+            if (!ServiceLocator.TryGet(out profile) || !ServiceLocator.TryGet(out currency))
             {
                 Log.Info("Services not available - screen stays in demo mode", Tag);
                 Destroy(gameObject);
@@ -64,6 +63,8 @@ namespace MafiaNight.App
             currency.OnCoinsChanged += OnCoins;
             if (navBar != null) navBar.OnTabSelected += OnTab;
             if (store != null) WireStore();
+            var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
+            if (lb != null) lb.OnBack += GoHome;
 
             Refresh();
         }
@@ -81,6 +82,11 @@ namespace MafiaNight.App
         {
             if (store != null) store.Coins = coins;
             if (topBar != null) Refresh(true);
+        }
+
+        private void GoHome()
+        {
+            if (sceneLoader != null && SceneManager.GetActiveScene().name != AppScenes.Home) sceneLoader.LoadScene(AppScenes.Home);
         }
 
         private void OnTab(int index)
