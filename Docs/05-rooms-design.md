@@ -11,12 +11,12 @@
 |---|---|---|
 | عدد الغرف باللعبة | **ما في حد معلن** | [Lobbies Intro](https://dev.epicgames.com/docs/epic-online-services/multiplayer/lobbies-and-sessions/lobbies-and-sessions-introduction) |
 | أكبر عدد بالغرفة | **64** | نفس المصدر |
-| الصوت بالغرفة | **16 مضمون**، و64 حسب التوثيق للنسخة 1.16+ | [Voice Overview](https://dev.epicgames.com/docs/epic-online-services/multiplayer/voice-and-rtc-interface/voice-interface/voice-overview) |
+| الصوت بالغرفة | **16 بالضبط** (مجرّب 2026-10-17 على SDK 1.19.2.1: 16 ✅، و 17/32/64 ❌ `LobbyInvalidSession`) | اختبار فعلي |
 | إنشاء/دخول غرف للاعب | 30 بالدقيقة | Lobbies Intro |
 | غرف اللاعب بنفس الوقت | 16 | Lobbies Intro |
 | التكلفة | مجاني | — |
 
-⏳ **لازم نختبر:** إنشاء غرفة صوت لـ 64 شخص بالنسخة الحالية (في تقارير إنها محدودة بـ 16).
+✅ **اختبرناها:** غرفة بصوت حدها **16**، وغرفة بدون صوت بتقبل **64**. (التوثيق اللي بيقول 64 للصوت مش دقيق.)
 
 ❌ **EOS مش مناسب لـ:** غرف ضخمة بمئات المستمعين (نمط Yalla). بتحتاج خدمة بث صوتي ثانية.
 

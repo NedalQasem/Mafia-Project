@@ -49,6 +49,11 @@ namespace MafiaNight.Services.Auth
         [Tooltip("Builds always use DeviceId. DevAuthTool is honoured in the Editor only.")]
         [SerializeField] private EosLoginMode loginMode = EosLoginMode.DeviceId;
 
+        [Header("Voice (RTC)")]
+        [Tooltip("What voice rooms do when the app goes to the background. LeaveRooms is the safe default on mobile " +
+                 "(background microphone needs extra OS permissions).")]
+        [SerializeField] private RTCBackgroundMode rtcBackgroundMode = RTCBackgroundMode.LeaveRooms;
+
         [Tooltip("EOS SDK log verbosity. Raise to Info/Verbose when diagnosing login or network issues.")]
         [SerializeField] private LogLevel sdkLogLevel = LogLevel.Error;
 
@@ -66,6 +71,9 @@ namespace MafiaNight.Services.Auth
         public EosLoginMode ActiveLoginMode => Application.isEditor ? loginMode : EosLoginMode.DeviceId;
 
         private static PlatformInterface s_PlatformInterface;
+        // True between a successful EOS_Initialize and EOS_Shutdown. Must be shut down before the
+        // Editor unloads the DLL, even if platform creation failed - otherwise SDK threads hang the Editor.
+        private static bool s_SdkInitialized;
         private const float c_PlatformTickInterval = 0.1f;
         private float m_PlatformTickTimer = 0f;
         private ulong _authExpirationNotifyId;
@@ -101,6 +109,7 @@ namespace MafiaNight.Services.Auth
             }
 
             Bindings.Hook(m_LibraryPointer, GetProcAddress);
+            WindowsBindings.Hook(m_LibraryPointer, GetProcAddress); // Windows-only functions (EOS_Platform_Create with RTC options)
 #endif
         }
 
@@ -154,30 +163,29 @@ namespace MafiaNight.Services.Auth
                 OnLoginFailed?.Invoke(initializeResult);
                 return false;
             }
+            s_SdkInitialized = true;
 
             LoggingInterface.SetLogLevel(LogCategory.AllCategories, sdkLogLevel);
             LoggingInterface.SetCallback((ref LogMessage logMessage) =>
             {
                 string message = $"{logMessage.Category}: {logMessage.Message}";
+                // Expected on every launch after the first (DeviceID already created) - not an error
+                if (message.Contains("DeviceId access credentials already exist")) { Log.Info(message, Tag); return; }
                 if (logMessage.Level <= LogLevel.Error) Log.Error(message, Tag);
                 else if (logMessage.Level == LogLevel.Warning) Log.Warning(message, Tag);
                 else Log.Info(message, Tag);
             });
 
-            var options = new Options()
+            try
             {
-                ProductId = m_ProductId,
-                SandboxId = m_SandboxId,
-                DeploymentId = m_DeploymentId,
-                ClientCredentials = new ClientCredentials()
-                {
-                    ClientId = m_ClientId,
-                    ClientSecret = m_ClientSecret
-                },
-                Flags = PlatformFlags.DisableOverlay
-            };
+                s_PlatformInterface = CreatePlatform();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Exception while creating EOS platform: {e}", Tag);
+                s_PlatformInterface = null;
+            }
 
-            s_PlatformInterface = PlatformInterface.Create(ref options);
             if (s_PlatformInterface == null)
             {
                 Log.Error("Failed to create EOS platform (check Product/Sandbox/Deployment/Client IDs)", Tag);
@@ -188,6 +196,60 @@ namespace MafiaNight.Services.Auth
             Log.Info("✅ Platform initialized successfully", Tag);
             return true;
         }
+
+        /// <summary>
+        /// Creates the platform with RTC (voice) enabled. Without RTCOptions, EOS disables voice
+        /// and lobbies with an RTC room fail ("RTC is locally disabled").
+        /// </summary>
+        private PlatformInterface CreatePlatform()
+        {
+            var credentials = new ClientCredentials { ClientId = m_ClientId, ClientSecret = m_ClientSecret };
+
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            // Windows voice needs the path to XAudio 2.9 shipped with the SDK
+            var windowsOptions = new WindowsOptions
+            {
+                ProductId = m_ProductId,
+                SandboxId = m_SandboxId,
+                DeploymentId = m_DeploymentId,
+                ClientCredentials = credentials,
+                Flags = PlatformFlags.DisableOverlay,
+                RTCOptions = new WindowsRTCOptions
+                {
+                    PlatformSpecificOptions = new WindowsRTCOptionsPlatformSpecificOptions
+                    {
+                        XAudio29DllPath = GetXAudioDllPath()
+                    },
+                    BackgroundMode = rtcBackgroundMode
+                }
+            };
+            return PlatformInterface.Create(ref windowsOptions);
+#else
+            var options = new Options
+            {
+                ProductId = m_ProductId,
+                SandboxId = m_SandboxId,
+                DeploymentId = m_DeploymentId,
+                ClientCredentials = credentials,
+                Flags = PlatformFlags.DisableOverlay,
+                RTCOptions = new RTCOptions { BackgroundMode = rtcBackgroundMode }
+            };
+            return PlatformInterface.Create(ref options);
+#endif
+        }
+
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+        private static string GetXAudioDllPath()
+        {
+#if UNITY_EDITOR
+            const string relative = "Assets/ThirdParty/EOS-SDK/SDK/Bin/x64/xaudio2_9redist.dll";
+            return System.IO.Path.GetFullPath(relative);
+#else
+            // Unity copies x64 native plugins next to the game data in Windows builds
+            return System.IO.Path.Combine(Application.dataPath, "Plugins", "x86_64", "xaudio2_9redist.dll");
+#endif
+        }
+#endif
 
         private Result InitializeSdk()
         {
@@ -234,13 +296,20 @@ namespace MafiaNight.Services.Auth
                 Log.Info("Releasing platform", Tag);
                 s_PlatformInterface.Release();
                 s_PlatformInterface = null;
+            }
+
+            // Shut the SDK down whenever it was initialized - also when platform creation failed.
+            if (s_SdkInitialized)
+            {
                 PlatformInterface.Shutdown();
+                s_SdkInitialized = false;
             }
 
 #if UNITY_EDITOR
             if (m_LibraryPointer != IntPtr.Zero)
             {
                 Bindings.Unhook();
+                WindowsBindings.Unhook();
 
                 // Free until the module ref count is 0
                 while (FreeLibrary(m_LibraryPointer) != 0) { }

@@ -118,3 +118,19 @@ Assets/_Project/Scripts/
 - أي خدمة جديدة: interface + تسجيل في `ServiceLocator` + بالـ asmdef الصح
 - نقل أي ملف بالمشروع: من داخل Unity (عشان ما تنكسر الروابط)
 - اتجاه الاعتماد: `UI → Gameplay → Services → Data → Core` (ما في رجوع للخلف)
+
+---
+
+## ✅ إعدادات EOS في البورتال (2026-10-17)
+
+| البند | القيمة |
+|---|---|
+| Sandbox | **Live** (`26406e73…`). الـ Dev خاص وبيرفض DeviceID |
+| Deployment | **Live Deployment** (`c96c080c…`) |
+| Client باللعبة | **MafiaMobileClient** (`xyza7891rUkz…`) على Policy **MafiaMobileP2PPolicy** (Peer2Peer: Lobbies, Voice, Sessions, Stats…) |
+| Client القديم | **MafiaGameClient** (TrustedServer). **ما بينحط باللعبة أبداً**، بس للسيرفر/CloudScript لاحقاً |
+| الصوت (RTC) | مفعّل بالكود (`WindowsRTCOptions` + xaudio2 على Windows، `RTCOptions` على Android) |
+| حد الصوت بالغرفة | **16** (مجرّب) |
+
+⚠️ **الـ Client Secret محفوظ بمشهد Bootstrap.** هذا طبيعي لـ Client من نوع Peer2Peer، بس **خلّي الـ repo على GitHub خاص**.
+⏳ **Android:** لازم نضيف صلاحية المايك (`RECORD_AUDIO`) ونطلبها من اللاعب وقت التشغيل لما نبني خدمة الصوت.
