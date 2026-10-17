@@ -6,7 +6,6 @@ namespace MafiaNight.Core
     public static class GameConstants
     {
         #region PlayerPrefs Keys
-        public const string PREF_SAVED_EOS_CUSTOM_ID = "SavedEOSCustomID";
         public const string PREF_PLAYER_CUSTOM_NAME = "PlayerCustomName";
         #endregion
 

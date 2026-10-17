@@ -29,18 +29,18 @@ namespace MafiaNight.Gameplay.Match
     {
         public string PlayerName { get; set; }
         public string PlayFabId { get; set; }
-        public string EOSAccountId { get; set; }
+        public string ProductUserId { get; set; }
         public PlayerRole Role { get; set; }
         public bool IsAlive { get; set; } = true;
         public bool IsHost { get; set; }
 
         public PlayerPublicData VisualData { get; set; }
 
-        public PlayerData(string name, string playFabId, string eosId, PlayerPublicData visualData = null)
+        public PlayerData(string name, string playFabId, string productUserId, PlayerPublicData visualData = null)
         {
             PlayerName = name;
             PlayFabId = playFabId;
-            EOSAccountId = eosId;
+            ProductUserId = productUserId;
             VisualData = visualData;
         }
     }

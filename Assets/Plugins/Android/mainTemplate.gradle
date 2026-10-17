@@ -4,6 +4,10 @@ apply from: '../shared/keepUnitySymbols.gradle'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // EOS SDK (eossdk-StaticSTDC-release.aar) runtime dependencies
+    implementation "androidx.core:core:1.13.1"
+    implementation "androidx.browser:browser:1.8.0"
+    implementation "androidx.security:security-crypto:1.0.0"
 **DEPS**}
 
 android {

@@ -9,7 +9,8 @@ namespace MafiaNight.Services.Auth
     {
         bool IsEOSLoggedIn { get; }
         bool IsPlayFabLoggedIn { get; }
-        string EOSAccountId { get; }
+        /// <summary>EOS Product User ID (PUID) - the player's identity for Lobbies, P2P and voice.</summary>
+        string ProductUserId { get; }
         string PlayFabId { get; }
 
         /// <summary>Raised once PlayFab login succeeds. Argument: PlayFab ID.</summary>

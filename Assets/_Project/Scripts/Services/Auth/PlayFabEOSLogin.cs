@@ -21,17 +21,21 @@ namespace MafiaNight.Services.Auth
         [Header("PlayFab Settings")]
         [SerializeField] private string playFabTitleId = DefaultTitleIdPlaceholder; // Or configured by PlayFab EdEx
 
+        [Tooltip("Name of the OpenID Connect connection configured in PlayFab for EOS (issuer https://api.epicgames.dev). " +
+                 "Empty = fall back to the less secure CustomID login.")]
+        [SerializeField] private string openIdConnectionId = "";
+
         [Header("Status (read-only)")]
         [SerializeField] private bool isEOSLoggedIn = false;
         [SerializeField] private bool isPlayFabLoggedIn = false;
 
         private EOSSDKComponent _eos;
-        private string _eosAccountIdString;
+        private string _productUserId;
         private string _playFabId;
 
         public bool IsEOSLoggedIn => isEOSLoggedIn;
         public bool IsPlayFabLoggedIn => isPlayFabLoggedIn;
-        public string EOSAccountId => _eosAccountIdString;
+        public string ProductUserId => _productUserId;
         public string PlayFabId => _playFabId;
 
         public event Action<string> OnPlayFabLoggedIn;
@@ -61,12 +65,12 @@ namespace MafiaNight.Services.Auth
 
         #region EOS
 
-        private void HandleEOSLoggedIn(EpicAccountId accountId)
+        private void HandleEOSLoggedIn(ProductUserId userId)
         {
-            _eosAccountIdString = accountId.ToString();
+            _productUserId = userId.ToString();
             isEOSLoggedIn = true;
 
-            Log.Info($"EOS login success. Account ID: {_eosAccountIdString}", Tag);
+            Log.Info($"EOS login success. ProductUserId: {_productUserId}", Tag);
             LoginToPlayFab();
         }
 
@@ -82,13 +86,27 @@ namespace MafiaNight.Services.Auth
 
         private void LoginToPlayFab()
         {
-            Log.Info("Logging into PlayFab with EOS Account ID...", Tag);
+            // Preferred: PlayFab verifies the EOS-signed ID token itself (can't be forged by the client)
+            if (!string.IsNullOrEmpty(openIdConnectionId) && _eos.TryGetIdToken(out string idToken))
+            {
+                Log.Info("Logging into PlayFab with EOS ID token (OpenID Connect)...", Tag);
+                var oidcRequest = new LoginWithOpenIdConnectRequest
+                {
+                    ConnectionId = openIdConnectionId,
+                    IdToken = idToken,
+                    CreateAccount = true,
+                    TitleId = PlayFabSettings.TitleId
+                };
+                PlayFabClientAPI.LoginWithOpenIdConnect(oidcRequest, HandlePlayFabLoginSuccess, HandlePlayFabLoginFailure);
+                return;
+            }
 
-            // TODO(security): CustomID = EOS Account ID is guessable. Move to LoginWithOpenIdConnect
-            // using the EOS ID token so PlayFab verifies the identity server-side.
+            // TODO(security): CustomID = ProductUserId can be impersonated by anyone who knows it.
+            // Configure the OpenID connection in PlayFab and set openIdConnectionId (see Docs/04-technical-debt.md).
+            Log.Warning("Logging into PlayFab with CustomID (insecure - set openIdConnectionId)", Tag);
             var request = new LoginWithCustomIDRequest
             {
-                CustomId = _eosAccountIdString,
+                CustomId = _productUserId,
                 CreateAccount = true,
                 TitleId = PlayFabSettings.TitleId
             };
@@ -101,9 +119,6 @@ namespace MafiaNight.Services.Auth
             isPlayFabLoggedIn = true;
             _playFabId = result.PlayFabId;
             Log.Info($"PlayFab login success. PlayFab ID: {result.PlayFabId} (new account: {result.NewlyCreated})", Tag);
-
-            PlayerPrefs.SetString(GameConstants.PREF_SAVED_EOS_CUSTOM_ID, _eosAccountIdString);
-            PlayerPrefs.Save();
 
             EnsureDisplayName();
             OnPlayFabLoggedIn?.Invoke(result.PlayFabId);

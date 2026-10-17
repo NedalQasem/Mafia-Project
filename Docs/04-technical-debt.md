@@ -21,10 +21,16 @@
 - **المشكلة:** اللاعب بيرسل الـ XP والرتبة والإحصائيات بنفسه عبر `UpdateUserData`.
 - **الحل:** الـ Host يبعت نتيجة المباراة للسيرفر، والسيرفر يحسب ويحفظ. وقواعد `RankRules.cs` لازم تتكرر بالسيرفر.
 
-### 3. تسجيل دخول PlayFab قابل للتخمين
+### 3. تسجيل دخول PlayFab قابل للتخمين — 🟡 الكود جاهز، باقي الإعداد
 - **المكان:** `Services/Auth/PlayFabEOSLogin.cs` (`LoginToPlayFab`)
-- **المشكلة:** `LoginWithCustomID` بيستخدم رقم حساب EOS. اللي بيعرف الرقم بيقدر يدخل على الحساب.
-- **الحل:** `LoginWithOpenIdConnect` باستخدام توكن EOS، فـ PlayFab بيتحقق من الهوية بنفسه.
+- **المشكلة:** `LoginWithCustomID` بيستخدم الـ ProductUserId. اللي بيعرف الرقم بيقدر يدخل على الحساب.
+- **✅ تم بالكود:** دعم `LoginWithOpenIdConnect` بتوكن EOS Connect (JWT موقّع من Epic).
+- **⏳ باقي عليك:**
+  1. في PlayFab Game Manager → Title Settings → **OpenID Connect** → أضف اتصال جديد
+     (Issuer: `https://api.epicgames.dev`، و Client ID = الـ Client ID تبع EOS)
+  2. حط اسم الاتصال في حقل `openIdConnectionId` على `PlayFabEOSLogin` (مشهد Bootstrap)
+  3. بعدها احذف مسار CustomID من الكود
+- **ملاحظة:** حسابات PlayFab القديمة كانت مربوطة بـ EpicAccountId. صارت الآن على الـ ProductUserId، فالحسابات التجريبية القديمة ما رح تُستخدم.
 
 ### 4. الأدوار السرية
 - **المكان:** `Gameplay/Match/GameManager.cs` (`AssignRoles`)
@@ -33,12 +39,24 @@
 
 ---
 
-## 🔴 تسجيل الدخول على الموبايل
+## 🟠 تسجيل الدخول على الموبايل — الكود ✅، إعدادات EOS ⏳
 
-- **المكان:** `Services/Auth/EOSSDKComponent.cs` (`StartLogin`)
-- **المشكلة:** الدخول حالياً `Developer` عبر **DevAuthTool**، وهذا بيشتغل **داخل Unity بس**. على الموبايل ما رح يشتغل أبداً.
-- **الحل:** **EOS Connect + DeviceID** (دخول تلقائي بدون حساب Epic)، ولاحقاً ربط بحساب Google/Apple.
-- **ملاحظة:** حالياً DevAuthTool ما فيه حساب اسمه `TestUser1`، فالدخول بيفشل بـ `NotFound`.
+- **المكان:** `Services/Auth/EOSSDKComponent.cs`
+- **✅ تم:**
+  - **EOS Connect + DeviceID** (الافتراضي): دخول تلقائي بدون حساب Epic، وبينتج ProductUserId (للـ Lobbies والصوت)
+  - وضع **DevAuthTool** بالـ Editor بس، لتجربة أكثر من لاعب على نفس الجهاز
+  - تهيئة EOS على Android (`EOSSDK.init` + `AndroidInitializeOptions`) + مكتبات androidx في `mainTemplate.gradle`
+  - تجديد التوكن تلقائياً قبل ما ينتهي (~ساعة)
+  - خيار `sdkLogLevel` لتشخيص مشاكل EOS
+- **⏳ مشكلة حالية (إعداد، مش كود):**
+  الدخول بالـ DeviceID بيرجع `AccessDenied`، والسبب من سيرفر Epic:
+  `errors.com.epicgames.eos.auth.deployment_user_access_forbidden`
+  الـ Sandbox الحالي (`p-...`) هو Dev/Stage وخاص، فبيرفض المستخدمين المجهولين.
+  **الحل:** استخدم **Sandbox و Deployment تبع Live** في `EOSSDKComponent` (من Developer Portal)،
+  أو افتح الوصول للـ Dev sandbox إذا البورتال بيسمح.
+  **للتطوير حالياً:** وضع DevAuthTool بيشتغل لأعضاء المنظمة (اعمل credential اسمه `TestUser1` بالأداة).
+- **⏳ لاحقاً:** ربط الحساب بـ Google/Apple عشان اللاعب ما يخسر تقدّمه لو غيّر جهازه.
+- **⚠️ ملاحظة للمرحلة الجاية:** كل نسخ اللعبة على نفس الكمبيوتر بتاخد **نفس الـ DeviceID**. لتجربة أكثر من لاعب على جهاز واحد استخدم وضع DevAuthTool بأسماء credentials مختلفة.
 
 ---
 

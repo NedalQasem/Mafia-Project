@@ -190,7 +190,7 @@ namespace MafiaNight.Gameplay.Seating
             if (controller != null)
             {
                 bool isLocal = ServiceLocator.TryGet<IAuthService>(out var auth) && data.PlayFabId == auth.PlayFabId;
-                controller.Initialize(data.PlayerName, data.PlayFabId, data.EOSAccountId, isLocal, data.VisualData);
+                controller.Initialize(data.PlayerName, data.PlayFabId, data.ProductUserId, isLocal, data.VisualData);
                 seat.AssignPlayer(controller);
             }
         }

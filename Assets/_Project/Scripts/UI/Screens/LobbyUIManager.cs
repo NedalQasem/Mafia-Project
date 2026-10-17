@@ -102,7 +102,7 @@ namespace MafiaNight.UI.Screens
             var playerData = new PlayerData(
                 profile.DisplayName,
                 profile.PlayFabId,
-                auth?.EOSAccountId ?? "",
+                auth?.ProductUserId ?? "",
                 profileService.PublicData);
 
             _gameManager.RegisterPlayer(playerData);

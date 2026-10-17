@@ -1598,6 +1598,8 @@ MonoBehaviour:
   loadingText: {fileID: 425693238}
   progressBar: {fileID: 1173533788}
   minimumLoadingTime: 2
+  loginTimeout: 10
+  dataTimeout: 5
 --- !u!4 &1059959381
 Transform:
   m_ObjectHideFlags: 0
@@ -3274,6 +3276,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playFabTitleId: 107B73
+  openIdConnectionId: 
   isEOSLoggedIn: 0
   isPlayFabLoggedIn: 0
 --- !u!114 &2060288374
@@ -3295,9 +3298,10 @@ MonoBehaviour:
   m_DeploymentId: 1c5485ad4f83455bbb660640f77a8a76
   m_ClientId: xyza78917T6vRwHElEQQvbjFJxzQK9Lz
   m_ClientSecret: FIaUTFrCgg7bFt3T21LEzmUfg4YyOSJSC2856FKP+9M
-  m_LoginCredentialType: 4
-  m_LoginCredentialId: localhost:8080
-  m_LoginCredentialToken: TestUser1
+  loginMode: 0
+  sdkLogLevel: 200
+  devAuthHost: localhost:8080
+  devAuthCredentialName: TestUser1
 --- !u!4 &2060288375
 Transform:
   m_ObjectHideFlags: 0
