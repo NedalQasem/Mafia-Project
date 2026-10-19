@@ -27,7 +27,7 @@ namespace MafiaNight.UI.Kit.Editor
                 var cone = Go("Cone", root.transform); Place(Rt(cone), new Vector2(0.5f, 1f), new Vector2(0, -150), new Vector2(290, 417)); var coneImg = Img(cone, th.itemCone); coneImg.preserveAspect = false; coneImg.raycastTarget = false;
                 var glow = Go("Glow", root.transform); Place(Rt(glow), new Vector2(0.5f, 0.5f), new Vector2(0, -88), new Vector2(330, 84));
                 var glowImg = Img(glow, th.rarGlow); glowImg.preserveAspect = false; glowImg.raycastTarget = false;
-                var art = Go("Art", root.transform); Place(Rt(art), new Vector2(0.5f, 0.5f), new Vector2(0, 52), new Vector2(240, 240));
+                var art = Go("Art", root.transform); Place(Rt(art), new Vector2(0.5f, 0.5f), new Vector2(0, 14), new Vector2(240, 240));
                 var nm = Txt(root.transform, "Name", "اسم الغرض", th.fontHeading, 32, th.leatherText, TextAlignmentOptions.Top);
                 Place(Rt(nm.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -158), new Vector2(290, 90));
 
@@ -128,8 +128,13 @@ namespace MafiaNight.UI.Kit.Editor
                 var root = new GameObject("StoreHeader", typeof(RectTransform));
                 Rt(root).sizeDelta = new Vector2(1080, 90);
                 var le = root.AddComponent<LayoutElement>(); le.preferredWidth = 1080; le.preferredHeight = 90;
-                var t = Txt(root.transform, "Label", "الإطارات", th.fontHeading, 36, th.brass, TextAlignmentOptions.MidlineRight);
-                Stretch(Rt(t.gameObject), 40, 0, 50, 0);
+                // HTML .shelfhead: bold gold title, small grey hint, then a hairline that fades out to the left
+                var t = Txt(root.transform, "Label", "إطارات الصورة", th.fontHeading, 47, new Color32(0xA9, 0x8F, 0x62, 255), TextAlignmentOptions.MidlineRight);
+                var tr = Rt(t.gameObject); tr.anchorMin = tr.anchorMax = new Vector2(1, 0.5f); tr.pivot = new Vector2(1, 0.5f); tr.anchoredPosition = new Vector2(-44, -4); tr.sizeDelta = new Vector2(700, 70);
+                var hint = Txt(root.transform, "Hint", "ترافقك في كل غرفة", th.fontHeading, 29, new Color32(0x6F, 0x68, 0x5C, 255), TextAlignmentOptions.MidlineRight);
+                var hr = Rt(hint.gameObject); hr.anchorMin = hr.anchorMax = new Vector2(1, 0.5f); hr.pivot = new Vector2(1, 0.5f); hr.anchoredPosition = new Vector2(-300, -6); hr.sizeDelta = new Vector2(700, 50);
+                var hl = Go("Line", root.transform); var hlr = Rt(hl); hlr.anchorMin = hlr.anchorMax = new Vector2(1, 0.5f); hlr.pivot = new Vector2(1, 0.5f); hlr.anchoredPosition = new Vector2(-600, -4); hlr.sizeDelta = new Vector2(300, 3);
+                var hli = Img(hl, th.hairGrad); hli.preserveAspect = false; hli.raycastTarget = false;
                 Save(root, "StoreHeader");
             }
             {
@@ -158,6 +163,7 @@ namespace MafiaNight.UI.Kit.Editor
                 var buy = InstChild("KitButton_Primary", root.transform, "Buy");
                 Place(Rt(buy), new Vector2(0.5f, 0f), new Vector2(323, 14), new Vector2(480, 168)); buy.transform.localScale = Vector3.one * 0.6f;
                 var art = Go("Art", root.transform); Place(Rt(art), new Vector2(0.5f, 0.5f), new Vector2(-300, -24), new Vector2(300, 300));
+                var shade = Go("Shade", root.transform); Stretch(Rt(shade)); var shI = shade.AddComponent<Image>(); shI.color = new Color(0, 0, 0, 0); shI.raycastTarget = false;
                 var st = Go("Stamp", root.transform); Place(Rt(st), new Vector2(0.5f, 1f), new Vector2(-380, -120), new Vector2(190, 80));
                 st.transform.localRotation = Quaternion.Euler(0, 0, 12f);
                 var sti = Img(st, th.stampFrame, true, 1f); sti.color = new Color32(0xC0, 0x32, 0x3A, 255);

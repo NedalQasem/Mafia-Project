@@ -128,7 +128,12 @@ namespace MafiaNight.UI.Kit
             }
             for (int i = shelvesRoot.childCount - 1; i >= 0; i--) DestroyAny(shelvesRoot.GetChild(i).gameObject);
             var header = Instantiate(headerPrefab, shelvesRoot);
-            header.GetComponentInChildren<ArabicText>().Text = StoreData.CategoryNames[cat] + "  ·  " + StoreData.CategoryHints[cat];
+            var title = header.transform.Find("Label").GetComponent<ArabicText>(); var hint = header.transform.Find("Hint").GetComponent<ArabicText>();
+            title.Text = StoreData.HeadTitles[cat]; hint.Text = StoreData.CategoryHints[cat];
+            var tt = title.GetComponent<TMPro.TMP_Text>(); var ht = hint.GetComponent<TMPro.TMP_Text>(); tt.ForceMeshUpdate(); ht.ForceMeshUpdate();
+            float hx = -44f - tt.preferredWidth - 28f, lx = hx - ht.preferredWidth - 28f;
+            ((RectTransform)hint.transform).anchoredPosition = new Vector2(hx, -6f);
+            var line = (RectTransform)header.transform.Find("Line"); line.anchoredPosition = new Vector2(lx, -4f); line.sizeDelta = new Vector2(Mathf.Max(0f, 1080f + lx - 44f), 3f);
             if (cat == 9) { ShowRanks(); return; }
             var items = StoreData.Items(cat);
             foreach (var it in items) if (!it.owned && IsOwned(it)) it.owned = true;

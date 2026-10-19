@@ -30,7 +30,9 @@ namespace MafiaNight.UI.Kit
         /// <summary>Order of the drawers in the tab row (the rank-exclusive one comes first) and the icon of each category id.</summary>
         public static readonly int[] TabOrder = { 9, 0, 1, 2, 3, 4, 5, 6, 7, 8 };
         public static readonly int[] IconOf = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
-        public static readonly string[] CategoryHints = { "ترافقك في كل غرفة", "شكل المكان الذي تجلسون فيه", "لون مجلسك", "شكل رسائلك", "ما يظهر للجميع عند دخولك", "أرسلها للاعبين بالغرفة", "شكل ظهر الورق", "تظهر تحت اسمك", "للهدايا والزينة فقط", "كل رتبة لها طقم خاص، يُكسب بالترقية ولا يُشترى" };
+        /// <summary>Shelf heading text per category (HTML HEAD): the title is bold gold, the hint small and grey.</summary>
+        public static readonly string[] HeadTitles = { "إطارات الصورة", "خلفية الروم", "خلفيات الدردشة", "فقاعات الدردشة", "فقاعات الدخول", "هدايا", "أوراق الطاولة", "الألقاب", "شحن الكوينز", "حصري الرتب" };
+        public static readonly string[] CategoryHints = { "ترافقك في كل غرفة", "شكل المكان الذي تجلسون فيه", "لون مجلسك", "شكل رسائلك", "ما يظهر للجميع عند دخولك الروم", "أرسلها للاعبين بالغرفة", "شكل ظهر الورق", "تظهر تحت اسمك", "للهدايا والزينة فقط", "كل رتبة لها طقم خاص، يُكسب بالترقية ولا يُشترى" };
 
         private static StoreItem I(string name, string art, int idx, int price, Rarity r, string desc, bool owned = false, bool isNew = false, int lockRank = 0, Color? c = null, string text = null)
             => new StoreItem { name = name, art = art, idx = idx, price = price, rarity = r, desc = desc, owned = owned, isNew = isNew, lockRank = lockRank, c1 = c ?? Color.white, text = text };
