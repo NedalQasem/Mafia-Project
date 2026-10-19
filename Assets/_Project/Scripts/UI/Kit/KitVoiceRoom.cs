@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace MafiaNight.UI.Kit
@@ -11,6 +12,16 @@ namespace MafiaNight.UI.Kit
     /// </summary>
     public class KitVoiceRoom : MonoBehaviour
     {
+        /// <summary>Reports press and release of the mic button (for push-to-talk).</summary>
+        private sealed class MicHold : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
+        {
+            public event Action<bool> Held;
+            private bool down;
+            public void OnPointerDown(PointerEventData e) { down = true; Held?.Invoke(true); }
+            public void OnPointerUp(PointerEventData e) { if (down) { down = false; Held?.Invoke(false); } }
+            public void OnPointerExit(PointerEventData e) { if (down) { down = false; Held?.Invoke(false); } }
+        }
+
         [SerializeField] private RectTransform seatsRoot;
         [SerializeField] private GameObject seatPrefab;
         [SerializeField] private ArabicText roomName, roomSub, speakerLabel;
@@ -27,6 +38,8 @@ namespace MafiaNight.UI.Kit
         /// <summary>Off with real rooms: the "who is talking" animation is only for the prototype.</summary>
         public bool SimulateSpeaking = true;
         public bool MicOn { get; private set; } = true;
+        /// <summary>Push-to-talk: the mic is open only while the mic button is held (set by the app layer from the settings).</summary>
+        public bool PushToTalk { get; set; }
 
         private readonly List<SeatView> seats = new List<SeatView>();
         private IList<SeatInfo> infos;
@@ -36,7 +49,12 @@ namespace MafiaNight.UI.Kit
         private void Awake()
         {
             if (backButton != null) backButton.onClick.AddListener(() => OnBack?.Invoke());
-            if (micButton != null) micButton.onClick.AddListener(ToggleMic);
+            if (micButton != null)
+            {
+                micButton.onClick.AddListener(() => { if (!PushToTalk) ToggleMic(); });
+                var relay = micButton.gameObject.AddComponent<MicHold>();
+                relay.Held += down => { if (PushToTalk && MicOn != down) { MicOn = down; ApplyMic(); OnMicChanged?.Invoke(MicOn); } };
+            }
             if (inviteButton != null) inviteButton.onClick.AddListener(() => OnInvite?.Invoke());
         }
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using MafiaNight.Core;
 using MafiaNight.Data.Rooms;
+using MafiaNight.Data.Settings;
 using MafiaNight.Services.Profile;
 using MafiaNight.Services.Rooms;
 using MafiaNight.Services.Voice;
@@ -216,6 +217,7 @@ namespace MafiaNight.App
             var room = rooms.CurrentRoom;
             if (voice == null || room == null) return;
             voice.Show(room.Name, SubText(room), Seats(), room.Capacity);
+            voice.PushToTalk = VoicePrefs.PushToTalk;
             voice.SetMicState(audio == null || audio.MicOn);
             JoinVoice();
         }
@@ -223,9 +225,12 @@ namespace MafiaNight.App
         private void JoinVoice()
         {
             if (audio == null || audio.IsConnected) return;
-            audio.Join(true, err =>
+            // push-to-talk and "mute on join" both start with the microphone closed
+            bool micOpen = !VoicePrefs.PushToTalk && !VoicePrefs.MuteOnJoin;
+            audio.Join(micOpen, err =>
             {
                 if (this == null) return;
+                if (err == VoiceError.None && voice != null) voice.SetMicState(audio.MicOn);
                 if (err == VoiceError.NoPermission) Say("فعّل إذن المايك من إعدادات الجهاز لتحكي.");
                 else if (err == VoiceError.Failed || err == VoiceError.NotReady) Say("تعذّر الاتصال بالصوت.");
             });

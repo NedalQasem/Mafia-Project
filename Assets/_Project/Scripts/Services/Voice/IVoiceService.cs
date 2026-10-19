@@ -31,6 +31,9 @@ namespace MafiaNight.Services.Voice
         /// <summary>Joins the voice channel of the current room. <paramref name="micOn"/>: start with the mic open.</summary>
         void Join(bool micOn, Action<VoiceError> done = null);
         void Leave();
+        /// <summary>The newest connection statistics EOS sent (JSON text, empty until the first one arrives).</summary>
+        string LastStatistics { get; }
+
         /// <summary>Call every frame from the main thread (own speaking indicator).</summary>
         void Tick();
 
@@ -44,6 +47,8 @@ namespace MafiaNight.Services.Voice
         bool IsPlayerMuted(string puid);
         /// <summary>0..1, 0.5 = normal.</summary>
         void SetPlayerVolume(string puid, float volume01);
+        /// <summary>Applies the saved dial levels (VoicePrefs) to the live connection.</summary>
+        void ApplyVolumes();
         /// <summary>Everything you hear, 0..1 (0.5 = normal).</summary>
         void SetOutputVolume(float volume01);
         /// <summary>Your microphone level, 0..1 (0.5 = normal).</summary>

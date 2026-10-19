@@ -6,6 +6,7 @@ using Epic.OnlineServices;
 using Epic.OnlineServices.Lobby;
 using Epic.OnlineServices.RTCAudio;
 using MafiaNight.Core;
+using MafiaNight.Data.Settings;
 using MafiaNight.Services.Auth;
 using MafiaNight.Services.Rooms;
 using UnityEngine;
@@ -25,7 +26,7 @@ namespace MafiaNight.Services.Voice
 
         private string roomName;                 // the RTC room name EOS gave to the lobby
         private string lobbyId;
-        private ulong notifParticipant, notifConnection, notifBeforeSend;
+        private ulong notifParticipant, notifConnection, notifBeforeSend, notifStats;
         private volatile float peakAccum;       // written on the audio thread, read on the main thread
         private float quietTime;
         private bool selfSpeaking;
@@ -36,6 +37,8 @@ namespace MafiaNight.Services.Voice
 
         /// <summary>Log every participant update (diagnostics).</summary>
         public static bool LogEvents;
+
+        public string LastStatistics { get; private set; } = "";
 
         public bool IsConnected { get; private set; }
         public bool MicOn { get; private set; } = true;
@@ -130,6 +133,7 @@ namespace MafiaNight.Services.Voice
             Subscribe();
             IsConnected = true;
             SetMic(micOn);            // makes the real sending state match what the UI shows
+            ApplyVolumes();
             Log.Info($"Voice connected (mic {(micOn ? "on" : "off")})", Tag);
             OnConnectionChanged?.Invoke(true);
             OnChanged?.Invoke();
@@ -161,6 +165,12 @@ namespace MafiaNight.Services.Voice
             // EOS reports other players talking; for yourself it sends nothing, so the outgoing microphone frames are measured here
             var bo = new AddNotifyAudioBeforeSendOptions { LocalUserId = Me, RoomName = roomName };
             notifBeforeSend = Audio.AddNotifyAudioBeforeSend(ref bo, null, (ref AudioBeforeSendCallbackInfo d) => OnOutgoingFrame(d.Buffer));
+            var rtc = eos.Platform.GetRTCInterface();
+            var so = new Epic.OnlineServices.RTC.AddNotifyRoomStatisticsUpdatedOptions { LocalUserId = Me, RoomName = roomName };
+            notifStats = rtc.AddNotifyRoomStatisticsUpdated(ref so, null, (ref Epic.OnlineServices.RTC.RoomStatisticsUpdatedInfo d) =>
+            {
+                try { LastStatistics = d.Statistic ?? ""; if (LogEvents) Log.Info("stats " + LastStatistics, Tag); } catch { }
+            });
             var co = new AddNotifyRTCRoomConnectionChangedOptions();
             notifConnection = Lobby.AddNotifyRTCRoomConnectionChanged(ref co, null, (ref RTCRoomConnectionChangedCallbackInfo d) =>
             {
@@ -178,13 +188,15 @@ namespace MafiaNight.Services.Voice
         {
             if (notifParticipant != 0 && Audio != null) Audio.RemoveNotifyParticipantUpdated(notifParticipant);
             if (notifConnection != 0 && Lobby != null) Lobby.RemoveNotifyRTCRoomConnectionChanged(notifConnection);
+            if (notifStats != 0 && eos?.Platform != null) eos.Platform.GetRTCInterface().RemoveNotifyRoomStatisticsUpdated(notifStats);
+            notifStats = 0;
             if (notifBeforeSend != 0 && Audio != null) Audio.RemoveNotifyAudioBeforeSend(notifBeforeSend);
             notifParticipant = notifConnection = notifBeforeSend = 0;
             peakAccum = 0f; quietTime = 0f;
             if (selfSpeaking && Me != null) { selfSpeaking = false; OnSpeaking?.Invoke(Me.ToString(), false); }
         }
 
-        private const float LoudPeak = 0.02f;   // quiet speech peaks around 0.02, silence stays below 0.002
+        private static float LoudPeak => VoicePrefs.TalkThreshold;   // medium: quiet speech peaks around 0.02, silence stays below 0.002
 
         /// <summary>
         /// Runs on the phone's audio thread: it may only remember the loudest sample. Touching anything else here (events, UI)
@@ -272,6 +284,13 @@ namespace MafiaNight.Services.Voice
             if (!IsConnected || !Ready()) return;
             var o = new UpdateReceivingVolumeOptions { LocalUserId = Me, RoomName = roomName, Volume = Mathf.Clamp01(volume01) * 100f };
             Audio.UpdateReceivingVolume(ref o, null, (ref UpdateReceivingVolumeCallbackInfo _) => { });
+        }
+
+        /// <summary>Sends the saved microphone and speaker levels to EOS (called on connect and when the dials move).</summary>
+        public void ApplyVolumes()
+        {
+            SetInputVolume(VoicePrefs.Mic / 100f);
+            SetOutputVolume(VoicePrefs.Speaker / 100f);
         }
 
         public void SetInputVolume(float volume01)

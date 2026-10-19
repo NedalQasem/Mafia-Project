@@ -77,6 +77,7 @@ namespace MafiaNight.App
             if (storeService != null) storeService.OnChanged += OnStoreChanged;
             if (store != null) WireStore();
             if (FindAnyObjectByType<KitRoomsScreen>() != null && ServiceLocator.IsRegistered<MafiaNight.Services.Rooms.IRoomService>()) gameObject.AddComponent<RoomsFlow>();
+            if (FindAnyObjectByType<KitSettingsScreen>() != null) gameObject.AddComponent<VoiceSettingsFlow>();
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
             if (lb != null) lb.OnBack += GoHome;
             header = FindAnyObjectByType<KitScreenHeader>();

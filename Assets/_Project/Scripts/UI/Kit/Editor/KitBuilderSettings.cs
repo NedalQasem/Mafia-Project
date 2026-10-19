@@ -67,7 +67,7 @@ namespace MafiaNight.UI.Kit.Editor
                 return sec;
             }
 
-            void ToggleRow(RectTransform parent, string title, string sub, bool on)
+            KitToggle ToggleRow(RectTransform parent, string title, string sub, bool on)
             {
                 var row = Go("Toggle_" + title, parent); Rt(row).sizeDelta = new Vector2(940, sub == null ? 100 : 118);
                 row.AddComponent<LayoutElement>().preferredHeight = sub == null ? 100 : 118;
@@ -82,9 +82,10 @@ namespace MafiaNight.UI.Kit.Editor
                 SetRef(comp, "button", tb); SetRef(comp, "track", ti); SetRef(comp, "knob", Rt(kn)); SetRef(comp, "lit", litImg);
                 var so = new SerializedObject(comp); so.FindProperty("isOn").boolValue = on; so.FindProperty("travel").floatValue = 32f; so.ApplyModifiedPropertiesWithoutUndo();
                 comp.IsOn = on;
+                return comp;
             }
 
-            void SegRow(RectTransform parent, string label, string[] opts, int selected)
+            KitSegmented SegRow(RectTransform parent, string label, string[] opts, int selected)
             {
                 var row = Go("Seg_" + label, parent); Rt(row).sizeDelta = new Vector2(940, 170);
                 row.AddComponent<LayoutElement>().preferredHeight = 170;
@@ -104,6 +105,7 @@ namespace MafiaNight.UI.Kit.Editor
                 for (int i = 0; i < opts.Length; i++) arr.GetArrayElementAtIndex(i).objectReferenceValue = buttons[i];
                 so.FindProperty("selected").intValue = selected; so.ApplyModifiedPropertiesWithoutUndo();
                 comp.Paint();
+                return comp;
             }
 
             void LinkRow(RectTransform parent, string title, string extra)
@@ -139,8 +141,8 @@ namespace MafiaNight.UI.Kit.Editor
                     val = vt.GetComponent<ArabicText>();
                     return k;
                 }
-                micKnob = MakeKnob("Mic", "المايك", 230, 72, out _);
-                spkKnob = MakeKnob("Speaker", "السماعة", -230, 85, out _);
+                micKnob = MakeKnob("Mic", "المايك", 230, 50, out _);
+                spkKnob = MakeKnob("Speaker", "السماعة", -230, 50, out _);
                 var vu = Go("Meter", panel.transform); PlaceTop(Rt(vu), 0, -470, 880, 76); Img(vu, th.slotDark, true, 2f);
                 meter = new Image[24];
                 for (int i = 0; i < 24; i++)
@@ -153,11 +155,11 @@ namespace MafiaNight.UI.Kit.Editor
                 micTest = mt.GetComponent<Button>(); micTestLbl = mt.GetComponentInChildren<ArabicText>(); micTestLbl.Text = "جرّب المايك";
                 micTestLbl.GetComponent<TextMeshProUGUI>().fontSize = 48;
             }
-            SegRow(c, "حساسية المايك", new[] { "عالية", "متوسطة", "منخفضة" }, 1);
-            ToggleRow(c, "عزل الضجيج", "يخفف أصوات الخلفية", true);
-            ToggleRow(c, "الضغط للتحدث", "المايك مغلق حتى تضغط الزر", false);
-            ToggleRow(c, "كتم المايك عند الدخول", "تدخل الروم صامتاً", true);
-            ToggleRow(c, "صوت الراوي", "تعليق الليل والنهار", true);
+            var sensSeg = SegRow(c, "حساسية المايك", new[] { "عالية", "متوسطة", "منخفضة" }, 1);
+            var noiseTg = ToggleRow(c, "عزل الضجيج", "يخفف أصوات الخلفية", true);
+            var pttTg = ToggleRow(c, "الضغط للتحدث", "المايك مغلق حتى تضغط الزر", false);
+            var muteJoinTg = ToggleRow(c, "كتم المايك عند الدخول", "تدخل الروم صامتاً", false);
+            var narratorTg = ToggleRow(c, "صوت الراوي", "تعليق الليل والنهار", true);
 
             MakeSection("الإشعارات", "ما يصلك وما لا يصلك", th.iconGift, false, out c);
             ToggleRow(c, "دعوات الغرف", null, true); ToggleRow(c, "طلبات الصداقة", null, true);
@@ -201,6 +203,7 @@ namespace MafiaNight.UI.Kit.Editor
             var ma = sso.FindProperty("meter"); ma.arraySize = meter.Length; for (int i = 0; i < meter.Length; i++) ma.GetArrayElementAtIndex(i).objectReferenceValue = meter[i];
             sso.ApplyModifiedPropertiesWithoutUndo();
             SetRef(ss, "micKnob", micKnob); SetRef(ss, "speakerKnob", spkKnob); SetRef(ss, "micTestButton", micTest); SetRef(ss, "micTestLabel", micTestLbl);
+            SetRef(ss, "sensitivity", sensSeg); SetRef(ss, "noiseToggle", noiseTg); SetRef(ss, "pttToggle", pttTg); SetRef(ss, "muteJoinToggle", muteJoinTg); SetRef(ss, "narratorToggle", narratorTg);
 
             foreach (var s in sections) { var o = new SerializedObject(s); s.SetOpen(o.FindProperty("openAtStart").boolValue, false); }
             AddScreenHeader(canvasGo, th, "الإعدادات", "الإصدار ١٫٠٫٠", false);
