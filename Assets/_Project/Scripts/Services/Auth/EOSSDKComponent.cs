@@ -290,9 +290,10 @@ namespace MafiaNight.Services.Auth
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
             // Android: the native library must be loaded and the Java side initialized with the activity first.
-            using (var system = new AndroidJavaClass("java.lang.System"))
+            // loaded from our own Java class: a JNI call to System.loadLibrary has no caller class and searches the system namespace only
+            using (var loader = new AndroidJavaClass("com.mafianight.eos.EosLibraryLoader"))
             {
-                system.CallStatic("loadLibrary", "EOSSDK");
+                loader.CallStatic("load");
             }
             using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
             using (var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))

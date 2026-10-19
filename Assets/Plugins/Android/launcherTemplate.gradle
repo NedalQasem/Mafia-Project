@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply from: '../shared/common.gradle'
 apply from: 'setupSymbols.gradle'
 apply from: '../shared/keepUnitySymbols.gradle'
 
@@ -6,6 +7,12 @@ dependencies {
     implementation project(':unityLibrary')
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.3'
     }
+
+// Kotlin 1.8+ already contains the jdk7/jdk8 classes; the old split modules (pulled in by older androidx / EOS libraries) would be duplicates
+configurations.all {
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+}
 
 android {
     namespace "**NAMESPACE**"
@@ -45,12 +52,12 @@ android {
     buildTypes {
         debug {
             minifyEnabled **MINIFY_DEBUG**
-            proguardFiles getDefaultProguardFile('proguard-android.txt')**SIGNCONFIG**
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')**SIGNCONFIG**
             jniDebuggable true
         }
         release {
             minifyEnabled **MINIFY_RELEASE**
-            proguardFiles getDefaultProguardFile('proguard-android.txt')**SIGNCONFIG**
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')**SIGNCONFIG**
         }
     }**PACKAGING****PLAY_ASSET_PACKS****SPLITS**
 **BUILT_APK_LOCATION**

@@ -31,6 +31,8 @@ namespace MafiaNight.Services.Voice
         /// <summary>Joins the voice channel of the current room. <paramref name="micOn"/>: start with the mic open.</summary>
         void Join(bool micOn, Action<VoiceError> done = null);
         void Leave();
+        /// <summary>Call every frame from the main thread (own speaking indicator).</summary>
+        void Tick();
 
         void SetMic(bool on);
         bool IsSpeaking(string puid);

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Epic.OnlineServices;
 using Epic.OnlineServices.Lobby;
 using Epic.OnlineServices.RTCAudio;
@@ -24,7 +26,8 @@ namespace MafiaNight.Services.Voice
         private string roomName;                 // the RTC room name EOS gave to the lobby
         private string lobbyId;
         private ulong notifParticipant, notifConnection, notifBeforeSend;
-        private int loudFrames, quietFrames;
+        private volatile float peakAccum;       // written on the audio thread, read on the main thread
+        private float quietTime;
         private bool selfSpeaking;
         private bool joining;
         private readonly HashSet<string> speaking = new HashSet<string>();
@@ -76,7 +79,7 @@ namespace MafiaNight.Services.Voice
             });
         }
 
-        private void DoJoin(string id, bool micOn, Action<VoiceError> done)
+        private void DoJoin(string id, bool micOn, Action<VoiceError> done, int attempt = 0)
         {
             // EOS may already have connected us to the room's RTC channel when the lobby was created / joined
             var co = new IsRTCRoomConnectedOptions { LobbyId = id, LocalUserId = Me };
@@ -90,6 +93,16 @@ namespace MafiaNight.Services.Voice
             };
             Lobby.JoinRTCRoom(ref jo, null, (ref JoinRTCRoomCallbackInfo data) =>
             {
+                if (data.ResultCode == Result.InvalidState && attempt < 4 && rooms?.CurrentRoom != null && rooms.CurrentRoom.Id == id)
+                {
+                    // right after a room is created or joined, EOS is still connecting its voice channel: try again shortly
+                    var ctx = SynchronizationContext.Current;
+                    Task.Delay(1200).ContinueWith(_ =>
+                    {
+                        if (ctx != null) ctx.Post(__ => RetryJoin(id, micOn, done, attempt + 1), null); else RetryJoin(id, micOn, done, attempt + 1);
+                    });
+                    return;
+                }
                 if (data.ResultCode != Result.Success)
                 {
                     joining = false;
@@ -99,6 +112,12 @@ namespace MafiaNight.Services.Voice
                 }
                 Finish(id, micOn, done);
             });
+        }
+
+        private void RetryJoin(string id, bool micOn, Action<VoiceError> done, int attempt)
+        {
+            if (!joining || !Ready() || rooms?.CurrentRoom == null || rooms.CurrentRoom.Id != id) { joining = false; done?.Invoke(VoiceError.NotInRoom); return; }
+            DoJoin(id, micOn, done, attempt);
         }
 
         private void Finish(string id, bool micOn, Action<VoiceError> done)
@@ -161,23 +180,40 @@ namespace MafiaNight.Services.Voice
             if (notifConnection != 0 && Lobby != null) Lobby.RemoveNotifyRTCRoomConnectionChanged(notifConnection);
             if (notifBeforeSend != 0 && Audio != null) Audio.RemoveNotifyAudioBeforeSend(notifBeforeSend);
             notifParticipant = notifConnection = notifBeforeSend = 0;
-            loudFrames = quietFrames = 0;
+            peakAccum = 0f; quietTime = 0f;
             if (selfSpeaking && Me != null) { selfSpeaking = false; OnSpeaking?.Invoke(Me.ToString(), false); }
         }
 
         private const float LoudPeak = 0.02f;   // quiet speech peaks around 0.02, silence stays below 0.002
 
+        /// <summary>
+        /// Runs on the phone's audio thread: it may only remember the loudest sample. Touching anything else here (events, UI)
+        /// would throw on that thread and take the whole app down; the decision is made in <see cref="Tick"/> on the main thread.
+        /// </summary>
         private void OnOutgoingFrame(AudioBuffer? buffer)
         {
-            if (buffer == null || Me == null) return;
-            var frames = buffer.Value.Frames;
-            float peak = 0f;
-            if (MicOn && frames != null)
-                for (int i = 0; i < frames.Length; i += 4) { float a = Mathf.Abs(frames[i]) / 32768f; if (a > peak) peak = a; }
-            if (peak >= LoudPeak) { loudFrames++; quietFrames = 0; } else { quietFrames++; loudFrames = 0; }
+            try
+            {
+                if (buffer == null) return;
+                var frames = buffer.Value.Frames;
+                if (frames == null) return;
+                float peak = 0f;
+                for (int i = 0; i < frames.Length; i += 4) { int v = frames[i]; if (v < 0) v = -v; float a = v / 32768f; if (a > peak) peak = a; }
+                if (peak > peakAccum) peakAccum = peak;
+            }
+            catch { /* never let an exception cross into native code */ }
+        }
+
+        /// <summary>Call every frame (main thread): turns the measured microphone level into your own "speaking" state.</summary>
+        public void Tick()
+        {
+            if (!IsConnected || Me == null) return;
+            float peak = peakAccum; peakAccum = 0f;
+            if (!MicOn) peak = 0f;
+            if (peak >= LoudPeak) quietTime = 0f; else quietTime += Time.unscaledDeltaTime;
             bool next = selfSpeaking;
-            if (!selfSpeaking && loudFrames >= 3) next = true;
-            else if (selfSpeaking && quietFrames >= 25) next = false;   // 10 ms frames: about a quarter of a second of silence
+            if (!selfSpeaking && peak >= LoudPeak) next = true;
+            else if (selfSpeaking && quietTime > 0.3f) next = false;
             if (next == selfSpeaking) return;
             selfSpeaking = next;
             string id = Me.ToString();

@@ -86,6 +86,7 @@ namespace MafiaNight.App
 
         private void Update()
         {
+            if (audio != null) audio.Tick();
             if (rooms == null || screen == null || listing || OverlayOpen || Time.unscaledTime < nextList) return;
             RefreshList();
         }
