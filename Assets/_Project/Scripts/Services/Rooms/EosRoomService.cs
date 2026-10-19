@@ -37,6 +37,8 @@ namespace MafiaNight.Services.Rooms
         private LobbyDetails currentDetails;
         private ulong notifUpdate, notifMemberUpdate, notifMemberStatus;
         private bool subscribed;
+        private string lastHost;        // host puid at the previous update, to notice a hand-over
+        private bool returningHost;     // a PromoteMember call back to the owner is running
 
         public RoomListing CurrentRoom { get; private set; }
         public bool InRoom => CurrentRoom != null;
@@ -45,6 +47,11 @@ namespace MafiaNight.Services.Rooms
         public event Action<RoomListing> OnRoomJoined;
         public event Action<string> OnRoomLeft;
         public event Action OnRoomChanged;
+        public event Action<string> OnHostChanged;
+
+        public bool IAmHost => CurrentRoom != null && Me != null && CurrentRoom.OwnerPuid == Me.ToString();
+
+        public bool IsTemporaryHost => IAmHost && !string.IsNullOrEmpty(CurrentRoom.OwnerPlayFabId) && CurrentRoom.OwnerPlayFabId != MyPf;
 
         // ------------------------------------------------------------------------------------------ helpers
 
@@ -173,7 +180,9 @@ namespace MafiaNight.Services.Rooms
                     IsMe = id == mine,
                 });
             }
-            list.Sort((a, b) => b.IsHost.CompareTo(a.IsHost));
+            // host first, everybody else keeps the join order (a hand-over picks the next one in line)
+            int h = list.FindIndex(m => m.IsHost);
+            if (h > 0) { var host = list[h]; list.RemoveAt(h); list.Insert(0, host); }
             return list;
         }
 
@@ -428,6 +437,7 @@ namespace MafiaNight.Services.Rooms
             if (currentDetails != null && !found.ContainsValue(currentDetails)) currentDetails.Release();
             currentDetails = d;
             ReadCurrent();
+            lastHost = CurrentRoom?.OwnerPuid;
             Subscribe();
             Log.Info($"In room '{CurrentRoom?.Name}' ({CurrentRoom?.Count}/{CurrentRoom?.Capacity})", Tag);
             OnRoomJoined?.Invoke(CurrentRoom);
@@ -461,7 +471,76 @@ namespace MafiaNight.Services.Rooms
         {
             if (CurrentRoom == null || CurrentRoom.Id != lobbyId) return;
             ReadCurrent();
+            AnnounceHostChange();
+            ReturnHostToOwner();
             OnRoomChanged?.Invoke();
+        }
+
+        // ------------------------------------------------------------------------------------------ host hand-over
+
+        private RoomMember OwnerMember()
+        {
+            string pf = CurrentRoom?.OwnerPlayFabId;
+            if (string.IsNullOrEmpty(pf)) return null;
+            foreach (var m in members) if (m.PlayFabId == pf) return m;
+            return null;
+        }
+
+        /// <summary>Tells the players when the host changed (the owner left and somebody took over, or the owner came back).</summary>
+        private void AnnounceHostChange()
+        {
+            string host = CurrentRoom?.OwnerPuid;
+            if (string.IsNullOrEmpty(host) || host == lastHost) { lastHost = host ?? lastHost; return; }
+            lastHost = host;
+            var hostMember = members.Find(m => m.IsHost);
+            string ownerName = string.IsNullOrEmpty(CurrentRoom.OwnerName) ? "صاحب الغرفة" : CurrentRoom.OwnerName;
+            bool ownerBack = hostMember != null && !string.IsNullOrEmpty(CurrentRoom.OwnerPlayFabId) && hostMember.PlayFabId == CurrentRoom.OwnerPlayFabId;
+            string msg;
+            if (IAmHost) msg = ownerBack ? "رجعت مضيف الغرفة." : "صرت مضيف الغرفة مؤقتاً لحد ما يرجع " + ownerName + ".";
+            else if (ownerBack) msg = "رجع " + ownerName + " مضيفاً للغرفة.";
+            else msg = (hostMember != null ? hostMember.Name : "لاعب") + " صار المضيف المؤقت.";
+            Log.Info("Host is now " + (hostMember?.Name ?? host), Tag);
+            OnHostChanged?.Invoke(msg);
+        }
+
+        /// <summary>The current host gives the role back when the room's creator is in the room again (not in the middle of a match).</summary>
+        private void ReturnHostToOwner()
+        {
+            if (!IAmHost || returningHost || CurrentRoom == null || CurrentRoom.InMatch) return;
+            var owner = OwnerMember();
+            if (owner == null || owner.IsHost || owner.IsMe) return;
+            returningHost = true;
+            var p = new PromoteMemberOptions { LobbyId = CurrentRoom.Id, LocalUserId = Me, TargetUserId = ProductUserId.FromString(owner.Puid) };
+            Lobby.PromoteMember(ref p, null, (ref PromoteMemberCallbackInfo d) =>
+            {
+                returningHost = false;
+                if (!IsOk(d.ResultCode)) Log.Warning("Could not hand the host role back: " + d.ResultCode, Tag);
+            });
+        }
+
+        /// <summary>The member who takes over when the local host leaves: the next one in line.</summary>
+        private string PickSuccessor()
+        {
+            if (!IAmHost) return null;
+            foreach (var m in members) if (!m.IsMe) return m.Puid;
+            return null;
+        }
+
+        /// <summary>Leaves the lobby; a host promotes <paramref name="successor"/> first so the room stays open.</summary>
+        private void LeaveLobbyNow(string lobbyId, string successor, Action next)
+        {
+            void DoLeave()
+            {
+                var l = new LeaveLobbyOptions { LocalUserId = Me, LobbyId = lobbyId };
+                Lobby.LeaveLobby(ref l, null, (ref LeaveLobbyCallbackInfo _) => next?.Invoke());   // EOS closes the lobby when the last member leaves
+            }
+            if (string.IsNullOrEmpty(successor)) { DoLeave(); return; }
+            var p = new PromoteMemberOptions { LobbyId = lobbyId, LocalUserId = Me, TargetUserId = ProductUserId.FromString(successor) };
+            Lobby.PromoteMember(ref p, null, (ref PromoteMemberCallbackInfo d) =>
+            {
+                if (!IsOk(d.ResultCode)) Log.Warning("Hand-over failed (" + d.ResultCode + "), EOS picks the next host", Tag);
+                DoLeave();
+            });
         }
 
         private void MemberStatus(string lobbyId, ProductUserId who, LobbyMemberStatus status)
@@ -483,39 +562,29 @@ namespace MafiaNight.Services.Rooms
             if (currentDetails != null && !found.ContainsValue(currentDetails)) currentDetails.Release();
             currentDetails = null;
             CurrentRoom = null;
+            lastHost = null;
             members.Clear();
         }
 
-        private bool IAmHost => CurrentRoom != null && Me != null && CurrentRoom.OwnerPuid == Me.ToString();
-
-        /// <summary>Leaves the current room before another one is entered. The owner closes it (rule: a new room closes the old one).</summary>
+        /// <summary>Leaves the current room before another one is entered. A host hands the room over instead of closing it.</summary>
         private void LeaveCurrent(Action next)
         {
             if (CurrentRoom == null) { next(); return; }
             string id = CurrentRoom.Id;
-            bool host = IAmHost;
+            string successor = PickSuccessor();
             ClearCurrent();
             OnRoomLeft?.Invoke("");
-            if (host)
-            {
-                var d = new DestroyLobbyOptions { LocalUserId = Me, LobbyId = id };
-                Lobby.DestroyLobby(ref d, null, (ref DestroyLobbyCallbackInfo _) => next());
-            }
-            else
-            {
-                var l = new LeaveLobbyOptions { LocalUserId = Me, LobbyId = id };
-                Lobby.LeaveLobby(ref l, null, (ref LeaveLobbyCallbackInfo _) => next());
-            }
+            LeaveLobbyNow(id, successor, next);
         }
 
         public void Leave(Action done = null)
         {
             if (CurrentRoom == null || !Ready()) { done?.Invoke(); return; }
             string id = CurrentRoom.Id;
+            string successor = PickSuccessor();
             ClearCurrent();
             OnRoomLeft?.Invoke("");
-            var l = new LeaveLobbyOptions { LocalUserId = Me, LobbyId = id };
-            Lobby.LeaveLobby(ref l, null, (ref LeaveLobbyCallbackInfo _) => done?.Invoke());   // EOS closes the lobby when the last member leaves
+            LeaveLobbyNow(id, successor, done);
         }
 
         public void Kick(string puid, Action<bool> done = null)

@@ -50,7 +50,7 @@ namespace MafiaNight.Services.Rooms
 
     /// <summary>
     /// Rooms on EOS Lobbies. One room per player: creating or joining a room leaves the previous one
-    /// (the previous room is closed when the player owns it).
+    /// (a host who leaves hands the host role to another member first, so the room goes on; the creator gets it back on return).
     /// </summary>
     public interface IRoomService
     {
@@ -65,6 +65,13 @@ namespace MafiaNight.Services.Rooms
         event Action<string> OnRoomLeft;
         /// <summary>The room's members or settings changed.</summary>
         event Action OnRoomChanged;
+        /// <summary>The host changed (the owner left, or came back). Argument = Arabic text for the players.</summary>
+        event Action<string> OnHostChanged;
+
+        /// <summary>The local player is the room's host right now.</summary>
+        bool IAmHost { get; }
+        /// <summary>The local player hosts a room somebody else created (the owner is away and gets the host role back on return).</summary>
+        bool IsTemporaryHost { get; }
 
         /// <summary>Public / VIP rooms, newest data from EOS (private rooms are not listed).</summary>
         void RefreshList(Action<RoomResult> done);

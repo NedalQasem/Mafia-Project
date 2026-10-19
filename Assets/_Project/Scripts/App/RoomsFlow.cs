@@ -72,6 +72,7 @@ namespace MafiaNight.App
             }
             rooms.OnRoomChanged += OnRoomChanged;
             rooms.OnRoomLeft += OnRoomLeft;
+            rooms.OnHostChanged += Say;
             nextList = 0f;
         }
 
@@ -80,6 +81,7 @@ namespace MafiaNight.App
             if (rooms == null) return;
             rooms.OnRoomChanged -= OnRoomChanged;
             rooms.OnRoomLeft -= OnRoomLeft;
+            rooms.OnHostChanged -= Say;
             if (audio != null) { audio.OnSpeaking -= OnSpeaking; audio.OnChanged -= OnRoomChanged; }
         }
 
