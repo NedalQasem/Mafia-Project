@@ -30,7 +30,7 @@ namespace MafiaNight.UI.Kit
         /// <summary>Order of the drawers in the tab row (the rank-exclusive one comes first) and the icon of each category id.</summary>
         public static readonly int[] TabOrder = { 9, 0, 1, 2, 3, 4, 5, 6, 7, 8 };
         public static readonly int[] IconOf = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
-        public static readonly string[] CategoryHints = { "ترافقك في كل غرفة", "شكل المكان الذي تجلسون فيه", "لون مجلسك", "شكل رسائلك", "ما يظهر للجميع عند دخولك", "أرسلها للاعبين بالغرفة", "شكل ظهر الورق", "تظهر تحت اسمك", "للهدايا والزينة فقط", "لا يفتحها إلا الترقّي" };
+        public static readonly string[] CategoryHints = { "ترافقك في كل غرفة", "شكل المكان الذي تجلسون فيه", "لون مجلسك", "شكل رسائلك", "ما يظهر للجميع عند دخولك", "أرسلها للاعبين بالغرفة", "شكل ظهر الورق", "تظهر تحت اسمك", "للهدايا والزينة فقط", "كل رتبة لها طقم خاص، يُكسب بالترقية ولا يُشترى" };
 
         private static StoreItem I(string name, string art, int idx, int price, Rarity r, string desc, bool owned = false, bool isNew = false, int lockRank = 0, Color? c = null, string text = null)
             => new StoreItem { name = name, art = art, idx = idx, price = price, rarity = r, desc = desc, owned = owned, isNew = isNew, lockRank = lockRank, c1 = c ?? Color.white, text = text };
@@ -56,12 +56,12 @@ namespace MafiaNight.UI.Kit
             switch (category)
             {
                 case 0: return new List<StoreItem> {
-                    I("حلقة نحاس", "ring", 2, 250, Rarity.Common, "إطار نحاسي بسيط ونظيف.", owned: true),
-                    I("سلك شائك", "ring", 1, 400, Rarity.Rare, "للّي لا يريد أن يقترب منه أحد."),
-                    I("حبل مضفور", "ring", 0, 400, Rarity.Rare, "حبل قديم من ميناء الحارة."),
-                    I("ذهب ملكي", "ring", 3, 1500, Rarity.Legendary, "ذهب خالص بتوهّج دائم.", lockRank: 4),
+                    I("حلقة نحاس", "ring", 1, 250, Rarity.Common, "إطار نحاسي بسيط ونظيف.", owned: true),
+                    I("سلك شائك", "ring", 2, 400, Rarity.Rare, "للّي لا يريد أن يقترب منه أحد."),
+                    I("حبل مضفور", "ring", 3, 400, Rarity.Rare, "حبل قديم من ميناء الحارة."),
+                    I("ذهب ملكي", "ring", 4, 1500, Rarity.Legendary, "ذهب خالص بتوهّج دائم.", lockRank: 4),
                     I("الجمر", "ring", 5, 1200, Rarity.Epic, "حلقة نارية تتوهّج وتخفت.", isNew: true),
-                    I("فيروز", "ring", 1, 900, Rarity.Epic, "لمعان فيروزي بارد.", c: H(0x5fe0c0)) };
+                    I("فيروز", "ring", 6, 900, Rarity.Epic, "لمعان فيروزي بارد.") };
                 case 1: return new List<StoreItem> {
                     I("الغرفة الخلفية", "thumb", 0, 0, Rarity.Common, "الغرفة الافتراضية: مصباح واحد وطاولة.", owned: true, c: H(0x6a4a38)),
                     I("مقهى القهوة", "thumb", 0, 900, Rarity.Rare, "طاولتكم في زاوية مقهى قديم.", c: H(0xa8703a)),
@@ -143,8 +143,9 @@ namespace MafiaNight.UI.Kit
             switch (it.art)
             {
                 case "ring":
-                    Add(parent, th.avatarDefault, Vector2.zero, new Vector2(140, 140));
-                    Add(parent, th.ringByRank[Mathf.Clamp(it.idx, 0, 7)], Vector2.zero, new Vector2(200, 200)).color = it.c1;
+                    // HTML .fr: 76 px circle, 6 px ring; the texture adds the shadow / glow around it (320 / 256)
+                    Add(parent, th.avatarDefault, Vector2.zero, new Vector2(177, 177));
+                    Add(parent, th.storeFrames[Mathf.Clamp(it.idx - 1, 0, 5)], Vector2.zero, new Vector2(262, 262));
                     break;
                 case "thumb":
                     Add(parent, th.thumbFill, Vector2.zero, new Vector2(150, 188)).color = it.c1;
@@ -163,6 +164,9 @@ namespace MafiaNight.UI.Kit
                     Add(parent, p[Mathf.Clamp(it.idx, 0, 3)], Vector2.zero, new Vector2(270, 100), true, 2.2f);
                     var tc = it.idx == 0 ? th.brassText : it.idx == 2 ? th.paperInk : (it.idx == 3 ? th.brassLight : th.leatherText);
                     var pt = MakeText(parent, it.text, th.fontCalligraphy, 36, tc);
+                    break;
+                case "rankthumb":
+                    RankArt.Build(parent, RankSets.All[it.idx / 10 - 1], it.idx % 10, it.lockRank > 0, 1.9f);
                     break;
                 case "pack":
                     for (int i = 0; i < Mathf.Clamp(it.idx, 1, 4); i++) Add(parent, th.coin, new Vector2((i % 2 == 0 ? -10 : 12), -70 + i * 38), new Vector2(110, 110));

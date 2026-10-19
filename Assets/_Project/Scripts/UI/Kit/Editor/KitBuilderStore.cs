@@ -94,6 +94,37 @@ namespace MafiaNight.UI.Kit.Editor
                 Save(root, "StoreCat");
             }
             {
+                // rank-exclusive card (HTML .rkc): header (medal, name, status) and five item slots
+                var root = new GameObject("RankSetCard", typeof(RectTransform));
+                Rt(root).sizeDelta = new Vector2(1080, 508);
+                var le = root.AddComponent<LayoutElement>(); le.preferredWidth = 1080; le.preferredHeight = 508;
+                var card = Go("Card", root.transform); var cr = Rt(card);
+                cr.anchorMin = new Vector2(0.5f, 1f); cr.anchorMax = new Vector2(0.5f, 1f); cr.pivot = new Vector2(0.5f, 1f); cr.anchoredPosition = new Vector2(0, -28); cr.sizeDelta = new Vector2(1000, 470);
+                Img(card, th.leatherDark, true, 2.2f).raycastTarget = false;
+                var outline = Go("Current", card.transform); Stretch(Rt(outline)); var oi = Img(outline, th.doorRing, true, 1f); oi.raycastTarget = false; outline.SetActive(false);
+                var medalHolder = Go("MedalHolder", card.transform); PlaceTop(Rt(medalHolder), 406, -33, 122, 122);
+                var num = Txt(medalHolder.transform, "Number", "١", th.fontHeading, 52, th.ivory, TextAlignmentOptions.Center); Stretch(Rt(num.gameObject), 0, 4, 0, 0);
+                var nm = Txt(card.transform, "Name", "الصبي", th.fontCalligraphy, 66, th.ivory, TextAlignmentOptions.MidlineRight); PlaceTop(Rt(nm.gameObject), 40, -23, 520, 78);
+                var sb = Txt(card.transform, "Sub", "الرتبة ١", th.fontBody, 26, new Color32(0x8F, 0x87, 0x77, 255), TextAlignmentOptions.MidlineRight); PlaceTop(Rt(sb.gameObject), 40, -96, 520, 36);
+                var stChip = Go("Status", card.transform); PlaceTop(Rt(stChip), -380, -66, 180, 56); var stChipImg = Img(stChip, th.chipSheet, true, 1f); stChipImg.raycastTarget = false;
+                var stChipT = Txt(stChip.transform, "T", "مفتوحة", th.fontHeading, 26, th.ivory); Stretch(Rt(stChipT.gameObject), 2, 2, 2, 6);
+                var slots = new RectTransform[5];
+                for (int i = 0; i < 5; i++)
+                {
+                    var slot = Go("Slot" + i, card.transform); PlaceTop(Rt(slot), 374 - i * 187, -183, 187, 266); slots[i] = Rt(slot);
+                    var sh = slot.AddComponent<Image>(); sh.color = Color.clear; var sbtn = slot.AddComponent<Button>(); sbtn.targetGraphic = sh; sbtn.transition = Selectable.Transition.None;
+                    var fx = slot.AddComponent<KitButtonFx>(); SetRef(fx, "face", Rt(slot));
+                    var thumb = Go("Thumb", slot.transform); PlaceTop(Rt(thumb), 0, 0, 180, 150);
+                    var lb = Txt(slot.transform, "Label", "اسم", th.fontBody, 26, new Color32(0xA7, 0x9D, 0x88, 255), TextAlignmentOptions.Top, true); PlaceTop(Rt(lb.gameObject), 0, -166, 180, 80);
+                }
+                var view = root.AddComponent<RankSetCardView>();
+                SetRef(view, "medalHolder", Rt(medalHolder)); SetRef(view, "numberLabel", num.GetComponent<ArabicText>());
+                SetRef(view, "nameLabel", nm.GetComponent<ArabicText>()); SetRef(view, "subLabel", sb.GetComponent<ArabicText>());
+                SetRef(view, "statusLabel", stChipT.GetComponent<ArabicText>()); SetRef(view, "statusChip", stChipImg); SetRef(view, "currentOutline", oi);
+                var vso = new SerializedObject(view); var sa = vso.FindProperty("slots"); sa.arraySize = 5; for (int i = 0; i < 5; i++) sa.GetArrayElementAtIndex(i).objectReferenceValue = slots[i]; vso.ApplyModifiedPropertiesWithoutUndo();
+                Save(root, "RankSetCard");
+            }
+            {
                 var root = new GameObject("StoreHeader", typeof(RectTransform));
                 Rt(root).sizeDelta = new Vector2(1080, 90);
                 var le = root.AddComponent<LayoutElement>(); le.preferredWidth = 1080; le.preferredHeight = 90;
@@ -110,7 +141,7 @@ namespace MafiaNight.UI.Kit.Editor
             }
             {
                 var root = new GameObject("StoreAdPage", typeof(RectTransform));
-                Rt(root).sizeDelta = new Vector2(1000, 420);
+                Rt(root).sizeDelta = new Vector2(1000, 500);
                 Img(root, th.paper, true, 1f);
                 root.AddComponent<CanvasGroup>();
                 var mast = Go("Mast", root.transform); PlaceTop(Rt(mast), 0, -22, 920, 50);
@@ -119,13 +150,13 @@ namespace MafiaNight.UI.Kit.Editor
                 var ml = Txt(mast.transform, "Left", "جريدة الليل", th.fontHeading, 28, ink, TextAlignmentOptions.MidlineRight); Stretch(Rt(ml.gameObject), 0, 0, 0, 0);
                 var ln = Go("Line", mast.transform); var lnr = Rt(ln); lnr.anchorMin = new Vector2(0, 0); lnr.anchorMax = new Vector2(1, 0); lnr.pivot = new Vector2(0.5f, 0); lnr.offsetMin = Vector2.zero; lnr.offsetMax = new Vector2(0, 3);
                 var lni = ln.AddComponent<Image>(); lni.color = ink; lni.raycastTarget = false;
-                var hl = Txt(root.transform, "Headline", "عنوان العرض", th.fontCalligraphy, 40, ink, TextAlignmentOptions.TopRight); PlaceTop(Rt(hl.gameObject), 215, -76, 520, 124);
-                var bd = Txt(root.transform, "Body", "نص العرض", th.fontBody, 28, soft, TextAlignmentOptions.TopRight, true); PlaceTop(Rt(bd.gameObject), 215, -206, 520, 44);
-                var cd = Go("Countdown", root.transform); PlaceTop(Rt(cd), 215, -258, 520, 44);
-                var cl = Txt(cd.transform, "Label", "ينتهي خلال", th.fontBody, 28, crim, TextAlignmentOptions.MidlineRight); Stretch(Rt(cl.gameObject), 220, 0, 0, 0);
-                var cv = Txt(cd.transform, "Value", "٠٢:١٤:٣٣", th.fontHeading, 40, ink, TextAlignmentOptions.MidlineLeft); cv.gameObject.name = "Value"; Stretch(Rt(cv.gameObject), 0, 0, 300, 0);
+                var hl = Txt(root.transform, "Headline", "عنوان العرض", th.fontHeading, 68, ink, TextAlignmentOptions.TopRight); PlaceTop(Rt(hl.gameObject), 177, -70, 580, 170); hl.lineSpacing = -78f;   // HTML h3: 1.65rem display type, two tight lines
+                var bd = Txt(root.transform, "Body", "نص العرض", th.fontBody, 31, new Color32(0x3A, 0x30, 0x20, 255), TextAlignmentOptions.TopRight, true); PlaceTop(Rt(bd.gameObject), 177, -246, 580, 90);
+                var cd = Go("Countdown", root.transform); PlaceTop(Rt(cd), 177, -350, 580, 52);
+                var cl = Txt(cd.transform, "Label", "ينتهي خلال", th.fontHeading, 31, crim, TextAlignmentOptions.MidlineRight); Stretch(Rt(cl.gameObject), 300, 0, 0, 0);
+                var cv = Txt(cd.transform, "Value", "٠٢:١٤:٣٣", th.fontHeading, 48, ink, TextAlignmentOptions.MidlineRight); cv.gameObject.name = "Value"; Stretch(Rt(cv.gameObject), 0, 0, 200, 0);
                 var buy = InstChild("KitButton_Primary", root.transform, "Buy");
-                Place(Rt(buy), new Vector2(0.5f, 0f), new Vector2(210, 62), new Vector2(480, 168)); buy.transform.localScale = Vector3.one * 0.6f;
+                Place(Rt(buy), new Vector2(0.5f, 0f), new Vector2(323, 14), new Vector2(480, 168)); buy.transform.localScale = Vector3.one * 0.6f;
                 var art = Go("Art", root.transform); Place(Rt(art), new Vector2(0.5f, 0.5f), new Vector2(-300, -24), new Vector2(300, 300));
                 var st = Go("Stamp", root.transform); Place(Rt(st), new Vector2(0.5f, 1f), new Vector2(-380, -120), new Vector2(190, 80));
                 st.transform.localRotation = Quaternion.Euler(0, 0, 12f);
@@ -149,9 +180,9 @@ namespace MafiaNight.UI.Kit.Editor
             content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             scroll.viewport = Rt(vp); scroll.content = cRt;
 
-            var adSec = Go("AdSection", content.transform); Rt(adSec).sizeDelta = new Vector2(1000, 450);
-            adSec.AddComponent<LayoutElement>().preferredHeight = 450;
-            var pagesRoot = Go("Pages", adSec.transform); var pg = Rt(pagesRoot); pg.anchorMin = new Vector2(0.5f, 1); pg.anchorMax = new Vector2(0.5f, 1); pg.pivot = new Vector2(0.5f, 1); pg.sizeDelta = new Vector2(1000, 420);
+            var adSec = Go("AdSection", content.transform); Rt(adSec).sizeDelta = new Vector2(1000, 530);
+            adSec.AddComponent<LayoutElement>().preferredHeight = 530;
+            var pagesRoot = Go("Pages", adSec.transform); var pg = Rt(pagesRoot); pg.anchorMin = new Vector2(0.5f, 1); pg.anchorMax = new Vector2(0.5f, 1); pg.pivot = new Vector2(0.5f, 1); pg.sizeDelta = new Vector2(1000, 500);
             var dotsRoot = Go("Dots", adSec.transform); var dr = Rt(dotsRoot); dr.anchorMin = new Vector2(0.5f, 0); dr.anchorMax = new Vector2(0.5f, 0); dr.pivot = new Vector2(0.5f, 0); dr.sizeDelta = new Vector2(300, 30); dr.anchoredPosition = new Vector2(0, 0);
             var dl = dotsRoot.AddComponent<HorizontalLayoutGroup>(); dl.spacing = 16; dl.childAlignment = TextAnchor.MiddleCenter; dl.childControlWidth = false; dl.childControlHeight = false; dl.childForceExpandWidth = false;
             var adHit = adSec.AddComponent<Image>(); adHit.color = Color.clear;
@@ -183,7 +214,7 @@ namespace MafiaNight.UI.Kit.Editor
 
             var store = screen.AddComponent<KitStoreScreen>();
             SetRef(store, "carousel", carousel); SetRef(store, "catsRoot", ccr); SetRef(store, "shelvesRoot", shr);
-            SetRef(store, "catPrefab", LoadPrefab("StoreCat")); SetRef(store, "shelfPrefab", LoadPrefab("StoreShelf"));
+            SetRef(store, "catPrefab", LoadPrefab("StoreCat")); SetRef(store, "rankCardPrefab", LoadPrefab("RankSetCard")); SetRef(store, "shelfPrefab", LoadPrefab("StoreShelf"));
             SetRef(store, "itemPrefab", LoadPrefab("StoreItem")); SetRef(store, "headerPrefab", LoadPrefab("StoreHeader"));
 
             AddScreenHeader(canvasGo, th, "المتجر", "زينة وهدايا، بدون مزايا لعب", true);

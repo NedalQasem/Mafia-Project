@@ -12,7 +12,7 @@ namespace MafiaNight.UI.Kit
     {
         [SerializeField] private StoreAdCarousel carousel;
         [SerializeField] private RectTransform catsRoot, shelvesRoot;
-        [SerializeField] private GameObject catPrefab, shelfPrefab, itemPrefab, headerPrefab;
+        [SerializeField] private GameObject catPrefab, shelfPrefab, itemPrefab, headerPrefab, rankCardPrefab;
         // buy sheet
         [SerializeField] private CanvasGroup dim;
         [SerializeField] private RectTransform sheet, preview;
@@ -129,6 +129,7 @@ namespace MafiaNight.UI.Kit
             for (int i = shelvesRoot.childCount - 1; i >= 0; i--) DestroyAny(shelvesRoot.GetChild(i).gameObject);
             var header = Instantiate(headerPrefab, shelvesRoot);
             header.GetComponentInChildren<ArabicText>().Text = StoreData.CategoryNames[cat] + "  ·  " + StoreData.CategoryHints[cat];
+            if (cat == 9) { ShowRanks(); return; }
             var items = StoreData.Items(cat);
             foreach (var it in items) if (!it.owned && IsOwned(it)) it.owned = true;
             int per = cat == 3 || cat == 4 || cat == 8 ? 2 : 3;
@@ -149,6 +150,35 @@ namespace MafiaNight.UI.Kit
                     KitEnterAnim.Play(go, k * 0.08f + r * 0.12f, 0f, 0.5f, 0.4f, -38f);   // HTML .slot: rises 14px and fades in, staggered
                 }
             }
+        }
+
+        private void ShowRanks()
+        {
+            int total = 90 + RankSets.All.Length * 508;
+            var le = shelvesRoot.GetComponent<LayoutElement>(); if (le != null) le.preferredHeight = total;
+            shelvesRoot.sizeDelta = new Vector2(1080f, total);
+            for (int i = 0; i < RankSets.All.Length; i++)
+            {
+                var go = Instantiate(rankCardPrefab, shelvesRoot);
+                var v = go.GetComponent<RankSetCardView>();
+                v.Bind(i, playerRank);
+                v.OnItem += OpenRankItem;
+                KitEnterAnim.Play(go, i * 0.07f, 0f, 0.5f, 0.4f, -38f);
+            }
+        }
+
+        private void OpenRankItem(int rankIndex, int type)
+        {
+            var r = RankSets.All[rankIndex]; int n = rankIndex + 1; bool lk = n > playerRank;
+            string[] rar = { "c", "c", "r", "r", "e", "e", "l", "l" };
+            var it = new StoreItem
+            {
+                id = "rk" + rankIndex + "_" + type, name = r.items[type], art = "rankthumb", idx = n * 10 + type,
+                rarity = rar[rankIndex] == "c" ? Rarity.Common : rar[rankIndex] == "r" ? Rarity.Rare : rar[rankIndex] == "e" ? Rarity.Epic : Rarity.Legendary,
+                desc = lk ? "يُفتح عند الوصول إلى رتبة " + r.name + ". لا يُشترى بالكوينز." : "مفتوح لك بالترقية. استخدمه متى شئت.",
+                owned = !lk, lockRank = lk ? n : 0,
+            };
+            OpenSheet(it);
         }
 
         public void OpenSheet(StoreItem item)
