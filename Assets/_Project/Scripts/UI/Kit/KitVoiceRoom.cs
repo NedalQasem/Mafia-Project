@@ -22,6 +22,8 @@ namespace MafiaNight.UI.Kit
 
         public event Action OnBack;
         public event Action OnInvite;
+        public event Action<bool> OnMicChanged;
+        public event Action<int> OnSeatClicked;
         /// <summary>Off with real rooms: the "who is talking" animation is only for the prototype.</summary>
         public bool SimulateSpeaking = true;
         public bool MicOn { get; private set; } = true;
@@ -42,6 +44,19 @@ namespace MafiaNight.UI.Kit
         {
             MicOn = !MicOn;
             ApplyMic();
+            OnMicChanged?.Invoke(MicOn);
+        }
+
+        /// <summary>Shows the mic state without raising the event (the app layer owns the real state).</summary>
+        public void SetMicState(bool on) { MicOn = on; ApplyMic(); }
+
+        /// <summary>The seat of a talking player glows (real rooms; the prototype animation is off).</summary>
+        public void SetTalking(int index, bool on, string name)
+        {
+            if (index < 0 || index >= seats.Count) return;
+            seats[index].SetTalking(on);
+            if (speakerLabel != null && on) speakerLabel.Text = "يتكلّم الآن: " + name;
+            else if (speakerLabel != null && !on && speakerLabel.Text.EndsWith(name)) speakerLabel.Text = "";
         }
 
         private void ApplyMic()
@@ -99,6 +114,8 @@ namespace MafiaNight.UI.Kit
                 // chair faces the table centre: angle of the vector pointing to the centre, relative to "down"
                 float toCenter = Mathf.Atan2(Mathf.Sin(a) * radius.y, -Mathf.Cos(a) * radius.x) * Mathf.Rad2Deg;
                 v.SetChairAngle(toCenter - 90f + 180f);
+                v.Index = i;
+                v.Clicked += idx => OnSeatClicked?.Invoke(idx);
                 v.Bind(i < infos.Count ? infos[i] : null);
                 seats.Add(v);
             }

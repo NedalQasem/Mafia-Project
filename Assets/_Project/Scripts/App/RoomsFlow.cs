@@ -3,6 +3,7 @@ using MafiaNight.Core;
 using MafiaNight.Data.Rooms;
 using MafiaNight.Services.Profile;
 using MafiaNight.Services.Rooms;
+using MafiaNight.Services.Voice;
 using MafiaNight.UI.Kit;
 using UnityEngine;
 
@@ -19,6 +20,7 @@ namespace MafiaNight.App
 
         private IRoomService rooms;
         private IPlayerProfileService profile;
+        private IVoiceService audio;
         private KitRoomsScreen screen;
         private KitCreateRoomScreen create;
         private KitCodeSheet codeSheet;
@@ -34,6 +36,7 @@ namespace MafiaNight.App
         {
             if (!ServiceLocator.TryGet(out rooms)) { Destroy(this); return; }
             ServiceLocator.TryGet(out profile);
+            ServiceLocator.TryGet(out audio);
             screen = FindAnyObjectByType<KitRoomsScreen>();
             create = FindAnyObjectByType<KitCreateRoomScreen>(FindObjectsInactive.Include);
             codeSheet = FindAnyObjectByType<KitCodeSheet>(FindObjectsInactive.Include);
@@ -58,6 +61,13 @@ namespace MafiaNight.App
             {
                 voice.OnBack += OnVoiceBack;
                 voice.OnInvite += OnInvite;
+                voice.OnMicChanged += on => { if (audio != null) audio.SetMic(on); };
+                voice.OnSeatClicked += OnSeat;
+            }
+            if (audio != null)
+            {
+                audio.OnSpeaking += OnSpeaking;
+                audio.OnChanged += OnRoomChanged;
             }
             rooms.OnRoomChanged += OnRoomChanged;
             rooms.OnRoomLeft += OnRoomLeft;
@@ -69,6 +79,7 @@ namespace MafiaNight.App
             if (rooms == null) return;
             rooms.OnRoomChanged -= OnRoomChanged;
             rooms.OnRoomLeft -= OnRoomLeft;
+            if (audio != null) { audio.OnSpeaking -= OnSpeaking; audio.OnChanged -= OnRoomChanged; }
         }
 
         private bool OverlayOpen => (create != null && create.gameObject.activeSelf) || (voice != null && voice.gameObject.activeSelf);
@@ -204,6 +215,39 @@ namespace MafiaNight.App
             var room = rooms.CurrentRoom;
             if (voice == null || room == null) return;
             voice.Show(room.Name, SubText(room), Seats(), room.Capacity);
+            voice.SetMicState(audio == null || audio.MicOn);
+            JoinVoice();
+        }
+
+        private void JoinVoice()
+        {
+            if (audio == null || audio.IsConnected) return;
+            audio.Join(true, err =>
+            {
+                if (this == null) return;
+                if (err == VoiceError.NoPermission) Say("فعّل إذن المايك من إعدادات الجهاز لتحكي.");
+                else if (err == VoiceError.Failed || err == VoiceError.NotReady) Say("تعذّر الاتصال بالصوت.");
+            });
+        }
+
+        private void OnSpeaking(string puid, bool on)
+        {
+            if (voice == null || !voice.gameObject.activeSelf) return;
+            var list = rooms.Members;
+            for (int i = 0; i < list.Count; i++)
+                if (list[i].Puid == puid) { voice.SetTalking(i, on, list[i].Name); return; }
+        }
+
+        // tap a seat: yourself = mic on/off, another player = stop / resume hearing him
+        private void OnSeat(int index)
+        {
+            var list = rooms.Members;
+            if (audio == null || index < 0 || index >= list.Count) return;
+            var m = list[index];
+            if (m.IsMe) { audio.SetMic(!audio.MicOn); voice.SetMicState(audio.MicOn); return; }
+            bool nowMuted = !audio.IsPlayerMuted(m.Puid);
+            audio.SetPlayerMuted(m.Puid, nowMuted);
+            Say(nowMuted ? "كتمت " + m.Name + " عندك." : "رجعت تسمع " + m.Name + ".");
         }
 
         private static string SubText(RoomListing room) =>
@@ -212,7 +256,11 @@ namespace MafiaNight.App
         private List<SeatInfo> Seats()
         {
             var seats = new List<SeatInfo>();
-            foreach (var m in rooms.Members) seats.Add(new SeatInfo { name = m.Name, rank = m.Rank, host = m.IsHost });
+            foreach (var m in rooms.Members)
+            {
+                bool silent = audio != null && (m.IsMe ? !audio.MicOn : audio.IsRemoteMicOff(m.Puid) || audio.IsPlayerMuted(m.Puid));
+                seats.Add(new SeatInfo { name = m.Name, rank = m.Rank, host = m.IsHost, muted = silent });
+            }
             return seats;
         }
 
@@ -231,6 +279,7 @@ namespace MafiaNight.App
         private void OnVoiceBack()
         {
             voice.gameObject.SetActive(false);
+            if (audio != null) audio.Leave();
             rooms.Leave(() => { nextList = 0f; });
         }
 

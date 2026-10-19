@@ -8,6 +8,7 @@ using MafiaNight.Services.Profile;
 using MafiaNight.Services.Scenes;
 using MafiaNight.Services.Rooms;
 using MafiaNight.Services.Session;
+using MafiaNight.Services.Voice;
 using MafiaNight.Services.Store;
 using MafiaNight.Services.Telemetry;
 using TMPro;
@@ -56,6 +57,10 @@ namespace MafiaNight.Bootstrap
             if (!ServiceLocator.IsRegistered<IRoomService>())
             {
                 ServiceLocator.Register<IRoomService>(new EosRoomService());
+            }
+            if (!ServiceLocator.IsRegistered<IVoiceService>())
+            {
+                ServiceLocator.Register<IVoiceService>(new EosVoiceService());
             }
             if (!ServiceLocator.IsRegistered<IStoreService>())
             {

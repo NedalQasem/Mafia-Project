@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace MafiaNight.UI.Kit
@@ -13,7 +15,7 @@ namespace MafiaNight.UI.Kit
     }
 
     /// <summary>A seat around the table: chair (turned toward the table), avatar, name plate and small status marks.</summary>
-    public class SeatView : MonoBehaviour
+    public class SeatView : MonoBehaviour, IPointerClickHandler
     {
         [SerializeField] private RectTransform chair;       // rotated toward the table centre
         [SerializeField] private AvatarFrame avatar;
@@ -22,8 +24,19 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private GameObject namePlate, hostBadge, mutedDot, readyDot;
         [SerializeField] private Image talkGlow;
 
+        public int Index { get; set; }
+        public event Action<int> Clicked;
+
         private bool talking;
         private float pulse;
+
+        private void Awake()
+        {
+            // an invisible plate over the seat so a tap lands on it
+            if (GetComponent<Graphic>() == null) { var hit = gameObject.AddComponent<Image>(); hit.color = Color.clear; hit.raycastTarget = true; }
+        }
+
+        public void OnPointerClick(PointerEventData e) { Clicked?.Invoke(Index); }
 
         public void SetChairAngle(float degrees) { if (chair != null) chair.localRotation = Quaternion.Euler(0, 0, degrees); }
 
