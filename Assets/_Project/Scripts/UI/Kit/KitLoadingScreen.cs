@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using MafiaNight.Core;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,9 +8,10 @@ namespace MafiaNight.UI.Kit
 {
     /// <summary>
     /// Loading screen: the old mafia sedan drives through a night city (skyline layers + road scroll, wheels spin, exhaust, headlight).
-    /// Call <see cref="SetProgress"/> from the real loader, or leave Auto Run on for the prototype.
+    /// It is also the game's <see cref="IBootView"/>: the Bootstrap feeds it real progress, shows errors with a retry button
+    /// and the enter button. With Auto Run on it plays a prototype progress by itself (the UIKitLoading scene).
     /// </summary>
-    public class KitLoadingScreen : MonoBehaviour
+    public class KitLoadingScreen : MonoBehaviour, IBootView
     {
         [SerializeField] private RawImage farCity, nearCity, dash, curb;
         [SerializeField] private RectTransform car, wheelFront, wheelRear;
@@ -19,6 +21,11 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private ArabicText percent, phase, tip;
         [SerializeField] private GameObject enterButton;
         [SerializeField] private Button enter;
+        [Header("Error state")]
+        [SerializeField] private GameObject errorPanel;
+        [SerializeField] private ArabicText errorLabel;
+        [SerializeField] private Button retryButton;
+        [Header("Prototype")]
         [SerializeField] private bool autoRun = true;
         [SerializeField] private float duration = 7f;
 
@@ -28,6 +35,9 @@ namespace MafiaNight.UI.Kit
         private float tipTimer;
         private int tipIndex;
         private Vector2 carRest;
+        private Coroutine demo;
+        private bool externalStatus;
+        private Action pendingEnter, pendingRetry;
         private static readonly string[] Tips = { "الصمت في السهرة له ثمن.", "المختار صوته يحسب صوتين.", "اسأل كثيراً، وصدّق قليلاً.", "ما كل من ابتسم صاحبك.", "القهوة تبرد، والمافيا لا تنام." };
         private static readonly string[] Phases = { "نتّصل بالحارة...", "نجهّز الطاولة...", "نوزّع الأوراق...", "بقيت لحظة..." };
         private static readonly int[] PhaseAt = { 0, 30, 60, 92 };
@@ -37,19 +47,32 @@ namespace MafiaNight.UI.Kit
             if (!Application.isPlaying) return;
             carRest = car.anchoredPosition;
             Fit(farCity); Fit(nearCity); Fit(dash); Fit(curb);
-            if (enter != null) enter.onClick.AddListener(() => { OnEnter?.Invoke(); if (autoRun) Restart(); });
+            if (enter != null) enter.onClick.AddListener(() =>
+            {
+                var cb = pendingEnter; pendingEnter = null;
+                OnEnter?.Invoke();
+                cb?.Invoke();
+                if (autoRun) Restart();
+            });
+            if (retryButton != null) retryButton.onClick.AddListener(() =>
+            {
+                var cb = pendingRetry; pendingRetry = null;
+                if (errorPanel != null) errorPanel.SetActive(false);
+                cb?.Invoke();
+            });
+            if (errorPanel != null) errorPanel.SetActive(false);
             tip.Text = Tips[0];
-            if (autoRun) StartCoroutine(Demo());
+            if (autoRun) demo = StartCoroutine(Demo());
         }
 
         private static void Fit(RawImage r)
         {
             if (r == null || r.texture == null) return;
             var rt = (RectTransform)r.transform;
-            r.uvRect = new Rect(0, 0, rt.rect.width / r.texture.width * (rt.rect.height / r.texture.height > 0 ? 1f : 1f), 1f);
+            r.uvRect = new Rect(0, 0, rt.rect.width / r.texture.width, 1f);
         }
 
-        public void Restart() { StopAllCoroutines(); ready = false; StartCoroutine(Demo()); }
+        public void Restart() { StopAllCoroutines(); ready = false; demo = StartCoroutine(Demo()); }
 
         private IEnumerator Demo()
         {
@@ -64,15 +87,46 @@ namespace MafiaNight.UI.Kit
         }
 
         /// <summary>0..1</summary>
-        public void SetProgress(float p)
+        public void SetProgress(float p) => Apply(p, null);
+
+        private void Apply(float p, string status)
         {
             progress = Mathf.Clamp01(p);
             int v = Mathf.RoundToInt(progress * 100f);
             percent.Text = CoinPill.Format(v) + "٪";
-            for (int i = PhaseAt.Length - 1; i >= 0; i--) if (v >= PhaseAt[i]) { phase.Text = Phases[i]; break; }
+            if (status != null) phase.Text = status;
+            else if (!externalStatus)
+                for (int i = PhaseAt.Length - 1; i >= 0; i--) if (v >= PhaseAt[i]) { phase.Text = Phases[i]; break; }
             barFill.anchorMin = new Vector2(1f - progress, 0); barFill.anchorMax = new Vector2(1, 1); barFill.offsetMin = barFill.offsetMax = Vector2.zero;
-            if (progress >= 1f && !ready) { ready = true; phase.Text = "جاهز"; enterButton.SetActive(true); tip.gameObject.SetActive(false); StartCoroutine(Honk()); }
+            if (progress >= 1f && !ready) { ready = true; if (status == null) phase.Text = "جاهز"; enterButton.SetActive(true); tip.gameObject.SetActive(false); StartCoroutine(Honk()); }
             if (progress < 1f) { ready = false; if (enterButton != null) enterButton.SetActive(false); tip.gameObject.SetActive(true); }
+        }
+
+        // ---------- IBootView ----------
+
+        void IBootView.SetProgress(float progress01, string status)
+        {
+            if (demo != null) { StopCoroutine(demo); demo = null; }
+            autoRun = false;
+            externalStatus = true;
+            Apply(progress01, status);
+        }
+
+        void IBootView.ShowError(string message, Action retry)
+        {
+            if (demo != null) { StopCoroutine(demo); demo = null; }
+            autoRun = false; externalStatus = true;
+            pendingRetry = retry;
+            if (errorLabel != null) errorLabel.Text = message;
+            if (errorPanel != null) errorPanel.SetActive(true);
+        }
+
+        void IBootView.ShowReady(Action enterCallback)
+        {
+            if (demo != null) { StopCoroutine(demo); demo = null; }
+            autoRun = false; externalStatus = true;
+            pendingEnter = enterCallback;
+            Apply(1f, "جاهز");
         }
 
         private IEnumerator Honk()

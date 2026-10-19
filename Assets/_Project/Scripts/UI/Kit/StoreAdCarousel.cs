@@ -20,7 +20,7 @@ namespace MafiaNight.UI.Kit
         public event Action<StoreItem> OnBuy;
 
         [Serializable]
-        public class Ad { public string mast, headline, body, stamp, price; public StoreItem item; public bool countdown; }
+        public class Ad { public string mast, headline, body, stamp, price; public StoreItem item; public bool countdown; public int countdownSeconds; }
 
         private readonly List<CanvasGroup> pages = new List<CanvasGroup>();
         private readonly List<Image> shades = new List<Image>();
@@ -57,7 +57,7 @@ namespace MafiaNight.UI.Kit
                 StoreArt.Create(ad.item, art, th);
                 var cd = go.transform.Find("Countdown");
                 cd.gameObject.SetActive(ad.countdown);
-                if (ad.countdown) countdowns.Add(cd.Find("Value").GetComponent<ArabicText>());
+                if (ad.countdown) { countdowns.Add(cd.Find("Value").GetComponent<ArabicText>()); secondsLeft = ad.countdownSeconds; }
                 var buy = go.transform.Find("Buy");
                 buy.GetComponentInChildren<ArabicText>().Text = ad.price;
                 var item = ad.item;

@@ -26,7 +26,27 @@ namespace MafiaNight.UI.Kit.Editor
             if (ism != null) es.AddComponent(ism); else es.AddComponent<StandaloneInputModule>();
             var bg = Go("Background", canvasGo.transform); Stretch(Rt(bg));
             var bgi = bg.AddComponent<Image>(); bgi.color = bgColor; bgi.raycastTarget = false;
-            return canvasGo;
+            return MakeSafeRoot(canvasGo, false);
+        }
+
+        /// <summary>
+        /// A full-screen container fitted to the device's safe area. Screens are built inside it so nothing sits under a notch
+        /// or the gesture bar; the Background stays outside. Returns the container (callers use it where they used the canvas).
+        /// With bottomFill a strip in the footer's colour is painted behind the gesture bar.
+        /// </summary>
+        private static GameObject MakeSafeRoot(GameObject canvasGo, bool bottomFill)
+        {
+            RectTransform fillRt = null;
+            if (bottomFill)
+            {
+                var fill = Go("BottomFill", canvasGo.transform); fillRt = Rt(fill);
+                fillRt.anchorMin = new Vector2(0, 0); fillRt.anchorMax = new Vector2(1, 0); fillRt.pivot = new Vector2(0.5f, 0); fillRt.anchoredPosition = Vector2.zero; fillRt.sizeDelta = Vector2.zero;
+                var fi = fill.AddComponent<Image>(); fi.color = new Color32(0x1A, 0x11, 0x0D, 255); fi.raycastTarget = false;
+            }
+            var safe = Go("SafeRoot", canvasGo.transform); Stretch(Rt(safe));
+            var sa = safe.AddComponent<KitSafeArea>();
+            if (fillRt != null) SetRef(sa, "bottomFill", fillRt);
+            return safe;
         }
 
         /// <summary>Adds the top bar, bottom nav (with the given tab selected) and the hidden profile card, then the wiring script.</summary>

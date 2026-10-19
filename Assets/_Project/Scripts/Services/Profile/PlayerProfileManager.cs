@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MafiaNight.Core;
+using MafiaNight.Services.Telemetry;
 using MafiaNight.Data.Player;
 using PlayFab;
 using PlayFab.ClientModels;
@@ -36,6 +37,7 @@ namespace MafiaNight.Services.Profile
         public bool HasProfile => _localProfile != null;
         public bool IsLoading => _isLoading;
         public bool IsSaving => _isSaving;
+        public bool IsNewProfile { get; private set; }
 
         public event Action<PlayerProfile> OnProfileLoaded;
         public event Action<PlayerProfile> OnProfileUpdated;
@@ -63,6 +65,7 @@ namespace MafiaNight.Services.Profile
                 Keys = new List<string> { KEY_PROFILE, KEY_CUSTOMIZATION, KEY_INVENTORY, KEY_STATISTICS }
             };
 
+            PlayFabMeter.Allow("GetUserData", false);
             PlayFabClientAPI.GetUserData(request, HandleProfileDataLoaded, HandleProfileLoadError);
         }
 
@@ -92,6 +95,7 @@ namespace MafiaNight.Services.Profile
                 return;
             }
 
+            if (!PlayFabMeter.Allow("UpdateUserData", true)) return;   // cost guard: write limit reached
             _isSaving = true;
             LogInfo("Saving profile to PlayFab...");
 
@@ -118,6 +122,7 @@ namespace MafiaNight.Services.Profile
 
         private void SaveSingleKey(string key, string json)
         {
+            if (!PlayFabMeter.Allow("UpdateUserData", true)) return;
             var request = new UpdateUserDataRequest { Data = new Dictionary<string, string> { { key, json } } };
             PlayFabClientAPI.UpdateUserData(request,
                 result => LogInfo($"{key} saved"),
@@ -136,6 +141,7 @@ namespace MafiaNight.Services.Profile
                 return;
             }
 
+            if (!PlayFabMeter.Allow("UpdateUserTitleDisplayName", true)) { callback?.Invoke(false); return; }
             var request = new UpdateUserTitleDisplayNameRequest { DisplayName = newName };
             PlayFabClientAPI.UpdateUserTitleDisplayName(request,
                 result =>
@@ -186,6 +192,16 @@ namespace MafiaNight.Services.Profile
             SaveProfile();
         }
 
+        public void Equip(string categoryId, string itemId)
+        {
+            if (_localProfile == null || string.IsNullOrEmpty(categoryId)) return;
+            if (_localProfile.Customization == null) _localProfile.Customization = new PlayerCustomization();
+            if (_localProfile.Customization.GetEquipped(categoryId) == itemId) return;
+            _localProfile.Customization.SetEquipped(categoryId, itemId);
+            OnProfileUpdated?.Invoke(_localProfile);
+            SaveCustomization();
+        }
+
         public void SetActiveFrame(string frameID)
         {
             if (_localProfile?.Customization == null) return;
@@ -219,11 +235,13 @@ namespace MafiaNight.Services.Profile
                 if (result.Data.TryGetValue(KEY_PROFILE, out var profileRecord))
                 {
                     _localProfile = JsonUtility.FromJson<PlayerProfile>(profileRecord.Value);
+                    IsNewProfile = false;
                     LogInfo("Profile loaded from PlayFab");
                 }
                 else
                 {
                     _localProfile = new PlayerProfile { PlayFabId = _playFabId };
+                    IsNewProfile = true;
                     LogInfo("Created new profile for new player");
                 }
 
@@ -277,6 +295,7 @@ namespace MafiaNight.Services.Profile
                 ProfileConstraints = new PlayerProfileViewConstraints { ShowDisplayName = true }
             };
 
+            PlayFabMeter.Allow("GetPlayerProfile", false);
             PlayFabClientAPI.GetPlayerProfile(request,
                 result =>
                 {

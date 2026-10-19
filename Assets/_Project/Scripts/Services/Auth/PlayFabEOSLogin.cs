@@ -1,6 +1,8 @@
 using System;
 using Epic.OnlineServices;
 using MafiaNight.Core;
+using MafiaNight.Services.Config;
+using MafiaNight.Services.Telemetry;
 using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine;
@@ -43,6 +45,11 @@ namespace MafiaNight.Services.Auth
 
         protected override void OnServiceAwake()
         {
+            // the Dev / Live environment asset wins over values saved in the scene
+            var env = EnvironmentConfig.Current;
+            if (env != null && env.IsPlayFabComplete) playFabTitleId = env.playFabTitleId;
+            if (env != null && !string.IsNullOrEmpty(env.openIdConnectionId)) openIdConnectionId = env.openIdConnectionId;
+
             if (!string.IsNullOrEmpty(playFabTitleId) && playFabTitleId != DefaultTitleIdPlaceholder)
             {
                 PlayFabSettings.TitleId = playFabTitleId;
@@ -61,6 +68,14 @@ namespace MafiaNight.Services.Auth
                 _eos.OnLoginFailed -= HandleEOSLoginFailed;
             }
             base.OnDestroy();
+        }
+
+        /// <summary>Retries from the step that failed: PlayFab when EOS already succeeded, otherwise the whole EOS login.</summary>
+        public void RetryLogin()
+        {
+            if (isPlayFabLoggedIn) return;
+            if (isEOSLoggedIn) LoginToPlayFab();
+            else _eos.StartLogin();
         }
 
         #region EOS
@@ -97,7 +112,16 @@ namespace MafiaNight.Services.Auth
                     CreateAccount = true,
                     TitleId = PlayFabSettings.TitleId
                 };
+                PlayFabMeter.Allow("LoginWithOpenIdConnect", false);
                 PlayFabClientAPI.LoginWithOpenIdConnect(oidcRequest, HandlePlayFabLoginSuccess, HandlePlayFabLoginFailure);
+                return;
+            }
+
+            // CustomID = ProductUserId can be impersonated by anyone who knows it, so release builds refuse it.
+            if (!Application.isEditor && !Debug.isDebugBuild)
+            {
+                Log.Error("OpenID Connect is not configured for PlayFab (EnvironmentConfig.openIdConnectionId)", Tag);
+                OnLoginFailed?.Invoke("تعذّر تسجيل الدخول: الإعداد الأمني غير مكتمل");
                 return;
             }
 
@@ -111,6 +135,7 @@ namespace MafiaNight.Services.Auth
                 TitleId = PlayFabSettings.TitleId
             };
 
+            PlayFabMeter.Allow("LoginWithCustomID", false);
             PlayFabClientAPI.LoginWithCustomID(request, HandlePlayFabLoginSuccess, HandlePlayFabLoginFailure);
         }
 
@@ -143,6 +168,7 @@ namespace MafiaNight.Services.Auth
                 ProfileConstraints = new PlayerProfileViewConstraints { ShowDisplayName = true }
             };
 
+            PlayFabMeter.Allow("GetPlayerProfile", false);
             PlayFabClientAPI.GetPlayerProfile(request,
                 result =>
                 {
@@ -170,6 +196,7 @@ namespace MafiaNight.Services.Auth
 
         private void SetDisplayName(string displayName)
         {
+            if (!PlayFabMeter.Allow("UpdateUserTitleDisplayName", true)) return;
             var request = new UpdateUserTitleDisplayNameRequest { DisplayName = displayName };
             PlayFabClientAPI.UpdateUserTitleDisplayName(request,
                 result => Log.Info($"Display name set: {result.DisplayName}", Tag),

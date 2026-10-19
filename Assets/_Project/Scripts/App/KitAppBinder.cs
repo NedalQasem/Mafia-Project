@@ -3,6 +3,8 @@ using MafiaNight.Data.Player;
 using MafiaNight.Services.Economy;
 using MafiaNight.Services.Profile;
 using MafiaNight.Services.Scenes;
+using MafiaNight.Services.Store;
+using MafiaNight.Data.Store;
 using MafiaNight.UI.Kit;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -22,6 +24,7 @@ namespace MafiaNight.App
 
         private IPlayerProfileService profile;
         private ICurrencyService currency;
+        private IStoreService storeService;
         private ISceneLoader sceneLoader;
         private KitTopBar topBar;
         private KitNavBar navBar;
@@ -56,6 +59,7 @@ namespace MafiaNight.App
                 return;
             }
             ServiceLocator.TryGet(out sceneLoader);
+            ServiceLocator.TryGet(out storeService);
             card = FindAnyObjectByType<KitProfileCard>(FindObjectsInactive.Include);
             store = FindAnyObjectByType<KitStoreScreen>();
 
@@ -63,6 +67,7 @@ namespace MafiaNight.App
             profile.OnProfileUpdated += OnProfile;
             currency.OnCoinsChanged += OnCoins;
             if (navBar != null) navBar.OnTabSelected += OnTab;
+            if (storeService != null) storeService.OnChanged += OnStoreChanged;
             if (store != null) WireStore();
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
             if (lb != null) lb.OnBack += GoHome;
@@ -77,7 +82,10 @@ namespace MafiaNight.App
             if (profile != null) { profile.OnProfileLoaded -= OnProfile; profile.OnProfileUpdated -= OnProfile; }
             if (currency != null) currency.OnCoinsChanged -= OnCoins;
             if (navBar != null) navBar.OnTabSelected -= OnTab;
+            if (storeService != null) storeService.OnChanged -= OnStoreChanged;
         }
+
+        private void OnStoreChanged() => Refresh();
 
         private void OnProfile(PlayerProfile _) => Refresh();
 
@@ -111,43 +119,40 @@ namespace MafiaNight.App
             string name = string.IsNullOrEmpty(p.DisplayName) ? "لاعب" : p.DisplayName;
             float xp01 = p.GetLevelProgress();
 
-            topBar.SetPlayer(name, title, p.Level, step.RankIndex, xp01, currency.Coins, animateCoins);
+            // what the player wears: the frame goes around the avatar, the title replaces the rank under the name
+            Sprite frame = null;
+            if (storeService != null && storeService.Catalog != null)
+            {
+                var f = storeService.Catalog.GetItem(storeService.GetEquipped("frames"));
+                if (f != null) frame = f.sprite != null ? f.sprite : FrameSprite(f.variant);
+                var t = storeService.Catalog.GetItem(storeService.GetEquipped("titles"));
+                if (t != null && !string.IsNullOrEmpty(t.titleText)) title = t.titleText;
+            }
+
+            topBar.SetPlayer(name, title, p.Level, step.RankIndex, xp01, currency.Coins, animateCoins, frame);
             if (card != null)
             {
                 var s = p.Statistics ?? new PlayerStatistics();
-                card.SetPlayer(name, title, p.Level, step.RankIndex, xp01, p.CurrentXP, p.XPToNextLevel, s.GamesPlayed, s.GamesWon);
+                card.SetPlayer(name, title, p.Level, step.RankIndex, xp01, p.CurrentXP, p.XPToNextLevel, s.GamesPlayed, s.GamesWon, frame);
                 card.SetRoles(s.CitizenGames, s.MafiaGames, 0, 0);
             }
             if (store != null) store.PlayerRank = step.RankIndex + 1;
         }
 
+        private static Sprite FrameSprite(int variant)
+        {
+            var th = KitTheme.Current;
+            return th != null && th.storeFrames != null && variant >= 1 && variant <= th.storeFrames.Length ? th.storeFrames[variant - 1] : null;
+        }
+
         private void WireStore()
         {
             store.Coins = currency.Coins;
-            store.OwnedResolver = item => profile.LocalProfile?.Inventory != null && profile.LocalProfile.Inventory.OwnsStoreItem(item.id);
-            store.PurchaseHandler = Purchase;
-        }
-
-        private void Purchase(StoreItem item, System.Action<bool, string> done)
-        {
-            var p = profile.LocalProfile;
-            if (p == null) { done(false, "تعذّر تحميل ملفك. حاول لاحقاً."); return; }
-            if (item.lockRank > RankLadder.FromPoints(p.RankPoints).RankIndex + 1) { done(false, "هذا الغرض مقفل لرتبتك."); return; }
-            if (p.Inventory != null && p.Inventory.OwnsStoreItem(item.id)) { done(true, "تملكه مسبقاً"); return; }
-            if (!currency.HasEnoughCoins(item.price)) { done(false, "رصيدك لا يكفي."); return; }
-
-            // TODO(security): purchases must be validated server-side (CloudScript) before going live.
-            currency.DeductCoins(item.price, () =>
-            {
-                if (p.Inventory == null) p.Inventory = new PlayerInventory();
-                p.Inventory.AddStoreItem(item.id);
-                profile.SaveProfile();
-                done(true, "أُضيف إلى مقتنياتك");
-            }, err =>
-            {
-                Log.Warning("Purchase failed: " + err, Tag);
-                done(false, "تعذّر الشراء، حاول لاحقاً.");
-            });
+            if (storeService == null) return;   // no store service: the screen keeps its local demo behaviour
+            store.OwnedResolver = item => storeService.Owns(item.id);
+            store.EquippedResolver = item => storeService.IsEquipped(item.id);
+            store.EquipHandler = item => storeService.Equip(item.id);
+            store.PurchaseHandler = (item, done) => storeService.Purchase(item.id, item.price, item.storeId, done);
         }
     }
 }

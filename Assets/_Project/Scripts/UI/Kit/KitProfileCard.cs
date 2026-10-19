@@ -36,12 +36,12 @@ namespace MafiaNight.UI.Kit
             if (!IsOpen) gameObject.SetActive(false);
         }
 
-        public void SetPlayer(string playerName, string title, int level, int rankIndex, float xp01, int xp, int xpMax, int games, int wins)
+        public void SetPlayer(string playerName, string title, int level, int rankIndex, float xp01, int xp, int xpMax, int games, int wins, Sprite frame = null)
         {
             if (nameLabel != null) nameLabel.Text = playerName;
             if (titleLabel != null) titleLabel.Text = title;
             if (levelLabel != null) levelLabel.Text = "م" + CoinPill.Format(level);
-            if (avatar != null) avatar.Set(rankIndex);
+            if (avatar != null) { avatar.Set(rankIndex); avatar.SetFrame(frame); }
             if (xpText != null) xpText.Text = CoinPill.Format(xp) + "/" + CoinPill.Format(xpMax);
             if (xpFill != null)
             {

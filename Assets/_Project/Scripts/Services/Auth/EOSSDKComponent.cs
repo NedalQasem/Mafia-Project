@@ -5,6 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using MafiaNight.Core;
+using MafiaNight.Services.Config;
 using UnityEngine;
 using EosAuth = Epic.OnlineServices.Auth;
 using EosConnect = Epic.OnlineServices.Connect;
@@ -32,7 +33,7 @@ namespace MafiaNight.Services.Auth
     /// local player into EOS Connect, producing a <see cref="ProductUserId"/> (needed by Lobbies, P2P and RTC voice).
     /// Other systems react to <see cref="OnLoggedIn"/> / <see cref="OnLoginFailed"/>.
     /// </summary>
-    public class EOSSDKComponent : MonoBehaviour
+    public class EOSSDKComponent : MonoBehaviour, IEosPlatform
     {
         private const string Tag = "EOS";
 
@@ -97,9 +98,40 @@ namespace MafiaNight.Services.Auth
 
         #region Lifecycle
 
+        private bool _registeredService;
+
         private void Awake()
         {
             Application.runInBackground = true;
+
+            // the Dev / Live environment asset wins over values saved in the scene
+            var env = EnvironmentConfig.Current;
+            if (env != null && env.IsEosComplete)
+            {
+                m_ProductName = env.productName; m_ProductVersion = env.productVersion;
+                m_ProductId = env.productId; m_SandboxId = env.sandboxId; m_DeploymentId = env.deploymentId;
+                m_ClientId = env.clientId; m_ClientSecret = env.clientSecret;
+                Log.Info($"EOS environment: {env.environmentName}", Tag);
+            }
+            else
+            {
+                Log.Warning("EnvironmentConfig missing or incomplete - using the IDs saved in the scene", Tag);
+            }
+
+#if UNITY_EDITOR
+            // Mafia > Backend Status can switch the login without touching the scene (several players on one PC)
+            if (UnityEditor.EditorPrefs.GetString("MafiaNight.EosLoginMode", "") == "DevAuthTool")
+            {
+                loginMode = EosLoginMode.DevAuthTool;
+                devAuthCredentialName = UnityEditor.EditorPrefs.GetString("MafiaNight.DevAuthCredential", devAuthCredentialName);
+            }
+#endif
+
+            if (!ServiceLocator.IsRegistered<IEosPlatform>())
+            {
+                ServiceLocator.Register<IEosPlatform>(this);
+                _registeredService = true;
+            }
 
 #if UNITY_EDITOR
             m_LibraryPointer = LoadLibrary(EditorLibraryPath);
@@ -132,13 +164,14 @@ namespace MafiaNight.Services.Auth
             }
         }
 
-#if UNITY_EDITOR
-        // Release the platform when stopping play mode in the Editor
         private void OnDestroy()
         {
+            if (_registeredService) ServiceLocator.Unregister<IEosPlatform>(this);
+#if UNITY_EDITOR
+            // Release the platform when stopping play mode in the Editor
             ShutdownPlatform();
-        }
 #endif
+        }
 
         private void OnApplicationQuit()
         {
@@ -325,9 +358,9 @@ namespace MafiaNight.Services.Auth
         /// <summary>Logs into EOS Connect using <see cref="ActiveLoginMode"/>. Safe to call again to retry.</summary>
         public void StartLogin()
         {
-            if (s_PlatformInterface == null)
+            if (s_PlatformInterface == null && !InitializePlatform())
             {
-                Log.Error("StartLogin called before the platform was initialized", Tag);
+                Log.Error("StartLogin: the EOS platform could not be created", Tag);
                 return;
             }
             if (_isLoggingIn) return;

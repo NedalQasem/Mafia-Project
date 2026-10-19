@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MafiaNight.Data.Store;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -26,15 +27,21 @@ namespace MafiaNight.UI.Kit
 
         /// <summary>Set by the app layer: true when the player owns the item. Without it a local demo set is used.</summary>
         public Func<StoreItem, bool> OwnedResolver;
+        /// <summary>Set by the app layer: true when the item is worn right now.</summary>
+        public Func<StoreItem, bool> EquippedResolver;
+        /// <summary>Set by the app layer: wears an owned item. Without it a local demo set is used.</summary>
+        public Action<StoreItem> EquipHandler;
         /// <summary>Set by the app layer: performs the real purchase and reports (success, message). Without it the demo purchase runs.</summary>
         public Action<StoreItem, Action<bool, string>> PurchaseHandler;
         /// <summary>Player rank (1-based) used for rank-locked items.</summary>
-        public int PlayerRank { get => playerRank; set { playerRank = value; if (Application.isPlaying && catButtons.Count > 0) Select(category); } }
+        public int PlayerRank { get => playerRank; set { if (playerRank == value) return; playerRank = value; if (Application.isPlaying && catButtons.Count > 0) Select(category); } }
 
         private static readonly HashSet<string> demoOwned = new HashSet<string>();
+        private static readonly Dictionary<string, string> demoEquipped = new Dictionary<string, string>();
         private bool buying;
 
-        private int category;
+        private List<StoreCategoryDef> cats = new List<StoreCategoryDef>();
+        private string category;
         private StoreItem open;
         private readonly List<Button> catButtons = new List<Button>();
         private Coroutine sheetAnim;
@@ -54,41 +61,56 @@ namespace MafiaNight.UI.Kit
         public void Build()
         {
             var th = KitTheme.Current;
-            // categories
+            // categories (tabs) come from the catalog
             for (int i = catsRoot.childCount - 1; i >= 0; i--) DestroyAny(catsRoot.GetChild(i).gameObject);
             catButtons.Clear();
-            for (int i = 0; i < StoreData.TabOrder.Length; i++)
+            cats = StoreData.Categories();
+            for (int i = 0; i < cats.Count; i++)
             {
-                int catId = StoreData.TabOrder[i];
+                var cat = cats[i];
                 var go = Instantiate(catPrefab, catsRoot);
                 var label = go.transform.Find("Body/Label").GetComponent<ArabicText>();
-                label.Text = StoreData.CategoryNames[catId];
-                go.transform.Find("Body/Icon").GetComponent<Image>().sprite = th.catIcons[StoreData.IconOf[catId]];
+                label.Text = cat.tabName;
+                go.transform.Find("Body/Icon").GetComponent<Image>().sprite = cat.icon != null ? cat.icon : th.catIcons[Mathf.Clamp(cat.builtInIcon, 0, th.catIcons.Length - 1)];
                 var tmp = label.GetComponent<TMPro.TMP_Text>(); tmp.ForceMeshUpdate();
                 float w = Mathf.Max(150f, tmp.preferredWidth + 62f);   // HTML .cat: the label sets the width, padding 12px
                 go.GetComponent<LayoutElement>().preferredWidth = w; ((RectTransform)go.transform).sizeDelta = new Vector2(w, 150f);
-                var b = go.GetComponent<Button>(); b.onClick.AddListener(() => Select(catId));
+                var b = go.GetComponent<Button>(); string id = cat.id; b.onClick.AddListener(() => Select(id));
                 catButtons.Add(b);
             }
-            // ads
-            carousel.SetAds(new List<StoreAdCarousel.Ad>
+            if (string.IsNullOrEmpty(category) || cats.Find(c => c.id == category) == null)
             {
-                new StoreAdCarousel.Ad { mast = "عرض الليلة فقط", headline = "إطار الجمر\nبنصف الثمن تقريباً", body = "حلقة نارية تتوهج حول صورتك.", stamp = "−٣٠٪", price = "٨٤٠  ‏", item = StoreData.Items(0)[4], countdown = true },
-                new StoreAdCarousel.Ad { mast = "وصل حديثاً", headline = "خلفية الميناء\nسفن وليل أسود", body = "غيّر لون مجلسك بخلفية جديدة.", stamp = "جديد", price = "٩٠٠", item = StoreData.Items(2)[4] },
-                new StoreAdCarousel.Ad { mast = "هدية الأسبوع", headline = "رصاصة ذهبية\nلمن أصاب الهدف", body = "أرسلها للاعب بالغرفة.", price = "٥٠٠", item = StoreData.Items(5)[1] },
-                new StoreAdCarousel.Ad { mast = "عرض الكوينز", headline = "صندوق كوينز\nبسعر الحفنة", body = "٣٬٥٠٠ كوينز للهدايا والزينة فقط.", stamp = "+٣٠٪", price = "٤٫٩٩ $", item = StoreData.Items(8)[2] },
-            });
-            carousel.OnBuy += item => OpenSheet(item);
+                var first = cats.Find(c => c.kind == StoreCategoryKind.Items);
+                category = first != null ? first.id : (cats.Count > 0 ? cats[0].id : null);
+            }
+            // ads (newspaper pages) come from the catalog too
+            var ads = new List<StoreAdCarousel.Ad>();
+            var catalog = StoreData.Catalog;
+            if (catalog != null)
+                foreach (var def in catalog.ads)
+                {
+                    if (!def.enabled) continue;
+                    var item = StoreData.Find(def.itemId);
+                    if (item == null) continue;
+                    if (def.offerPrice > 0 && def.offerPrice != item.price) { item.price = def.offerPrice; item.storeId = def.offerStoreId; }
+                    string price = !string.IsNullOrEmpty(item.priceText) ? item.priceText : CoinPill.Format(item.price);
+                    ads.Add(new StoreAdCarousel.Ad { mast = def.mast, headline = def.headline, body = def.body, stamp = def.stamp, price = price, item = item, countdown = def.countdownSeconds > 0, countdownSeconds = def.countdownSeconds });
+                }
+            carousel.gameObject.SetActive(ads.Count > 0);
+            carousel.SetAds(ads);
+            carousel.OnBuy -= OnAdBuy; carousel.OnBuy += OnAdBuy;
             Select(category);
         }
+
+        private void OnAdBuy(StoreItem item) { Resolve(item); OpenSheet(item); }
 
         private static void DestroyAny(GameObject g) { if (Application.isPlaying) Destroy(g); else DestroyImmediate(g); }
 
         // slide the category row so the chosen drawer is in view (HTML scrolls the tab strip too)
-        private System.Collections.IEnumerator ScrollTabsTo(int catId)
+        private System.Collections.IEnumerator ScrollTabsTo(string catId)
         {
             yield return null;
-            int idx = System.Array.IndexOf(StoreData.TabOrder, catId);
+            int idx = cats.FindIndex(c => c.id == catId);
             if (idx < 0 || idx >= catButtons.Count) yield break;
             var sr = catsRoot.GetComponentInParent<ScrollRect>(); if (sr == null) yield break;
             var vp = sr.viewport != null ? sr.viewport : (RectTransform)sr.transform;
@@ -109,14 +131,16 @@ namespace MafiaNight.UI.Kit
 
         private Coroutine tabScroll;
 
-        public void Select(int cat)
+        public void Select(string cat)
         {
             category = cat;
+            var def = cats.Find(c => c.id == cat);
+            if (def == null) return;
             if (Application.isPlaying && isActiveAndEnabled) { if (tabScroll != null) StopCoroutine(tabScroll); tabScroll = StartCoroutine(ScrollTabsTo(cat)); }
             var th = KitTheme.Current;
             for (int i = 0; i < catButtons.Count; i++)
             {
-                bool on = StoreData.TabOrder[i] == cat;
+                bool on = cats[i].id == cat;
                 var body = (RectTransform)catButtons[i].transform.Find("Body");
                 body.GetComponent<Image>().sprite = on ? th.catOn : th.catOff;
                 body.anchoredPosition = new Vector2(0f, on ? 11f : 0f);                // HTML .cat.on: lifts 4px
@@ -129,15 +153,15 @@ namespace MafiaNight.UI.Kit
             for (int i = shelvesRoot.childCount - 1; i >= 0; i--) DestroyAny(shelvesRoot.GetChild(i).gameObject);
             var header = Instantiate(headerPrefab, shelvesRoot);
             var title = header.transform.Find("Label").GetComponent<ArabicText>(); var hint = header.transform.Find("Hint").GetComponent<ArabicText>();
-            title.Text = StoreData.HeadTitles[cat]; hint.Text = StoreData.CategoryHints[cat];
+            title.Text = def.headTitle; hint.Text = def.hint;
             var tt = title.GetComponent<TMPro.TMP_Text>(); var ht = hint.GetComponent<TMPro.TMP_Text>(); tt.ForceMeshUpdate(); ht.ForceMeshUpdate();
             float hx = -44f - tt.preferredWidth - 28f, lx = hx - ht.preferredWidth - 28f;
             ((RectTransform)hint.transform).anchoredPosition = new Vector2(hx, -6f);
             var line = (RectTransform)header.transform.Find("Line"); line.anchoredPosition = new Vector2(lx, -4f); line.sizeDelta = new Vector2(Mathf.Max(0f, 1080f + lx - 44f), 3f);
-            if (cat == 9) { ShowRanks(); return; }
+            if (def.kind == StoreCategoryKind.RankSets) { ShowRanks(); return; }
             var items = StoreData.Items(cat);
-            foreach (var it in items) if (!it.owned && IsOwned(it)) it.owned = true;
-            int per = cat == 3 || cat == 4 || cat == 8 ? 2 : 3;
+            foreach (var it in items) Resolve(it);
+            int per = Mathf.Max(1, def.perRow);
             int rows = Mathf.CeilToInt(items.Count / (float)per);
             float total = 90f + rows * 470f;
             var le = shelvesRoot.GetComponent<LayoutElement>(); if (le != null) le.preferredHeight = total;
@@ -181,7 +205,7 @@ namespace MafiaNight.UI.Kit
                 id = "rk" + rankIndex + "_" + type, name = r.items[type], art = "rankthumb", idx = n * 10 + type,
                 rarity = rar[rankIndex] == "c" ? Rarity.Common : rar[rankIndex] == "r" ? Rarity.Rare : rar[rankIndex] == "e" ? Rarity.Epic : Rarity.Legendary,
                 desc = lk ? "يُفتح عند الوصول إلى رتبة " + r.name + ". لا يُشترى بالكوينز." : "مفتوح لك بالترقية. استخدمه متى شئت.",
-                owned = !lk, lockRank = lk ? n : 0,
+                owned = !lk, lockRank = lk ? n : 0, equippable = false,
             };
             OpenSheet(it);
         }
@@ -190,7 +214,7 @@ namespace MafiaNight.UI.Kit
         {
             var th = KitTheme.Current;
             open = item;
-            if (!item.owned && IsOwned(item)) item.owned = true;
+            Resolve(item);
             StoreArt.Create(item, preview, th);
             sheetName.Text = item.name; sheetDesc.Text = item.desc;
             sheetChip.Text = item.rarity == Rarity.Common ? "عادي" : item.rarity == Rarity.Rare ? "نادر" : item.rarity == Rarity.Epic ? "ملحمي" : "أسطوري";
@@ -205,9 +229,9 @@ namespace MafiaNight.UI.Kit
             }
             if (sheetChipBg != null) sheetChipBg.color = outline;
             sheetChip.GetComponent<TMPro.TMP_Text>().color = txt;
-            bool locked = item.lockRank > playerRank;
+            bool locked = !item.owned && item.lockRank > playerRank;
             sheetMsg.Text = locked ? "يفتح عند رتبة " + KitTheme.RankNames[item.lockRank - 1] : "";
-            sheetPrice.Text = item.owned ? "استخدمه" : locked ? "مقفل" : (string.IsNullOrEmpty(item.priceText) ? CoinPill.Format(item.price) : item.priceText);
+            sheetPrice.Text = item.owned ? (!item.equippable ? (item.id.StartsWith("rk") ? "مفتوح لك" : "تم") : item.equipped ? "مفعّل" : "استخدمه") : locked ? "مقفل" : (string.IsNullOrEmpty(item.priceText) ? CoinPill.Format(item.price) : item.priceText);
             sheetBuy.interactable = !locked;
             var coinIcon = sheetBuy.transform.Find("Coin"); if (coinIcon != null) coinIcon.gameObject.SetActive(!item.owned && !locked && string.IsNullOrEmpty(item.priceText));
             var buyLabel = sheetPrice.GetComponent<RectTransform>(); buyLabel.offsetMax = new Vector2(coinIcon != null && coinIcon.gameObject.activeSelf ? -60f : -6f, buyLabel.offsetMax.y);
@@ -236,10 +260,34 @@ namespace MafiaNight.UI.Kit
 
         private bool IsOwned(StoreItem it) => OwnedResolver != null ? OwnedResolver(it) : demoOwned.Contains(it.id);
 
+        private bool IsEquipped(StoreItem it) => EquippedResolver != null ? EquippedResolver(it) : (demoEquipped.TryGetValue(it.categoryId ?? "", out var cur) && cur == it.id);
+
+        /// <summary>Fills the owned / worn state of an item from the app layer (or the demo set).</summary>
+        private void Resolve(StoreItem it)
+        {
+            if (!it.equippable) { it.owned = false; it.equipped = false; return; }   // gifts are used up, never "owned"
+            if (!it.owned && IsOwned(it)) it.owned = true;
+            it.equipped = it.owned && IsEquipped(it);
+        }
+
+        /// <summary>Re-reads owned / worn state and redraws the open shelf (the app layer calls it after outside changes).</summary>
+        public void Refresh() { if (Application.isPlaying && catButtons.Count > 0 && !string.IsNullOrEmpty(category)) Select(category); }
+
         private void Buy()
         {
             if (open == null || buying) return;
-            if (open.owned) { sheetPrice.Text = "تم"; CloseSheet(); return; }
+            if (open.owned)
+            {
+                if (open.equippable && !open.equipped)
+                {
+                    if (EquipHandler != null) EquipHandler(open);
+                    else demoEquipped[open.categoryId ?? ""] = open.id;
+                    sheetPrice.Text = "تم التفعيل";
+                    Invoke(nameof(AfterBuy), 0.5f);
+                    return;
+                }
+                CloseSheet(); return;
+            }
             if (!string.IsNullOrEmpty(open.priceText))
             {
                 if (PurchaseHandler != null) { sheetMsg.Text = "الشراء بالمال الحقيقي غير متاح بعد."; return; }
@@ -256,12 +304,12 @@ namespace MafiaNight.UI.Kit
                     if (this == null) return;
                     sheetMsg.Text = msg ?? "";
                     if (!ok) return;
-                    item.owned = true;
+                    if (item.equippable) item.owned = true;
                     Invoke(nameof(AfterBuy), 0.9f);
                 });
                 return;
             }
-            Coins -= open.price; open.owned = true; demoOwned.Add(open.id);
+            Coins -= open.price; if (open.equippable) { open.owned = true; demoOwned.Add(open.id); }
             OnCoinsChanged?.Invoke(Coins);
             sheetMsg.Text = "أُضيف إلى مقتنياتك";
             Invoke(nameof(AfterBuy), 0.9f);

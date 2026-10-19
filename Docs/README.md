@@ -9,6 +9,8 @@
 | [05-rooms-design.md](05-rooms-design.md) | تصميم الغرف الصوتية: الحدود، الأنواع، والقواعد |
 | [06-architecture.md](06-architecture.md) | المعمارية الحالية والمستهدفة للشبكة، ونسخ الـ SDK |
 | [07-art-direction.md](07-art-direction.md) | الاتجاه الفني "سهرة الحارة": ألوان، خطوط، وPrompts جاهزة لتوليد الصور |
+| [08-ui-kit.md](08-ui-kit.md) | مكتبة الواجهة في Unity: المكوّنات، الخطوط، العربي، وما رُبط مع الخدمات |
+| [09-integration-plan.md](09-integration-plan.md) | خطة ربط الواجهات بـ PlayFab و EOS حتى إصدار الـ Beta |
 
 ## الخلاصة
 

@@ -3,6 +3,13 @@ using System.Collections.Generic;
 
 namespace MafiaNight.Data.Player
 {
+    [System.Serializable]
+    public class EquippedSlot
+    {
+        public string CategoryId;
+        public string ItemId;
+    }
+
     /// <summary>
     /// Player customization data - cosmetic items and preferences
     /// </summary>
@@ -32,6 +39,30 @@ namespace MafiaNight.Data.Player
         /// <summary>List of owned chat bubble IDs</summary>
         public List<string> OwnedBubbles;
         
+        // ==================== EQUIPPED (store catalog) ====================
+        /// <summary>What the player wears from the store: one item per category (frames, bubbles, titles...).</summary>
+        public List<EquippedSlot> Equipped = new List<EquippedSlot>();
+
+        public string GetEquipped(string categoryId)
+        {
+            if (Equipped == null) return null;
+            foreach (var s in Equipped) if (s.CategoryId == categoryId) return s.ItemId;
+            return null;
+        }
+
+        /// <summary>Wears an item in its category (null/empty itemId takes it off).</summary>
+        public void SetEquipped(string categoryId, string itemId)
+        {
+            if (Equipped == null) Equipped = new List<EquippedSlot>();
+            for (int i = 0; i < Equipped.Count; i++)
+            {
+                if (Equipped[i].CategoryId != categoryId) continue;
+                if (string.IsNullOrEmpty(itemId)) Equipped.RemoveAt(i); else Equipped[i].ItemId = itemId;
+                return;
+            }
+            if (!string.IsNullOrEmpty(itemId)) Equipped.Add(new EquippedSlot { CategoryId = categoryId, ItemId = itemId });
+        }
+
         // ==================== CONSTRUCTOR ====================
         public PlayerCustomization()
         {

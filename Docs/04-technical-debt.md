@@ -27,7 +27,7 @@
 - **✅ تم بالكود:** دعم `LoginWithOpenIdConnect` بتوكن EOS Connect (JWT موقّع من Epic).
 - **⏳ باقي عليك:**
   1. في PlayFab Game Manager → Title Settings → **OpenID Connect** → أضف اتصال جديد
-     (Issuer: `https://api.epicgames.dev`، و Client ID = الـ Client ID تبع EOS)
+     (Issuer: `https://api.epicgames.dev/auth/v1/oauth` (قراءة فعلية من توكن حقيقي)، و Client ID = الـ Client ID تبع EOS. ولا يوجد Discovery فيُنشأ الاتصال بالأداة `Tools/playfab-oidc/create-oidc.js`)
   2. حط اسم الاتصال في حقل `openIdConnectionId` على `PlayFabEOSLogin` (مشهد Bootstrap)
   3. بعدها احذف مسار CustomID من الكود
 - **ملاحظة:** حسابات PlayFab القديمة كانت مربوطة بـ EpicAccountId. صارت الآن على الـ ProductUserId، فالحسابات التجريبية القديمة ما رح تُستخدم.

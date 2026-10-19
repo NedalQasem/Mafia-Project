@@ -60,3 +60,11 @@ Thumbs.db
 # EOS SDK developer tools & installers (~670MB, not needed at runtime)
 **/SDK/Tools/
 **/SDK/Tools.meta
+
+# ---------- Secrets & local output ----------
+# Per-environment config holds the EOS client secret: never commit it. Keep a copy somewhere safe.
+/Assets/_Project/Resources/Config/Environment_*.asset
+/Assets/_Project/Resources/Config/Environment_*.asset.meta
+# Editor screenshots
+/Assets/Screenshots/
+/Assets/Screenshots.meta

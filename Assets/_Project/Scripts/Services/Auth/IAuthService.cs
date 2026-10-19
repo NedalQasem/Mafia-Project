@@ -18,5 +18,8 @@ namespace MafiaNight.Services.Auth
 
         /// <summary>Raised when EOS or PlayFab login fails. Argument: error message.</summary>
         event Action<string> OnLoginFailed;
+
+        /// <summary>Tries the login again from the step that failed (EOS first, then PlayFab).</summary>
+        void RetryLogin();
     }
 }

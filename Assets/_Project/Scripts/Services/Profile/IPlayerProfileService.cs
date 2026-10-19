@@ -13,6 +13,8 @@ namespace MafiaNight.Services.Profile
         bool HasProfile { get; }
         bool IsLoading { get; }
         bool IsSaving { get; }
+        /// <summary>True when the profile was just created because the server had none (first launch of this account).</summary>
+        bool IsNewProfile { get; }
 
         event Action<PlayerProfile> OnProfileLoaded;
         event Action<PlayerProfile> OnProfileUpdated;
@@ -29,6 +31,9 @@ namespace MafiaNight.Services.Profile
         /// <summary>Applies rank points + statistics for a finished match and saves.</summary>
         // TODO(security): match results must be validated server-side before going live.
         void RecordMatchResult(bool won, bool wasMafia, bool isMvp);
+
+        /// <summary>Wears a store item in its category (null itemId takes it off), saves, and fires OnProfileUpdated.</summary>
+        void Equip(string categoryId, string itemId);
 
         void SetActiveFrame(string frameID);
         void SetActiveChatBackground(string bgID);

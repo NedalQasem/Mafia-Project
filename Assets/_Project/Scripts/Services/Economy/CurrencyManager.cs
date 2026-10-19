@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using MafiaNight.Core;
+using MafiaNight.Services.Telemetry;
 using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine;
@@ -27,6 +29,10 @@ namespace MafiaNight.Services.Economy
         public event Action<int> OnCoinsChanged;
         public event Action<int> OnGemsChanged;
 
+        private readonly HashSet<string> ownedItems = new HashSet<string>();
+        public IReadOnlyCollection<string> OwnedItemIds => ownedItems;
+        public event Action OnInventoryChanged;
+
         public bool HasEnoughCoins(int amount) => currentCoins >= amount;
         public bool HasEnoughGems(int amount) => currentGems >= amount;
 
@@ -34,10 +40,14 @@ namespace MafiaNight.Services.Economy
 
         public void FetchCurrencies(Action<bool> onComplete = null)
         {
+            PlayFabMeter.Allow("GetUserInventory", false);
             PlayFabClientAPI.GetUserInventory(new GetUserInventoryRequest(), result =>
             {
                 if (result.VirtualCurrency.TryGetValue(COINS_CODE, out int coins)) SetCoins(coins);
                 if (result.VirtualCurrency.TryGetValue(GEMS_CODE, out int gems)) SetGems(gems);
+                ownedItems.Clear();
+                if (result.Inventory != null) foreach (var it in result.Inventory) if (!string.IsNullOrEmpty(it.ItemId)) ownedItems.Add(it.ItemId);
+                OnInventoryChanged?.Invoke();
 
                 Log.Info($"Fetched: {currentCoins} Coins, {currentGems} Gems", Tag);
                 onComplete?.Invoke(true);
@@ -45,6 +55,31 @@ namespace MafiaNight.Services.Economy
             {
                 Log.Error($"Fetch failed: {error.ErrorMessage}", Tag);
                 onComplete?.Invoke(false);
+            });
+        }
+
+        #endregion
+
+        #region Catalog purchase
+
+        public void PurchaseCatalogItem(string itemId, int price, string storeId, Action onSuccess, Action<string, string> onError)
+        {
+            if (!PlayFabMeter.Allow("PurchaseItem", true)) { onError?.Invoke("busy", "Too many requests"); return; }
+            var request = new PurchaseItemRequest { ItemId = itemId, VirtualCurrency = COINS_CODE, Price = price };
+            if (!string.IsNullOrEmpty(storeId)) request.StoreId = storeId;
+            PlayFabClientAPI.PurchaseItem(request, result =>
+            {
+                ownedItems.Add(itemId);
+                SetCoins(Mathf.Max(0, currentCoins - price));
+                OnInventoryChanged?.Invoke();
+                Log.Info($"Purchased {itemId} for {price}", Tag);
+                onSuccess?.Invoke();
+            }, error =>
+            {
+                string code = error.Error == PlayFabErrorCode.ItemNotFound || error.Error == PlayFabErrorCode.CatalogNotConfigured || error.Error == PlayFabErrorCode.InvalidItemId || error.Error == PlayFabErrorCode.StoreNotFound ? "not_in_catalog"
+                    : error.Error == PlayFabErrorCode.InsufficientFunds ? "funds" : "error";
+                Log.Warning($"Purchase {itemId} failed: {error.Error} {error.ErrorMessage}", Tag);
+                onError?.Invoke(code, error.ErrorMessage);
             });
         }
 
@@ -83,6 +118,7 @@ namespace MafiaNight.Services.Economy
         // TODO(security): AddUserVirtualCurrency must be disabled for clients in PlayFab and replaced by CloudScript.
         private void AddCurrency(string code, int amount, Action<int> setBalance, Action onSuccess, Action<string> onError)
         {
+            if (!PlayFabMeter.Allow("AddUserVirtualCurrency", true)) { onError?.Invoke("Too many requests"); return; }
             var request = new AddUserVirtualCurrencyRequest { VirtualCurrency = code, Amount = amount };
             PlayFabClientAPI.AddUserVirtualCurrency(request, result =>
             {
@@ -98,6 +134,7 @@ namespace MafiaNight.Services.Economy
 
         private void SubtractCurrency(string code, int amount, Action<int> setBalance, Action onSuccess, Action<string> onError)
         {
+            if (!PlayFabMeter.Allow("SubtractUserVirtualCurrency", true)) { onError?.Invoke("Too many requests"); return; }
             var request = new SubtractUserVirtualCurrencyRequest { VirtualCurrency = code, Amount = amount };
             PlayFabClientAPI.SubtractUserVirtualCurrency(request, result =>
             {

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using MafiaNight.Data.Player;
+using MafiaNight.Data.Store;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,111 +10,91 @@ namespace MafiaNight.UI.Kit
 {
     public enum Rarity { Common, Rare, Epic, Legendary }
 
+    /// <summary>What the store screens show for one catalog item (a view of <see cref="StoreItemDef"/> plus the state of this player).</summary>
     [Serializable]
     public class StoreItem
     {
-        public string id;                 // stable store ID, e.g. "c0_2" (category_index)
+        public string id;                 // the catalog id (also the PlayFab ItemId)
+        public string categoryId;
         public string name, desc;
         public int price;
         public string priceText;          // real-money packs
         public Rarity rarity;
         public bool owned, isNew;
+        public bool equipped;             // worn right now (only meaningful when owned)
+        public bool equippable;           // wearing it replaces the previous item of its category
         public int lockRank;              // 1-based rank needed, 0 = none
-        public string art;                // ring | thumb | gift | card | plate | pack | bubble | entry
+        public string art;                // ring | thumb | gift | card | plate | pack | bubble | entry | rankthumb
         public int idx;
         public Color c1 = Color.white;
         public string text;
+        public Sprite sprite;             // replaces the built-in drawing when set
+        public string storeId;            // PlayFab store holding an offer price (ads)
     }
 
+    /// <summary>Reads the store catalog (Resources/Config/StoreCatalog) and turns it into the models the screens draw.</summary>
     public static class StoreData
     {
-        public static readonly string[] CategoryNames = { "الإطارات", "خلفية الروم", "خلفية الدردشة", "فقاعات الدردشة", "فقاعات الدخول", "الهدايا", "أوراق الطاولة", "الألقاب", "الكوينز", "حصري الرتب" };
-        /// <summary>Order of the drawers in the tab row (the rank-exclusive one comes first) and the icon of each category id.</summary>
-        public static readonly int[] TabOrder = { 9, 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-        public static readonly int[] IconOf = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
-        /// <summary>Shelf heading text per category (HTML HEAD): the title is bold gold, the hint small and grey.</summary>
-        public static readonly string[] HeadTitles = { "إطارات الصورة", "خلفية الروم", "خلفيات الدردشة", "فقاعات الدردشة", "فقاعات الدخول", "هدايا", "أوراق الطاولة", "الألقاب", "شحن الكوينز", "حصري الرتب" };
-        public static readonly string[] CategoryHints = { "ترافقك في كل غرفة", "شكل المكان الذي تجلسون فيه", "لون مجلسك", "شكل رسائلك", "ما يظهر للجميع عند دخولك الروم", "أرسلها للاعبين بالغرفة", "شكل ظهر الورق", "تظهر تحت اسمك", "للهدايا والزينة فقط", "كل رتبة لها طقم خاص، يُكسب بالترقية ولا يُشترى" };
+        public static StoreCatalog Catalog => StoreCatalog.Current;
 
-        private static StoreItem I(string name, string art, int idx, int price, Rarity r, string desc, bool owned = false, bool isNew = false, int lockRank = 0, Color? c = null, string text = null)
-            => new StoreItem { name = name, art = art, idx = idx, price = price, rarity = r, desc = desc, owned = owned, isNew = isNew, lockRank = lockRank, c1 = c ?? Color.white, text = text };
+        public const string RankSetsCategory = "rank_sets";
 
-        private static Color H(int hex) => new Color(((hex >> 16) & 255) / 255f, ((hex >> 8) & 255) / 255f, (hex & 255) / 255f, 1f);
-
-        public static List<StoreItem> Items(int category)
+        /// <summary>Tabs in display order (hidden ones left out).</summary>
+        public static List<StoreCategoryDef> Categories()
         {
-            if (category == 9)
-            {
-                var all = new List<StoreItem>();
-                for (int c = 0; c < 8; c++) foreach (var it in Items(c)) if (it.lockRank > 0) all.Add(it);
-                all.Sort((a, b) => a.lockRank.CompareTo(b.lockRank));
-                return all;
-            }
-            var list = Raw(category);
-            for (int i = 0; i < list.Count; i++) list[i].id = "c" + category + "_" + i;
+            var list = new List<StoreCategoryDef>();
+            var c = Catalog;
+            if (c == null) return list;
+            foreach (var cat in c.categories) if (!cat.hidden) list.Add(cat);
             return list;
         }
 
-        private static List<StoreItem> Raw(int category)
+        public static Rarity ToRarity(ItemRarity r) => (Rarity)(int)r;
+
+        public static string ArtOf(StoreArtKind k)
         {
-            switch (category)
+            switch (k)
             {
-                case 0: return new List<StoreItem> {
-                    I("حلقة نحاس", "ring", 1, 250, Rarity.Common, "إطار نحاسي بسيط ونظيف.", owned: true),
-                    I("سلك شائك", "ring", 2, 400, Rarity.Rare, "للّي لا يريد أن يقترب منه أحد."),
-                    I("حبل مضفور", "ring", 3, 400, Rarity.Rare, "حبل قديم من ميناء الحارة."),
-                    I("ذهب ملكي", "ring", 4, 1500, Rarity.Legendary, "ذهب خالص بتوهّج دائم.", lockRank: 4),
-                    I("الجمر", "ring", 5, 1200, Rarity.Epic, "حلقة نارية تتوهّج وتخفت.", isNew: true),
-                    I("فيروز", "ring", 6, 900, Rarity.Epic, "لمعان فيروزي بارد.") };
-                case 1: return new List<StoreItem> {
-                    I("الغرفة الخلفية", "thumb", 0, 0, Rarity.Common, "الغرفة الافتراضية: مصباح واحد وطاولة.", owned: true, c: H(0x6a4a38)),
-                    I("مقهى القهوة", "thumb", 0, 900, Rarity.Rare, "طاولتكم في زاوية مقهى قديم.", c: H(0xa8703a)),
-                    I("سطح المبنى", "thumb", 0, 1200, Rarity.Epic, "سماء مفتوحة وأضواء المدينة تحتكم.", c: H(0x3a4a7a)),
-                    I("الميناء", "thumb", 0, 1500, Rarity.Epic, "ماء أسود وصناديق ورياح باردة.", lockRank: 4, c: H(0x2a5a7a)),
-                    I("القبو", "thumb", 0, 2200, Rarity.Legendary, "جدران طوب وضوء خافت.", lockRank: 6, c: H(0x8a3a2a)) };
-                case 2: return new List<StoreItem> {
-                    I("الغرفة الخلفية", "thumb", 0, 600, Rarity.Rare, "خلفية دردشة بمصباح دافئ.", c: H(0x6a4a38)),
-                    I("رصيف المطر", "thumb", 0, 600, Rarity.Rare, "مطر ليلي على رصيف قديم.", c: H(0x3a5068)),
-                    I("المخبأ", "thumb", 0, 450, Rarity.Common, "جدار طوب وظلال.", owned: true, c: H(0x8a4a3a)),
-                    I("مجلس النحاس", "thumb", 0, 1800, Rarity.Legendary, "مجلس فخم بإضاءة نحاسية.", lockRank: 5, c: H(0xb8883a)),
-                    I("الميناء", "thumb", 0, 900, Rarity.Epic, "سفن ومياه سوداء بالليل.", isNew: true, c: H(0x2a5a7a)),
-                    I("الشرفة", "thumb", 0, 900, Rarity.Epic, "قمر فوق مدينة نائمة.", c: H(0x6a3a6a)) };
-                case 3: return new List<StoreItem> {
-                    I("جلد مخيّط", "bubble", 0, 0, Rarity.Common, "فقاعة جلد بخياطة منقّطة.", owned: true),
-                    I("ورقة ملاحظة", "bubble", 1, 400, Rarity.Rare, "رسائلك تبدو مكتوبة على ورقة."),
-                    I("تذكرة ممزقة", "bubble", 2, 500, Rarity.Rare, "حافة ممزقة وثقبان على الجانبين."),
-                    I("آلة كاتبة", "bubble", 3, 600, Rarity.Rare, "حروف كأنها طُبعت للتو."),
-                    I("لوحة نحاس", "bubble", 4, 800, Rarity.Epic, "كل رسالة لوحة نحاس محفورة."),
-                    I("مخمل قرمزي", "bubble", 5, 1400, Rarity.Legendary, "مخمل قرمزي بحافة نحاسية.", lockRank: 5) };
-                case 4: return new List<StoreItem> {
-                    I("دخول هادئ", "entry", 0, 0, Rarity.Common, "شريط ورقي بسيط باسمك.", owned: true),
-                    I("ثقب الرصاصة", "entry", 1, 700, Rarity.Rare, "شريط فولاذ تخترقه رصاصة."),
-                    I("السجادة الحمراء", "entry", 2, 900, Rarity.Epic, "سجادة قرمزية تُفرش لك."),
-                    I("المصابيح", "entry", 3, 1200, Rarity.Epic, "مصباحا سيارة يكشفان اسمك.", isNew: true),
-                    I("ظل الباب", "entry", 4, 1500, Rarity.Legendary, "ظلّك على الباب وضوء من الداخل.", lockRank: 6) };
-                case 5: return new List<StoreItem> {
-                    I("ساعة الجيب", "gift", 0, 300, Rarity.Common, "هدية للّي ينتظر دوره."),
-                    I("رصاصة ذهبية", "gift", 1, 500, Rarity.Rare, "للّي أصاب الهدف."),
-                    I("الدلّة", "gift", 2, 200, Rarity.Common, "قهوة على حساب الطاولة."),
-                    I("مفتاح الحارة", "gift", 3, 350, Rarity.Rare, "أنت من العائلة."),
-                    I("وردة حمراء", "gift", 4, 800, Rarity.Epic, "بلا كلام."),
-                    I("التاج", "gift", 5, 5000, Rarity.Legendary, "هدية الكبار فقط.", lockRank: 7) };
-                case 6: return new List<StoreItem> {
-                    I("ظهر قرمزي", "card", 0, 350, Rarity.Common, "ورق بظهر قرمزي مزخرف.", owned: true, c: H(0xc0323a)),
-                    I("ليل أزرق", "card", 0, 500, Rarity.Rare, "خطوط رفيعة على أزرق داكن.", c: H(0x3a5a8a)),
-                    I("أخضر النادي", "card", 0, 700, Rarity.Epic, "أخضر جوخ بلمسة نحاس.", c: H(0x2f7a52)),
-                    I("فحم", "card", 0, 700, Rarity.Epic, "أسود كالليل.", isNew: true, c: H(0x3a3a3c)) };
-                case 7: return new List<StoreItem> {
-                    I("كبير الحارة", "plate", 0, 900, Rarity.Legendary, "لقب بلوحة نحاس.", lockRank: 4, text: "كبير الحارة"),
-                    I("صاحب كلمة", "plate", 1, 300, Rarity.Common, "لقب بلوحة جلد.", owned: true, text: "صاحب كلمة"),
-                    I("مشبوه", "plate", 2, 300, Rarity.Common, "لقب بورقة مدبّسة.", text: "مشبوه"),
-                    I("الأستاذ", "plate", 3, 1100, Rarity.Epic, "لقب بإطار نحاسي على مخمل.", text: "الأستاذ") };
-                default: return new List<StoreItem> {
-                    new StoreItem { name = "حفنة كوينز", art = "pack", idx = 1, rarity = Rarity.Common, priceText = "٠٫٩٩ $", desc = "٥٠٠ كوينز للهدايا والزينة فقط." },
-                    new StoreItem { name = "كيس كوينز", art = "pack", idx = 2, rarity = Rarity.Rare, priceText = "١٫٩٩ $", desc = "١٬٢٠٠ كوينز للهدايا والزينة فقط." },
-                    new StoreItem { name = "صندوق كوينز", art = "pack", idx = 3, rarity = Rarity.Epic, priceText = "٤٫٩٩ $", desc = "٣٬٥٠٠ كوينز للهدايا والزينة فقط." },
-                    new StoreItem { name = "خزنة كوينز", art = "pack", idx = 4, rarity = Rarity.Legendary, priceText = "١١٫٩٩ $", desc = "١٠٬٠٠٠ كوينز للهدايا والزينة فقط." } };
+                case StoreArtKind.Frame: return "ring";
+                case StoreArtKind.RoomThumb:
+                case StoreArtKind.ChatBackground: return "thumb";
+                case StoreArtKind.ChatBubble: return "bubble";
+                case StoreArtKind.EntryStrip: return "entry";
+                case StoreArtKind.Gift: return "gift";
+                case StoreArtKind.CardBack: return "card";
+                case StoreArtKind.Title: return "plate";
+                default: return "pack";
             }
+        }
+
+        public static StoreItem From(StoreItemDef d, bool consumable = false) => new StoreItem
+        {
+            id = d.id, categoryId = d.categoryId, name = d.nameAr, desc = d.descAr,
+            price = d.price, priceText = d.priceText, rarity = ToRarity(d.rarity),
+            owned = d.ownedByDefault, isNew = d.isNew, lockRank = d.lockRank,
+            art = ArtOf(d.artKind), idx = d.variant, c1 = d.tint, text = string.IsNullOrEmpty(d.titleText) ? d.nameAr : d.titleText,
+            sprite = d.sprite, equippable = !consumable && d.artKind != StoreArtKind.Gift && d.artKind != StoreArtKind.CoinPack,
+        };
+
+        /// <summary>The items of one category. The rank-exclusive tab gathers every rank-locked item.</summary>
+        public static List<StoreItem> Items(string categoryId)
+        {
+            var list = new List<StoreItem>();
+            var c = Catalog;
+            if (c == null) return list;
+            var cat = c.GetCategory(categoryId);
+            bool consumable = cat != null && !cat.equippable;
+            foreach (var d in c.items)
+                if (d != null && d.categoryId == categoryId) list.Add(From(d, consumable));
+            return list;
+        }
+
+        public static StoreItem Find(string itemId)
+        {
+            var d = Catalog != null ? Catalog.GetItem(itemId) : null;
+            if (d == null) return null;
+            var cat = Catalog.GetCategory(d.categoryId);
+            return From(d, cat != null && !cat.equippable);
         }
     }
 
@@ -142,6 +124,12 @@ namespace MafiaNight.UI.Kit
         public static void Create(StoreItem it, RectTransform parent, KitTheme th)
         {
             for (int i = parent.childCount - 1; i >= 0; i--) UnityEngine.Object.DestroyImmediate(parent.GetChild(i).gameObject);
+            if (it.sprite != null)
+            {
+                // an authored picture replaces the built-in drawing
+                Add(parent, it.sprite, Vector2.zero, new Vector2(220, 220)).color = it.c1;
+                return;
+            }
             switch (it.art)
             {
                 case "ring":

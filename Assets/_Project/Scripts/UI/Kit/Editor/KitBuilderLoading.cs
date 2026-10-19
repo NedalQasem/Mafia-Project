@@ -94,6 +94,29 @@ namespace MafiaNight.UI.Kit.Editor
             SetRef(load, "barFill", fr); SetRef(load, "percent", pct.GetComponent<ArabicText>()); SetRef(load, "phase", phs.GetComponent<ArabicText>());
             SetRef(load, "tip", tip.GetComponent<ArabicText>()); SetRef(load, "enterButton", enter); SetRef(load, "enter", enter.GetComponent<Button>());
 
+            // error state of the boot screen: dark veil, a leather card with the message and a retry button
+            var errPanel = Go("ErrorPanel", screen.transform); Stretch(Rt(errPanel));
+            var veil = errPanel.AddComponent<Image>(); veil.color = new Color(0f, 0f, 0f, 0.78f);
+            var card = Go("Card", errPanel.transform); Place(Rt(card), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(880, 640)); Img(card, th.leatherDark, true, 1.6f, true);
+            var errTitle = Txt(card.transform, "Title", "تعذّر الدخول", th.fontCalligraphy, 84, th.brassLight); Place(Rt(errTitle.gameObject), new Vector2(0.5f, 1f), new Vector2(0, -100), new Vector2(780, 110));
+            var errMsg = Txt(card.transform, "Message", "حدث خطأ", th.fontBody, 40, th.leatherText, TextAlignmentOptions.Center, true); Place(Rt(errMsg.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, 10), new Vector2(760, 230));
+            var retry = InstChild("KitButton_Primary", card.transform, "Retry"); Place(Rt(retry), new Vector2(0.5f, 0f), new Vector2(0, 100), new Vector2(560, 170));
+            retry.GetComponentInChildren<ArabicText>().Text = "حاول مجدداً";
+            errPanel.SetActive(false);
+            SetRef(load, "errorPanel", errPanel); SetRef(load, "errorLabel", errMsg.GetComponent<ArabicText>()); SetRef(load, "retryButton", retry.GetComponent<Button>());
+
+            // prefab for the Bootstrap scene: the same screen on its own overlay canvas, driven from outside (no prototype run)
+            {
+                var bootRoot = new GameObject("BootLoading", typeof(RectTransform));
+                var bc = bootRoot.AddComponent<Canvas>(); bc.renderMode = RenderMode.ScreenSpaceOverlay; bc.sortingOrder = 200;
+                var bs = bootRoot.AddComponent<CanvasScaler>(); bs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; bs.referenceResolution = new Vector2(1080, 2400); bs.matchWidthOrHeight = 0f;
+                bootRoot.AddComponent<GraphicRaycaster>();
+                var clone = Object.Instantiate(screen, bootRoot.transform); clone.name = "LoadingScreen"; Stretch(Rt(clone));
+                var cloneLoad = clone.GetComponent<KitLoadingScreen>();
+                var cso = new SerializedObject(cloneLoad); cso.FindProperty("autoRun").boolValue = false; cso.ApplyModifiedPropertiesWithoutUndo();
+                Save(bootRoot, "BootLoading");
+            }
+
             // show a mid-way frame in the saved scene
             pct.GetComponent<ArabicText>().Text = "٥١٪"; phs.GetComponent<ArabicText>().Text = "نجهّز الطاولة...";
             fr.anchorMin = new Vector2(0.49f, 0); fr.anchorMax = new Vector2(1, 1);

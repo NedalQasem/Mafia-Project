@@ -421,9 +421,9 @@ namespace MafiaNight.UI.Kit.Editor
             var avPic = avGo.transform.Find("Avatar");
             if (avPic != null) { var ar = (RectTransform)avPic; ar.offsetMin = new Vector2(48, 48); ar.offsetMax = new Vector2(-48, -48); }
             var lvl = Go("Level", medal.transform);
-            Place(Rt(lvl), new Vector2(0.5f, 0f), new Vector2(-16, 4), new Vector2(60, 60));
+            Place(Rt(lvl), new Vector2(0.5f, 0f), new Vector2(0, 14), new Vector2(84, 84));
             Img(lvl, th.levelSeal);
-            var lvlTxt = Txt(lvl.transform, "N", "٧", th.fontHeading, 30, th.brassText);
+            var lvlTxt = Txt(lvl.transform, "N", "م٧", th.fontHeading, 38, th.brassText);
             Stretch(Rt(lvlTxt.gameObject), 0, 3, 0, 0);
 
             var nm = Txt(tag.transform, "Name", "أبو سالم", th.fontCalligraphy, 62, th.paperInk, TextAlignmentOptions.MidlineRight);
@@ -792,6 +792,7 @@ namespace MafiaNight.UI.Kit.Editor
 
             var bg = Go("Background", canvasGo.transform); Stretch(Rt(bg));
             var bgi = bg.AddComponent<Image>(); bgi.color = new Color(0.075f, 0.055f, 0.045f); bgi.raycastTarget = false;
+            canvasGo = MakeSafeRoot(canvasGo, true);   // everything below is built inside the safe area
 
             // ---- rooms screen (between top bar and nav bar)
             var screen = Go("RoomsScreen", canvasGo.transform); Stretch(Rt(screen));

@@ -41,6 +41,15 @@ namespace MafiaNight.UI.Kit
             priceTag.SetActive(!it.owned && !locked);
             priceLabel.Text = string.IsNullOrEmpty(it.priceText) ? CoinPill.Format(it.price) : it.priceText;
             ownedStamp.SetActive(it.owned);
+            if (it.owned)
+            {
+                // worn items say so in gold; the others carry the teal "yours" stamp
+                Color gold = new Color32(0xF5, 0xD0, 0x70, 255);
+                var stampText = ownedStamp.GetComponentInChildren<ArabicText>(true);
+                if (stampText != null) { stampText.Text = it.equipped ? "مفعّل" : "ملكك"; stampText.GetComponent<TMPro.TMP_Text>().color = it.equipped ? gold : th.teal; }
+                var stampImg = ownedStamp.GetComponent<Image>();
+                if (stampImg != null) stampImg.color = it.equipped ? gold : th.teal;
+            }
             newFlag.SetActive(it.isNew && !it.owned);
             lockBadge.SetActive(locked);
             if (locked) lockLabel.Text = "رتبة " + KitTheme.RankNames[Mathf.Clamp(it.lockRank - 1, 0, 7)];

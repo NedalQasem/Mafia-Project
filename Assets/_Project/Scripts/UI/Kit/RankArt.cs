@@ -18,7 +18,31 @@ namespace MafiaNight.UI.Kit
 
         private static Color H(int hex) => new Color(((hex >> 16) & 255) / 255f, ((hex >> 8) & 255) / 255f, (hex & 255) / 255f, 1f);
 
-        public static readonly RankSetInfo[] All =
+        private static RankSetInfo[] fromCatalog;
+        private static MafiaNight.Data.Store.StoreCatalog fromCatalogSource;
+
+        /// <summary>The rank sets of the store catalog; the built-in list when the catalog has none.</summary>
+        public static RankSetInfo[] All
+        {
+            get
+            {
+                var cat = MafiaNight.Data.Store.StoreCatalog.Current;
+                if (cat == null || cat.rankSets == null || cat.rankSets.Count == 0) return Defaults;
+                if (fromCatalog == null || fromCatalogSource != cat || fromCatalog.Length != cat.rankSets.Count)
+                {
+                    fromCatalogSource = cat;
+                    fromCatalog = new RankSetInfo[cat.rankSets.Count];
+                    for (int i = 0; i < fromCatalog.Length; i++)
+                    {
+                        var d = cat.rankSets[i];
+                        fromCatalog[i] = new RankSetInfo { name = d.rankNameAr, m1 = d.m1, m2 = d.m2, e = d.e, items = d.itemNames };
+                    }
+                }
+                return fromCatalog;
+            }
+        }
+
+        public static readonly RankSetInfo[] Defaults =
         {
             new RankSetInfo { name = "الصبي", m1 = H(0x8a6a4a), m2 = H(0x5a4330), e = H(0xe0c2a0), items = new[] { "حبل الصبي", "زقاق الحارة", "ورقة جريدة", "خطوات على الرصيف", "ابن الحارة" } },
             new RankSetInfo { name = "العميل", m1 = H(0x9aa0a4), m2 = H(0x4d5254), e = H(0xe6ebee), items = new[] { "حلقة المفتاح", "مكتب صغير", "بطاقة عمل", "طرقة على الباب", "المطّلع" } },

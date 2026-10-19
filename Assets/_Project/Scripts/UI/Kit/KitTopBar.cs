@@ -26,14 +26,46 @@ namespace MafiaNight.UI.Kit
             if (profileButton != null) profileButton.onClick.AddListener(() => OnProfileClicked?.Invoke());
         }
 
-        public void SetPlayer(string playerName, string title, int level, int rankIndex, float xp01, int coinValue, bool animateCoins = false)
+        public void SetPlayer(string playerName, string title, int level, int rankIndex, float xp01, int coinValue, bool animateCoins = false, Sprite frame = null)
         {
             if (nameLabel != null) nameLabel.Text = playerName;
             if (titleLabel != null) titleLabel.Text = title;
-            if (levelLabel != null) levelLabel.Text = CoinPill.Format(level);
-            if (avatar != null) avatar.Set(rankIndex);
+            if (levelLabel != null) levelLabel.Text = "م" + CoinPill.Format(level);
+            if (avatar != null) { avatar.Set(rankIndex); avatar.SetFrame(frame); }
+            LayoutXpRing(frame != null);
             SetXp(xp01);
             if (coins != null) coins.SetValue(coinValue, animateCoins);
+        }
+
+        /// <summary>
+        /// Without a store frame the XP ring sits behind the avatar, inside the rank bezel. With one, the picture fills the frame,
+        /// so the ring moves onto the picture's rim (above it) in a brighter colour and stays visible.
+        /// </summary>
+        private void LayoutXpRing(bool framed)
+        {
+            if (xpRing == null) return;
+            var medal = xpRing.transform.parent;
+            var track = medal.Find("XpTrack") as RectTransform;
+            var ringRt = (RectTransform)xpRing.transform;
+            float size = framed ? 175f : 152f;
+            ringRt.sizeDelta = new Vector2(size, size);
+            if (track != null) track.sizeDelta = new Vector2(size, size);
+            var level = medal.Find("Level");
+            if (framed)
+            {
+                if (track != null) track.SetAsLastSibling();
+                ringRt.SetAsLastSibling();
+                if (level != null) level.SetAsLastSibling();
+                xpRing.color = new Color32(0xF5, 0xD0, 0x70, 255);
+                if (track != null) { var ti = track.GetComponent<Image>(); if (ti != null) ti.color = new Color(1f, 1f, 1f, 0.22f); }
+            }
+            else
+            {
+                if (track != null) track.SetSiblingIndex(1);
+                ringRt.SetSiblingIndex(2);
+                xpRing.color = new Color32(0xD2, 0xAD, 0x60, 255);
+                if (track != null) { var ti = track.GetComponent<Image>(); if (ti != null) ti.color = new Color(1f, 1f, 1f, 0.12f); }
+            }
         }
 
         public void SetXp(float xp01)
