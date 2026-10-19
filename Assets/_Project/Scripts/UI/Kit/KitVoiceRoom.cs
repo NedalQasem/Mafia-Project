@@ -21,6 +21,9 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private int seatCount = 10;
 
         public event Action OnBack;
+        public event Action OnInvite;
+        /// <summary>Off with real rooms: the "who is talking" animation is only for the prototype.</summary>
+        public bool SimulateSpeaking = true;
         public bool MicOn { get; private set; } = true;
 
         private readonly List<SeatView> seats = new List<SeatView>();
@@ -32,6 +35,7 @@ namespace MafiaNight.UI.Kit
         {
             if (backButton != null) backButton.onClick.AddListener(() => OnBack?.Invoke());
             if (micButton != null) micButton.onClick.AddListener(ToggleMic);
+            if (inviteButton != null) inviteButton.onClick.AddListener(() => OnInvite?.Invoke());
         }
 
         public void ToggleMic()
@@ -54,6 +58,17 @@ namespace MafiaNight.UI.Kit
             BuildSeats(false);
             ApplyMic();
             gameObject.SetActive(true);
+        }
+
+        /// <summary>Opens (or refreshes) a real room: one seat per capacity place.</summary>
+        public void Show(string name, string sub, IList<SeatInfo> seatInfos, int capacity)
+        {
+            seatCount = Mathf.Clamp(capacity, 2, 16);
+            SimulateSpeaking = false;
+            bool wasOpen = gameObject.activeSelf;
+            Open(name, sub, seatInfos);
+            if (speakerLabel != null) speakerLabel.Text = "";
+            if (!wasOpen) ApplyMic();
         }
 
         /// <summary>Edit-mode build used by the scene builder.</summary>
@@ -91,7 +106,7 @@ namespace MafiaNight.UI.Kit
 
         private void Update()
         {
-            if (!Application.isPlaying || infos == null || seats.Count == 0) return;
+            if (!SimulateSpeaking || !Application.isPlaying || infos == null || seats.Count == 0) return;
             if (Time.unscaledTime < nextSpeakAt) return;
             nextSpeakAt = Time.unscaledTime + 2.6f;
             if (speaker >= 0 && speaker < seats.Count) seats[speaker].SetTalking(false);

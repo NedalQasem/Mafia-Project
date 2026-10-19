@@ -36,6 +36,13 @@ namespace MafiaNight.UI.Kit
 
         private void Start()
         {
+            if (KitLiveMode.Active)
+            {
+                // real services drive this screen (see KitAppBinder / RoomsFlow): only the bars are wired here
+                topBar.OnProfileClicked += card.Show;
+                navBar.SnapToSelected();
+                return;
+            }
             topBar.SetPlayer("أبو سالم", "صاحب كلمة", 7, 2, 0.62f, 1250);
             card.SetPlayer("أبو سالم", "صاحب كلمة", 7, 2, 0.62f, 620, 1000, 34, 12);
             card.SetRoles(15, 5, 7, 7);

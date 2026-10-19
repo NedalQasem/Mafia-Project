@@ -9,6 +9,7 @@ namespace MafiaNight.UI.Kit
     [Serializable]
     public class RoomInfo
     {
+        public string id = "";             // EOS lobby id (empty for mock rooms)
         public string name = "غرفة";
         public string owner = "أبو سالم";
         public int ownerRank = 2;
@@ -58,6 +59,8 @@ namespace MafiaNight.UI.Kit
             nameLabel.Text = info.name;
             ownerLabel.Text = info.owner + " · المستوى " + CoinPill.Format(info.ownerLevel);
             countLabel.Text = CoinPill.Format(info.count);
+            var ofLabel = countLabel.transform.parent != null ? countLabel.transform.parent.Find("Of") : null;
+            if (ofLabel != null) { var of = ofLabel.GetComponent<ArabicText>(); if (of != null) of.Text = "من " + CoinPill.Format(info.capacity); }
 
             for (int i = 0; i < seatDots.Length; i++)
             {

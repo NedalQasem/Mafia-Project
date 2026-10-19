@@ -12,10 +12,13 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private GameObject roomCardPrefab;
         [SerializeField] private Button quickJoinButton;
         [SerializeField] private Button createButton;
+        [SerializeField] private Button codeButton;
+        [SerializeField] private GameObject emptyNote;
 
         public event Action<RoomInfo> OnJoinRoom;
         public event Action OnQuickJoin;
         public event Action OnCreateRoom;
+        public event Action OnEnterCode;
 
         private readonly List<RoomCardView> cards = new List<RoomCardView>();
 
@@ -23,12 +26,14 @@ namespace MafiaNight.UI.Kit
         {
             if (quickJoinButton != null) quickJoinButton.onClick.AddListener(() => OnQuickJoin?.Invoke());
             if (createButton != null) createButton.onClick.AddListener(() => OnCreateRoom?.Invoke());
+            if (codeButton != null) codeButton.onClick.AddListener(() => OnEnterCode?.Invoke());
         }
 
         public void SetRooms(IList<RoomInfo> rooms)
         {
             for (int i = content.childCount - 1; i >= 0; i--) Destroy(content.GetChild(i).gameObject);
             cards.Clear();
+            if (emptyNote != null) emptyNote.SetActive(rooms.Count == 0);
             foreach (var r in rooms)
             {
                 var go = Instantiate(roomCardPrefab, content);

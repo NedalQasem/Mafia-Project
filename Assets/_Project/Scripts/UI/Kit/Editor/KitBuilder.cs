@@ -40,6 +40,7 @@ namespace MafiaNight.UI.Kit.Editor
             BuildTopBar(theme);
             BuildProfileCard(theme);
             BuildRoomPrefabs(theme);
+            BuildCreateRoomPrefabs(theme);
             BuildStore(theme);
             BuildLeaderboards(theme);
             BuildChat(theme);
@@ -885,6 +886,8 @@ namespace MafiaNight.UI.Kit.Editor
             SetRef(room, "micIcon", micIconImg); SetRef(room, "micSeal", micSeal);
             room.BuildSeatsImmediate(KitRoomsDemo.MockSeats());
             vr.SetActive(false);
+
+            AddRoomsFlowUi(canvasGo, th, screen, rs);
 
             var demo = canvasGo.AddComponent<KitRoomsDemo>();
             SetRef(demo, "topBar", top.GetComponent<KitTopBar>()); SetRef(demo, "navBar", nav.GetComponent<KitNavBar>());

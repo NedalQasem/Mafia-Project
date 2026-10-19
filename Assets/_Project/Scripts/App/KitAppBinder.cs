@@ -48,12 +48,19 @@ namespace MafiaNight.App
             new GameObject("KitAppBinder").AddComponent<KitAppBinder>();
         }
 
+        private void Awake()
+        {
+            // the prototype wirings of the kit scenes (mock rooms, mock seats) step aside while the real services run
+            KitLiveMode.Active = ServiceLocator.IsRegistered<IPlayerProfileService>() && ServiceLocator.IsRegistered<ICurrencyService>();
+        }
+
         private void Start()
         {
             topBar = FindAnyObjectByType<KitTopBar>();
             navBar = FindAnyObjectByType<KitNavBar>();
             if (!ServiceLocator.TryGet(out profile) || !ServiceLocator.TryGet(out currency))
             {
+                KitLiveMode.Active = false;
                 Log.Info("Services not available - screen stays in demo mode", Tag);
                 Destroy(gameObject);
                 return;
@@ -69,6 +76,7 @@ namespace MafiaNight.App
             if (navBar != null) navBar.OnTabSelected += OnTab;
             if (storeService != null) storeService.OnChanged += OnStoreChanged;
             if (store != null) WireStore();
+            if (FindAnyObjectByType<KitRoomsScreen>() != null && ServiceLocator.IsRegistered<MafiaNight.Services.Rooms.IRoomService>()) gameObject.AddComponent<RoomsFlow>();
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
             if (lb != null) lb.OnBack += GoHome;
             header = FindAnyObjectByType<KitScreenHeader>();
