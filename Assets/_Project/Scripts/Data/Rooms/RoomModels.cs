@@ -39,6 +39,7 @@ namespace MafiaNight.Data.Rooms
         public RoomMode Mode;
         public string Code = "";          // private rooms
         public bool InMatch;              // a mafia round is running
+        public bool Locked;               // the host closed the door: nobody new can join (the creator always can)
         public bool ChatEnabled = true;
         public string BackgroundId = "";
         public long CreatedUnix;

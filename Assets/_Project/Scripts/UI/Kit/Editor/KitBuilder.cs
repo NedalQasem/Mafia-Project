@@ -883,9 +883,10 @@ namespace MafiaNight.UI.Kit.Editor
             var room = vr.AddComponent<KitVoiceRoom>();
             SetRef(room, "seatsRoot", Rt(seatsRoot)); SetRef(room, "seatPrefab", LoadPrefab("Seat"));
             SetRef(room, "roomName", rname.GetComponent<ArabicText>()); SetRef(room, "roomSub", rsub.GetComponent<ArabicText>()); SetRef(room, "speakerLabel", spk.GetComponent<ArabicText>());
-            SetRef(room, "backButton", back.GetComponent<Button>()); SetRef(room, "inviteButton", invite.GetComponent<Button>());
-            SetRef(room, "micButton", micBtn); SetRef(room, "readyButton", ready.GetComponent<Button>());
+            SetRef(room, "backButton", back.GetComponent<Button>()); SetRef(room, "inviteButton", invite.GetComponent<Button>());            SetRef(room, "micButton", micBtn); SetRef(room, "readyButton", ready.GetComponent<Button>());
             SetRef(room, "micIcon", micIconImg); SetRef(room, "micSeal", micSeal);
+            var hostDrawer = BuildHostDrawer(vr.transform, th);   // last child: drawn above everything in the room
+            SetRef(room, "hostDrawer", hostDrawer);
             room.BuildSeatsImmediate(KitRoomsDemo.MockSeats());
             vr.SetActive(false);
 

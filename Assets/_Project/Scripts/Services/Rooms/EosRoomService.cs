@@ -24,7 +24,7 @@ namespace MafiaNight.Services.Rooms
         // lobby attributes
         private const string KName = "name", KType = "room_type", KMode = "mode", KLang = "lang", KCode = "code";
         private const string KOwnerName = "owner_name", KOwnerLevel = "owner_level", KOwnerRank = "owner_rank", KOwnerPf = "owner_pf";
-        private const string KInMatch = "in_match", KChat = "chat", KBackground = "bg", KCreated = "created";
+        private const string KLocked = "locked", KInMatch = "in_match", KChat = "chat", KBackground = "bg", KCreated = "created";
         // member attributes
         private const string MName = "name", MRank = "rank", MLevel = "level", MPf = "pf";
 
@@ -151,6 +151,7 @@ namespace MafiaNight.Services.Rooms
                 Mode = Str(d, KMode) == "mafia" ? RoomMode.Mafia : RoomMode.Hangout,
                 Code = Str(d, KCode) ?? "",
                 InMatch = Int(d, KInMatch) == 1,
+                Locked = Int(d, KLocked) == 1,
                 ChatEnabled = Int(d, KChat, 1) == 1,
                 BackgroundId = Str(d, KBackground) ?? "",
                 CreatedUnix = Int(d, KCreated),
@@ -258,6 +259,7 @@ namespace MafiaNight.Services.Rooms
             {
                 if (!IsOk(result)) { done(RoomResult.Fail(RoomError.Failed, result.ToString())); return; }
                 var rooms = Absorb(details);
+                rooms.RemoveAll(r => r.Locked);   // locked rooms are not offered
                 // VIP rooms first, then the fullest (the list is for people who want company)
                 rooms.Sort((a, b) =>
                 {
@@ -331,6 +333,7 @@ namespace MafiaNight.Services.Rooms
             AddInt(m, KOwnerLevel, MyLevel);
             AddInt(m, KOwnerRank, MyRank);
             AddInt(m, KInMatch, 0);
+            AddInt(m, KLocked, 0);
             AddInt(m, KChat, s.ChatEnabled ? 1 : 0);
             AddStr(m, KBackground, s.BackgroundId);
             AddInt(m, KCreated, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
@@ -399,6 +402,8 @@ namespace MafiaNight.Services.Rooms
             var room = Parse(details);
             if (room == null) { done(RoomResult.Fail(RoomError.NotFound)); return; }
             if (room.IsFull) { done(RoomResult.Fail(RoomError.Full)); return; }
+            // a locked room still lets its creator back in (they get the host role back)
+            if (room.Locked && (string.IsNullOrEmpty(room.OwnerPlayFabId) || room.OwnerPlayFabId != MyPf)) { done(RoomResult.Fail(RoomError.Locked)); return; }
             if (!Allow()) { done(RoomResult.Fail(RoomError.Busy)); return; }
 
             LeaveCurrent(() =>
@@ -585,6 +590,28 @@ namespace MafiaNight.Services.Rooms
             ClearCurrent();
             OnRoomLeft?.Invoke("");
             LeaveLobbyNow(id, successor, done);
+        }
+
+        public void SetLocked(bool locked, Action<bool> done = null) => SetFlag(KLocked, locked, r => r.Locked = locked, done);
+
+        public void SetChatEnabled(bool enabled, Action<bool> done = null) => SetFlag(KChat, enabled, r => r.ChatEnabled = enabled, done);
+
+        /// <summary>Host only: writes a 0/1 lobby attribute and mirrors it into the local room on success.</summary>
+        private void SetFlag(string key, bool value, Action<RoomListing> apply, Action<bool> done)
+        {
+            if (CurrentRoom == null || !IAmHost || !Ready()) { done?.Invoke(false); return; }
+            string id = CurrentRoom.Id;
+            var uo = new UpdateLobbyModificationOptions { LocalUserId = Me, LobbyId = id };
+            if (!IsOk(Lobby.UpdateLobbyModification(ref uo, out LobbyModification m)) || m == null) { done?.Invoke(false); return; }
+            AddInt(m, key, value ? 1 : 0);
+            var upd = new UpdateLobbyOptions { LobbyModificationHandle = m };
+            Lobby.UpdateLobby(ref upd, null, (ref UpdateLobbyCallbackInfo data) =>
+            {
+                m.Release();
+                bool ok = IsOk(data.ResultCode);
+                if (ok && CurrentRoom != null && CurrentRoom.Id == id) { apply(CurrentRoom); OnRoomChanged?.Invoke(); }
+                done?.Invoke(ok);
+            });
         }
 
         public void Kick(string puid, Action<bool> done = null)

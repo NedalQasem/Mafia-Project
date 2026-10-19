@@ -62,6 +62,12 @@ namespace MafiaNight.App
             {
                 voice.OnBack += OnVoiceBack;
                 voice.OnInvite += OnInvite;
+                if (voice.HostDrawer != null)
+                {
+                    voice.HostDrawer.OnLockChanged += OnLock;
+                    voice.HostDrawer.OnChatChanged += OnChat;
+                    voice.HostDrawer.OnKick += OnKick;
+                }
                 voice.OnMicChanged += on => { if (audio != null) audio.SetMic(on); };
                 voice.OnSeatClicked += OnSeat;
             }
@@ -219,6 +225,7 @@ namespace MafiaNight.App
             var room = rooms.CurrentRoom;
             if (voice == null || room == null) return;
             voice.Show(room.Name, SubText(room), Seats(), room.Capacity);
+            RefreshDrawer();
             voice.PushToTalk = VoicePrefs.PushToTalk;
             voice.SetMicState(audio == null || audio.MicOn);
             JoinVoice();
@@ -289,6 +296,50 @@ namespace MafiaNight.App
             voice.gameObject.SetActive(false);
             if (audio != null) audio.Leave();
             rooms.Leave(() => { nextList = 0f; });
+        }
+
+        // ---------------------------------------------------------------------------- host drawer
+
+        private void RefreshDrawer()
+        {
+            var room = rooms.CurrentRoom;
+            if (voice == null || voice.HostDrawer == null || room == null) return;
+            var list = new List<DrawerMember>();
+            foreach (var m in rooms.Members) list.Add(new DrawerMember { puid = m.Puid, name = m.Name, isHost = m.IsHost, isMe = m.IsMe });
+            voice.HostDrawer.Refresh(rooms.IAmHost, room.Locked, room.ChatEnabled, list);
+        }
+
+        private void OnLock(bool locked)
+        {
+            rooms.SetLocked(locked, ok =>
+            {
+                if (this == null) return;
+                if (!ok) { Say("تعذّر تغيير حالة الغرفة، حاول مرة ثانية."); RefreshDrawer(); return; }
+                Say(locked ? "قفلت الغرفة. ما حدا بيقدر يدخل." : "فتحت الغرفة من جديد.");
+                nextList = 0f;
+            });
+        }
+
+        private void OnChat(bool on)
+        {
+            rooms.SetChatEnabled(on, ok =>
+            {
+                if (this == null) return;
+                if (!ok) { Say("تعذّر تغيير حالة الدردشة، حاول مرة ثانية."); RefreshDrawer(); return; }
+                Say(on ? "فتحت الدردشة." : "سكّرت الدردشة.");
+            });
+        }
+
+        private void OnKick(string puid)
+        {
+            string who = "اللاعب";
+            foreach (var m in rooms.Members) if (m.Puid == puid) { who = m.Name; break; }
+            rooms.Kick(puid, ok =>
+            {
+                if (this == null) return;
+                Say(ok ? "طردت " + who + " من الغرفة." : "تعذّر طرد " + who + ".");
+                RefreshDrawer();
+            });
         }
 
         private void OnInvite()

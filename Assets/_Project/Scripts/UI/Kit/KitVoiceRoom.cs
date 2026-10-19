@@ -26,6 +26,7 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private GameObject seatPrefab;
         [SerializeField] private ArabicText roomName, roomSub, speakerLabel;
         [SerializeField] private Button backButton, inviteButton, micButton, readyButton;
+        [SerializeField] private KitHostDrawer hostDrawer;
         [SerializeField] private Image micIcon;
         [SerializeField] private Image micSeal;
         [SerializeField] private Vector2 radius = new Vector2(430f, 610f);
@@ -40,6 +41,9 @@ namespace MafiaNight.UI.Kit
         public bool MicOn { get; private set; } = true;
         /// <summary>Push-to-talk: the mic is open only while the mic button is held (set by the app layer from the settings).</summary>
         public bool PushToTalk { get; set; }
+
+        /// <summary>The host's control panel (lock, chat, kick).</summary>
+        public KitHostDrawer HostDrawer => hostDrawer;
 
         private readonly List<SeatView> seats = new List<SeatView>();
         private IList<SeatInfo> infos;

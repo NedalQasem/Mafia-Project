@@ -15,6 +15,7 @@ namespace MafiaNight.Services.Rooms
         Full,
         NoRooms,         // quick join found nothing
         Busy,            // too many requests per minute
+        Locked,          // the host locked the room
         Failed,
     }
 
@@ -43,6 +44,7 @@ namespace MafiaNight.Services.Rooms
                 case RoomError.Full: return "الغرفة ممتلئة.";
                 case RoomError.NoRooms: return "ما في غرف فيها مكان الآن. افتح طاولتك!";
                 case RoomError.Busy: return "كثرت الطلبات. استنى شوي وجرّب.";
+                case RoomError.Locked: return "الغرفة مقفلة، ما بتقبل لاعبين جدد.";
                 default: return "صار خطأ، حاول مرة ثانية.";
             }
         }
@@ -83,5 +85,9 @@ namespace MafiaNight.Services.Rooms
         void Leave(Action done = null);
         /// <summary>Host only.</summary>
         void Kick(string puid, Action<bool> done = null);
+        /// <summary>Host only: a locked room hides from the list and refuses new players (its creator can still come back).</summary>
+        void SetLocked(bool locked, Action<bool> done = null);
+        /// <summary>Host only: turns the room's text chat on or off.</summary>
+        void SetChatEnabled(bool enabled, Action<bool> done = null);
     }
 }
