@@ -204,6 +204,8 @@ namespace MafiaNight.Services.Auth
                 string message = $"{logMessage.Category}: {logMessage.Message}";
                 // Expected on every launch after the first (DeviceID already created) - not an error
                 if (message.Contains("DeviceId access credentials already exist")) { Log.Info(message, Tag); return; }
+                // The RTC control channel drops (1006) when a lobby with a voice room is left, closed, or play mode stops: a warning, not a failure
+                if (message.Contains("LogEOSRTC") && message.Contains("Control channel closed")) { Log.Warning(message, Tag); return; }
                 if (logMessage.Level <= LogLevel.Error) Log.Error(message, Tag);
                 else if (logMessage.Level == LogLevel.Warning) Log.Warning(message, Tag);
                 else Log.Info(message, Tag);

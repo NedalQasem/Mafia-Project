@@ -81,6 +81,15 @@ namespace MafiaNight.Data.Rooms
             return new string(chars);
         }
 
+        /// <summary>The text people paste in WhatsApp. There is no link yet (it needs the store listing), so it says where to type the code.</summary>
+        public static string InviteText(string code, string roomName)
+        {
+            const string head = "تعال نسهر بلعبة المافيا!";
+            if (!string.IsNullOrEmpty(code))
+                return head + "\nافتح اللعبة واضغط «عندك كود غرفة؟» واكتب الكود: " + code;
+            return head + "\nادخل غرفة «" + roomName + "» من قائمة الغرف.";
+        }
+
         public static string NormalizeCode(string input)
         {
             if (string.IsNullOrEmpty(input)) return "";

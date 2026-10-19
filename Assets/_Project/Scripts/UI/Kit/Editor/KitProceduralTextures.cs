@@ -259,6 +259,8 @@ namespace MafiaNight.UI.Kit.Editor
                     s.spriteBorder = new Vector4(24, 24, 24, 24);
                 else if (name == "reset_pill")
                     s.spriteBorder = new Vector4(30, 30, 30, 30);
+                else if (name == "type_on" || name == "type_off" || name == "seg_on" || name == "seg_bar")
+                    s.spriteBorder = new Vector4(40, 40, 40, 40);
                 else if (name == "cat_on" || name == "cat_off")
                     s.spriteBorder = new Vector4(30, 30, 30, 30);
                 else if (name == "sheet_bg")

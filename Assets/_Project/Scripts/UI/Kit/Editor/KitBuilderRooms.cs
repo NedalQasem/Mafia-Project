@@ -143,15 +143,20 @@ namespace MafiaNight.UI.Kit.Editor
             var types = LayoutChild("Types", c2.transform, 200);
             var ht = types.AddComponent<HorizontalLayoutGroup>(); ht.reverseArrangement = true; ht.spacing = 14; ht.childControlWidth = true; ht.childControlHeight = true; ht.childForceExpandWidth = true; ht.childForceExpandHeight = true;
             string[] tn = { "عامة", "خاصة", "VIP" }; string[] ts = { "تظهر للجميع", "بكود أو دعوة", "شكل مميّز" };
-            var typeBtns = new Button[3]; var typeSubs = new ArabicText[3];
+            var typeBtns = new Button[3]; var typeSubs = new ArabicText[3]; var typeIcons = new Image[3]; var typeLocks = new Image[3];
+            Sprite[] typeIconSprites = { th.iconGlobe, th.iconKey, th.iconCrown };
             for (int i = 0; i < 3; i++)
             {
                 var g = Go("Type_" + tn[i], types.transform);
-                var img = Img(g, th.slotDark, true, 2f, true);
+                var img = Img(g, th.typeOff, true, 3f, true); img.preserveAspect = false;
                 var b = g.AddComponent<Button>(); b.targetGraphic = img; b.transition = Selectable.Transition.None; typeBtns[i] = b;
                 var fx = g.AddComponent<KitButtonFx>(); SetRef(fx, "face", Rt(g));
-                var n = Txt(g.transform, "Name", tn[i], th.fontHeading, 48, th.ivoryDim); Place(Rt(n.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, 28), new Vector2(300, 70));
-                var s = Txt(g.transform, "Sub", ts[i], th.fontBody, 26, th.ivoryDim); Place(Rt(s.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -44), new Vector2(300, 44));
+                var ic = Go("Icon", g.transform); Place(Rt(ic), new Vector2(0.5f, 0.5f), new Vector2(0, 54), new Vector2(66, 66));
+                typeIcons[i] = Img(ic, typeIconSprites[i]); typeIcons[i].raycastTarget = false;
+                var lk = Go("Lock", g.transform); Place(Rt(lk), new Vector2(0f, 1f), new Vector2(30, -30), new Vector2(34, 34));
+                typeLocks[i] = Img(lk, th.iconLock); typeLocks[i].raycastTarget = false; typeLocks[i].color = new Color32(0xB9, 0xA6, 0x7E, 255); lk.SetActive(false);
+                var n = Txt(g.transform, "Name", tn[i], th.fontHeading, 46, th.ivoryDim); Place(Rt(n.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -14), new Vector2(300, 60));
+                var s = Txt(g.transform, "Sub", ts[i], th.fontBody, 25, th.ivoryDim); Place(Rt(s.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -64), new Vector2(300, 40));
                 typeSubs[i] = s.GetComponent<ArabicText>();
             }
             var hint = LayoutChild("Hint", c2.transform, 160);
@@ -162,12 +167,12 @@ namespace MafiaNight.UI.Kit.Editor
             // ---- card 3: mode
             var c3 = MakeRoomCard(content.transform, th, "شو بدكم تعملوا؟", null, out _);
             var segRow = LayoutChild("Mode", c3.transform, 112);
-            Img(segRow, th.slotDark, true, 1.8f);
+            Img(segRow, th.segBar, true, 2.4f);
             var hl = segRow.AddComponent<HorizontalLayoutGroup>(); hl.reverseArrangement = true; hl.padding = new RectOffset(10, 10, 10, 10); hl.spacing = 8; hl.childControlWidth = true; hl.childControlHeight = true; hl.childForceExpandWidth = true; hl.childForceExpandHeight = true;
             string[] modes = { "سهرة وحكي", "مباراة مافيا" }; var modeBtns = new Button[2];
             for (int i = 0; i < 2; i++)
             {
-                var o = Go("Opt" + i, segRow.transform); var oi = Img(o, th.brassPlate, true, 2.6f, true); oi.color = new Color(1, 1, 1, 0);
+                var o = Go("Opt" + i, segRow.transform); var oi = Img(o, th.segOn, true, 2.6f, true); oi.color = new Color(1, 1, 1, 0);
                 var ob = o.AddComponent<Button>(); ob.targetGraphic = oi; ob.transition = Selectable.Transition.None; modeBtns[i] = ob;
                 var ot = Txt(o.transform, "T", modes[i], th.fontHeading, 34, th.ivoryDim); Stretch(Rt(ot.gameObject), 4, 6, 4, 8);
             }
@@ -232,25 +237,42 @@ namespace MafiaNight.UI.Kit.Editor
             sBack.GetComponentInChildren<ArabicText>().Text = "رجوع"; sBack.GetComponentInChildren<TextMeshProUGUI>().fontSize = 44;
             var sTitle = Txt(ok.transform, "Title", "الطاولة جاهزة", th.fontHeading, 76, th.leatherText, TextAlignmentOptions.MidlineRight);
             Place(Rt(sTitle.gameObject), new Vector2(1, 1), new Vector2(-620, -128), new Vector2(560, 100));
-            var ticket = Go("Ticket", ok.transform); PlaceTop(Rt(ticket), 0, -330, 960, 640);
-            Img(ticket, th.paper, true, 2.2f); ticket.transform.localRotation = Quaternion.Euler(0, 0, -1.2f);
-            var tKind = Txt(ticket.transform, "Kind", "غرفة خاصة", th.fontBody, 32, new Color32(0x6A, 0x5A, 0x3A, 255)); Place(Rt(tKind.gameObject), new Vector2(0.5f, 1f), new Vector2(0, -70), new Vector2(800, 48));
-            var tName = Txt(ticket.transform, "Name", "سهرة الأصحاب", th.fontCalligraphy, 88, th.paperInk); Place(Rt(tName.gameObject), new Vector2(0.5f, 1f), new Vector2(0, -160), new Vector2(860, 120));
-            var tCode = Txt(ticket.transform, "Code", "K7Q2", th.fontHeading, 190, th.crimson); tCode.characterSpacing = 40; Place(Rt(tCode.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -30), new Vector2(860, 240));
-            var tNote = Txt(ticket.transform, "Note", "الكود بيدخّل أي لاعب.", th.fontBody, 30, new Color32(0x6A, 0x5A, 0x3A, 255), TextAlignmentOptions.Center, true); Place(Rt(tNote.gameObject), new Vector2(0.5f, 0f), new Vector2(0, 66), new Vector2(860, 80));
+            // the red "ready" stamp above the ticket
+            var stamp = Go("Stamp", ok.transform); PlaceTop(Rt(stamp), 0, -230, 560, 170);
+            var sti = Img(stamp, th.stampFrame, true, 1f); sti.color = new Color32(0xE0, 0x58, 0x5F, 255); sti.raycastTarget = false;
+            stamp.transform.localRotation = Quaternion.Euler(0, 0, 6f);
+            var stt = Txt(stamp.transform, "T", "جاهزة", th.fontCalligraphy, 130, new Color32(0xE0, 0x58, 0x5F, 255)); Stretch(Rt(stt.gameObject), 8, 10, 8, 24);
 
-            Button ShareBtn(string name, string label, float x)
+            // the paper ticket: a red bookmark on the corner, dashed lines around the code
+            var ticket = Go("Ticket", ok.transform); PlaceTop(Rt(ticket), 0, -440, 1020, 700);
+            Img(ticket, th.paper, true, 2.2f); ticket.transform.localRotation = Quaternion.Euler(0, 0, 1.2f);
+            var ribbon = Go("Bookmark", ticket.transform); Place(Rt(ribbon), new Vector2(1, 1), new Vector2(-110, 2), new Vector2(76, 62)); Img(ribbon, th.ribbonRed).raycastTarget = false;
+            var tKind = Txt(ticket.transform, "Kind", "غرفة خاصة", th.fontBody, 36, new Color32(0x6A, 0x5A, 0x3A, 255)); Place(Rt(tKind.gameObject), new Vector2(0.5f, 1f), new Vector2(0, -84), new Vector2(900, 54));
+            var tName = Txt(ticket.transform, "Name", "سهرة الأصحاب", th.fontCalligraphy, 104, th.paperInk); Place(Rt(tName.gameObject), new Vector2(0.5f, 1f), new Vector2(0, -200), new Vector2(940, 140));
+            Image DashLine(string name, float y)
             {
-                var g = Go(name, ok.transform); var r = Rt(g); r.anchorMin = r.anchorMax = new Vector2(0.5f, 1f); r.pivot = new Vector2(0.5f, 1f); r.anchoredPosition = new Vector2(x, -1020); r.sizeDelta = new Vector2(300, 150);
+                var d = Go(name, ticket.transform); Place(Rt(d), new Vector2(0.5f, 1f), new Vector2(0, y), new Vector2(900, 6));
+                var di = Img(d, th.dashH); di.type = Image.Type.Tiled; di.color = new Color(0.11f, 0.09f, 0.06f, 0.4f); di.raycastTarget = false; return di;
+            }
+            DashLine("DashTop", -300);
+            var tCode = Txt(ticket.transform, "Code", "K7Q2", th.fontHeading, 210, th.crimson); tCode.characterSpacing = 50; Place(Rt(tCode.gameObject), new Vector2(0.5f, 1f), new Vector2(0, -410), new Vector2(940, 230));
+            DashLine("DashBottom", -530);
+            var tNote = Txt(ticket.transform, "Note", "الكود بيدخّل أي لاعب.", th.fontBody, 32, new Color32(0x6A, 0x5A, 0x3A, 255), TextAlignmentOptions.Center, true); Place(Rt(tNote.gameObject), new Vector2(0.5f, 0f), new Vector2(0, 76), new Vector2(920, 90));
+
+            Button ShareBtn(string name, string label, float x, Sprite icon, Color iconColor)
+            {
+                var g = Go(name, ok.transform); var r = Rt(g); r.anchorMin = r.anchorMax = new Vector2(0.5f, 0f); r.pivot = new Vector2(0.5f, 0f); r.anchoredPosition = new Vector2(x, 295); r.sizeDelta = new Vector2(316, 190);   // above the enter button, so short screens do not overlap
                 var img = Img(g, th.leatherDark, true, 1.4f, true);
                 var b = g.AddComponent<Button>(); b.targetGraphic = img; b.transition = Selectable.Transition.None;
                 var fx = g.AddComponent<KitButtonFx>(); SetRef(fx, "face", Rt(g));
-                var t = Txt(g.transform, "T", label, th.fontHeading, 40, th.leatherText); Stretch(Rt(t.gameObject), 6, 6, 6, 10);
+                var ic = Go("Icon", g.transform); Place(Rt(ic), new Vector2(0.5f, 0.5f), new Vector2(0, 38), new Vector2(72, 72));
+                var ii = Img(ic, icon); ii.color = iconColor; ii.raycastTarget = false;
+                var t = Txt(g.transform, "T", label, th.fontHeading, 38, th.leatherText); Place(Rt(t.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -44), new Vector2(296, 60));
                 return b;
             }
-            var wa = ShareBtn("WhatsApp", "واتساب", 330);
-            var copyInv = ShareBtn("CopyInvite", "نسخ الدعوة", 0);
-            var copyCode = ShareBtn("CopyCode", "نسخ الكود", -330);
+            var wa = ShareBtn("WhatsApp", "واتساب", 328, th.iconWhatsapp, new Color32(0x4F, 0xD0, 0x8B, 255));
+            var copyInv = ShareBtn("CopyInvite", "نسخ الدعوة", 0, th.iconLink, new Color32(0xCF, 0xC6, 0xB2, 255));
+            var copyCode = ShareBtn("CopyCode", "نسخ الكود", -328, th.iconCopy, new Color32(0xCF, 0xC6, 0xB2, 255));
             var enter = InstChild("KitButton_Primary", ok.transform, "Enter");
             var er = Rt(enter); er.anchorMin = er.anchorMax = new Vector2(0.5f, 0f); er.pivot = new Vector2(0.5f, 0.5f); er.anchoredPosition = new Vector2(0, 150); er.sizeDelta = new Vector2(980, 190);
             enter.GetComponentInChildren<ArabicText>().Text = "ادخل الغرفة";
@@ -259,7 +281,7 @@ namespace MafiaNight.UI.Kit.Editor
             var screen = root.AddComponent<KitCreateRoomScreen>();
             SetRef(screen, "formRoot", form); SetRef(screen, "backButton", back.GetComponent<Button>()); SetRef(screen, "createButton", create.GetComponent<Button>());
             SetRef(screen, "nameInput", ain); SetRef(screen, "nameCounter", counter);
-            SetRefs(screen, "suggestionButtons", sugBtns); SetRefs(screen, "typeButtons", typeBtns); SetRefs(screen, "typeSubLabels", typeSubs);
+            SetRefs(screen, "suggestionButtons", sugBtns); SetRefs(screen, "typeButtons", typeBtns); SetRefs(screen, "typeSubLabels", typeSubs); SetRefs(screen, "typeIcons", typeIcons); SetRefs(screen, "typeLocks", typeLocks);
             SetRef(screen, "typeHint", hintTxt.GetComponent<ArabicText>()); SetRef(screen, "modeSegment", seg);
             SetRef(screen, "seatsMinus", minus); SetRef(screen, "seatsPlus", plus); SetRef(screen, "seatsLabel", seatsTxt.GetComponent<ArabicText>());
             SetRefs(screen, "seatDots", dots);

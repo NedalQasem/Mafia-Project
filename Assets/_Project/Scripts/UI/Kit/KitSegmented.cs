@@ -29,7 +29,7 @@ namespace MafiaNight.UI.Kit
             {
                 bool on = i == selected;
                 var img = options[i].GetComponent<Image>();
-                img.sprite = th.brassPlate; img.color = on ? Color.white : new Color(1, 1, 1, 0f);
+                img.sprite = th.segOn != null ? th.segOn : th.brassPlate; img.color = on ? Color.white : new Color(1, 1, 1, 0f);
                 options[i].GetComponentInChildren<TMPro.TMP_Text>().color = on ? th.brassText : th.ivoryDim;
             }
         }

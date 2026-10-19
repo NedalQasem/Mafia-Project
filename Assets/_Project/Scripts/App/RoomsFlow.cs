@@ -238,9 +238,7 @@ namespace MafiaNight.App
         {
             var room = rooms.CurrentRoom;
             if (room == null) return;
-            string text = room.Kind == RoomKind.Private && !string.IsNullOrEmpty(room.Code)
-                ? "تعال نسهر بلعبة المافيا! ادخل بالكود " + room.Code
-                : "تعال نسهر بلعبة المافيا! ادخل غرفة «" + room.Name + "»";
+            string text = RoomRules.InviteText(room.Kind == RoomKind.Private ? room.Code : "", room.Name);
             GUIUtility.systemCopyBuffer = text;
             Say("اننسخت الدعوة، الصقها لأصحابك.");
         }

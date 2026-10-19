@@ -31,6 +31,7 @@ namespace MafiaNight.UI.Kit
         public Sprite coin, bulletOn, bulletOff;
         public Sprite xpRing, medalDisc;
         public Sprite[] storeFrames = new Sprite[6];
+        public Sprite iconWhatsapp, iconLink, iconCopy, segOn, segBar, typeOn, typeOff, iconGlobe, iconKey, iconCrown, iconLock;   // create-room type cards
         public Sprite[] catIcons = new Sprite[10];
         public Sprite catOn, catOff;
         public Sprite sheetBg, sheetHandle, btnGold, btnDark, chipSheet, togOff, togOn, togKnob, rarGlow, itemCone, shineBand, resetPill, wallBg, wallLines, wallVignette, fedSil, picBg, plaqueGold, lampCap, lampCone, hairGrad, recCard, mineBar, barRed, dashH, doorD1, doorD2, doorD3, doorRing, boardDay, chipOff, chipOn, rowBg, iconDay, iconWeek, iconWall;

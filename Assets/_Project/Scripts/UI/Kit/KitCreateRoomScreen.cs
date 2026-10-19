@@ -16,6 +16,7 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private Button[] suggestionButtons;
         [SerializeField] private Button[] typeButtons;          // public, private, vip
         [SerializeField] private ArabicText[] typeSubLabels;
+        [SerializeField] private Image[] typeIcons, typeLocks;
         [SerializeField] private ArabicText typeHint;
         [SerializeField] private KitSegmented modeSegment;
         [SerializeField] private Button seatsMinus, seatsPlus;
@@ -62,7 +63,7 @@ namespace MafiaNight.UI.Kit
             seatsPlus.onClick.AddListener(() => SetSeats(seats + 1));
             nameInput.OnChanged += _ => { UpdateCounter(); errorLabel.Text = ""; };
             whatsappButton.onClick.AddListener(() => Application.OpenURL("https://wa.me/?text=" + Uri.EscapeDataString(InviteText())));
-            copyInviteButton.onClick.AddListener(() => { GUIUtility.systemCopyBuffer = InviteText(); copyInviteButton.GetComponentInChildren<ArabicText>().Text = "اننسخت"; });
+            copyInviteButton.onClick.AddListener(() => { GUIUtility.systemCopyBuffer = InviteText(); copyInviteButton.GetComponentInChildren<ArabicText>().Text = "اننسخ"; });
             copyCodeButton.onClick.AddListener(() => { GUIUtility.systemCopyBuffer = created != null ? created.Code : ""; copyCodeButton.GetComponentInChildren<ArabicText>().Text = "اننسخ"; });
             enterButton.onClick.AddListener(() => { if (created != null) OnEnter?.Invoke(created); });
         }
@@ -103,7 +104,7 @@ namespace MafiaNight.UI.Kit
             copyCodeButton.GetComponentInChildren<ArabicText>().Text = "نسخ الكود";
         }
 
-        private string InviteText() => created == null ? "" : "تعال نسهر بلعبة المافيا! ادخل بالكود " + created.Code;
+        private string InviteText() => created == null ? "" : RoomRules.InviteText(created.Code, created.Name);
 
         private void SetKind(RoomKind k)
         {
@@ -114,10 +115,18 @@ namespace MafiaNight.UI.Kit
             {
                 bool on = i == (int)k;
                 var img = typeButtons[i].GetComponent<Image>();
-                if (th != null) { img.sprite = on ? th.brassPlate : th.slotDark; }
-                img.color = locked[i] && !on ? new Color(1f, 1f, 1f, 0.55f) : Color.white;
+                if (th != null) img.sprite = on ? th.typeOn : th.typeOff;
+                // HTML .ty / .ty.on / .ty.lock: chosen = dark ink on brass, others dim; locked ones are faded and carry a small lock
+                Color ink = on ? new Color32(0x2A, 0x1A, 0x08, 255) : new Color32(0x8F, 0x87, 0x77, 255);
+                if (typeIcons != null && i < typeIcons.Length) typeIcons[i].color = ink;
+                if (typeLocks != null && i < typeLocks.Length) typeLocks[i].gameObject.SetActive(locked[i]);
                 var texts = typeButtons[i].GetComponentsInChildren<TMPro.TMP_Text>();
-                foreach (var t in texts) if (th != null) t.color = on ? th.brassText : th.ivoryDim;
+                foreach (var t in texts)
+                    t.color = t.gameObject.name == "Name" ? (on ? new Color32(0x2A, 0x1A, 0x08, 255) : new Color32(0xA7, 0x9D, 0x88, 255))
+                                                          : (on ? new Color32(0x5A, 0x41, 0x18, 255) : new Color32(0x6F, 0x68, 0x5C, 255));
+                var group = typeButtons[i].GetComponent<CanvasGroup>();
+                if (group == null) group = typeButtons[i].gameObject.AddComponent<CanvasGroup>();
+                group.alpha = locked[i] ? 0.55f : 1f;
                 if (typeSubLabels != null && i < typeSubLabels.Length)
                     typeSubLabels[i].Text = i == 0 ? (locked[0] ? "المستوى " + CoinPill.Format(RoomRules.PublicMinLevel) : "تظهر للجميع") : i == 1 ? "بكود أو دعوة" : (locked[2] ? "بعضوية VIP" : "شكل مميّز");
             }

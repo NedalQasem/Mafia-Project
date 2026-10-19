@@ -90,12 +90,12 @@ namespace MafiaNight.UI.Kit.Editor
                 row.AddComponent<LayoutElement>().preferredHeight = 170;
                 var l = Txt(row.transform, "L", label, th.fontHeading, 32, th.brass, TextAlignmentOptions.MidlineRight); Place(Rt(l.gameObject), new Vector2(1, 1), new Vector2(-470, -30), new Vector2(940, 44));
                 var bar = Go("Bar", row.transform); var br = Rt(bar); br.anchorMin = new Vector2(0, 0); br.anchorMax = new Vector2(1, 0); br.pivot = new Vector2(0.5f, 0); br.offsetMin = new Vector2(0, 8); br.offsetMax = new Vector2(0, 108);
-                Img(bar, th.slotDark, true, 1.8f);
+                Img(bar, th.segBar, true, 2.4f);
                 var hl = bar.AddComponent<HorizontalLayoutGroup>(); hl.padding = new RectOffset(10, 10, 10, 10); hl.spacing = 8; hl.childControlWidth = true; hl.childControlHeight = true; hl.childForceExpandWidth = true; hl.childForceExpandHeight = true; hl.reverseArrangement = true;
                 var buttons = new Button[opts.Length];
                 for (int i = 0; i < opts.Length; i++)
                 {
-                    var o = Go("Opt" + i, bar.transform); var oi = Img(o, th.brassPlate, true, 2.6f, true); oi.color = new Color(1, 1, 1, 0);
+                    var o = Go("Opt" + i, bar.transform); var oi = Img(o, th.segOn, true, 2.6f, true); oi.color = new Color(1, 1, 1, 0);
                     var ob = o.AddComponent<Button>(); ob.targetGraphic = oi; ob.transition = Selectable.Transition.None; buttons[i] = ob;
                     var ot = Txt(o.transform, "T", opts[i], th.fontHeading, 32, th.ivoryDim); Stretch(Rt(ot.gameObject), 4, 6, 4, 8);
                 }
