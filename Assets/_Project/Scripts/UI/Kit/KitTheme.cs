@@ -11,6 +11,7 @@ namespace MafiaNight.UI.Kit
         public TMP_FontAsset fontBody;          // Cairo
         public TMP_FontAsset fontHeading;       // Reem Kufi
         public TMP_FontAsset fontCalligraphy;   // Aref Ruqaa
+        public TMP_FontAsset fontLalezar, fontAref;   // match screens: the exact web-mockup fonts (converted, see Art/Fonts/FONT-LICENSES.txt)
 
         [Header("Colors")]
         public Color ivory = new Color32(0xD9, 0xD0, 0xBD, 255);

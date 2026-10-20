@@ -48,11 +48,12 @@ namespace MafiaNight.UI.Kit
         private enum Dir { R, L, N }
 
         /// <summary>Shape a (possibly multi-line) logical string into visual order.</summary>
-        public static string Shape(string logical, bool arabicDigits = false)
+        /// <param name="lamAlef">false for fonts without the lam-alef ligature glyphs (U+FEFB..): lam and alef are then joined as two letters.</param>
+        public static string Shape(string logical, bool arabicDigits = false, bool lamAlef = true, ContextualForms ctx = null)
         {
             if (string.IsNullOrEmpty(logical)) return logical;
             var lines = logical.Split('\n');
-            for (int i = 0; i < lines.Length; i++) lines[i] = ShapeLine(lines[i], arabicDigits);
+            for (int i = 0; i < lines.Length; i++) lines[i] = ShapeLine(lines[i], arabicDigits, lamAlef, ctx);
             return string.Join("\n", lines);
         }
 
@@ -63,7 +64,7 @@ namespace MafiaNight.UI.Kit
             return false;
         }
 
-        private static string ShapeLine(string s, bool arabicDigits)
+        private static string ShapeLine(string s, bool arabicDigits, bool lamAlef, ContextualForms ctx)
         {
             if (!ContainsArabic(s)) return s;
             var shaped = new List<char>(s.Length);
@@ -75,7 +76,7 @@ namespace MafiaNight.UI.Kit
 
                 bool prevJoins = PrevConnects(s, i);
 
-                if (c == 'ل')
+                if (lamAlef && c == 'ل')
                 {
                     int j = NextBase(s, i);
                     if (j >= 0 && LamAlef.TryGetValue(s[j], out var lig))
@@ -93,6 +94,12 @@ namespace MafiaNight.UI.Kit
                 else if (prevJoins && f[1] != 0) pick = f[1];
                 else if (nextJoins && f[2] != 0) pick = f[2];
                 else pick = c;   // isolated form = the base letter (many fonts lack the FExx isolated glyphs)
+                if (ctx != null)
+                {   // calligraphic font: the glyph also depends on the joined neighbours
+                    int form = prevJoins && nextJoins && f[3] != 0 ? 3 : prevJoins && f[1] != 0 ? 1 : nextJoins && f[2] != 0 ? 2 : 0;
+                    char p = prevJoins ? PrevLetter(s, i) : '-', n = nextJoins ? s[NextBase(s, i)] : '-';
+                    if (ctx.TryGet(p, c, n, form, out var cg)) pick = cg;
+                }
                 shaped.Add(pick);
             }
             return Visual(shaped);
@@ -105,6 +112,12 @@ namespace MafiaNight.UI.Kit
         {
             for (int j = i + 1; j < s.Length; j++) if (!IsMark(s[j])) return j;
             return -1;
+        }
+
+        private static char PrevLetter(string s, int i)
+        {
+            for (int j = i - 1; j >= 0; j--) if (!IsMark(s[j])) return s[j];
+            return '-';
         }
 
         private static bool PrevConnects(string s, int i)
@@ -133,6 +146,7 @@ namespace MafiaNight.UI.Kit
 
         private static Dir Classify(char c)
         {
+            if (c >= '' && c <= '') return Dir.R;   // private-use glyphs of the contextual calligraphic font
             if (IsMark(c)) return Dir.R;
             if (IsArabic(c) && !IsNumberChar(c)) return Dir.R;
             if (IsNumberChar(c) || char.IsLetter(c)) return Dir.L;

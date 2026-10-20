@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>واجهة المباراة</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--crim:#8a1c24;--crim2:#e0585f;--teal:#4fa58b;--brass:#b99048;--blue:#6fa0d6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:12px 8px 30px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif;display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+.col{display:grid;gap:8px;justify-items:center;align-content:start;width:min(390px,100%)}
+.cap{color:#6f685c;font-size:.78rem;margin:0;text-align:center;line-height:1.6}
+button{font-family:inherit;border:0;color:inherit;background:none;cursor:pointer}
+button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.tabs button{padding:5px 12px;border-radius:14px;font-weight:800;font-size:.72rem;color:#b9a67e;background:#000a;box-shadow:inset 0 0 0 1px #3a2e22}
+.tabs button.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30)}
+.phone{width:100%;height:790px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 90% 30% at 50% 0,#e8c27a18,transparent 70%),linear-gradient(180deg,#15100d,#090605);box-shadow:0 0 0 7px #14100e,0 0 0 8px #ffffff14,0 24px 50px #000}
+.phone.night{background:radial-gradient(ellipse 80% 40% at 50% 8%,#2a3a7a44,transparent 70%),linear-gradient(180deg,#0b0e1c,#05060b)}
+.phone.day{background:radial-gradient(ellipse 90% 34% at 50% 0,#f0c06a30,transparent 70%),linear-gradient(180deg,#1d150e,#0b0705)}
+
+/* top bar */
+.top{position:absolute;top:0;left:0;right:0;padding:30px 12px 8px;display:flex;align-items:center;gap:10px;z-index:8}
+.ring{position:relative;width:46px;height:46px;flex:none;display:grid;place-items:center;border-radius:50%;background:#000b;box-shadow:0 0 0 1.5px #000,inset 0 0 0 3px #2a2118}
+.ring::before{content:"";position:absolute;inset:3px;border-radius:50%;background:conic-gradient(var(--c,#ffb35a) var(--p,60%),transparent 0);-webkit-mask:radial-gradient(circle,transparent 15px,#000 16px);mask:radial-gradient(circle,transparent 15px,#000 16px)}
+.ring b{position:relative;font-family:Lalezar;font-weight:400;font-size:.95rem;color:#ffb35a}
+.ttl{flex:1;font-family:Lalezar;font-size:1.5rem;line-height:1}
+.ttl small{display:block;font-family:Cairo;font-weight:600;font-size:.62rem;color:#8d744a}
+.pill{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:14px;font-weight:800;font-size:.66rem;background:#000b;box-shadow:inset 0 0 0 1px #3a2e22;color:#b9a67e}
+.pill svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.pill.mafia{color:#e6b3b6;box-shadow:inset 0 0 0 1px #8a1c2488}
+.pill.warn{color:#ffd08a;box-shadow:inset 0 0 0 1px #b9904888}
+
+/* table + seats */
+.stage{position:absolute;left:0;right:0;top:84px;height:440px}
+.felt{position:absolute;left:11%;right:11%;top:9%;bottom:9%;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#1f5a3d,#123a28 70%,#0b2418);box-shadow:inset 0 0 0 7px #4a2d1a,inset 0 0 0 9px #2a180c,inset 0 0 40px #000,0 10px 24px #000b}
+.felt .mid{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:0 20%}
+.felt .mid b{display:block;font-family:Lalezar;font-weight:400;font-size:1.25rem;line-height:1.1;color:#e8dfc9;text-shadow:0 2px 6px #000}
+.felt .mid small{display:block;margin-top:3px;font-size:.62rem;font-weight:800;color:#a8c9b6}
+.seat{position:absolute;width:62px;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;transition:filter .3s}
+.av{position:relative;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 0 0 3.5px #5a4326,0 4px 8px #000a;transition:box-shadow .3s}
+.av svg{width:26px;height:26px;fill:#cfc6b2}
+.seat .nm{max-width:64px;padding:1px 6px;border-radius:4px;font-weight:800;font-size:.58rem;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#000c;color:#e8dfc9;box-shadow:0 0 0 1px #000}
+.seat.me .av{box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 0 0 4px var(--brass),0 4px 8px #000a}
+.seat.talk .av{box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 0 0 4px var(--teal),0 0 16px 4px #4fa58bcc}
+.seat.pick .av{box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 0 0 4px var(--crim2),0 0 16px 4px #e0585faa}
+.seat.pick.doc .av{box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 0 0 4px var(--teal),0 0 16px 4px #4fa58baa}
+.seat.pick.sher .av{box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 0 0 4px var(--blue),0 0 16px 4px #6fa0d6aa}
+.seat.dead{filter:grayscale(1) brightness(.55)}
+.seat.dead .av::after{content:"✕";position:absolute;inset:0;display:grid;place-items:center;font-size:1.6rem;font-weight:800;color:#e0585f;text-shadow:0 0 4px #000}
+.seat.sleep .av svg{opacity:.45}
+.seat.sleep .av::after{content:"z";position:absolute;top:-6px;left:-4px;font-family:Lalezar;font-size:1rem;color:#9bb0ff}
+.seat .tag{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;display:grid;place-items:center;font-family:Lalezar;font-size:.8rem;line-height:1;color:#fff;background:var(--crim);box-shadow:0 0 0 1.5px #000}
+.seat .tag.mafia{background:#5a0f15;font-size:.7rem}
+.seat .tag.gold{background:linear-gradient(180deg,#f5e2a8,#b99048);color:#2a1a08}
+.seat .bub{position:absolute;bottom:100%;margin-bottom:2px;white-space:nowrap;padding:2px 8px;border-radius:8px;font-weight:800;font-size:.56rem;background:var(--paper);color:var(--ink);box-shadow:0 2px 6px #000a}
+
+/* bottom area */
+.bot{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 16px;z-index:8;display:grid;gap:9px;background:linear-gradient(0deg,#090605 66%,transparent)}
+.phone.night .bot{background:linear-gradient(0deg,#05060b 66%,transparent)}
+.card{border-radius:12px;padding:11px 14px 12px;background:var(--grain),linear-gradient(180deg,#2a1e17,#17100c);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #000,0 8px 14px #000a;display:grid;gap:7px}
+.card h4{margin:0;font-family:Lalezar;font-weight:400;font-size:1.15rem;line-height:1.1;display:flex;align-items:center;gap:8px}
+.card h4 svg{width:20px;height:20px;stroke:var(--brass);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card p{margin:0;font-size:.7rem;font-weight:700;line-height:1.55;color:#a79d88}
+.row{display:flex;gap:8px;align-items:center}
+.go{flex:1;display:grid;gap:1px;padding:11px 14px;border-radius:12px;position:relative;text-align:center;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000,0 12px 20px #000b}
+.go::after{content:"";position:absolute;inset:5px;border:1.5px dashed #e6c9a0;opacity:.45;border-radius:8px;pointer-events:none}
+.go b{font-family:Lalezar;font-weight:400;font-size:1.25rem;line-height:1.1}
+.go small{font-size:.6rem;font-weight:700;color:#e6c9a0}
+.go:active{transform:translateY(3px)}
+.go.gold{background:linear-gradient(180deg,#e8cc8c,#b99048 55%,#6e5224);color:#2a1a08;box-shadow:inset 0 1px 0 #fff9,0 4px 0 #2a1c08,0 12px 20px #000b}
+.go.gold small{color:#5a4118}.go.gold::after{border-color:#2a1a0888}
+.go.teal{background:linear-gradient(180deg,#3f9a7d,#25745c 55%,#124030)}
+.go.dim{opacity:.45}
+.ghost{padding:11px 16px;border-radius:12px;font-weight:800;font-size:.78rem;color:#b9a67e;background:#000a;box-shadow:inset 0 0 0 1px #3a2e22}
+.ghost{display:flex;align-items:center;justify-content:center;gap:6px}
+.ghost svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mic{width:60px;height:60px;border-radius:50%;flex:none;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#f5e2a8,#c9a050 55%,#6e4b1c);box-shadow:0 0 0 2px #000,0 4px 0 #2a1c08,0 8px 14px #000a}
+.mic svg{width:28px;height:28px;stroke:#2a1a08;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mic.off{background:linear-gradient(180deg,#4a4038,#2a2420);box-shadow:0 0 0 2px #000,0 4px 0 #000,0 8px 14px #000a}
+.mic.off svg{stroke:#8f8777}
+
+/* paper dossier / newspaper */
+.paper{position:relative;border-radius:6px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 26px #8a7a5a99,0 10px 20px #000b;padding:16px 16px 14px;display:grid;gap:8px}
+.paper h3{margin:0;font-family:"Aref Ruqaa";font-size:1.7rem;line-height:1.15}
+.paper small{font-size:.7rem;font-weight:800;color:#6a5a3a;line-height:1.55}
+.stamp{justify-self:center;font-family:"Aref Ruqaa";font-size:2.6rem;line-height:1;border:3px solid currentColor;border-radius:10px;padding:2px 24px;rotate:-6deg;opacity:.92}
+.stamp.mafia{color:#a8212a}.stamp.doc{color:#1f7a60}.stamp.sher{color:#2f5f98}.stamp.civ{color:#5a4a2a}
+.dim-layer{position:absolute;inset:0;z-index:9;background:radial-gradient(ellipse at 50% 38%,#0000,#000d 80%);display:grid;place-items:center;pointer-events:none}
+.center{position:absolute;inset:0;z-index:7;display:grid;align-content:center;justify-items:center;gap:12px;padding:90px 22px 140px;text-align:center}
+.moon{width:58px;height:58px;filter:drop-shadow(0 0 18px #7d92ff88)}
+.sleepy .felt{filter:brightness(.4) saturate(.7)}
+.sleepy .seat .nm{opacity:.6}
+.big{font-family:Lalezar;font-size:2.1rem;line-height:1.1}
+.sub{font-size:.8rem;font-weight:700;color:#8f95b8;line-height:1.7;max-width:280px}
+.mates{display:flex;gap:10px;justify-content:center}
+.mate{display:grid;justify-items:center;gap:3px;font-weight:800;font-size:.62rem;color:#4a3820}
+.mate .av{width:40px;height:40px;box-shadow:0 0 0 2px #000,0 0 0 3.5px #8a1c24}
+.role-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:#000a;box-shadow:inset 0 0 0 1px #2b2118;font-weight:800;font-size:.76rem}
+.role-row .av{width:30px;height:30px;box-shadow:0 0 0 1.5px #000,0 0 0 2.5px #5a4326}
+.role-row .av svg{width:17px;height:17px}
+.role-row b{flex:1}
+.chip{padding:2px 10px;border-radius:10px;font-size:.64rem;font-weight:800;background:#000b;box-shadow:inset 0 0 0 1px currentColor}
+.chip.mafia{color:#e0585f}.chip.doc{color:#4fa58b}.chip.sher{color:#6fa0d6}.chip.civ{color:#b9a67e}
+.role-row.dead{opacity:.5}
+.scroll{position:absolute;inset:0;overflow-y:auto;padding:84px 14px 150px;display:grid;gap:10px;align-content:start;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.rew{display:flex;gap:10px}
+.rew div{flex:1;text-align:center;padding:9px 4px;border-radius:10px;background:#000a;box-shadow:inset 0 0 0 1px #3a2e22;font-family:Lalezar;font-size:1.3rem;line-height:1.1;color:#ffb35a}
+.rew small{display:block;font-family:Cairo;font-weight:800;font-size:.58rem;color:#8f8777}
+.banner{padding:14px;border-radius:12px;text-align:center;font-family:Lalezar;font-size:2rem;line-height:1.1;box-shadow:inset 0 1px 0 #ffffff22,0 0 0 1px #000,0 10px 18px #000a}
+.banner small{display:block;font-family:Cairo;font-weight:800;font-size:.68rem;margin-top:3px;opacity:.85}
+.banner.civ{background:linear-gradient(180deg,#2c7a62,#154a3a)}
+.banner.mafia{background:linear-gradient(180deg,#a2262f,#561016)}
+.tally{display:flex;gap:6px;flex-wrap:wrap}
+.tally span{padding:2px 9px;border-radius:10px;font-size:.62rem;font-weight:800;background:#000a;box-shadow:inset 0 0 0 1px #3a2e22;color:#b9a67e}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="fed" viewBox="0 0 24 24"><path d="M2 14c3.4 1.6 16.6 1.6 20 0-.9-1.3-2.6-2.1-4-2.4C17.6 7.6 16 5 12 5S6.4 7.6 6 11.6c-1.4.3-3.1 1.1-4 2.4zM6.4 11.2c3.7 1.1 7.5 1.1 11.2 0v1.3c-3.7 1.1-7.5 1.1-11.2 0z"/><circle cx="12" cy="17.6" r="3.2"/></symbol>
+<symbol id="moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></symbol>
+<symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></symbol>
+<symbol id="vote" viewBox="0 0 24 24"><path d="M5 13l7-9 7 9h-4v7H9v-7z"/></symbol>
+<symbol id="skull" viewBox="0 0 24 24"><path d="M12 3a8 8 0 0 0-8 8c0 2.6 1.2 4 3 5v3h10v-3c1.8-1 3-2.4 3-5a8 8 0 0 0-8-8z"/><circle cx="9" cy="11" r="1.5"/><circle cx="15" cy="11" r="1.5"/></symbol>
+<symbol id="cross" viewBox="0 0 24 24"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></symbol>
+<symbol id="badge" viewBox="0 0 24 24"><path d="M12 2l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 15.4 6.8 18.1l1-5.8L3.5 8.2l5.9-.8z"/></symbol>
+<symbol id="eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+<symbol id="micoff" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M3 3l18 18"/></symbol>
+<symbol id="ghost" viewBox="0 0 24 24"><path d="M5 21V11a7 7 0 0 1 14 0v10l-2.4-2-2.3 2-2.3-2-2.3 2-2.3-2z"/><circle cx="9.5" cy="11" r="1"/><circle cx="14.5" cy="11" r="1"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="hand" viewBox="0 0 24 24"><path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V6a1.5 1.5 0 0 1 3 0v8c0 4-2.4 7-6 7-3 0-4.5-1.6-6-4l-1.6-3a1.5 1.5 0 0 1 2.4-1.7L8 14"/></symbol>
+</defs></svg>
+
+<!-- 1) role reveal -->
+<div class="col">
+<p class="cap">١ — كشف الدور (يظهر لكل لاعب لوحده أول المباراة، الدور ما يُرسل لغيره)</p>
+<div class="tabs" id="t1"></div>
+<div class="phone" id="p1"></div>
+</div>
+
+<!-- 2) night -->
+<div class="col">
+<p class="cap">٢ — الليل (المافيا تختار ضحية، الطبيب ينقذ، الشرطي يتحقق، والمواطن ينام والمايك مكتوم)</p>
+<div class="tabs" id="t2"></div>
+<div class="phone night" id="p2"></div>
+</div>
+
+<!-- 3) dawn -->
+<div class="col">
+<p class="cap">٣ — الفجر: نشرة الصباح (نتيجة الليل لكل الغرفة)</p>
+<div class="tabs" id="t3"></div>
+<div class="phone day" id="p3"></div>
+</div>
+
+<!-- 4) day -->
+<div class="col">
+<p class="cap">٤ — النهار: النقاش بالصوت (المايك مفتوح للأحياء، والميت يسمع بس)</p>
+<div class="phone day" id="p4"></div>
+</div>
+
+<!-- 5) voting -->
+<div class="col">
+<p class="cap">٥ — التصويت (الأصوات تظهر على المقاعد لحظياً، ويقدر اللاعب يغيّر صوته قبل نهاية الوقت)</p>
+<div class="phone day" id="p5"></div>
+</div>
+
+<!-- 6) verdict -->
+<div class="col">
+<p class="cap">٦ — نتيجة التصويت (كشف دور المطرود)</p>
+<div class="tabs" id="t6"></div>
+<div class="phone day" id="p6"></div>
+</div>
+
+<!-- 7) spectator -->
+<div class="col">
+<p class="cap">٧ — المتفرج (الميت أو الداخل أثناء المباراة): يرى الطاولة والمعلومات العامة ويسمع النهار، ولا يرى الأدوار</p>
+<div class="phone day" id="p7"></div>
+</div>
+
+<!-- 8) game over -->
+<div class="col">
+<p class="cap">٨ — نهاية المباراة (الأدوار تنكشف، والمكافأة من الخادم)</p>
+<div class="tabs" id="t8"></div>
+<div class="phone day" id="p8"></div>
+</div>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s);
+const ic=(id)=>`<svg viewBox="0 0 24 24"><use href="#${id}"/></svg>`;
+const NAMES=["أنا (أبو سالم)","أم سعيد","البيك","لينا","سارة","الحج حسن","أبو فارس","مازن","ريم","عادل"];
+const ROLE={mafia:{n:"مافيا",c:"mafia",icon:"fed"},doc:{n:"طبيب",c:"doc",icon:"cross"},sher:{n:"شرطي",c:"sher",icon:"badge"},civ:{n:"مواطن",c:"civ",icon:"user"}};
+
+/* seats on an ellipse, me at the bottom, clockwise */
+function table(opts={}){
+  const n=NAMES.length;
+  let h=`<div class="stage"><div class="felt"><div class="mid">${opts.mid||""}</div></div>`;
+  NAMES.forEach((name,i)=>{
+    const a=(90+i*360/n)*Math.PI/180;
+    const x=50+43*Math.cos(a), y=50+45*Math.sin(a);
+    const f=(opts.flags&&opts.flags[i])||{};
+    const cls=["seat"];
+    if(i===0)cls.push("me");
+    ["dead","talk","pick","sleep","doc","sher"].forEach(k=>{if(f[k])cls.push(k)});
+    h+=`<div class="${cls.join(" ")}" style="left:${x}%;top:${y}%">
+      ${f.bub?`<span class="bub">${f.bub}</span>`:""}
+      <div class="av"><svg viewBox="0 0 24 24"><use href="#fed"/></svg>${f.tag?`<span class="tag ${f.tagc||""}">${f.tag}</span>`:""}</div>
+      <span class="nm">${name}</span></div>`;
+  });
+  return h+`</div>`;
+}
+const bar=(icon,title,small,time,p,color,extra="")=>`<div class="top"><div class="ring" style="--p:${p}%;--c:${color}"><b>${time}</b></div><div class="ttl">${title}<small>${small}</small></div>${extra}</div>`;
+
+/* ---------- 1) role reveal ---------- */
+const reveal={
+ mafia:{h:"أنت مافيا",d:"ليلاً تتفقون مع شركائك على ضحية، ونهاراً تتظاهر إنك بريء. فوزكم لما يتساوى عددكم مع عدد المواطنين.",m:true},
+ doc:{h:"أنت الطبيب",d:"كل ليلة تنقذ لاعباً واحداً من القتل، وتقدر تنقذ نفسك مرة واحدة بالمباراة.",m:false},
+ sher:{h:"أنت الشرطي",d:"كل ليلة تتحقق من لاعب واحد وتعرف إذا كان مافيا أو بريئاً. استخدم معلوماتك بحذر.",m:false},
+ civ:{h:"أنت مواطن",d:"ما عندك قدرة خاصة، سلاحك صوتك وعقلك. اكشف المافيا بالنقاش والتصويت.",m:false}
+};
+function role1(k){
+  const r=reveal[k],R=ROLE[k];
+  $("#p1").innerHTML=bar("","ملف سرّي","لا تُرِ شاشتك لأحد","","0","#000")+`
+  <div class="center" style="padding-bottom:120px;align-content:center">
+    <div class="paper" style="width:100%;rotate:-1deg">
+      <small>الجولة الأولى · ${NAMES.length} لاعبين</small>
+      <h3>${r.h}</h3>
+      <span class="stamp ${R.c}">${R.n}</span>
+      <small style="color:#4a3a20">${r.d}</small>
+      ${r.m?`<div style="border-top:2px dashed #1c170f55;padding-top:8px"><small>شركاؤك في المافيا</small>
+        <div class="mates"><div class="mate"><div class="av"><svg viewBox="0 0 24 24"><use href="#fed"/></svg></div>${NAMES[3]}</div><div class="mate"><div class="av"><svg viewBox="0 0 24 24"><use href="#fed"/></svg></div>${NAMES[7]}</div></div></div>`:""}
+    </div>
+  </div>
+  <div class="bot"><button class="go gold"><b>فهمت، ابدأ</b><small>تبدأ الليلة الأولى بعد أن يجهز الجميع · ٦ من ١٠</small></button></div>`;
+}
+/* ---------- 2) night ---------- */
+function night(k){
+  const R=ROLE[k];
+  const p=$("#p2");
+  p.classList.toggle("sleepy",k==="civ");
+  if(k==="civ"){
+    p.innerHTML=bar("","الليل","الجولة ٢","0:45","75","#7d92ff",`<span class="pill warn">${ic("micoff")}مايكك مكتوم</span>`)+
+    table({mid:`<span><b>المدينة نايمة</b><small>اغمض عيونك لحد الصباح</small></span>`,flags:NAMES.map((_,i)=>i!==0&&i!==1?{sleep:1}:{})})+`
+    <div class="dim-layer" style="background:radial-gradient(ellipse at 50% 40%,#0000,#000c 75%)"></div>
+    <div class="center" style="z-index:10;padding-bottom:26px;align-content:end;gap:6px">
+      <svg class="moon" viewBox="0 0 24 24" fill="#e8e2c4"><use href="#moon"/></svg>
+      <div class="big">نام يا مواطن</div>
+      <div class="sub">ما عندك دور ليلي. اسمع الصمت، وبالصباح تعرف شو صار.</div>
+    </div>`;
+    return;
+  }
+  const cfg={
+    mafia:{t:"اختر ضحية الليلة",d:"اتفق مع شركائك. الضحية اللي عليها أكثر أصوات تنقتل. صوتك مسموع للمافيا فقط.",btn:"أكّد الضحية",pill:`<span class="pill mafia">${ic("mic")}المافيا فقط تسمعك</span>`,icon:"fed",cls:""},
+    doc:{t:"من تنقذ الليلة؟",d:"اللي تنقذه ما يموت هالليلة حتى لو اختاره المافيا. تقدر تنقذ نفسك مرة وحدة (بقيت لك ١).",btn:"أنقذه",pill:`<span class="pill warn">${ic("micoff")}مايكك مكتوم</span>`,icon:"cross",cls:"doc"},
+    sher:{t:"من تتحقق منه؟",d:"بتعرف إذا كان مافيا أو بريئاً. النتيجة لك وحدك.",btn:"تحقّق",pill:`<span class="pill warn">${ic("micoff")}مايكك مكتوم</span>`,icon:"badge",cls:"sher"}
+  }[k];
+  const flags=NAMES.map(()=>({}));
+  flags[6]={pick:1,[cfg.cls||"x"]:1};
+  if(k==="mafia"){flags[3]={tag:"م",tagc:"mafia"};flags[7]={tag:"م",tagc:"mafia"};flags[6].tag="٢";flags[6].tagc="";}
+  if(k==="sher"){flags[2]={tag:"✓",tagc:"gold"};}
+  const extra=k==="sher"?`<div class="card" style="border-radius:10px"><h4>${ic("eye")}نتيجة الليلة الماضية</h4><p>البيك: <b style="color:#4fa58b">بريء</b></p></div>`:"";
+  p.innerHTML=bar("","الليل","الجولة ٢ · دورك الآن","0:38","63","#7d92ff",cfg.pill)+
+  table({mid:`<span><b>${cfg.t}</b><small>اضغط على لاعب</small></span>`,flags})+`
+  <div class="bot">${extra}
+    <div class="card"><h4>${ic(cfg.icon)}${cfg.t}</h4><p>${cfg.d}</p>
+      <div class="row"><button class="go ${k==="doc"?"teal":k==="sher"?"gold":""}"><b>${cfg.btn}</b><small>المختار: ${NAMES[6]}</small></button><button class="ghost">تخطّي</button></div>
+    </div></div>`;
+}
+/* ---------- 3) dawn ---------- */
+function dawn(k){
+  const killed=k==="kill";
+  $("#p3").innerHTML=bar("","الفجر","الجولة ٢","0:08","10","#ffb35a")+
+  table({flags:NAMES.map((_,i)=>killed&&i===6?{dead:1}:{})})+`
+  <div class="dim-layer" style="background:#000b"></div>
+  <div class="center" style="z-index:10;padding:100px 22px">
+    <div class="paper" style="width:100%;rotate:1deg">
+      <div style="display:flex;justify-content:space-between;border-block:2px solid #1c170f;padding:2px 0;font-family:Lalezar;font-size:.9rem"><span>نشرة الصباح</span><span>الجولة ٢</span></div>
+      ${killed?`<h3>وُجد أبو فارس مقتولاً</h3><small>سقط بيد المافيا في ليلة أمس، وكان من أهل المدينة.</small><span class="stamp civ">مواطن</span>`:
+      `<h3>ليلة هادئة</h3><small>حاولت المافيا القتل لكن الطبيب كان أسرع. ما مات أحد الليلة!</small><span class="stamp doc">نجا</span>`}
+      <small style="text-align:center;color:#4a3a20">${killed?"ما بقي من اللاعبين: ٩ (مافيا ٣)":"كلكم لسا هون: ١٠ لاعبين"}</small>
+    </div>
+  </div>
+  <div class="bot"><button class="go gold"><b>ابدأ النقاش</b><small>يبدأ تلقائياً بعد ٨ ثوانٍ</small></button></div>`;
+}
+/* ---------- 4) day ---------- */
+function day(){
+  const flags=NAMES.map(()=>({}));
+  flags[6]={dead:1};flags[4]={talk:1,bub:"أنا شاكك بالبيك"};flags[2]={tag:"٢",tagc:"gold"};
+  $("#p4").innerHTML=bar("","النهار","نقاش · الجولة ٢","1:24","70","#ffb35a",`<span class="pill">${ic("hand")}تخطي النقاش ٣/٩</span>`)+
+  table({mid:`<span><b>يتكلّم الآن</b><small>سارة</small></span>`,flags})+`
+  <div class="bot">
+    <div class="card"><h4>${ic("eye")}اتهامات النهار</h4><div class="tally"><span>البيك · ٢ اتهام</span><span>لينا · ١</span></div><p>اضغط على لاعب لتتهمه، والتصويت يبدأ لما ينتهي الوقت أو يوافق أغلبكم على التخطي.</p></div>
+    <div class="row"><button class="mic">${ic("mic")}</button><button class="ghost" style="flex:1">${ic("hand")} اتهم لاعباً</button><button class="ghost">دردشة</button></div>
+  </div>`;
+}
+/* ---------- 5) voting ---------- */
+function voting(){
+  const flags=NAMES.map(()=>({}));
+  flags[6]={dead:1};flags[2]={pick:1,tag:"٤",tagc:""};flags[3]={tag:"٢",tagc:"gold"};
+  $("#p5").innerHTML=bar("","التصويت","من تطرد؟","0:31","68","#e0585f",`<span class="pill warn">${ic("vote")}صوّت ٦ من ٩</span>`)+
+  table({mid:`<span><b>اختر من تطرده</b><small>الأكثر أصواتاً يخرج</small></span>`,flags})+`
+  <div class="bot">
+    <div class="card"><h4>${ic("vote")}صوتك على: البيك</h4><div class="tally"><span>البيك · ٤</span><span>لينا · ٢</span><span>ممتنع · ١</span></div><p>تقدر تغيّر صوتك لحد ما ينتهي الوقت. التعادل = ما حدا بيطلع.</p></div>
+    <div class="row"><button class="go"><b>ثبّت صوتي</b><small>على البيك</small></button><button class="ghost">امتنع</button></div>
+  </div>`;
+}
+/* ---------- 6) verdict ---------- */
+function verdict(k){
+  const m=k==="mafia";
+  const flags=NAMES.map(()=>({}));flags[6]={dead:1};flags[2]={dead:1};
+  $("#p6").innerHTML=bar("","القرار","الجولة ٢","0:06","8","#e0585f")+
+  table({flags})+`
+  <div class="dim-layer" style="background:#000b"></div>
+  <div class="center" style="z-index:10;padding:100px 22px">
+    <div class="paper" style="width:100%;rotate:-1deg">
+      <small>قرار المدينة بأغلبية ٦ أصوات من ٩</small>
+      <h3>طُرد البيك من اللعبة</h3>
+      <span class="stamp ${m?"mafia":"civ"}">${m?"كان مافيا":"كان مواطناً"}</span>
+      <small style="text-align:center;color:#4a3a20">${m?"أحسنتم! بقي مافيا واحد":"المافيا ضحكت عليكم... بقي ٣ مافيا"}</small>
+      <div class="tally" style="justify-content:center"><span style="color:#4a3820;background:#0001">أم سعيد، لينا، سارة، مازن، ريم، عادل</span></div>
+    </div>
+  </div>
+  <div class="bot"><button class="go gold"><b>الليلة الجاية</b><small>تبدأ تلقائياً بعد ٦ ثوانٍ</small></button></div>`;
+}
+/* ---------- 7) spectator ---------- */
+function spectator(){
+  const flags=NAMES.map(()=>({}));
+  flags[6]={dead:1};flags[4]={talk:1};flags[0]={dead:1};
+  $("#p7").innerHTML=bar("","تتفرّج","النهار · الجولة ٢","1:24","70","#ffb35a",`<span class="pill">${ic("ghost")}متفرّج</span>`)+
+  table({mid:`<span><b>مباراة جارية</b><small>تسمع النقاش ولا تتكلم</small></span>`,flags})+`
+  <div class="bot">
+    <div class="card"><h4>${ic("ghost")}أنت خارج المباراة</h4><p>تشوف الطاولة والموتى والتصويت، وتسمع نقاش النهار. الأدوار وكلام الليل مخفية عنك. بالمباراة القادمة تدخل تلقائياً.</p></div>
+    <div class="row"><button class="mic off">${ic("micoff")}</button><button class="go gold"><b>جاهز للمباراة القادمة</b><small>٣ جاهزين</small></button><button class="ghost">دردشة</button></div>
+  </div>`;
+}
+/* ---------- 8) game over ---------- */
+function over(k){
+  const civ=k==="civ";
+  const roles=["civ","mafia","civ","mafia","doc","civ","civ","mafia","sher","civ"];
+  const dead=[0,0,1,0,0,0,1,0,0,0];
+  if(civ){dead[1]=1;dead[3]=1;dead[7]=1}
+  let rows=NAMES.map((n,i)=>`<div class="role-row ${dead[i]?"dead":""}"><div class="av"><svg viewBox="0 0 24 24"><use href="#fed"/></svg></div><b>${n}</b><span class="chip ${ROLE[roles[i]].c}">${ROLE[roles[i]].n}</span></div>`).join("");
+  $("#p8").innerHTML=bar("","نهاية المباراة","الجولة ٤","","0","#000")+`
+  <div class="scroll">
+    <div class="banner ${civ?"civ":"mafia"}">${civ?"فاز المواطنون":"فازت المافيا"}<small>${civ?"انكشفت المافيا كلها":"تساوى عدد المافيا مع عدد المواطنين"}</small></div>
+    <div class="rew"><div>+٤٥<small>خبرة XP</small></div><div>+٣٠<small>كوينز</small></div><div>+١٢<small>نقاط الرتبة</small></div></div>
+    <div class="card" style="gap:6px"><h4>${ic("eye")}كل الأدوار</h4>${rows}</div>
+  </div>
+  <div class="bot"><div class="row"><button class="go gold"><b>جاهز لمباراة ثانية</b><small>بنفس الغرفة</small></button><button class="ghost">للغرفة</button></div></div>`;
+}
+
+function tabs(id,items,fn){
+  const el=$(id);
+  el.innerHTML=items.map((it,i)=>`<button data-k="${it[0]}" class="${i?"":"on"}">${it[1]}</button>`).join("");
+  el.onclick=e=>{const b=e.target.closest("button");if(!b)return;[...el.children].forEach(x=>x.classList.toggle("on",x===b));fn(b.dataset.k)};
+  fn(items[0][0]);
+}
+tabs("#t1",[["mafia","مافيا"],["doc","طبيب"],["sher","شرطي"],["civ","مواطن"]],role1);
+tabs("#t2",[["mafia","مافيا"],["doc","طبيب"],["sher","شرطي"],["civ","مواطن"]],night);
+tabs("#t3",[["kill","قُتل لاعب"],["save","أنقذه الطبيب"]],dawn);
+tabs("#t6",[["civ","طُرد مواطن"],["mafia","طُرد مافيا"]],verdict);
+tabs("#t8",[["civ","فوز المواطنين"],["mafia","فوز المافيا"]],over);
+day();voting();spectator();
+
+/* compare mode: match.html?only=p4&v=mafia shows just that phone, 390x790, no frame */
+(function(){
+  const q=new URLSearchParams(location.search), only=q.get('only'); if(!only)return;
+  const key=q.get('v'); const ph=document.getElementById(only);
+  if(key){const col=ph.closest('.col'); const b=col.querySelector('.tabs button[data-k="'+key+'"]'); if(b) b.click();}
+  document.querySelectorAll('.col').forEach(c=>{ if(c!==ph.closest('.col')) c.style.display='none'; });
+  const col=ph.closest('.col'); col.querySelectorAll('.cap,.tabs').forEach(e=>e.style.display='none');
+  document.body.style.cssText='margin:0;padding:0;display:block';
+  col.style.cssText='display:block;width:390px';
+  ph.style.cssText+=';border-radius:0;box-shadow:none;width:390px;height:790px';
+})();
+</script>
+</body>
+</html>

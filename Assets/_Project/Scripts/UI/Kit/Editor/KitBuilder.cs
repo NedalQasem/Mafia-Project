@@ -87,6 +87,7 @@ namespace MafiaNight.UI.Kit.Editor
             th.fontBody = FindFont("cairo") ?? th.fontBody;
             th.fontHeading = FindFont("cairo") ?? th.fontHeading;
             th.fontCalligraphy = FindFont("amiri") ?? FindFont("cairo") ?? th.fontCalligraphy;
+            th.fontLalezar = FindFont("lalezar") ?? th.fontLalezar; th.fontAref = FindFont("aref") ?? th.fontAref;
             EditorUtility.SetDirty(th);
             return th;
         }

@@ -28,6 +28,8 @@ namespace MafiaNight.UI.Kit
         }
 
         public bool Wrap { get => wrap; set { wrap = value; Refresh(); } }
+        /// <summary>Turn Latin digits into Arabic-Indic digits (default). Off keeps the digits exactly as written.</summary>
+        public bool ArabicDigits { get => arabicDigits; set { arabicDigits = value; Refresh(); } }
 
         protected override void OnEnable() { base.OnEnable(); Refresh(); }
         protected override void OnRectTransformDimensionsChange() { base.OnRectTransformDimensionsChange(); if (wrap) Refresh(); }
@@ -48,15 +50,22 @@ namespace MafiaNight.UI.Kit
                 tmp.textWrappingMode = TextWrappingModes.NoWrap;
 
                 if (!ArabicShaper.ContainsArabic(text)) { tmp.text = text; return; }
-                tmp.text = wrap ? WrapShaped() : ArabicShaper.Shape(text, arabicDigits);
+                tmp.text = wrap ? WrapShaped() : Shape(text);
             }
             finally { refreshing = false; }
+        }
+
+        // calligraphic fonts may not have the lam-alef ligature glyphs; then the two letters are joined instead
+        private string Shape(string s)
+        {
+            bool lig = tmp.font == null || tmp.font.HasCharacter((char)0xFEFB, true, true);
+            return ArabicShaper.Shape(s, arabicDigits, lig, tmp.font != null ? ContextualForms.For(tmp.font.name) : null);
         }
 
         private string WrapShaped()
         {
             float max = tmp.rectTransform.rect.width - tmp.margin.x - tmp.margin.z;
-            if (max <= 1f) return ArabicShaper.Shape(text, arabicDigits);
+            if (max <= 1f) return Shape(text);
 
             var paragraphs = text.Split('\n');
             var lines = new System.Collections.Generic.List<string>();
@@ -67,15 +76,15 @@ namespace MafiaNight.UI.Kit
                 foreach (var w in words)
                 {
                     string cand = cur.Length == 0 ? w : cur + " " + w;
-                    float width = tmp.GetPreferredValues(ArabicShaper.Shape(cand, arabicDigits)).x;
+                    float width = tmp.GetPreferredValues(Shape(cand)).x;
                     if (width > max && cur.Length > 0)
                     {
-                        lines.Add(ArabicShaper.Shape(cur, arabicDigits));
+                        lines.Add(Shape(cur));
                         cur = w;
                     }
                     else cur = cand;
                 }
-                lines.Add(ArabicShaper.Shape(cur, arabicDigits));
+                lines.Add(Shape(cur));
             }
             return string.Join("\n", lines);
         }
