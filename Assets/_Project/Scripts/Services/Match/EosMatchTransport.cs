@@ -20,11 +20,12 @@ namespace MafiaNight.Services.Match
         private const string Tag = "MatchNet";
         private const string SocketName = "mafia-match";
         private const byte Channel = 0;
-        private const uint MaxPacket = 4096;
+        private const uint MaxPacket = 4096;   // receive buffer; EOS itself never delivers more than PacketFramer.MaxPacket per packet
 
         private readonly IEosPlatform eos;
         private readonly IRoomService rooms;
         private readonly byte[] buffer = new byte[MaxPacket];
+        private readonly PacketFramer.Reassembler reassembler = new PacketFramer.Reassembler();
         private ulong requestNotif, closedNotif;
         private bool opened;
 
@@ -84,7 +85,9 @@ namespace MafiaNight.Services.Match
 
         private void OnClosed(ref OnRemoteConnectionClosedInfo info)
         {
-            if (info.RemoteUserId != null) PeerLost?.Invoke(info.RemoteUserId.ToString());
+            if (info.RemoteUserId == null) return;
+            reassembler.Forget(info.RemoteUserId.ToString());
+            PeerLost?.Invoke(info.RemoteUserId.ToString());
         }
 
         public void Send(string peerId, WireMessage message)
@@ -92,15 +95,17 @@ namespace MafiaNight.Services.Match
             var p = P2P; if (p == null || Me == null) return;
             var remote = ProductUserId.FromString(peerId);
             if (remote == null || !InMyRoom(remote)) return;
-            var data = message.ToBytes();
-            if (data.Length > MaxPacket) { Log.Warning("Message too big: " + message.Type, Tag); return; }
-            var so = new SendPacketOptions
+            // EOS packets hold at most 1170 bytes: long messages (16-player state, snapshots) go out in pieces
+            foreach (var piece in PacketFramer.Split(message.ToBytes()))
             {
-                LocalUserId = Me, RemoteUserId = remote, SocketId = Socket, Channel = Channel,
-                Data = new ArraySegment<byte>(data), AllowDelayedDelivery = true, Reliability = PacketReliability.ReliableOrdered,
-            };
-            var r = p.SendPacket(ref so);
-            if (r != Result.Success) Log.Warning("SendPacket " + r + " (" + message.Type + ")", Tag);
+                var so = new SendPacketOptions
+                {
+                    LocalUserId = Me, RemoteUserId = remote, SocketId = Socket, Channel = Channel,
+                    Data = new ArraySegment<byte>(piece), AllowDelayedDelivery = true, Reliability = PacketReliability.ReliableOrdered,
+                };
+                var r = p.SendPacket(ref so);
+                if (r != Result.Success) { Log.Warning("SendPacket " + r + " (" + message.Type + ")", Tag); return; }
+            }
         }
 
         /// <summary>Reads everything that arrived since the last call.</summary>
@@ -108,14 +113,17 @@ namespace MafiaNight.Services.Match
         {
             var p = P2P; if (!opened || p == null || Me == null) return;
             ProductUserId peer = null; var socket = new SocketId();
-            for (int i = 0; i < 64; i++)   // a frame never needs more than this
+            for (int i = 0; i < 256; i++)   // a frame never needs more than this (long messages arrive in several packets)
             {
                 var ro = new ReceivePacketOptions { LocalUserId = Me, MaxDataSizeBytes = MaxPacket, RequestedChannel = Channel };
                 var r = p.ReceivePacket(ref ro, ref peer, ref socket, out byte ch, new ArraySegment<byte>(buffer), out uint written);
                 if (r != Result.Success) break;
                 if (!InMyRoom(peer)) continue;
-                var msg = WireMessage.FromBytes(buffer, (int)written);
-                if (msg != null) Received?.Invoke(peer.ToString(), msg);
+                string from = peer.ToString();
+                var whole = reassembler.Push(from, buffer, (int)written);
+                if (whole == null) continue;
+                var msg = WireMessage.FromBytes(whole);
+                if (msg != null) Received?.Invoke(from, msg);
             }
         }
     }

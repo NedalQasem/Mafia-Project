@@ -74,6 +74,8 @@ namespace MafiaNight.Services.Rooms
         bool IAmHost { get; }
         /// <summary>The local player hosts a room somebody else created (the owner is away and gets the host role back on return).</summary>
         bool IsTemporaryHost { get; }
+        /// <summary>The member who takes over when this host leaves (null when not the host or alone). A running match sends him its snapshot.</summary>
+        string NextHostCandidate { get; }
 
         /// <summary>Public / VIP rooms, newest data from EOS (private rooms are not listed).</summary>
         void RefreshList(Action<RoomResult> done);

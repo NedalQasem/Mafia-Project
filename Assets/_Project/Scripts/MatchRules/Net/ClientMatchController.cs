@@ -54,6 +54,8 @@ namespace MafiaNight.MatchRules.Net
 
         public event Action Changed;
         public event Action<Phase> PhaseChanged;
+        /// <summary>The match was cancelled (the host was lost and nobody could continue it). Argument: the reason in Arabic.</summary>
+        public event Action<string> Aborted;
 
         public ClientMatchController(string myId, Action<WireMessage> toHost) { this.myId = myId; this.toHost = toHost; }
 
@@ -107,6 +109,10 @@ namespace MafiaNight.MatchRules.Net
                     VerdictVotes = m.Int(2); VerdictAbstained = m.Int(3);
                     if (VerdictRemovedId != null && VerdictRemovedRole.HasValue) known[VerdictRemovedId] = VerdictRemovedRole.Value;
                     RefreshRoles();
+                    break;
+                case Msg.Abort:
+                    Phase = Phase.Lobby; MafiaVotes.Clear(); Tally.Clear();
+                    Aborted?.Invoke(m.Arg(0));
                     break;
                 case Msg.Over:
                     Enum.TryParse(m.Arg(0), out Winner w); Winner = w;

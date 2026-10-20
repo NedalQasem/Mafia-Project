@@ -523,6 +523,8 @@ namespace MafiaNight.Services.Rooms
             });
         }
 
+        public string NextHostCandidate => PickSuccessor();
+
         /// <summary>The member who takes over when the local host leaves: the next one in line.</summary>
         private string PickSuccessor()
         {

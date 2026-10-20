@@ -29,6 +29,8 @@ namespace MafiaNight.MatchRules.Net
         public bool Running => match.Phase != Phase.Lobby && match.Phase != Phase.GameOver;
         /// <summary>The match reached its end (winner decided).</summary>
         public event Action Finished;
+        /// <summary>Something that a snapshot must contain changed (phase, an accepted act, somebody left).</summary>
+        public event Action Changed;
 
         public HostMatchController(MafiaMatch match, IMatchTransport net, string selfId, Action<WireMessage> toSelf)
         {
@@ -79,6 +81,7 @@ namespace MafiaNight.MatchRules.Net
         private void EnterPhase()
         {
             timeLeft = match.PhaseSeconds; endIn = -1f; elapsedInPhase = 0f; ready.Clear();
+            Changed?.Invoke();
             ToAll(StateMessage());
             switch (match.Phase)
             {
@@ -110,6 +113,69 @@ namespace MafiaNight.MatchRules.Net
             EnterPhase();
         }
 
+        // ---------------------------------------------------------------- hand-over to another device
+
+        private const string RuntimeVersion = "h1";
+
+        /// <summary>The match plus this controller's own timers, as text pieces for the member who may take over.</summary>
+        public List<string> ExportState()
+        {
+            var o = new List<string> { RuntimeVersion, WireMessage.F(timeLeft), WireMessage.F(endIn), WireMessage.F(elapsedInPhase), ready.Count.ToString() };
+            o.AddRange(ready);
+            o.Add(spectators.Count.ToString());
+            o.AddRange(spectators);
+            o.AddRange(match.Export());
+            return o;
+        }
+
+        /// <summary>Continues a match from <see cref="ExportState"/> on this device; null if the data is not valid.</summary>
+        public static HostMatchController Resume(IList<string> data, MatchConfig config, IRandom random, IMatchTransport net, string selfId, Action<WireMessage> toSelf)
+        {
+            try
+            {
+                if (data == null || data.Count < 6 || data[0] != RuntimeVersion) return null;
+                var inv = System.Globalization.CultureInfo.InvariantCulture;
+                float timeLeft = float.Parse(data[1], inv), endIn = float.Parse(data[2], inv), elapsed = float.Parse(data[3], inv);
+                int i = 4;
+                int nReady = int.Parse(data[i++], inv);
+                var ready = new List<string>(); for (int k = 0; k < nReady; k++) ready.Add(data[i++]);
+                int nSpect = int.Parse(data[i++], inv);
+                var spect = new List<string>(); for (int k = 0; k < nSpect; k++) spect.Add(data[i++]);
+                var match = MafiaMatch.Restore(config, new List<string>(data).GetRange(i, data.Count - i), random);
+                if (match == null) return null;
+                var c = new HostMatchController(match, net, selfId, toSelf) { timeLeft = timeLeft, endIn = endIn, elapsedInPhase = elapsed };
+                foreach (var r in ready) c.ready.Add(r);
+                foreach (var sp in spect) c.spectators.Add(sp);
+                return c;
+            }
+            catch (Exception) { return null; }
+        }
+
+        /// <summary>After a take-over: tells everybody where the match stands, so every screen matches the new host.</summary>
+        public void Reannounce()
+        {
+            if (!Running) return;
+            ToAll(StateMessage());
+            switch (match.Phase)
+            {
+                case Phase.Day: ToAll(new WireMessage(Msg.Skip, match.SkipCount.ToString(), (match.InPlayCount / 2 + 1).ToString())); break;
+                case Phase.Voting:
+                    var a = new List<string>();
+                    foreach (var kv in match.CurrentTally()) { a.Add(kv.Key); a.Add(kv.Value.ToString()); }
+                    ToAll(new WireMessage(Msg.Tally, a.ToArray()));
+                    break;
+                case Phase.Night:
+                    if (match.MafiaVotes.Count > 0)
+                    {
+                        var mv = new List<string>();
+                        foreach (var kv in match.MafiaVotes) { mv.Add(kv.Key); mv.Add(kv.Value); }
+                        ToMafia(new WireMessage(Msg.MafiaVotes, mv.ToArray()));
+                    }
+                    break;
+            }
+            Changed?.Invoke();
+        }
+
         /// <summary>Call every frame with the time since the last one.</summary>
         public void Tick(float dt)
         {
@@ -136,7 +202,8 @@ namespace MafiaNight.MatchRules.Net
         /// <summary>A room member arrived while the match runs: he sees the table (no role, no acts) until the next match.</summary>
         public void AddSpectator(string id)
         {
-            if (!Running || string.IsNullOrEmpty(id) || id == selfId || match.Get(id) != null || !spectators.Add(id)) return;
+            var known = match.Get(id);
+            if (!Running || string.IsNullOrEmpty(id) || id == selfId || (known != null && !known.Left) || !spectators.Add(id)) return;   // a player who left and came back watches too
             Send(id, new WireMessage(Msg.Start));
             Send(id, StateMessage());
         }
@@ -148,7 +215,7 @@ namespace MafiaNight.MatchRules.Net
             if (!Running) return;
             var before = match.Phase;
             match.PlayerLeft(id);
-            if (match.Phase != before) EnterPhase(); else ToAll(StateMessage());
+            if (match.Phase != before) EnterPhase(); else { Changed?.Invoke(); ToAll(StateMessage()); }
         }
 
         // ---------------------------------------------------------------- acts
@@ -193,6 +260,7 @@ namespace MafiaNight.MatchRules.Net
                 default:
                     return;
             }
+            if (res == ActionResult.Ok) Changed?.Invoke();
             Send(sender, new WireMessage(Msg.Result, kind, res.ToString()));
         }
     }

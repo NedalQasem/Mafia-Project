@@ -283,5 +283,73 @@ namespace MafiaNight.MatchRules
         }
 
         public MatchSummary Summary() => new MatchSummary { Winner = Winner, Rounds = Round, Players = new List<MatchPlayer>(players) };
+
+        // ---------------------------------------------------------------- snapshot (so another device can take over as host)
+
+        private const string SnapshotVersion = "m1";
+
+        /// <summary>Everything the match knows, as plain text pieces. <see cref="Restore"/> builds an identical match from it.</summary>
+        public List<string> Export()
+        {
+            var o = new List<string> { SnapshotVersion, Phase.ToString(), Round.ToString(), Winner.ToString(), doctorTarget ?? "", sheriffDone ? "1" : "0" };
+            o.Add(players.Count.ToString());
+            foreach (var p in players) { o.Add(p.Id); o.Add(p.Name ?? ""); o.Add(p.Role.ToString()); o.Add(p.Alive ? "1" : "0"); o.Add(p.Left ? "1" : "0"); o.Add(p.SelfSavesUsed.ToString()); }
+            o.Add(mafiaVotes.Count.ToString());
+            foreach (var kv in mafiaVotes) { o.Add(kv.Key); o.Add(kv.Value); }
+            o.Add(skipVotes.Count.ToString());
+            foreach (var id in skipVotes) o.Add(id);
+            o.Add(votes.Count.ToString());
+            foreach (var kv in votes) { o.Add(kv.Key); o.Add(kv.Value ?? ""); }
+            if (LastNight == null) o.Add("0");
+            else { o.Add("1"); o.Add(LastNight.VictimId ?? ""); o.Add(LastNight.Saved ? "1" : "0"); o.Add(LastNight.DiedId ?? ""); o.Add(LastNight.DiedRole?.ToString() ?? ""); }
+            if (LastSheriff == null) o.Add("0");
+            else { o.Add("1"); o.Add(LastSheriff.SheriffId); o.Add(LastSheriff.TargetId); o.Add(LastSheriff.IsMafia ? "1" : "0"); }
+            if (LastVerdict == null) o.Add("0");
+            else
+            {
+                o.Add("1"); o.Add(LastVerdict.RemovedId ?? ""); o.Add(LastVerdict.RemovedRole?.ToString() ?? ""); o.Add(LastVerdict.Votes.ToString()); o.Add(LastVerdict.Abstained.ToString());
+                o.Add(LastVerdict.Tally.Count.ToString());
+                foreach (var kv in LastVerdict.Tally) { o.Add(kv.Key); o.Add(kv.Value.ToString()); }
+            }
+            return o;
+        }
+
+        /// <summary>Rebuilds a match from <see cref="Export"/>; null if the data is not a valid snapshot.</summary>
+        public static MafiaMatch Restore(MatchConfig config, IList<string> data, IRandom random = null)
+        {
+            try
+            {
+                int i = 0;
+                string Next() => data[i++];
+                int NextInt() => int.Parse(Next(), System.Globalization.CultureInfo.InvariantCulture);
+                bool NextBool() => Next() == "1";
+                Role? NextRole() { var s = Next(); return s.Length == 0 ? (Role?)null : (Role)Enum.Parse(typeof(Role), s); }
+                string NullIfEmpty(string s) => s.Length == 0 ? null : s;
+
+                if (data == null || data.Count < 8 || Next() != SnapshotVersion) return null;
+                var m = new MafiaMatch(config, new KeyValuePair<string, string>[0], random);
+                m.Phase = (Phase)Enum.Parse(typeof(Phase), Next());
+                m.Round = NextInt();
+                m.Winner = (Winner)Enum.Parse(typeof(Winner), Next());
+                m.doctorTarget = NullIfEmpty(Next());
+                m.sheriffDone = NextBool();
+                int n = NextInt();
+                for (int k = 0; k < n; k++)
+                    m.players.Add(new MatchPlayer { Id = Next(), Name = Next(), Role = (Role)Enum.Parse(typeof(Role), Next()), Alive = NextBool(), Left = NextBool(), SelfSavesUsed = NextInt() });
+                n = NextInt(); for (int k = 0; k < n; k++) { string a = Next(), b = Next(); m.mafiaVotes[a] = b; }
+                n = NextInt(); for (int k = 0; k < n; k++) m.skipVotes.Add(Next());
+                n = NextInt(); for (int k = 0; k < n; k++) { string a = Next(), b = Next(); m.votes[a] = NullIfEmpty(b); }
+                if (NextBool()) m.LastNight = new NightResult { VictimId = NullIfEmpty(Next()), Saved = NextBool(), DiedId = NullIfEmpty(Next()), DiedRole = NextRole() };
+                if (NextBool()) m.LastSheriff = new SheriffReport { SheriffId = Next(), TargetId = Next(), IsMafia = NextBool() };
+                if (NextBool())
+                {
+                    var v = new VerdictResult { RemovedId = NullIfEmpty(Next()), RemovedRole = NextRole(), Votes = NextInt(), Abstained = NextInt() };
+                    n = NextInt(); for (int k = 0; k < n; k++) { string a = Next(); v.Tally[a] = NextInt(); }
+                    m.LastVerdict = v;
+                }
+                return m;
+            }
+            catch (Exception) { return null; }
+        }
     }
 }

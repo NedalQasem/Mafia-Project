@@ -22,6 +22,10 @@ namespace MafiaNight.Services.Match
 
         public static MatchRunner Instance { get; private set; }
         public MatchSession Session { get; private set; }
+        private string endReason = "";
+
+        /// <summary>Why the last match was cancelled (shown once by the room screen), or empty.</summary>
+        public string TakeEndReason() { var r = endReason; endReason = ""; return r; }
 
         private IRoomService rooms;
         private IEosPlatform eos;
@@ -78,6 +82,7 @@ namespace MafiaNight.Services.Match
             Session = new MatchSession(eos, rooms);
             Session.Client.PhaseChanged += OnPhase;
             Session.Client.Changed += ApplyVoice;
+            Session.Cancelled += OnCancelled;
             lastVoicePlan = "";
             known.Clear();
             foreach (var m in rooms.Members) known.Add(m.Puid);
@@ -88,9 +93,18 @@ namespace MafiaNight.Services.Match
             if (Session == null) return;
             Session.Client.PhaseChanged -= OnPhase;
             Session.Client.Changed -= ApplyVoice;
+            Session.Cancelled -= OnCancelled;
             Session.Dispose();
             voice?.ClearGameVoice();
             Session = null;
+        }
+
+        private void OnCancelled(string reason)
+        {
+            endReason = reason ?? "";
+            voice?.ClearGameVoice();
+            if (SceneManager.GetActiveScene().name != GameConstants.SCENE_MATCH) return;
+            if (scenes != null) scenes.LoadScene(GameConstants.SCENE_HOME); else SceneManager.LoadScene(GameConstants.SCENE_HOME);
         }
 
         /// <summary>The first state message of a new match arrives: show the table.</summary>

@@ -82,6 +82,9 @@ namespace MafiaNight.App
             rooms.OnHostChanged += Say;
             nextList = 0f;
             if (rooms.InRoom) EnterVoice();   // coming back from a match: the room is still ours
+            var runner = MafiaNight.Services.Match.MatchRunner.Instance;
+            string why = runner != null ? runner.TakeEndReason() : "";
+            if (!string.IsNullOrEmpty(why)) Say(why);
         }
 
         private void OnDestroy()

@@ -56,6 +56,8 @@ namespace MafiaNight.MatchRules.Net
         public const string Tally = "tally";        // (target id, count)... live vote count
         public const string Verdict = "verdict";    // removed id, removed role, votes, abstained
         public const string Over = "over";          // winner, (id, role)...
+        public const string Snapshot = "snap";      // the whole match state, from the host to the member who would take over (private)
+        public const string Abort = "abort";        // the match ended without a winner (the host was lost and nobody could take over)
     }
 
     /// <summary>What the host uses to reach a player and what it hears back. The network layer implements it (EOS P2P); tests use an in-memory hub.</summary>
