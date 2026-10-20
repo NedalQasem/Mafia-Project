@@ -1,0 +1,29 @@
+# Runs the rewards service next to the website's containers WITHOUT touching the website's own compose file.
+# It joins the website's network so the website's nginx can reach it as http://mafia-rewards:8787 (no port is published to the internet).
+# Start:  docker compose -f docker-compose.rewards.yml up -d --build
+services:
+  mafia-rewards:
+    build: .
+    container_name: mafia-rewards
+    restart: unless-stopped
+    env_file: /etc/mafia-rewards.env          # PLAYFAB_SECRET_KEY=...  (only here, chmod 600)
+    environment:
+      CONFIG: /app/config.json
+      HOST: 0.0.0.0
+      DATA_FILE: /data/state.json
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - rewards-data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    networks: [site]
+
+volumes:
+  rewards-data:
+
+networks:
+  site:
+    external: true
+    name: ${SITE_NETWORK:-mena-gaming_default}   # confirm with: docker network ls

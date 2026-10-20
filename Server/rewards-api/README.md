@@ -12,119 +12,96 @@
 
 كل الأرقام (XP، كوينز، السقف، النصاب...) بـ `config.json`.
 
-## التركيب على الـ VPS (Ubuntu)
+## التركيب على الـ VPS (Docker، جنب موقع mena-gaming.com)
 
-> **قاعدة:** موقع `mena-gaming.com` الحالي ما نلمسه. نضيف سبدومين جديد `api.mena-gaming.com` بإعداد منفصل. وما بتكتب المفتاح السري بأي شات أو ملف بالمشروع.
+> موقعك بيشتغل بـ Docker: حاوية nginx بتمسك 80 و443، ومعها frontend وbackend وpostgres. الخدمة بتشتغل **حاوية منفصلة** على نفس الشبكة، بدون ما نغيّر `docker-compose.yml` تبع الموقع. **ما بنركّب nginx ولا certbot على السيرفر نفسه** (بيتصادموا مع حاوية الموقع على 80/443).
+>
+> **انتبه للمكان:** أوامر `[جهازك]` بتتنفذ بـ PowerShell على ويندوز (الـ prompt بيبدأ بـ `PS C:\`). أوامر `[السيرفر]` بتتنفذ بعد `ssh root@IP` (الـ prompt بيبدأ بـ `root@srv`). ما تنسخ أسطر الشرح اللي فيها `#`، ولا نص عربي.
 
 ### 1) السبدومين
-بلوحة الدومين (DNS) أضف سجل **A**: الاسم `api` يشير لعنوان IP تبع الـ VPS. (انتظر دقائق للانتشار؛ تتأكد بـ `ping api.mena-gaming.com`).
+بلوحة الدومين: سجل **A** باسم `api` يشير لعنوان الـ VPS. تأكد من السيرفر: `getent hosts api.mena-gaming.com` لازم يرجّع عنوان السيرفر.
 
-### 2) تجهيز السيرفر
+### 2) رفع الخدمة — [جهازك]
+```powershell
+cd "F:\Game_Projects\Mafia Voice Chat project\Server"
+scp -r rewards-api root@IP_السيرفر:/root/rewards-api
+```
+(بتكتب عنوان السيرفر الحقيقي مكان `IP_السيرفر`، وبتدخل باسورد السيرفر.)
+
+### 3) المفتاح السري — [السيرفر]
+من PlayFab: **Settings ← Secret keys ← New Secret Key**، وبعدين احذف المفتاح المؤقت القديم. بالسيرفر الأمر الأول بيطلب منك تلصق المفتاح وهو **مخفي**:
 ```bash
-ssh <user>@<ip-الـVPS>
-sudo apt update && sudo apt -y upgrade
-# Node.js 22 (إذا ما كان مركّب أو أقدم من 20):
-node --version
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt -y install nodejs
+read -rsp "PlayFab secret key: " K; echo
+printf 'PLAYFAB_SECRET_KEY=%s\n' "$K" | sudo tee /etc/mafia-rewards.env >/dev/null; unset K
+sudo chown root:root /etc/mafia-rewards.env && sudo chmod 600 /etc/mafia-rewards.env
+sudo wc -l -c /etc/mafia-rewards.env      # سطر واحد، حوالي 40-80 بايت
 ```
 
-### 3) رفع الخدمة (من جهازك)
+### 4) تشغيل الحاوية — [السيرفر]
 ```bash
-scp -r Server/rewards-api <user>@<ip>:/tmp/rewards-api
+cd /root/rewards-api && cp config.example.json config.json
+docker compose -f docker-compose.rewards.yml up -d --build
+docker logs mafia-rewards                       # rewards api on 0.0.0.0:8787
+docker exec mena-gaming-nginx-1 wget -qO- http://mafia-rewards:8787/health     # {"ok":true}
 ```
-على السيرفر:
+إذا اسم شبكة الموقع غير `mena-gaming_default` (شوفه بـ `docker network ls`): `SITE_NETWORK=الاسم docker compose -f docker-compose.rewards.yml up -d --build`.
+
+### 5) شهادة HTTPS — [السيرفر]
+نفس طريقة الموقع (webroot على نفس الـ volumes)، بحاوية certbot مؤقتة:
 ```bash
-sudo useradd --system --home /opt/mafia-rewards --shell /usr/sbin/nologin mafia
-sudo mkdir -p /opt/mafia-rewards /var/lib/mafia-rewards
-sudo cp -r /tmp/rewards-api/* /opt/mafia-rewards/
-sudo cp /opt/mafia-rewards/config.example.json /opt/mafia-rewards/config.json
-sudo chown -R mafia:mafia /opt/mafia-rewards /var/lib/mafia-rewards
-cd /opt/mafia-rewards && sudo -u mafia node --test      # لازم تنجح 15 اختبار
+docker run --rm -v mena-gaming_certbot_conf:/etc/letsencrypt -v mena-gaming_certbot_www:/var/www/certbot certbot/certbot certonly --webroot -w /var/www/certbot -d api.mena-gaming.com --agree-tos --register-unsafely-without-email
 ```
+التجديد: آلية تجديد شهادة الموقع بتشمل هالشهادة لأنها بنفس الـ volume (راجع `DEPLOY.md` تبع الموقع).
 
-### 4) المفتاح السري (بإيدك على السيرفر فقط)
-1. بلوحة PlayFab: **Settings ← Secret keys ← New Secret Key** (سمّيه مثلاً `rewards-vps`). **احذف المفتاح المؤقت القديم** إذا لسا موجود.
-2. على السيرفر:
+### 6) تحويل api.mena-gaming.com للخدمة — [السيرفر]
+بنضيف بلوكين لآخر ملف nginx تبع الموقع، مع نسخة احتياطية، والتراجع تلقائي إذا فشل الفحص:
 ```bash
-sudo nano /etc/mafia-rewards.env
-# اكتب سطر واحد فقط (بدون مسافات ولا علامات اقتباس):
-# PLAYFAB_SECRET_KEY=المفتاح_هنا
-sudo chown root:root /etc/mafia-rewards.env
-sudo chmod 600 /etc/mafia-rewards.env
-```
+cd /opt/mena-gaming/nginx && cp nginx.conf nginx.conf.bak
+cat >> nginx.conf <<'NGINX'
 
-### 5) تشغيل دائم (systemd)
-```bash
-sudo tee /etc/systemd/system/mafia-rewards.service >/dev/null <<'EOF'
-[Unit]
-Description=Mafia rewards API
-After=network.target
-
-[Service]
-User=mafia
-WorkingDirectory=/opt/mafia-rewards
-EnvironmentFile=/etc/mafia-rewards.env
-ExecStart=/usr/bin/node src/index.js
-Restart=always
-RestartSec=3
-NoNewPrivileges=true
-ProtectSystem=strict
-ReadWritePaths=/var/lib/mafia-rewards
-PrivateTmp=true
-
-[Install]
-WantedBy=multi-user.target
-EOF
-sudo systemctl daemon-reload
-sudo systemctl enable --now mafia-rewards
-curl http://127.0.0.1:8787/health      # {"ok":true}
-sudo journalctl -u mafia-rewards -n 20 --no-pager
-```
-
-### 6) HTTPS على السبدومين
-أولاً شوف شو بيشغّل موقعك الحالي (لا تعدّل عليه):
-```bash
-sudo ss -ltnp | grep -E ':80|:443'
-```
-- **إذا nginx:** أضف ملف جديد فقط:
-```bash
-sudo tee /etc/nginx/sites-available/api.mena-gaming.com >/dev/null <<'EOF'
+# ---- rewards API ----
 server {
     listen 80;
     server_name api.mena-gaming.com;
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location / { return 301 https://$host$request_uri; }
+}
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name api.mena-gaming.com;
+    server_tokens off;
+    ssl_certificate     /etc/letsencrypt/live/api.mena-gaming.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.mena-gaming.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    add_header Strict-Transport-Security "max-age=31536000" always;
     client_max_body_size 16k;
+    resolver 127.0.0.11 valid=10s;
     location / {
-        proxy_pass http://127.0.0.1:8787;
-        proxy_set_header X-Forwarded-For $remote_addr;
+        set $rewards http://mafia-rewards:8787;
+        proxy_pass $rewards;
         proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 30s;
     }
 }
-EOF
-sudo ln -s /etc/nginx/sites-available/api.mena-gaming.com /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-sudo apt -y install certbot python3-certbot-nginx
-sudo certbot --nginx -d api.mena-gaming.com
+NGINX
+docker exec mena-gaming-nginx-1 nginx -t && docker exec mena-gaming-nginx-1 nginx -s reload || { cp nginx.conf.bak nginx.conf; echo "رجعنا الإعداد القديم"; }
 ```
-- **إذا Apache، أو لوحة ثانية (CloudPanel/Plesk/..):** ابعتلي اسمها وبعطيك الإعداد المناسب، لا تجرّب لحاله.
+اختبار: `https://api.mena-gaming.com/health` من أي جهاز لازم يرد `{"ok":true}`، وموقعك الأساسي يضل شغّال.
 
-اختبار نهائي من أي جهاز: `https://api.mena-gaming.com/health` لازم يرد `{"ok":true}`.
-
-### 7) جدار الحماية (إذا ufw مفعّل)
-```bash
-sudo ufw status
-sudo ufw allow OpenSSH && sudo ufw allow 80 && sudo ufw allow 443   # قبل ما تفعّله، حتى ما تنقفل
-```
-المنفذ 8787 ما بينفتح للخارج (الخدمة سامعة على 127.0.0.1 بس).
+### جدار الحماية
+المنفذ 8787 ما بينفتح (الحاوية ما بتنشره). قواعد ufw الحالية (22/80/443) كافية.
 
 ## بعد ما تشتغل
 - بلوحة PlayFab: عطّل **Allow client to add virtual currency** (Settings ← API Features).
-- مراقبة: `sudo journalctl -u mafia-rewards -f`
-- نسخة احتياطية: الملف `/var/lib/mafia-rewards/state.json` (مباريات الـ48 ساعة الأخيرة فقط، فخسارته مش خطيرة).
-- تحديثات: `sudo apt update && sudo apt upgrade` شهرياً، وأعد تشغيل الخدمة بعد تحديث الكود: `sudo systemctl restart mafia-rewards`.
+- مراقبة: `docker logs -f mafia-rewards`
+- الحالة (مباريات الـ48 ساعة الأخيرة فقط، فخسارتها مش خطيرة) بـ docker volume اسمه `rewards-data`.
+- تحديث الكود: ارفع المجلد من جديد ثم `docker compose -f docker-compose.rewards.yml up -d --build`. وتحديثات النظام: `sudo apt update && sudo apt upgrade` شهرياً.
 
 ## ملاحظات أمان
-- المفتاح السري بس بـ `/etc/mafia-rewards.env` (صلاحية 600). ما ينحط بـ Git ولا بالشات ولا باللعبة.
+- المفتاح السري بس بـ `/etc/mafia-rewards.env` (صلاحية 600، بيدخل الحاوية كمتغير بيئة). ما ينحط بـ Git ولا بالشات ولا باللعبة.
 - لو تسرّب المفتاح: احذفه من PlayFab فوراً وأنشئ غيره.
 - اللاعب بيقدر يكذب بدوره أو بنجاته (بيوصله بونص صغير)، لكنه ما بيقدر يألّف مباراة لحاله ولا يتخطى السقف اليومي. الاتفاق مع أغلبية اللاعبين على نتيجة مزوّرة ممكن نظرياً، والسقف اليومي بيحدّ من أثره.
 - لو الخدمة وقعت: اللعبة بتشتغل عادي، والجوائز بتتأخر وبتتعوّض لما ترجع (الأجهزة بتعيد المحاولة).

@@ -10,6 +10,8 @@ const { createStore } = require('./store');
 
 const cfgPath = process.env.CONFIG || path.join(__dirname, '..', 'config.json');
 const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+if (process.env.HOST) cfg.host = process.env.HOST;            // inside Docker the service listens on 0.0.0.0 (the port is not published)
+if (process.env.DATA_FILE) cfg.dataFile = process.env.DATA_FILE;
 const secretKey = process.env.PLAYFAB_SECRET_KEY;
 if (!secretKey) { console.error('PLAYFAB_SECRET_KEY is not set (put it in the service environment file).'); process.exit(1); }
 
