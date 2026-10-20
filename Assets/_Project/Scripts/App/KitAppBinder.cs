@@ -76,7 +76,11 @@ namespace MafiaNight.App
             if (navBar != null) navBar.OnTabSelected += OnTab;
             if (storeService != null) storeService.OnChanged += OnStoreChanged;
             if (store != null) WireStore();
-            if (FindAnyObjectByType<KitRoomsScreen>() != null && ServiceLocator.IsRegistered<MafiaNight.Services.Rooms.IRoomService>()) gameObject.AddComponent<RoomsFlow>();
+            if (FindAnyObjectByType<KitRoomsScreen>() != null && ServiceLocator.IsRegistered<MafiaNight.Services.Rooms.IRoomService>())
+            {
+                gameObject.AddComponent<RoomsFlow>();
+                gameObject.AddComponent<MafiaNight.Services.Match.MatchRunner>();
+            }
             if (FindAnyObjectByType<KitSettingsScreen>() != null) gameObject.AddComponent<VoiceSettingsFlow>();
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
             if (lb != null) lb.OnBack += GoHome;

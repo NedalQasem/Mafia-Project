@@ -33,6 +33,11 @@ namespace MafiaNight.MatchRules
 
         public float PhaseSeconds => Config.Duration(Phase);
 
+        /// <summary>The current night's mafia votes (mafia id -> victim id), for showing the mafia what their team picked.</summary>
+        public IReadOnlyDictionary<string, string> MafiaVotes => mafiaVotes;
+        /// <summary>The current votes (voter id -> target id, null = abstain), for the live tally.</summary>
+        public IReadOnlyDictionary<string, string> CurrentVotes => votes;
+
         public MafiaMatch(MatchConfig config, IEnumerable<KeyValuePair<string, string>> idAndName, IRandom random = null)
         {
             Config = config ?? new MatchConfig();
