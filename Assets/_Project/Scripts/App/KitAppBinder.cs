@@ -79,7 +79,7 @@ namespace MafiaNight.App
             if (FindAnyObjectByType<KitRoomsScreen>() != null && ServiceLocator.IsRegistered<MafiaNight.Services.Rooms.IRoomService>())
             {
                 gameObject.AddComponent<RoomsFlow>();
-                gameObject.AddComponent<MafiaNight.Services.Match.MatchRunner>();
+                MafiaNight.Services.Match.MatchRunner.Ensure();
             }
             if (FindAnyObjectByType<KitSettingsScreen>() != null) gameObject.AddComponent<VoiceSettingsFlow>();
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();

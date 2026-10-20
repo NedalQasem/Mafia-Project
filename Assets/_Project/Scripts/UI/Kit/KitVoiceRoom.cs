@@ -36,6 +36,8 @@ namespace MafiaNight.UI.Kit
         public event Action OnInvite;
         public event Action<bool> OnMicChanged;
         public event Action<int> OnSeatClicked;
+        /// <summary>The big bottom button was pressed (the host starting the match).</summary>
+        public event Action OnStartClicked;
         /// <summary>Off with real rooms: the "who is talking" animation is only for the prototype.</summary>
         public bool SimulateSpeaking = true;
         public bool MicOn { get; private set; } = true;
@@ -60,6 +62,19 @@ namespace MafiaNight.UI.Kit
                 relay.Held += down => { if (PushToTalk && MicOn != down) { MicOn = down; ApplyMic(); OnMicChanged?.Invoke(MicOn); } };
             }
             if (inviteButton != null) inviteButton.onClick.AddListener(() => OnInvite?.Invoke());
+            if (readyButton != null) readyButton.onClick.AddListener(() => OnStartClicked?.Invoke());
+        }
+
+        /// <summary>Label and state of the big bottom button.</summary>
+        public void SetStartButton(string label, bool enabled)
+        {
+            if (readyButton == null) return;
+            var t = readyButton.GetComponentInChildren<ArabicText>(true);
+            if (t != null) t.Text = label;
+            readyButton.interactable = enabled;
+            var cg = readyButton.GetComponent<CanvasGroup>();
+            if (cg == null) cg = readyButton.gameObject.AddComponent<CanvasGroup>();
+            cg.alpha = enabled ? 1f : 0.55f;
         }
 
         public void ToggleMic()

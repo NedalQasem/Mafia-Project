@@ -17,6 +17,8 @@ namespace MafiaNight.Core
         public const string SCENE_RESULTS = "Results";
         /// <summary>First screen after the Bootstrap (the rooms list of the new UI kit). Set back to SCENE_MAIN_MENU to use the old menu.</summary>
         public const string SCENE_HOME = "UIKitRooms";
+        /// <summary>The table screens of a running match.</summary>
+        public const string SCENE_MATCH = "UIKitMatch";
         #endregion
 
         #region Editor

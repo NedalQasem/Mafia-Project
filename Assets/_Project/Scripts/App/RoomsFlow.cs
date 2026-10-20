@@ -70,6 +70,7 @@ namespace MafiaNight.App
                 }
                 voice.OnMicChanged += on => { if (audio != null) audio.SetMic(on); };
                 voice.OnSeatClicked += OnSeat;
+                voice.OnStartClicked += OnStartMatch;
             }
             if (audio != null)
             {
@@ -80,6 +81,7 @@ namespace MafiaNight.App
             rooms.OnRoomLeft += OnRoomLeft;
             rooms.OnHostChanged += Say;
             nextList = 0f;
+            if (rooms.InRoom) EnterVoice();   // coming back from a match: the room is still ours
         }
 
         private void OnDestroy()
@@ -306,7 +308,28 @@ namespace MafiaNight.App
             if (voice == null || voice.HostDrawer == null || room == null) return;
             var list = new List<DrawerMember>();
             foreach (var m in rooms.Members) list.Add(new DrawerMember { puid = m.Puid, name = m.Name, isHost = m.IsHost, isMe = m.IsMe });
+            RefreshStartButton();
             voice.HostDrawer.Refresh(rooms.IAmHost, room.Locked, room.ChatEnabled, list);
+        }
+
+        // ---------------------------------------------------------------------------- the match
+
+        private void RefreshStartButton()
+        {
+            if (voice == null) return;
+            int n = rooms.Members.Count;
+            if (!rooms.IAmHost) { voice.SetStartButton("بانتظار المضيف", false); return; }
+            bool enough = n >= MatchConfigMin;
+            voice.SetStartButton(enough ? "ابدأ المباراة" : "تحتاج " + MatchConfigMin + " لاعبين", enough);
+        }
+
+        private const int MatchConfigMin = 4;
+
+        private void OnStartMatch()
+        {
+            var session = MafiaNight.Services.Match.MatchRunner.Instance != null ? MafiaNight.Services.Match.MatchRunner.Instance.Session : null;
+            if (session == null || !rooms.IAmHost) return;
+            if (!session.StartMatch()) Say("ما قدرنا نبدأ: لازم من ٤ إلى ١٦ لاعب.");
         }
 
         private void OnLock(bool locked)

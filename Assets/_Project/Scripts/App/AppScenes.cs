@@ -9,6 +9,7 @@ namespace MafiaNight.App
         public const string Leaderboards = "UIKitLeaderboards";
         public const string Settings = "UIKitSettings";
         public const string Loading = "UIKitLoading";
+        public const string Match = MafiaNight.Core.GameConstants.SCENE_MATCH;
 
         public static readonly string[] ByTab = { Store, Chat, Rooms, Leaderboards, Settings };
 
