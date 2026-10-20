@@ -19,6 +19,7 @@ namespace MafiaNight.MatchRules.Net
         private readonly string selfId;
         private readonly Action<WireMessage> toSelf;
         private readonly HashSet<string> ready = new HashSet<string>();
+        private readonly HashSet<string> spectators = new HashSet<string>();   // room members who arrived after the start: they watch
         private float timeLeft;
         private float endIn = -1f;                    // countdown to an early end, -1 = none
         private float elapsedInPhase;
@@ -26,6 +27,8 @@ namespace MafiaNight.MatchRules.Net
         public MafiaMatch Match => match;
         public float SecondsLeft => timeLeft;
         public bool Running => match.Phase != Phase.Lobby && match.Phase != Phase.GameOver;
+        /// <summary>The match reached its end (winner decided).</summary>
+        public event Action Finished;
 
         public HostMatchController(MafiaMatch match, IMatchTransport net, string selfId, Action<WireMessage> toSelf)
         {
@@ -42,7 +45,11 @@ namespace MafiaNight.MatchRules.Net
             if (peer == selfId) toSelf?.Invoke(m); else net.Send(peer, m);
         }
 
-        private void ToAll(WireMessage m) { foreach (var p in match.Players.Where(x => !x.Left)) Send(p.Id, m); }
+        private void ToAll(WireMessage m)
+        {
+            foreach (var p in match.Players.Where(x => !x.Left)) Send(p.Id, m);
+            foreach (var id in spectators) Send(id, m);
+        }
         private void ToMafia(WireMessage m) { foreach (var p in match.Players.Where(x => x.IsMafia && !x.Left)) Send(p.Id, m); }
 
         private WireMessage StateMessage()
@@ -85,6 +92,7 @@ namespace MafiaNight.MatchRules.Net
                     break;
                 case Phase.GameOver:
                     SendOver();
+                    Finished?.Invoke();
                     break;
             }
         }
@@ -125,9 +133,18 @@ namespace MafiaNight.MatchRules.Net
             }
         }
 
+        /// <summary>A room member arrived while the match runs: he sees the table (no role, no acts) until the next match.</summary>
+        public void AddSpectator(string id)
+        {
+            if (!Running || string.IsNullOrEmpty(id) || id == selfId || match.Get(id) != null || !spectators.Add(id)) return;
+            Send(id, new WireMessage(Msg.Start));
+            Send(id, StateMessage());
+        }
+
         /// <summary>A player left for good.</summary>
         public void PlayerLeft(string id)
         {
+            if (spectators.Remove(id)) return;
             if (!Running) return;
             var before = match.Phase;
             match.PlayerLeft(id);

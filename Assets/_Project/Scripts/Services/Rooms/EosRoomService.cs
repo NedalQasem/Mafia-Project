@@ -596,6 +596,8 @@ namespace MafiaNight.Services.Rooms
 
         public void SetChatEnabled(bool enabled, Action<bool> done = null) => SetFlag(KChat, enabled, r => r.ChatEnabled = enabled, done);
 
+        public void SetInMatch(bool inMatch, Action<bool> done = null) => SetFlag(KInMatch, inMatch, r => r.InMatch = inMatch, done);
+
         /// <summary>Host only: writes a 0/1 lobby attribute and mirrors it into the local room on success.</summary>
         private void SetFlag(string key, bool value, Action<RoomListing> apply, Action<bool> done)
         {

@@ -64,13 +64,20 @@ namespace MafiaNight.Services.Match
             var match = new MafiaMatch(config, players, new SystemRandom());
             Host?.Dispose();
             Host = new HostMatchController(match, net, myId, Client.Apply);
+            Host.Finished += OnFinished;
             if (!Host.Begin()) { Host.Dispose(); Host = null; return false; }
+            rooms.SetInMatch(true);
             Log.Info("Match started with " + match.Players.Count + " players", Tag);
             return true;
         }
 
+        private void OnFinished() { if (rooms.IAmHost) rooms.SetInMatch(false); }
+
         /// <summary>A player left the room: he counts as dead.</summary>
         public void MemberLeft(string puid) { Host?.PlayerLeft(puid); }
+
+        /// <summary>Somebody entered the room: during a match he watches.</summary>
+        public void MemberJoined(string puid) { Host?.AddSpectator(puid); }
 
         public void Tick(float dt)
         {

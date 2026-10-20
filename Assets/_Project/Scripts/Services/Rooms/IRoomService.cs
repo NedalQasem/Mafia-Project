@@ -89,5 +89,7 @@ namespace MafiaNight.Services.Rooms
         void SetLocked(bool locked, Action<bool> done = null);
         /// <summary>Host only: turns the room's text chat on or off.</summary>
         void SetChatEnabled(bool enabled, Action<bool> done = null);
+        /// <summary>Host only: marks the room as running a match (the list shows it, and the owner does not take the host role back until it ends).</summary>
+        void SetInMatch(bool inMatch, Action<bool> done = null);
     }
 }

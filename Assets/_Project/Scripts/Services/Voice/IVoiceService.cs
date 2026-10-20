@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MafiaNight.Services.Voice
 {
@@ -38,6 +39,14 @@ namespace MafiaNight.Services.Voice
         void Tick();
 
         void SetMic(bool on);
+
+        /// <summary>
+        /// The match's voice rules, on top of the player's own choices: <paramref name="micAllowed"/> false keeps the microphone closed
+        /// whatever the mic button says; <paramref name="hearOnly"/> (null = everybody) limits whom this device plays.
+        /// </summary>
+        void SetGameVoice(bool micAllowed, IReadOnlyCollection<string> hearOnly);
+        /// <summary>Back to normal room voice (match over).</summary>
+        void ClearGameVoice();
         bool IsSpeaking(string puid);
         /// <summary>Remote player seems muted by himself (his mic is off) - shown on his seat.</summary>
         bool IsRemoteMicOff(string puid);

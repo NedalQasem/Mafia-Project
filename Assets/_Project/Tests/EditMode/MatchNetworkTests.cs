@@ -257,6 +257,57 @@ namespace MafiaNight.Tests
             Assert.AreEqual(ActionResult.Ok, hub.Clients["p0"].LastResult);
         }
 
+        private static ClientMatchController AddWatcher(Hub hub, HostMatchController host, string id)
+        {
+            hub.Nodes[id] = new Node(id, hub);
+            hub.Inbox[id] = new List<WireMessage>();
+            hub.Clients[id] = new ClientMatchController(id, m => host.Receive(id, WireMessage.FromBytes(m.ToBytes())));
+            host.AddSpectator(id);
+            return hub.Clients[id];
+        }
+
+        [Test]
+        public void A_late_joiner_watches_the_table_without_a_role()
+        {
+            var (hub, host) = Setup(6);
+            host.Begin();
+            host.Tick(host.Match.Config.RoleRevealSeconds + 0.1f);   // night
+            var w = AddWatcher(hub, host, "late");
+            Assert.AreEqual(Phase.Night, w.Phase);
+            Assert.IsNull(w.MyRole);
+            Assert.IsFalse(w.IAmAlive);
+            Assert.AreEqual(6, w.Seats.Count);
+            Assert.IsFalse(hub.Inbox["late"].Any(m => m.Type == Msg.Role || m.Type == Msg.Sheriff || m.Type == Msg.MafiaVotes));
+        }
+
+        [Test]
+        public void A_watcher_hears_the_rest_of_the_match_but_cannot_act()
+        {
+            var (hub, host) = Setup(4);
+            host.Begin();
+            host.Tick(host.Match.Config.RoleRevealSeconds + 0.1f);   // night
+            var w = AddWatcher(hub, host, "late");
+            string victim = host.Match.Players.First(p => !p.IsMafia).Id;
+            w.MafiaPick(victim); w.DoctorSave(victim); w.Vote(victim); w.SkipDiscussion();
+            Assert.IsFalse(host.Match.MafiaVotes.Any(), "a watcher's act must be ignored");
+            host.Tick(host.Match.Config.NightSeconds + 0.1f);        // dawn
+            Assert.AreEqual(Phase.Dawn, w.Phase);
+            Assert.AreEqual(1, w.Round);
+        }
+
+        [Test]
+        public void A_watcher_who_leaves_does_not_end_anything()
+        {
+            var (hub, host) = Setup(4);
+            host.Begin();
+            host.Tick(host.Match.Config.RoleRevealSeconds + 0.1f);
+            AddWatcher(hub, host, "late");
+            int alive = host.Match.InPlayCount;
+            host.PlayerLeft("late");
+            Assert.AreEqual(alive, host.Match.InPlayCount);
+            Assert.AreEqual(Phase.Night, host.Match.Phase);
+        }
+
         [Test]
         public void A_host_cannot_start_a_match_that_is_too_small()
         {

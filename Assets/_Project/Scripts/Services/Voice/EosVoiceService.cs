@@ -34,6 +34,8 @@ namespace MafiaNight.Services.Voice
         private readonly HashSet<string> speaking = new HashSet<string>();
         private readonly HashSet<string> remoteMicOff = new HashSet<string>();
         private readonly HashSet<string> muted = new HashSet<string>();
+        private bool gameMicAllowed = true;                   // the match may close the microphone
+        private HashSet<string> hearOnly;                     // the match may limit whom we hear (null = everybody)
 
         /// <summary>Log every participant update (diagnostics).</summary>
         public static bool LogEvents;
@@ -58,7 +60,11 @@ namespace MafiaNight.Services.Voice
             {
                 ServiceLocator.TryGet(out rooms);
                 // leaving or losing the room ends the voice with it
-                if (rooms != null) rooms.OnRoomLeft += _ => Leave();
+                if (rooms != null)
+                {
+                    rooms.OnRoomLeft += _ => Leave();
+                    rooms.OnRoomChanged += () => { if (hearOnly != null) ApplyReceivingAll(); };   // somebody new may have arrived during the match
+                }
             }
             return eos != null && eos.IsLoggedIn && Me != null && Me.IsValid() && Lobby != null && Audio != null;
         }
@@ -148,6 +154,7 @@ namespace MafiaNight.Services.Voice
             Unsubscribe();
             IsConnected = false; joining = false;
             speaking.Clear(); remoteMicOff.Clear(); muted.Clear();
+            gameMicAllowed = true; hearOnly = null;
             roomName = null; lobbyId = null;
             if (!string.IsNullOrEmpty(id) && Ready())
             {
@@ -253,9 +260,40 @@ namespace MafiaNight.Services.Voice
         {
             MicOn = on;
             OnChanged?.Invoke();
+            ApplySending();
+        }
+
+        /// <summary>What EOS really sends: the player's choice, unless the match has closed the microphone.</summary>
+        private void ApplySending()
+        {
             if (!IsConnected || !Ready()) return;
-            var o = new UpdateSendingOptions { LocalUserId = Me, RoomName = roomName, AudioStatus = on ? RTCAudioStatus.Enabled : RTCAudioStatus.Disabled };
+            bool open = MicOn && gameMicAllowed;
+            var o = new UpdateSendingOptions { LocalUserId = Me, RoomName = roomName, AudioStatus = open ? RTCAudioStatus.Enabled : RTCAudioStatus.Disabled };
             Audio.UpdateSending(ref o, null, (ref UpdateSendingCallbackInfo d) => { if (d.ResultCode != Result.Success) Log.Warning("UpdateSending: " + d.ResultCode, Tag); });
+        }
+
+        public void SetGameVoice(bool micAllowed, IReadOnlyCollection<string> only)
+        {
+            gameMicAllowed = micAllowed;
+            hearOnly = only == null ? null : new HashSet<string>(only);
+            ApplySending();
+            ApplyReceivingAll();
+        }
+
+        public void ClearGameVoice() { SetGameVoice(true, null); }
+
+        private bool MayHear(string puid) => !muted.Contains(puid) && (hearOnly == null || hearOnly.Contains(puid));
+
+        private void ApplyReceivingAll()
+        {
+            if (!IsConnected || !Ready() || rooms == null) return;
+            string me = Me.ToString();
+            foreach (var m in rooms.Members)
+            {
+                if (m.Puid == me) continue;
+                var o = new UpdateReceivingOptions { LocalUserId = Me, RoomName = roomName, ParticipantId = ProductUserId.FromString(m.Puid), AudioEnabled = MayHear(m.Puid) };
+                Audio.UpdateReceiving(ref o, null, (ref UpdateReceivingCallbackInfo d) => { if (d.ResultCode != Result.Success) Log.Warning("UpdateReceiving: " + d.ResultCode, Tag); });
+            }
         }
 
         public bool IsSpeaking(string puid) => puid != null && speaking.Contains(puid);
@@ -268,7 +306,7 @@ namespace MafiaNight.Services.Voice
             if (value) muted.Add(puid); else muted.Remove(puid);
             OnChanged?.Invoke();
             if (!IsConnected || !Ready()) return;
-            var o = new UpdateReceivingOptions { LocalUserId = Me, RoomName = roomName, ParticipantId = ProductUserId.FromString(puid), AudioEnabled = !value };
+            var o = new UpdateReceivingOptions { LocalUserId = Me, RoomName = roomName, ParticipantId = ProductUserId.FromString(puid), AudioEnabled = MayHear(puid) };
             Audio.UpdateReceiving(ref o, null, (ref UpdateReceivingCallbackInfo d) => { if (d.ResultCode != Result.Success) Log.Warning("UpdateReceiving: " + d.ResultCode, Tag); });
         }
 

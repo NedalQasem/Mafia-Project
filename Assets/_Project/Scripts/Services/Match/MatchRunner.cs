@@ -4,6 +4,8 @@ using MafiaNight.MatchRules;
 using MafiaNight.Services.Auth;
 using MafiaNight.Services.Rooms;
 using MafiaNight.Services.Scenes;
+using MafiaNight.Services.Voice;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -24,6 +26,8 @@ namespace MafiaNight.Services.Match
         private IRoomService rooms;
         private IEosPlatform eos;
         private ISceneLoader scenes;
+        private IVoiceService voice;
+        private string lastVoicePlan = "";
         private System.Collections.Generic.HashSet<string> known = new System.Collections.Generic.HashSet<string>();
         private bool started;
 
@@ -47,6 +51,7 @@ namespace MafiaNight.Services.Match
             if (Instance != this) return;
             if (!ServiceLocator.TryGet(out rooms) || !ServiceLocator.TryGet(out eos)) { Destroy(gameObject); return; }
             ServiceLocator.TryGet(out scenes);
+            ServiceLocator.TryGet(out voice);
             rooms.OnRoomJoined += OnJoined;
             rooms.OnRoomLeft += OnLeft;
             rooms.OnRoomChanged += OnRoomChanged;
@@ -72,6 +77,8 @@ namespace MafiaNight.Services.Match
             if (Session != null) return;
             Session = new MatchSession(eos, rooms);
             Session.Client.PhaseChanged += OnPhase;
+            Session.Client.Changed += ApplyVoice;
+            lastVoicePlan = "";
             known.Clear();
             foreach (var m in rooms.Members) known.Add(m.Puid);
         }
@@ -80,7 +87,9 @@ namespace MafiaNight.Services.Match
         {
             if (Session == null) return;
             Session.Client.PhaseChanged -= OnPhase;
+            Session.Client.Changed -= ApplyVoice;
             Session.Dispose();
+            voice?.ClearGameVoice();
             Session = null;
         }
 
@@ -94,12 +103,27 @@ namespace MafiaNight.Services.Match
             else SceneManager.LoadScene(GameConstants.SCENE_MATCH);
         }
 
+        /// <summary>The match decides who may talk and whom we hear (see <see cref="MatchVoiceRules"/>); only changes are sent to EOS.</summary>
+        private void ApplyVoice()
+        {
+            if (voice == null || Session == null) return;
+            var c = Session.Client;
+            var mates = c.Seats.Where(x => x.IsMate && x.Alive && !x.Left).Select(x => x.Id).ToList();
+            var plan = MatchVoiceRules.For(c.Phase, c.MyRole, c.IAmAlive, mates);
+            string sig = plan.MicAllowed + "|" + (plan.HearOnly == null ? "*" : string.Join(",", plan.HearOnly.OrderBy(x => x)));
+            if (sig == lastVoicePlan) return;
+            lastVoicePlan = sig;
+            voice.SetGameVoice(plan.MicAllowed, plan.HearOnly);
+            Log.Info("Match voice: " + sig, Tag);
+        }
+
         private void OnRoomChanged()
         {
             if (Session == null) return;
             var now = new System.Collections.Generic.HashSet<string>();
             foreach (var m in rooms.Members) now.Add(m.Puid);
             foreach (var id in known) if (!now.Contains(id)) Session.MemberLeft(id);
+            foreach (var id in now) if (!known.Contains(id)) Session.MemberJoined(id);
             known = now;
         }
 
