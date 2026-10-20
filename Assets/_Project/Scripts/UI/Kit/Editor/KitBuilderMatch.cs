@@ -16,7 +16,7 @@ namespace MafiaNight.UI.Kit.Editor
     /// </summary>
     public static partial class KitBuilder
     {
-        private const string MatchArt = "Assets/_Project/Art/UI/Match/";
+        private static string MatchArt = "Assets/_Project/Art/UI/Match/";   // the folder of the frame set being built (Match or Family)
         private const string MatchScenePath = "Assets/_Project/Scenes/UIKitMatch.unity";
         private const float PhoneW = 390f, PhoneH = 790f;
         private static readonly float MatchK = 1080f / PhoneW;   // canvas units per CSS pixel
@@ -27,8 +27,8 @@ namespace MafiaNight.UI.Kit.Editor
         private class MNode
         {
             public int i, p; public string name, kind; public float x, y, w, h, rot, op, z;
-            public string sprite, tint; public bool stretch, bottom, dashed; public MArc arc;
-            public string text, color, align, dir, font; public float fs, fw, lh; public bool wrap;
+            public string sprite, tint; public bool stretch, bottom, dashed, flat; public MArc arc;
+            public string text, color, align, dir, font; public float fs, fw, lh, ls; public bool wrap;
         }
         [Serializable] private class MFrame { public string name; public float w, h; public List<MNode> nodes; }
         [Serializable] private class MFrames { public List<MFrame> frames; }
@@ -99,10 +99,17 @@ namespace MafiaNight.UI.Kit.Editor
 
         // ---------------------------------------------------------------- build
         [MenuItem("Mafia Night/UI Kit/Build Match Screens")]
-        public static void BuildMatchScreens()
+        public static void BuildMatchScreens() { RunFrameBuild("Assets/_Project/Art/UI/Match/", MatchScenePath); }
+
+        [MenuItem("Mafia Night/UI Kit/Build Family Screens")]
+        public static void BuildFamilyScreens() { RunFrameBuild("Assets/_Project/Art/UI/Family/", "Assets/_Project/Scenes/UIKitFamily.unity"); }
+
+        /// <summary>Builds one frame set (sprites + frames.json made from a mockup page) into a scene.</summary>
+        private static void RunFrameBuild(string artDir, string scenePath)
         {
+            MatchArt = artDir;
             var manifest = ReadMatchManifest();
-            if (manifest.Count == 0 || !File.Exists(MatchArt + "frames.json")) { Debug.LogError("[UIKit] run export-match.js and extract-match.js first (Tools/ui-gen/serve.js)"); return; }
+            if (manifest.Count == 0 || !File.Exists(MatchArt + "frames.json")) { Debug.LogError("[UIKit] export the sprites and extract the frames of the mockup first (Tools/ui-gen/serve.js + Docs/mockups/export-*.js)"); return; }
             ImportMatchSprites(manifest);
             AssetDatabase.Refresh();
             var th = BuildTheme();
@@ -123,7 +130,7 @@ namespace MafiaNight.UI.Kit.Editor
             var nm = so.FindProperty("names"); nm.arraySize = names.Length;
             for (int i = 0; i < roots.Length; i++) { fr.GetArrayElementAtIndex(i).objectReferenceValue = roots[i]; nm.GetArrayElementAtIndex(i).stringValue = names[i]; }
             so.ApplyModifiedPropertiesWithoutUndo();
-            EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), MatchScenePath);
+            EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), scenePath);
             Debug.Log("[UIKit] built " + frames.Count + " match frames");
         }
 
@@ -173,7 +180,8 @@ namespace MafiaNight.UI.Kit.Editor
                     if (nd.op < 0.999f) go.AddComponent<CanvasGroup>().alpha = Mathf.Pow(nd.op, 2.2f);   // Linear color space blends alpha in linear light
                 }
 
-                if (nd.kind == "textimg") MakeMatchTextImage(go, nd);
+                if (nd.kind == "nav") MakeNav(go);
+                else if (nd.kind == "textimg") MakeMatchTextImage(go, nd);
                 else if (nd.kind == "text") MakeMatchText(go, nd, th);
                 else if (nd.kind == "line") MakeMatchLine(go, nd);
                 else MakeMatchVisual(go, nd, th, manifest);
@@ -197,7 +205,7 @@ namespace MafiaNight.UI.Kit.Editor
                 im.color = ParseColor(nd.tint, Color.white);
                 return;
             }
-            if (!string.IsNullOrEmpty(nd.sprite) || !string.IsNullOrEmpty(nd.tint) && nd.stretch)
+            if (!string.IsNullOrEmpty(nd.sprite) || !string.IsNullOrEmpty(nd.tint) && (nd.stretch || nd.flat))
             {
                 var v = Go("V", go.transform); var vr = Rt(v);
                 var img = v.AddComponent<Image>(); img.raycastTarget = false;
@@ -211,7 +219,11 @@ namespace MafiaNight.UI.Kit.Editor
                 img.type = m != null && m.slice > 0 ? Image.Type.Sliced : Image.Type.Simple;
                 img.preserveAspect = false;
                 img.color = ParseColor(nd.tint, Color.white);
-                if (string.IsNullOrEmpty(nd.sprite)) { var fc = img.color; fc.a = 1f - Mathf.Pow(1f - fc.a, 2.2f); img.color = fc; }   // flat dark overlays: same linear-light correction
+                if (string.IsNullOrEmpty(nd.sprite))
+                {   // flat overlays: Linear color space blends alpha in linear light; dark ones need more alpha, light ones less
+                    var fc = img.color; float lum = 0.2126f * fc.r + 0.7152f * fc.g + 0.0722f * fc.b;
+                    fc.a = (1f - lum) * (1f - Mathf.Pow(1f - fc.a, 2.2f)) + lum * Mathf.Pow(fc.a, 2.2f); img.color = fc;
+                }
                 float pad = m != null ? m.pad * MatchK : 0f;
                 vr.anchorMin = Vector2.zero; vr.anchorMax = Vector2.one;
                 vr.offsetMin = new Vector2(-pad, -pad); vr.offsetMax = new Vector2(pad, pad);
@@ -252,6 +264,15 @@ namespace MafiaNight.UI.Kit.Editor
                 ti.SaveAndReimport();
             }
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        /// <summary>The bottom navigation bar is the real prefab (family tab selected), not a drawing of it.</summary>
+        private static void MakeNav(GameObject go)
+        {
+            var nav = InstChild("KitNavBar", go.transform, "Nav");
+            var r = Rt(nav); r.anchorMin = new Vector2(0, 0); r.anchorMax = new Vector2(1, 0); r.pivot = new Vector2(0.5f, 0); r.anchoredPosition = Vector2.zero; r.sizeDelta = new Vector2(0, 330);
+            var bar = nav.GetComponent<KitNavBar>();
+            if (bar != null) { var so = new SerializedObject(bar); so.FindProperty("selected").intValue = 1; so.ApplyModifiedPropertiesWithoutUndo(); bar.SnapToSelected(); }
         }
 
         private static void MakeMatchTextImage(GameObject go, MNode nd)
@@ -296,6 +317,7 @@ namespace MafiaNight.UI.Kit.Editor
             t.fontSize = nd.fs * MatchK;
             t.color = ParseColor(nd.color, Color.white);
             t.raycastTarget = false;
+            if (Mathf.Abs(nd.ls) > 0.0001f) t.characterSpacing = nd.ls * 100f;   // letter-spacing in em (TMP uses 1/100 em)
             // Lalezar and Aref Ruqaa are already heavy; the body font (Cairo) gets a thicker material for the 700/800 weights of the mockup
             t.fontStyle = FontStyles.Normal;
             if (nd.font == "body" && nd.fw >= 700 && font != null) { var bold = EnsureBoldMaterial(font); if (bold != null) t.fontSharedMaterial = bold; }

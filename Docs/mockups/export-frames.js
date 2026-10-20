@@ -54,11 +54,18 @@
         d[i + 3] = Math.round(((1 - lum) * (1 - Math.pow(1 - al, 2.2)) + lum * Math.pow(al, 2.2)) * 255);
       }
       g.putImageData(id, 0, 0); }
-      await fetch('/save?name=' + encodeURIComponent(name + '.png'), { method: 'POST', body: c.toDataURL('image/png') });
+      await fetch('/save?' + (window.__saveDir ? 'dir=' + window.__saveDir + '&' : '') + 'name=' + encodeURIComponent(name + '.png'), { method: 'POST', body: c.toDataURL('image/png') });
       done.push(name);
     }
-    await fetch('/save?name=textimgs.json', { method: 'POST', body: JSON.stringify({ pad, scale, names: done }) });
+    await fetch('/save?' + (window.__saveDir ? 'dir=' + window.__saveDir + '&' : '') + 'name=textimgs.json', { method: 'POST', body: JSON.stringify({ pad, scale, names: done }) });
     return done.length + ' text sprites';
+  };
+  window.__frameToPng = frameToPng;
+  /* any page: renders each given phone element to Assets/Screenshots/<prefix><id>.png */
+  window.exportPhones = async function (ids, prefix) {
+    const out = [];
+    for (const id of ids) { const data = await frameToPng(document.getElementById(id), 2); await fetch("/save?dir=shots&name=" + encodeURIComponent((prefix || "s_") + id + ".png"), { method: "POST", body: data }); out.push(id); }
+    return out.join(" ");
   };
   window.exportFrames = async function (only) {
     const variants = [

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>العائلة والإبلاغ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--crim:#8a1c24;--crim2:#e0585f;--teal:#4fa58b;--brass:#b99048}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:12px 8px 30px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif;display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+.col{display:grid;gap:8px;justify-items:center;align-content:start;width:min(390px,100%)}
+.cap{color:#6f685c;font-size:.78rem;margin:0;text-align:center;line-height:1.6}
+button,input,textarea{font-family:inherit;border:0;color:inherit;background:none}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
+.phone{width:100%;height:790px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 90% 30% at 50% 0,#e8c27a18,transparent 70%),linear-gradient(180deg,#15100d,#090605);box-shadow:0 0 0 7px #14100e,0 0 0 8px #ffffff14,0 24px 50px #000}
+
+/* top bar */
+.top{position:absolute;top:0;left:0;right:0;padding:30px 14px 8px;display:flex;align-items:center;gap:10px;z-index:8;background:linear-gradient(180deg,#0a0705f2 70%,transparent)}
+.ttl{flex:1;font-family:Lalezar;font-size:1.7rem;line-height:1}
+.ttl small{display:block;font-family:Cairo;font-weight:600;font-size:.64rem;color:#8d744a}
+.ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 1.5px #000,0 3px 6px #000a;position:relative}
+.ic svg{width:18px;height:18px;stroke:#cfc6b2;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic .dot{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;display:grid;place-items:center;font-family:Lalezar;font-size:.62rem;color:#fff;background:var(--crim);box-shadow:0 0 0 1.5px #000}
+
+/* tabs (segmented) */
+.seg{position:absolute;top:84px;left:14px;right:14px;z-index:7;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;padding:3px;border-radius:9px;background:#000a;box-shadow:inset 0 2px 4px #000}
+.seg button{position:relative;padding:8px 4px;border-radius:7px;font-weight:800;font-size:.78rem;color:#8f8777}
+.seg button.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:inset 0 1px 0 #fff9,0 2px 0 #000}
+.seg .n{position:absolute;top:-6px;left:6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;display:grid;place-items:center;font-family:Lalezar;font-size:.64rem;color:#fff;background:var(--crim);box-shadow:0 0 0 1.5px #0a0705}
+
+.scroll{position:absolute;inset:0;overflow-y:auto;padding:140px 14px 112px;scrollbar-width:none;display:grid;gap:10px;align-content:start}
+.scroll::-webkit-scrollbar{display:none}
+.sec{font-family:Lalezar;font-size:1rem;color:#a98f62;display:flex;align-items:center;gap:8px;margin-top:4px}
+.sec small{font-family:Cairo;font-weight:700;font-size:.64rem;color:#6f685c}
+.sec::after{content:"";flex:1;height:1px;background:#ffffff12}
+
+/* leather row */
+.row{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--grain),linear-gradient(180deg,#2a1e17,#17100c);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #000,0 6px 12px #000a}
+.row.off{opacity:.62}
+.av{position:relative;width:46px;height:46px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 0 0 3.5px #5a4326}
+.av svg.h{width:27px;height:27px;fill:#cfc6b2}
+.av .st{position:absolute;bottom:-1px;left:-1px;width:13px;height:13px;border-radius:50%;box-shadow:0 0 0 2px #17100c}
+.st.on{background:#4fd08b;box-shadow:0 0 0 2px #17100c,0 0 8px #4fd08b99}.st.room{background:#ffb35a;box-shadow:0 0 0 2px #17100c,0 0 8px #ffb35a99}.st.off{background:#5a5348}
+.info{flex:1;min-width:0;display:grid;gap:1px}
+.info b{font-family:Lalezar;font-weight:400;font-size:1.12rem;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.lv{font-family:Cairo;font-weight:800;font-size:.58rem;padding:1px 6px;border-radius:8px;color:#d2ad60;background:#000a;box-shadow:inset 0 0 0 1px #5a4326}
+.info small{font-size:.66rem;font-weight:700;color:#8f8777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info small.live{color:#ffb35a}
+.go{padding:8px 14px;border-radius:9px;font-weight:800;font-size:.76rem;text-align:center;position:relative;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000}
+.go:active{transform:translateY(2px)}
+.go.gold{background:linear-gradient(180deg,#e8cc8c,#b99048 55%,#6e5224);color:#2a1a08;box-shadow:inset 0 1px 0 #fff9,0 3px 0 #2a1c08}
+.go.teal{background:linear-gradient(180deg,#3f9a7d,#25745c 55%,#124030)}
+.ghost{padding:8px 12px;border-radius:9px;font-weight:800;font-size:.74rem;color:#b9a67e;background:#000a;box-shadow:inset 0 0 0 1px #3a2e22}
+.more{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#000a;box-shadow:inset 0 0 0 1px #3a2e22}
+.more svg{width:16px;height:16px;stroke:#b9a67e;fill:none;stroke-width:2.4;stroke-linecap:round}
+
+/* my id card */
+.idc{position:relative;padding:12px 14px;border-radius:10px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 22px #8a7a5a99,0 8px 16px #000b;display:flex;align-items:center;gap:12px;rotate:-1deg}
+.idc::before{content:"";position:absolute;right:16px;top:-9px;width:20px;height:16px;background:#7a1820;clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
+.idc small{display:block;font-size:.64rem;font-weight:800;color:#6a5a3a}
+.idc b{font-family:Lalezar;font-weight:400;font-size:2rem;letter-spacing:.12em;line-height:1;color:var(--crim)}
+.idc .cp{margin-inline-start:auto;padding:7px 12px;border-radius:7px;font-weight:800;font-size:.7rem;color:#f0dcd8;background:linear-gradient(180deg,#a2262f,#561016);box-shadow:0 2px 0 #000}
+/* field */
+.field{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:6px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 18px #8a7a5a99,0 4px 8px #0008}
+.field input{flex:1;min-width:0;font-family:Lalezar;font-size:1.5rem;letter-spacing:.14em;line-height:1.3;color:var(--ink);outline:0}
+.field input::placeholder{color:#8a7c5e;letter-spacing:0;font-size:1.1rem}
+.hint{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:8px;background:#0007;box-shadow:inset 0 0 0 1px #2b2118;font-size:.7rem;font-weight:700;line-height:1.5;color:#b9a67e}
+.hint svg{width:16px;height:16px;flex:none;margin-top:2px;stroke:var(--brass);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* bottom sheet */
+.dim{position:absolute;inset:0;z-index:20;background:#000b}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:21;padding:14px 14px 20px;border-radius:20px 20px 0 0;background:var(--grain),linear-gradient(180deg,#2c1f17,#17100c);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 -14px 30px #000d;display:grid;gap:10px}
+.sheet .grab{width:44px;height:5px;border-radius:3px;background:#ffffff30;justify-self:center}
+.sheet h3{margin:0;font-family:Lalezar;font-weight:400;font-size:1.35rem;line-height:1.1}
+.sheet h3 small{display:block;font-family:Cairo;font-weight:700;font-size:.66rem;color:#8d744a;margin-top:2px}
+.act{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;font-weight:800;font-size:.84rem;text-align:start;background:#000a;box-shadow:inset 0 0 0 1px #3a2e22}
+.act svg{width:20px;height:20px;flex:none;stroke:var(--brass);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.act small{display:block;font-size:.62rem;font-weight:600;color:#8f8777}
+.act.bad{color:#e6b3b6;box-shadow:inset 0 0 0 1px #8a1c2488}.act.bad svg{stroke:var(--crim2)}
+.act.hot{background:linear-gradient(180deg,#a2262f,#561016);box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000;color:#fff}.act.hot svg{stroke:#ffd9d3}
+.opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-weight:800;font-size:.8rem;background:#000a;box-shadow:inset 0 0 0 1px #3a2e22}
+.opt i{width:20px;height:20px;border-radius:50%;flex:none;background:#000;box-shadow:inset 0 2px 3px #000,0 0 0 1.5px #5a4326}
+.opt.on{box-shadow:inset 0 0 0 1.5px var(--brass)}
+.opt.on i{background:radial-gradient(circle at 35% 30%,#fff0b8,#c9a050 55%,#6e4b1c);box-shadow:0 0 0 1.5px #000,0 0 0 3px #5a4326}
+.opt small{margin-inline-start:auto;font-size:.6rem;font-weight:700;color:#8f8777}
+.note{width:100%;height:70px;resize:none;padding:8px 12px;border-radius:6px;background:var(--paper);color:var(--ink);font-weight:700;font-size:.8rem;line-height:1.5;box-shadow:inset 0 0 18px #8a7a5a99;outline:0}
+.note::placeholder{color:#7a6c4e}
+.r{display:flex;align-items:center;gap:10px;font-size:.78rem;font-weight:700}
+.r .t{flex:1;line-height:1.3}.r .t small{display:block;font-size:.62rem;color:#8f8777;font-weight:600}
+.tg{position:relative;width:52px;height:28px;border-radius:14px;flex:none;background:#000b;box-shadow:inset 0 2px 4px #000,0 0 0 1.5px #3a2e22,0 1px 0 #ffffff14}
+.tg i{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff0b8,#c9a050 55%,#6e4b1c);box-shadow:0 2px 3px #000a,inset 0 0 0 1px #0004}
+.tg.on{background:linear-gradient(180deg,#143a2a,#0a2418);box-shadow:inset 0 2px 4px #000,0 0 0 1.5px #2d7a60,0 0 10px #4fa58b55}.tg.on i{right:27px}
+
+/* invite banner */
+.banner{position:absolute;top:26px;left:10px;right:10px;z-index:30;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 0 0 1.5px #000,0 0 0 3px var(--brass),0 14px 24px #000d}
+.banner .tx{flex:1;min-width:0;line-height:1.35}.banner .tx b{font-family:Lalezar;font-weight:400;font-size:1rem}.banner .tx small{display:block;font-size:.66rem;font-weight:700;color:#b9a67e}
+.banner .go{padding:7px 12px}
+.banner .bar{position:absolute;left:12px;right:12px;bottom:5px;height:3px;border-radius:2px;background:#000a;overflow:hidden}.banner .bar i{display:block;height:100%;width:62%;background:linear-gradient(90deg,#b99048,#f5e2a8);margin-inline-start:auto}
+
+/* bottom dock (like footer.html) */
+.dock{position:absolute;left:0;right:0;bottom:0;height:92px;z-index:5;pointer-events:none}
+.dbar{position:absolute;left:0;right:0;bottom:0;height:76px;background:var(--grain),linear-gradient(180deg,#2c1f17,#1a110d 55%,#0e0806);background-blend-mode:multiply,normal;box-shadow:0 -14px 28px #000d,inset 0 1px 0 #ffffff22,inset 0 2px 0 #000;border-top:1px solid #000}
+.dbar::before{content:"";position:absolute;left:10px;right:10px;top:6px;border-top:1.5px dashed #a98f62;opacity:.4}
+.dtabs{position:absolute;left:0;right:0;bottom:0;height:76px;display:grid;grid-template-columns:repeat(5,1fr)}
+.dt{position:relative;display:grid;justify-items:center;align-content:center;gap:2px;padding-top:4px;font-size:.68rem;font-weight:800;color:#7d7365}
+.dt .g{width:34px;height:34px;border-radius:50%;background:#ffffff10;filter:grayscale(1);opacity:.6}
+.dt.on{color:#f0dca0}.dt.on .g{background:radial-gradient(circle,#f5e2a8aa,#b99048 60%,#5a4326);filter:none;opacity:1;transform:translateY(-7px) scale(1.14);box-shadow:0 0 14px #f5e2a866}
+.dt.on span{margin-top:-6px}
+.dt .cnt{position:absolute;top:8px;right:calc(50% - 26px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;display:grid;place-items:center;font-family:Lalezar;font-size:.66rem;background:#d6313b;color:#fff;box-shadow:0 0 0 2px #1a110d}
+.dt.mid .g{width:58px;height:58px;margin-top:-24px;background:conic-gradient(from 210deg,#f5e2a8,#8a6a30 25%,#d2ad60 50%,#7a5a22 75%,#f5e2a8);box-shadow:0 0 0 3px #000,0 0 0 4px #6e5224,0 10px 18px #000d;opacity:1;filter:grayscale(.4)}
+
+.ok{display:grid;gap:12px;justify-items:center;text-align:center;padding:6px 0 4px}
+.stamp{font-family:"Aref Ruqaa";font-size:2.2rem;line-height:1;color:#4fa58b;border:3px solid currentColor;border-radius:10px;padding:2px 22px;rotate:-5deg;opacity:.92}
+.small{font-size:.7rem;font-weight:700;color:#8f8777;line-height:1.6}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="fed" viewBox="0 0 24 24"><path d="M2 14c3.4 1.6 16.6 1.6 20 0-.9-1.3-2.6-2.1-4-2.4C17.6 7.6 16 5 12 5S6.4 7.6 6 11.6c-1.4.3-3.1 1.1-4 2.4zM6.4 11.2c3.7 1.1 7.5 1.1 11.2 0v1.3c-3.7 1.1-7.5 1.1-11.2 0z"/><circle cx="12" cy="17.6" r="3.2"/></symbol>
+<symbol id="back" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="dots" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01"/></symbol>
+<symbol id="door" viewBox="0 0 24 24"><path d="M14 4h5v16h-5M4 12h10M10 8l4 4-4 4"/></symbol>
+<symbol id="mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+<symbol id="chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+<symbol id="user-x" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 20c0-4 3-6 7-6M16 14l5 5M21 14l-5 5"/></symbol>
+<symbol id="flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></symbol>
+<symbol id="block" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol>
+<symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+<symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></symbol>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+</defs></svg>
+
+<!-- 1) friends list -->
+<div class="col">
+<p class="cap">١ — العائلة: الأصدقاء (اللي بغرف أولاً، ثم المتصلين، ثم الباقي)</p>
+<div class="phone" id="f1"></div>
+</div>
+<!-- 2) requests -->
+<div class="col">
+<p class="cap">٢ — الطلبات: الواردة بأزرار قبول ورفض، والمرسلة بزر إلغاء</p>
+<div class="phone" id="f2"></div>
+</div>
+<!-- 3) add -->
+<div class="col">
+<p class="cap">٣ — إضافة صديق: برقم الهوية (الرقم الظاهر بالإعدادات). رقمك جاهز للنسخ والمشاركة</p>
+<div class="phone" id="f3"></div>
+</div>
+<!-- 4) friend sheet -->
+<div class="col">
+<p class="cap">٤ — ورقة اللاعب: إجراءات سريعة عند الضغط على صديق (انضم لغرفته، دعوة لغرفتي، رسالة...)</p>
+<div class="phone" id="f4"></div>
+</div>
+<!-- 5) invite -->
+<div class="col">
+<p class="cap">٥ — دعوة مستلمة: شريط يظهر فوق أي شاشة ١٥ ثانية (انضم / لاحقاً)</p>
+<div class="phone" id="f5"></div>
+</div>
+<!-- 6) report -->
+<div class="col">
+<p class="cap">٦ — الإبلاغ عن لاعب: السبب + ملاحظة + خيار الحظر. تصل للوحة PlayFab وتُحظر تلقائياً عند تكرارها</p>
+<div class="tabsx" style="display:flex;gap:4px"><button class="ghost" id="rb1">الورقة</button><button class="ghost" id="rb2">بعد الإرسال</button></div>
+<div class="phone" id="f6"></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const ic=id=>`<svg viewBox="0 0 24 24"><use href="#${id}"/></svg>`;
+const hat=`<svg class="h" viewBox="0 0 24 24"><use href="#fed"/></svg>`;
+const topbar=(title,small,right='')=>`<div class="top"><button class="ic" aria-label="رجوع">${ic('back')}</button><div class="ttl">${title}<small>${small}</small></div>${right}</div>`;
+const dock=`<nav class="dock"><div class="dbar"></div><div class="dtabs"><div class="dt"><div class="g"></div><span>السوق</span></div><div class="dt on"><div class="g"></div><span>العائلة</span><i class="cnt">٣</i></div><div class="dt mid"><div class="g"></div><span>الغرف</span></div><div class="dt"><div class="g"></div><span>الرتب</span></div><div class="dt"><div class="g"></div><span>الإعدادات</span></div></div></nav>`;
+const seg=(on)=>`<div class="seg"><button class="${on===0?'on':''}">الأصدقاء</button><button class="${on===1?'on':''}">الطلبات<i class="n">٢</i></button><button class="${on===2?'on':''}">إضافة</button></div>`;
+const friend=(name,lv,status,kind,action)=>`<div class="row ${kind==='off'?'off':''}"><div class="av">${hat}<i class="st ${kind}"></i></div><div class="info"><b>${name}<span class="lv">${lv}</span></b><small class="${kind==='room'?'live':''}">${status}</small></div>${action}</div>`;
+const more=`<button class="more" aria-label="المزيد">${ic('dots')}</button>`;
+
+function f1(){
+ $('#f1').innerHTML=topbar('العائلة','٦ من ١٢ متصلين',`<button class="ic" aria-label="بحث">${ic('search')}</button>`)+seg(0)+`<div class="scroll">
+  <div class="sec">بغرف الآن <small>٢</small></div>
+  ${friend('أبو سالم','٢٦','بغرفة «سهرة الشباب» · ٩ من ١٦','room','<button class="go gold">انضم</button>')}
+  ${friend('لينا','١٢','بغرفة خاصة · مغلقة','room','<button class="ghost">مغلقة</button>')}
+  <div class="sec">متصلين <small>٤</small></div>
+  ${friend('البيك','٧','متصل · بالقائمة','on','<button class="go teal">ادعُه</button>')}
+  ${friend('سارة','٩','متصلة','on','<button class="go teal">ادعُها</button>')}
+  ${friend('الحج حسن','٣٠','متصل','on',more)}
+  <div class="sec">غير متصلين <small>٦</small></div>
+  ${friend('مازن','٥','آخر ظهور قبل ساعة','off',more)}
+  ${friend('ريم','٨','آخر ظهور أمس','off',more)}
+ </div>`+dock;
+}
+function f2(){
+ $('#f2').innerHTML=topbar('العائلة','طلبان جديدان')+seg(1)+`<div class="scroll">
+  <div class="sec">واردة <small>٢</small></div>
+  ${friend('عادل','٤','يريد يضيفك لعائلته','on','<button class="go teal">قبول</button><button class="ghost">رفض</button>')}
+  ${friend('أم سعيد','١٥','يريد يضيفك لعائلته','off','<button class="go teal">قبول</button><button class="ghost">رفض</button>')}
+  <div class="sec">أرسلتها <small>١</small></div>
+  ${friend('أبو فارس','٦','بانتظار الرد · من يومين','off','<button class="ghost">إلغاء</button>')}
+  <div class="hint">${ic('info')}<span>لما تقبل الطلب بتصيروا أصدقاء ببعض، وتقدروا تدعوا بعض للغرف وتشوفوا مين بغرفة.</span></div>
+ </div>`+dock;
+}
+function f3(){
+ $('#f3').innerHTML=topbar('العائلة','أضف صديقاً')+seg(2)+`<div class="scroll">
+  <div class="idc"><div><small>رقم هويتك</small><b>٤٢٧٧٧١</b></div><button class="cp">نسخ</button></div>
+  <div class="sec">أضف بالرقم</div>
+  <div class="field"><input value="٣٠٩٥٦٤" inputmode="numeric" aria-label="رقم الهوية"></div>
+  <div class="row"><div class="av">${hat}</div><div class="info"><b>أبو فارس<span class="lv">٦</span></b><small>لقيناه · مستواه ٦</small></div><button class="go">أرسل طلب</button></div>
+  <div class="hint">${ic('info')}<span>رقم الهوية بتلاقيه بالإعدادات أو ببطاقة اللاعب. الصديق ما بيشوف غير اسمك ومستواك.</span></div>
+ </div>`+dock;
+}
+function f4(){
+ f1(); // keep the list behind
+ $('#f4').innerHTML=$('#f1').innerHTML.replace('<div class="scroll">','<div class="scroll" style="filter:blur(1px)">')+`<div class="dim"></div>
+ <div class="sheet"><div class="grab"></div>
+  <div class="row" style="box-shadow:none;background:none;padding:0"><div class="av" style="width:54px;height:54px">${hat}<i class="st room"></i></div><div class="info"><b style="font-size:1.35rem">أبو سالم<span class="lv">٢٦</span></b><small class="live">بغرفة «سهرة الشباب» · ٩ من ١٦</small></div></div>
+  <button class="act hot">${ic('door')}<span>انضم لغرفته<small>بتنتقل للغرفة وتغادر الحالية</small></span></button>
+  <button class="act">${ic('mail')}<span>ادعُه لغرفتي<small>تدعوه لغرفتك «سهرتي»</small></span></button>
+  <button class="act">${ic('chat')}<span>رسالة خاصة</span></button>
+  <button class="act">${ic('user-x')}<span>إزالة من العائلة</span></button>
+  <button class="act bad">${ic('flag')}<span>إبلاغ أو حظر</span></button>
+ </div>`;
+}
+function f5(){
+ $('#f5').innerHTML=$('#f1').innerHTML.replace('<div class="top">','<div class="top" style="filter:brightness(.7)">')+`<div class="banner"><div class="av" style="width:42px;height:42px">${hat}</div><div class="tx"><b>أبو سالم يدعوك</b><small>غرفة «سهرة الشباب» · ٩ من ١٦</small></div><button class="go gold">انضم</button><button class="ghost" style="padding:7px 10px">لاحقاً</button><div class="bar"><i></i></div></div>`;
+}
+const reasons=[['إساءة لفظية','شتم أو كلام جارح'],['تحرش أو كلام غير لائق',''],['غش أو استغلال','ثغرات، حسابات وهمية'],['إزعاج بالصوت','صراخ، موسيقى، تشويش'],['اسم أو صورة مسيئة',''],['سبب آخر','']];
+function f6(after){
+ const base=$('#f1').innerHTML.replace('<div class="scroll">','<div class="scroll" style="filter:blur(1px)">');
+ if(!after){
+  $('#f6').innerHTML=base+`<div class="dim"></div><div class="sheet" style="gap:8px"><div class="grab"></div>
+   <h3>إبلاغ عن «البيك»<small>اختر السبب، ونراجعه خلال ٢٤ ساعة</small></h3>
+   ${reasons.map((r,i)=>`<div class="opt ${i===0?'on':''}"><i></i>${r[0]}<small>${r[1]}</small></div>`).join('')}
+   <textarea class="note" placeholder="تفاصيل إضافية (اختياري)"></textarea>
+   <div class="r"><div class="t">احظره كمان<small>ما تشوفه ولا يشوفك، وما بيدخل غرفك</small></div><div class="tg on"><i></i></div></div>
+   <div class="row" style="box-shadow:none;background:none;padding:0;gap:8px"><button class="go" style="flex:1;padding:12px">أرسل البلاغ</button><button class="ghost" style="padding:12px 18px">إلغاء</button></div>
+  </div>`;
+ } else {
+  $('#f6').innerHTML=base+`<div class="dim"></div><div class="sheet"><div class="grab"></div><div class="ok"><span class="stamp">وصل</span><h3>وصلنا بلاغك<small>شكراً إنك بتحافظ على الحارة نظيفة</small></h3>
+   <div class="hint" style="text-align:start">${ic('block')}<span>حظرنا «البيك» عندك. تقدر تشيل الحظر من الإعدادات ← الخصوصية والأمان.</span></div>
+   <button class="go gold" style="width:100%;padding:12px">تمام</button></div></div>`;
+ }
+}
+f1();f2();f3();f4();f5();f6(false);
+$('#rb1').onclick=()=>f6(false);$('#rb2').onclick=()=>f6(true);
+
+/* compare mode: family.html?only=f3 shows just that phone at 390x790 */
+(function(){
+  const q=new URLSearchParams(location.search), only=q.get('only'); if(!only)return;
+  const v=q.get('v'); if(v==='after') f6(true);
+  const ph=document.getElementById(only), keep=ph.closest('.col');
+  document.querySelectorAll('.col').forEach(c=>{ if(c!==keep) c.style.display='none'; });
+  keep.querySelectorAll('.cap,.tabsx').forEach(e=>e.style.display='none');
+  document.body.style.cssText='margin:0;padding:0;display:block';
+  keep.style.cssText='display:block;width:390px';
+  ph.style.cssText+=';border-radius:0;box-shadow:none;width:390px;height:790px';
+})();
+</script>
+</body>
+</html>
