@@ -130,8 +130,31 @@ namespace MafiaNight.UI.Kit.Editor
             var nm = so.FindProperty("names"); nm.arraySize = names.Length;
             for (int i = 0; i < roots.Length; i++) { fr.GetArrayElementAtIndex(i).objectReferenceValue = roots[i]; nm.GetArrayElementAtIndex(i).stringValue = names[i]; }
             so.ApplyModifiedPropertiesWithoutUndo();
+            if (artDir.EndsWith("/Match/")) AddMatchView(canvasGo, roots, names, manifest, th);
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), scenePath);
             Debug.Log("[UIKit] built " + frames.Count + " match frames");
+        }
+
+        /// <summary>The live driver of the match screens: the frames, their names, every sprite (so seats and chips can change look) and the heading font.</summary>
+        private static void AddMatchView(GameObject canvasGo, GameObject[] roots, string[] names, Dictionary<string, MSprite> manifest, KitTheme th)
+        {
+            var view = canvasGo.AddComponent<KitMatchView>();
+            var so = new SerializedObject(view);
+            var fr = so.FindProperty("frames"); fr.arraySize = roots.Length;
+            var nm = so.FindProperty("names"); nm.arraySize = names.Length;
+            for (int i = 0; i < roots.Length; i++) { fr.GetArrayElementAtIndex(i).objectReferenceValue = roots[i]; nm.GetArrayElementAtIndex(i).stringValue = names[i]; }
+            var sprites = new List<Sprite>();
+            foreach (var key in manifest.Keys) { var s = AssetDatabase.LoadAssetAtPath<Sprite>(MatchArt + key + ".png"); if (s != null) sprites.Add(s); }
+            var bank = so.FindProperty("bank"); bank.arraySize = sprites.Count;
+            for (int i = 0; i < sprites.Count; i++) bank.GetArrayElementAtIndex(i).objectReferenceValue = sprites[i];
+            so.FindProperty("headFont").objectReferenceValue = th.fontLalezar != null ? th.fontLalezar : th.fontHeading;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            // the App assembly sits above the kit, so its binder is added by name
+            foreach (var guid in AssetDatabase.FindAssets("MatchSceneBinder t:MonoScript"))
+            {
+                var cls = AssetDatabase.LoadAssetAtPath<MonoScript>(AssetDatabase.GUIDToAssetPath(guid))?.GetClass();
+                if (cls != null && cls.Name == "MatchSceneBinder") { canvasGo.AddComponent(cls); break; }
+            }
         }
 
         private static Color ParseColor(string hex, Color fallback)
@@ -149,6 +172,7 @@ namespace MafiaNight.UI.Kit.Editor
                 var go = new GameObject("f_" + nd.name.Replace("div.", "").Replace("span.", ""), typeof(RectTransform));
                 var rt = (RectTransform)go.transform;
                 objs[n] = go;
+                go.AddComponent<KitNodeId>().Index = n;
                 if (nd.p < 0)
                 {
                     go.name = "Frame_" + frame.name;
