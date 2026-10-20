@@ -19,6 +19,8 @@ namespace MafiaNight.MatchRules.Net
         private readonly string selfId;
         private readonly Action<WireMessage> toSelf;
         private readonly HashSet<string> ready = new HashSet<string>();
+        private string matchId = "";
+        private readonly Dictionary<string, string> roster = new Dictionary<string, string>();   // player id -> PlayFab id, for the reward report
         private readonly HashSet<string> spectators = new HashSet<string>();   // room members who arrived after the start: they watch
         private float timeLeft;
         private float endIn = -1f;                    // countdown to an early end, -1 = none
@@ -54,6 +56,13 @@ namespace MafiaNight.MatchRules.Net
         }
         private void ToMafia(WireMessage m) { foreach (var p in match.Players.Where(x => x.IsMafia && !x.Left)) Send(p.Id, m); }
 
+        private WireMessage StartMessage()
+        {
+            var a = new List<string> { matchId };
+            foreach (var kv in roster) { a.Add(kv.Key); a.Add(kv.Value); }
+            return new WireMessage(Msg.Start, a.ToArray());
+        }
+
         private WireMessage StateMessage()
         {
             var a = new List<string> { match.Phase.ToString(), match.Round.ToString(), WireMessage.F(timeLeft) };
@@ -64,10 +73,13 @@ namespace MafiaNight.MatchRules.Net
         // ---------------------------------------------------------------- flow
 
         /// <summary>Hands out the roles and tells everybody the match begins. False when the player count is not allowed.</summary>
-        public bool Begin()
+        public bool Begin(string newMatchId = null, IDictionary<string, string> playFabIds = null)
         {
             if (!match.Start()) return false;
-            ToAll(new WireMessage(Msg.Start));
+            matchId = newMatchId ?? "";
+            roster.Clear();
+            if (playFabIds != null) foreach (var kv in playFabIds) roster[kv.Key] = kv.Value ?? "";
+            ToAll(StartMessage());
             foreach (var p in match.Players)
             {
                 var args = new List<string> { p.Role.ToString() };
@@ -115,12 +127,14 @@ namespace MafiaNight.MatchRules.Net
 
         // ---------------------------------------------------------------- hand-over to another device
 
-        private const string RuntimeVersion = "h1";
+        private const string RuntimeVersion = "h2";
 
         /// <summary>The match plus this controller's own timers, as text pieces for the member who may take over.</summary>
         public List<string> ExportState()
         {
-            var o = new List<string> { RuntimeVersion, WireMessage.F(timeLeft), WireMessage.F(endIn), WireMessage.F(elapsedInPhase), ready.Count.ToString() };
+            var o = new List<string> { RuntimeVersion, matchId, roster.Count.ToString() };
+            foreach (var kv in roster) { o.Add(kv.Key); o.Add(kv.Value); }
+            o.Add(WireMessage.F(timeLeft)); o.Add(WireMessage.F(endIn)); o.Add(WireMessage.F(elapsedInPhase)); o.Add(ready.Count.ToString());
             o.AddRange(ready);
             o.Add(spectators.Count.ToString());
             o.AddRange(spectators);
@@ -133,17 +147,22 @@ namespace MafiaNight.MatchRules.Net
         {
             try
             {
-                if (data == null || data.Count < 6 || data[0] != RuntimeVersion) return null;
+                if (data == null || data.Count < 8 || data[0] != RuntimeVersion) return null;
                 var inv = System.Globalization.CultureInfo.InvariantCulture;
-                float timeLeft = float.Parse(data[1], inv), endIn = float.Parse(data[2], inv), elapsed = float.Parse(data[3], inv);
-                int i = 4;
+                int i = 1;
+                string savedMatchId = data[i++];
+                int nRoster = int.Parse(data[i++], inv);
+                var savedRoster = new List<KeyValuePair<string, string>>();
+                for (int k = 0; k < nRoster; k++) { string a = data[i++], b = data[i++]; savedRoster.Add(new KeyValuePair<string, string>(a, b)); }
+                float timeLeft = float.Parse(data[i++], inv), endIn = float.Parse(data[i++], inv), elapsed = float.Parse(data[i++], inv);
                 int nReady = int.Parse(data[i++], inv);
                 var ready = new List<string>(); for (int k = 0; k < nReady; k++) ready.Add(data[i++]);
                 int nSpect = int.Parse(data[i++], inv);
                 var spect = new List<string>(); for (int k = 0; k < nSpect; k++) spect.Add(data[i++]);
                 var match = MafiaMatch.Restore(config, new List<string>(data).GetRange(i, data.Count - i), random);
                 if (match == null) return null;
-                var c = new HostMatchController(match, net, selfId, toSelf) { timeLeft = timeLeft, endIn = endIn, elapsedInPhase = elapsed };
+                var c = new HostMatchController(match, net, selfId, toSelf) { timeLeft = timeLeft, endIn = endIn, elapsedInPhase = elapsed, matchId = savedMatchId };
+                foreach (var kv in savedRoster) c.roster[kv.Key] = kv.Value;
                 foreach (var r in ready) c.ready.Add(r);
                 foreach (var sp in spect) c.spectators.Add(sp);
                 return c;
@@ -204,7 +223,7 @@ namespace MafiaNight.MatchRules.Net
         {
             var known = match.Get(id);
             if (!Running || string.IsNullOrEmpty(id) || id == selfId || (known != null && !known.Left) || !spectators.Add(id)) return;   // a player who left and came back watches too
-            Send(id, new WireMessage(Msg.Start));
+            Send(id, StartMessage());
             Send(id, StateMessage());
         }
 

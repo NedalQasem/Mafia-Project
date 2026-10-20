@@ -36,6 +36,8 @@ namespace MafiaNight.App
             if (runner != null && runner.Session != null)
             {
                 flow.Attach(view, runner.Session.Client);
+                flow.SetReward(runner.Reward);
+                runner.RewardChanged += () => { if (flow != null) flow.SetReward(runner.Reward); };
                 // another match with the same room: the host starts it, the others wait in the room
                 flow.PlayAgainRequested += () =>
                 {

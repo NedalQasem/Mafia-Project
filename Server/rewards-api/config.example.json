@@ -1,0 +1,21 @@
+{
+  "titleId": "107B73",
+  "currencyCode": "CO",
+  "port": 8787,
+  "host": "127.0.0.1",
+  "trustProxy": true,
+  "dataFile": "/var/lib/mafia-rewards/state.json",
+  "requestsPerMinutePerIp": 120,
+  "minPlayers": 4,
+  "maxPlayers": 16,
+  "minRounds": 1,
+  "minDurationSec": 60,
+  "quorumRatio": 0.5,
+  "reportWindowSeconds": 900,
+  "dailyMatchCap": 30,
+  "rewards": {
+    "baseXp": 20, "winXp": 25, "survivedXp": 5,
+    "baseCoins": 10, "winCoins": 20,
+    "rankWin": 50, "rankLose": -20
+  }
+}

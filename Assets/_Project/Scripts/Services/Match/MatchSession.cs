@@ -90,7 +90,8 @@ namespace MafiaNight.Services.Match
             Host = new HostMatchController(match, net, myId, Client.Apply);
             Host.Finished += OnFinished;
             Host.Changed += () => snapshotDirty = true;
-            if (!Host.Begin()) { Host.Dispose(); Host = null; return false; }
+            var roster = rooms.Members.ToDictionary(m => m.Puid, m => m.PlayFabId ?? "");
+            if (!Host.Begin(Guid.NewGuid().ToString("N"), roster)) { Host.Dispose(); Host = null; return false; }
             rooms.SetInMatch(true);
             Log.Info("Match started with " + match.Players.Count + " players", Tag);
             return true;

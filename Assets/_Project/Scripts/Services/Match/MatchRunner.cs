@@ -2,6 +2,8 @@ using MafiaNight.Core;
 using MafiaNight.Data.Rooms;
 using MafiaNight.MatchRules;
 using MafiaNight.Services.Auth;
+using MafiaNight.Services.Economy;
+using MafiaNight.Services.Profile;
 using MafiaNight.Services.Rooms;
 using MafiaNight.Services.Scenes;
 using MafiaNight.Services.Voice;
@@ -23,6 +25,11 @@ namespace MafiaNight.Services.Match
         public static MatchRunner Instance { get; private set; }
         public MatchSession Session { get; private set; }
         private string endReason = "";
+        private Coroutine reporting;
+
+        /// <summary>What the rewards server paid for the last match (None until a match ends).</summary>
+        public RewardResult Reward { get; private set; } = new RewardResult();
+        public event System.Action RewardChanged;
 
         /// <summary>Why the last match was cancelled (shown once by the room screen), or empty.</summary>
         public string TakeEndReason() { var r = endReason; endReason = ""; return r; }
@@ -83,6 +90,7 @@ namespace MafiaNight.Services.Match
             Session.Client.PhaseChanged += OnPhase;
             Session.Client.Changed += ApplyVoice;
             Session.Cancelled += OnCancelled;
+            Session.Client.Finished += OnMatchFinished;
             lastVoicePlan = "";
             known.Clear();
             foreach (var m in rooms.Members) known.Add(m.Puid);
@@ -94,9 +102,30 @@ namespace MafiaNight.Services.Match
             Session.Client.PhaseChanged -= OnPhase;
             Session.Client.Changed -= ApplyVoice;
             Session.Cancelled -= OnCancelled;
+            Session.Client.Finished -= OnMatchFinished;
             Session.Dispose();
             voice?.ClearGameVoice();
             Session = null;
+        }
+
+        /// <summary>The match ended: every player's device reports it to the rewards server, which pays once most players agree.</summary>
+        private void OnMatchFinished()
+        {
+            var report = Session?.Client.BuildReport();
+            Reward = new RewardResult();
+            if (report == null) { RewardChanged?.Invoke(); return; }
+            if (reporting != null) StopCoroutine(reporting);
+            reporting = StartCoroutine(RewardsReporter.Run(report, OnRewardProgress));
+        }
+
+        private void OnRewardProgress(RewardResult r)
+        {
+            Reward = r;
+            RewardChanged?.Invoke();
+            if (r.Status != RewardStatus.Granted) return;
+            // the server changed the coins and the progress: read them again
+            if (ServiceLocator.TryGet(out ICurrencyService currency)) currency.FetchCurrencies();
+            if (ServiceLocator.TryGet(out IPlayerProfileService profile)) profile.RefreshProfile();
         }
 
         private void OnCancelled(string reason)

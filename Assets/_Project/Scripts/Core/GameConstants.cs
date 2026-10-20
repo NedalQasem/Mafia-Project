@@ -5,6 +5,11 @@ namespace MafiaNight.Core
     /// </summary>
     public static class GameConstants
     {
+        #region Servers
+        /// <summary>Our rewards server (XP, rank and coins for finished matches). Empty turns result reporting off.</summary>
+        public const string REWARDS_API_URL = "https://api.mena-gaming.com";
+        #endregion
+
         #region PlayerPrefs Keys
         public const string PREF_PLAYER_CUSTOM_NAME = "PlayerCustomName";
         #endregion

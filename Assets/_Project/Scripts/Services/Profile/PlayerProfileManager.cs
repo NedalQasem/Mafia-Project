@@ -21,6 +21,7 @@ namespace MafiaNight.Services.Profile
         private const string KEY_CUSTOMIZATION = "Customization";
         private const string KEY_INVENTORY = "Inventory";
         private const string KEY_STATISTICS = "Statistics";
+        private const string KEY_PROGRESS = "Progress";   // read-only for the player: written by the rewards server (Server/rewards-api)
 
         [Header("Debug")]
         [SerializeField] private bool showDebugLogs = true;
@@ -158,38 +159,17 @@ namespace MafiaNight.Services.Profile
                 });
         }
 
-        /// <summary>Adds XP (auto level-up). Returns true if the player leveled up.</summary>
+        /// <summary>Progress belongs to the rewards server now; the game cannot add XP by itself.</summary>
         public bool AddXP(int amount)
         {
-            if (_localProfile == null) return false;
-
-            bool leveledUp = _localProfile.AddXP(amount);
-            if (leveledUp) LogInfo($"Level Up! Now level {_localProfile.Level}");
-
-            OnProfileUpdated?.Invoke(_localProfile);
-            return leveledUp;
+            Log.Warning("AddXP ignored: XP is granted by the rewards server only", Tag);
+            return false;
         }
 
+        /// <summary>Match results are reported to the rewards server (MatchRunner); the profile re-reads what it paid.</summary>
         public void RecordMatchResult(bool won, bool wasMafia, bool isMvp)
         {
-            if (_localProfile == null) return;
-
-            PlayerRank oldRank = _localProfile.Rank;
-            int points = RankRules.GetMatchPoints(won, isMvp);
-            _localProfile.AddRankPoints(points);
-            _localProfile.Statistics?.RecordGame(won, wasMafia);
-
-            LogInfo($"Match recorded: {(won ? "Won" : "Lost")} as {(wasMafia ? "Mafia" : "Citizen")}, " +
-                    $"{points:+#;-#;0} pts → {_localProfile.RankPoints} ({_localProfile.Rank})");
-
-            if (_localProfile.Rank != oldRank)
-            {
-                LogInfo($"Rank changed: {oldRank} → {_localProfile.Rank}");
-                // TODO: rank-up rewards must be granted server-side (CloudScript), not by the client.
-            }
-
-            OnProfileUpdated?.Invoke(_localProfile);
-            SaveProfile();
+            Log.Warning("RecordMatchResult ignored: results are paid by the rewards server only", Tag);
         }
 
         public void Equip(string categoryId, string itemId)
@@ -250,15 +230,48 @@ namespace MafiaNight.Services.Profile
                 _localProfile.Statistics = LoadOrDefault(result, KEY_STATISTICS, () => new PlayerStatistics());
 
                 _localProfile.Statistics.UpdateLastLogin();
-                FetchDisplayName();
-
-                OnProfileLoaded?.Invoke(_localProfile);
+                LoadServerProgress(() =>
+                {
+                    FetchDisplayName();
+                    OnProfileLoaded?.Invoke(_localProfile);
+                });
             }
             catch (Exception e)
             {
                 Log.Error($"Error parsing profile data: {e.Message}", Tag);
                 OnLoadError?.Invoke(e.Message);
             }
+        }
+
+        /// <summary>Level, XP, rank points and counts come from the server's read-only record, whatever the player saved himself.</summary>
+        private void LoadServerProgress(Action done)
+        {
+            var request = new GetUserDataRequest { Keys = new List<string> { KEY_PROGRESS } };
+            PlayFabMeter.Allow("GetUserReadOnlyData", false);
+            PlayFabClientAPI.GetUserReadOnlyData(request,
+                result =>
+                {
+                    ServerProgress p = null;
+                    if (result.Data != null && result.Data.TryGetValue(KEY_PROGRESS, out var rec)) { try { p = JsonUtility.FromJson<ServerProgress>(rec.Value); } catch (Exception e) { Log.Warning("Progress unreadable: " + e.Message, Tag); } }
+                    ApplyServerProgress(p ?? new ServerProgress());
+                    done?.Invoke();
+                },
+                error =>
+                {
+                    Log.Warning("Could not read the server progress: " + error.GenerateErrorReport(), Tag);
+                    ApplyServerProgress(new ServerProgress());
+                    done?.Invoke();
+                });
+        }
+
+        private void ApplyServerProgress(ServerProgress p)
+        {
+            var prof = _localProfile; if (prof == null) return;
+            prof.Level = Mathf.Max(1, p.level); prof.CurrentXP = p.xp; prof.XPToNextLevel = Mathf.Max(1, p.xpToNext);
+            prof.RankPoints = p.rankPoints; prof.Rank = RankRules.GetRankFromPoints(p.rankPoints);
+            var st = prof.Statistics ?? (prof.Statistics = new PlayerStatistics());
+            st.GamesPlayed = p.games; st.GamesWon = p.wins; st.GamesLost = p.losses;
+            st.MafiaGames = p.mafiaGames; st.MafiaWins = p.mafiaWins; st.CitizenGames = p.citizenGames; st.CitizenWins = p.citizenWins;
         }
 
         private static T LoadOrDefault<T>(GetUserDataResult result, string key, Func<T> createDefault)

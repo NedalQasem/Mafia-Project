@@ -13,7 +13,9 @@
 - **المشكلة:** `AddUserVirtualCurrency` بينادي من الـ client. أي لاعب بيقدر يعطي نفسه عملات بلا حدود.
 - **نفس المشكلة:** جوائز النتائج في `ResultsUIManager.cs`، واسترجاع رسوم الـ Lobby في `LobbyUIManager.cs`.
 - **الحل:**
-  1. نقل منح العملات لـ **PlayFab CloudScript / Azure Functions**
+  1. ✅ **بالكود:** خدمة الجوائز على الـ VPS (`Server/rewards-api`) بدل CloudScript/Azure (بدون بطاقة). الكوينز والـ XP والرتبة بتنكتب من السيرفر بالمفتاح السري.
+  1b. ⏳ **باقي:** تركيب الخدمة على الـ VPS بخطوات `Server/rewards-api/README.md`
+  1c. ✅ **بالكود:** `CurrencyManager.AddCoins` ما بقي يُستخدم لجوائز المباريات (راجع `RewardsReporter`)، ويبقى تعطيل الإضافة بلوحة PlayFab (الخطوة 2 تحت)
   2. من لوحة PlayFab: تعطيل *"Allow client to add virtual currency"*
 
 ### 2. نتائج المباريات والرتب من جهاز اللاعب

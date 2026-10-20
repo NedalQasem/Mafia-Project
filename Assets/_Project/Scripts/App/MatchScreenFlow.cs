@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MafiaNight.MatchRules;
 using MafiaNight.MatchRules.Net;
+using MafiaNight.Services.Match;
 using MafiaNight.UI.Kit;
 using UnityEngine;
 using SeatView = MafiaNight.MatchRules.Net.SeatView;
@@ -37,6 +38,10 @@ namespace MafiaNight.App
         private int shownRound = -1;
         private int lastSeconds = -1;
         private int confirmedRound = -1;
+        private RewardResult reward;
+
+        /// <summary>What the rewards server paid; the end screen shows it once it arrives (until then the block stays hidden).</summary>
+        public void SetReward(RewardResult r) { reward = r; if (c != null && c.Phase == Phase.GameOver) Redraw(); }
 
         /// <summary>The player asked to leave the table screens (back to the room).</summary>
         public event Action LeaveRequested;
@@ -92,6 +97,14 @@ namespace MafiaNight.App
         }
 
         private static string Digits(int n) => n.ToString();
+
+        /// <summary>+٤٥ / −٢٠ in Arabic-Indic digits, as the mockup prints its reward numbers.</summary>
+        private static string Signed(int n)
+        {
+            var sb = new System.Text.StringBuilder(n < 0 ? "−" : "+");
+            foreach (char ch in Mathf.Abs(n).ToString()) sb.Append((char)('٠' + (ch - '0')));
+            return sb.ToString();
+        }
 
         private string Name(string id) => c.Seat(id)?.Name ?? "";
 
@@ -404,9 +417,16 @@ namespace MafiaNight.App
             string f = town ? "p8_civ" : "p8_mafia";
             Use(f);
             view.SetText(f, 89, "الجولة " + c.Round);
-            // the rewards come from the server; until then the block stays hidden
+            // the rewards come from the rewards server; until they arrive the block stays hidden and the list moves up
+            bool paid = reward != null && reward.Status == RewardStatus.Granted;
             var rew = view.Node(f, 8);
-            if (rew != null && rew.parent != null && rew.parent.parent != null) rew.parent.parent.gameObject.SetActive(false);
+            if (rew != null && rew.parent != null && rew.parent.parent != null) rew.parent.parent.gameObject.SetActive(paid);
+            if (paid)
+            {
+                view.SetText(f, 8, Signed(reward.Xp));
+                view.SetText(f, 12, Signed(reward.Coins));
+                view.SetText(f, 16, Signed(reward.RankPoints));
+            }
 
             const int firstRow = 23, rowSize = 6, templateRows = 10;
             var seats = c.Seats.ToList();
@@ -438,7 +458,7 @@ namespace MafiaNight.App
                 float pitch = RowPitch(f);
                 float need = 37f * k + seats.Count * pitch + 6f * k;
                 card.sizeDelta = new Vector2(card.sizeDelta.x, need);
-                float cardTop = 172f * k;      // where the card sits once the rewards block is hidden
+                float cardTop = (paid ? 233f : 172f) * k;      // 233: below the rewards block; 172: where the card moves up when it is hidden
                 card.anchoredPosition = new Vector2(card.anchoredPosition.x, -(cardTop + need / 2f));
                 var scroll = view.Node(f, 1) as RectTransform;
                 if (scroll != null)
