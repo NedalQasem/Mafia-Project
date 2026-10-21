@@ -99,6 +99,34 @@ namespace MafiaNight.UI.Kit
             var p = spotlight.anchoredPosition; p.x = TargetSpotX(); spotlight.anchoredPosition = p;
         }
 
+        // ---------------------------------------------------------------- badges (the builder draws them; the app fills them)
+
+        private Transform TabChild(int tab, string name)
+        {
+            if (tab < 0 || tab >= tabs.Length || tabs[tab]?.button == null) return null;
+            return tabs[tab].button.transform.Find(name);
+        }
+
+        /// <summary>Shows how many things wait on a tab (0 hides the badge). The family tab has a numbered badge, the ranks tab a plain dot.</summary>
+        public void SetBadge(int tab, int count)
+        {
+            var b = TabChild(tab, "Badge") ?? TabChild(tab, "Dot");
+            if (b == null) return;
+            b.gameObject.SetActive(count > 0);
+            var n = b.Find("N");
+            if (n != null && count > 0) { var a = n.GetComponent<ArabicText>(); if (a != null) a.Text = count > 99 ? "٩٩+" : CoinPill.Format(count); }
+        }
+
+        /// <summary>The number on the pill above the rooms seal (players online). A negative number hides the pill: nothing is known yet.</summary>
+        public void SetOnline(int count)
+        {
+            var pill = TabChild(2, "LivePill");
+            if (pill == null) return;
+            pill.gameObject.SetActive(count >= 0);
+            var c = pill.Find("Count");
+            if (c != null && count >= 0) { var a = c.GetComponent<ArabicText>(); if (a != null) a.Text = CoinPill.Format(count); }
+        }
+
         private void Apply()
         {
             var theme = KitTheme.Current;

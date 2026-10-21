@@ -74,7 +74,7 @@ namespace MafiaNight.App
             profile.OnProfileLoaded += OnProfile;
             profile.OnProfileUpdated += OnProfile;
             currency.OnCoinsChanged += OnCoins;
-            if (navBar != null) navBar.OnTabSelected += OnTab;
+            if (navBar != null) { navBar.OnTabSelected += OnTab; gameObject.AddComponent<NavBadgesFlow>(); }
             if (storeService != null) storeService.OnChanged += OnStoreChanged;
             if (store != null) WireStore();
             if (FindAnyObjectByType<KitRoomsScreen>() != null && ServiceLocator.IsRegistered<MafiaNight.Services.Rooms.IRoomService>())

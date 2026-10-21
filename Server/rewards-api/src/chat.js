@@ -211,6 +211,7 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
   function isOnline(pf) { return now() - (lastSeen.get(pf) || 0) < c.onlineWithinMs; }
   function seenAt(pf) { return lastSeen.get(pf) || 0; }
   function touch(pf) { lastSeen.set(pf, now()); }
+  function onlineCount() { let n = 0; const t = now(); for (const at of lastSeen.values()) if (t - at < c.onlineWithinMs) n++; return n; }
 
   // ---------------------------------------------------------------- the list of conversations
 
@@ -332,7 +333,7 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
     try { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file + '.tmp', JSON.stringify(state)); fs.renameSync(file + '.tmp', file); } catch (e) { log.error('chat save failed', e.message); }
   }
 
-  return { who, pushEvent, isOnline, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, ChatError, _state: () => state };
+  return { who, pushEvent, isOnline, onlineCount, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, ChatError, _state: () => state };
 }
 
 module.exports = { createChat, ChatError, normalize, rankIndex, dmChannel, PUBLIC };

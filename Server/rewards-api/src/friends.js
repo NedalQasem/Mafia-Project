@@ -174,7 +174,7 @@ function createFriends({ chat, cfg = {}, now = () => Date.now(), log = console, 
     chat.touch(pf);
     presence.set(pf, { at: now(), room: cleanRoom(room) });
     state.seen[pf] = now();
-    return { ok: true };
+    return { ok: true, online: chat.onlineCount() };
   }
 
   async function invite(pf, { friend, room }) {

@@ -223,3 +223,11 @@ test('http: the family routes need a ticket and answer json', async () => {
     assert.equal(la.friends[0].room.name, 'غرفة');
   } finally { await new Promise(r => app.server.close(r)); }
 });
+
+test('presence answers with how many players are online right now', async () => {
+  const { friends, clock } = setup();
+  assert.equal((await friends.setPresence(A, { room: null })).online, 1);
+  assert.equal((await friends.setPresence(B, { room: null })).online, 2);
+  clock.advance(5 * 60 * 1000);                                      // nobody was heard for a while
+  assert.equal((await friends.setPresence(C, { room: null })).online, 1);
+});

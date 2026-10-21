@@ -29,6 +29,7 @@ namespace MafiaNight.Services.Friends
     [Serializable] internal sealed class FriendDto { public string pf, num, name; public int rank, level; public bool online; public RoomDto room; public long seen, at; }
     [Serializable] internal sealed class FriendsDto { public bool ok; public FriendDto me; public int max; public List<FriendDto> friends, incoming, outgoing; }
     [Serializable] internal sealed class LookupDto { public bool ok, found, self, friend, pending; public string pf, num, name, error; public int level; }
+    [Serializable] internal sealed class PresenceDto { public bool ok; public int online = -1; }
     [Serializable] internal sealed class OkDto { public bool ok, accepted, pending; public string error; public int retryMs; }
 
     /// <summary>
@@ -49,9 +50,13 @@ namespace MafiaNight.Services.Friends
         public List<Friend> Incoming { get; } = new List<Friend>();
         public List<Friend> Outgoing { get; } = new List<Friend>();
         public bool Loaded { get; private set; }
+        /// <summary>Players online right now (from the server, refreshed with the presence every 30 s); -1 until the first answer.</summary>
+        public int OnlineCount { get; private set; } = -1;
 
         /// <summary>The lists changed.</summary>
         public event Action OnChanged;
+        /// <summary>The number of players online changed.</summary>
+        public event Action OnOnlineChanged;
         /// <summary>Somebody invited this player to a room.</summary>
         public event Action<ServerEvent> OnInvite;
         /// <summary>A friend request arrived or was accepted (for a toast).</summary>
@@ -128,7 +133,13 @@ namespace MafiaNight.Services.Friends
                      + ",\"kind\":\"" + (room.Kind == RoomKind.Private ? "private" : room.Kind == RoomKind.Vip ? "vip" : "public") + "\",\"locked\":" + (room.Locked ? "true" : "false")
                      + ",\"code\":\"" + JsonText.Esc(room.Kind == RoomKind.Private ? room.Code : "") + "\",\"inMatch\":" + (room.InMatch ? "true" : "false") + "}}";
             lastPresence = json;
-            yield return Post("/v1/presence", json, null);
+            yield return Post("/v1/presence", json, (code, text) =>
+            {
+                PresenceDto d = null; try { d = JsonUtility.FromJson<PresenceDto>(text); } catch { }
+                if (d == null || !d.ok || d.online < 0 || d.online == OnlineCount) return;
+                OnlineCount = d.online;
+                OnOnlineChanged?.Invoke();
+            });
         }
 
         // ---------------------------------------------------------------- lists
