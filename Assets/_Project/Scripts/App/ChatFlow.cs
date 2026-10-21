@@ -19,6 +19,10 @@ namespace MafiaNight.App
     public sealed class ChatFlow : MonoBehaviour
     {
         private const string Tag = "ChatFlow";
+
+        /// <summary>Set by the family screen before it opens the chat: start a private chat with this player.</summary>
+        public static string PendingDirectPf, PendingDirectName;
+        public static int PendingDirectRank;
         private const int MaxPicks = 6;
 
         private ChatService service;
@@ -57,6 +61,12 @@ namespace MafiaNight.App
             if (rooms != null) { rooms.OnRoomChanged += Rebuild; rooms.OnRoomLeft += OnRoomLeft; rooms.OnRoomJoined += OnRoomJoined; }
             Rebuild();
             service.RefreshInbox();
+            if (!string.IsNullOrEmpty(PendingDirectPf))
+            {
+                string pf = PendingDirectPf, name = PendingDirectName; int rank = PendingDirectRank;
+                PendingDirectPf = null;
+                MessagePlayer(pf, name ?? "لاعب", rank);
+            }
         }
 
         private void OnDestroy()

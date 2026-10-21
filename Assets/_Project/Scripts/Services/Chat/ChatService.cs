@@ -42,6 +42,8 @@ namespace MafiaNight.Services.Chat
         public event Action OnConversationsChanged;
         /// <summary>Total unread direct and group messages.</summary>
         public event Action<int> OnUnreadChanged;
+        /// <summary>News for this player: a friend request, an accepted request, an invitation to a room.</summary>
+        public event Action<ServerEvent> OnServerEvent;
 
         public static ChatService Ensure()
         {
@@ -112,6 +114,7 @@ namespace MafiaNight.Services.Chat
                         loadedHistory = true;
                         cursor = Mathf.Max(cursor, dto.cursor);
                         if (dto.messages != null) foreach (var m in dto.messages) Receive(m, !first);
+                        if (dto.events != null) foreach (var e in dto.events) OnServerEvent?.Invoke(new ServerEvent { Type = e.type, Pf = e.pf, Name = e.name, Level = e.level, Room = e.room != null && !string.IsNullOrEmpty(e.room.id) ? new RoomRef { Id = e.room.id, Name = e.room.name, Kind = e.room.kind, Code = e.room.code, Count = e.room.count, Cap = e.room.cap, Locked = e.room.locked, InMatch = e.room.inMatch } : null });
                         if (first || (dto.messages != null && dto.messages.Count > 0)) yield return RefreshInboxRoutine();
                         continue;
                     }
@@ -315,23 +318,6 @@ namespace MafiaNight.Services.Chat
             }
         }
 
-        private static string Esc(string s)
-        {
-            if (string.IsNullOrEmpty(s)) return "";
-            var sb = new StringBuilder(s.Length + 8);
-            foreach (char ch in s)
-            {
-                switch (ch)
-                {
-                    case '"': sb.Append("\\\""); break;
-                    case '\\': sb.Append("\\\\"); break;
-                    case '\n': sb.Append("\\n"); break;
-                    case '\r': break;
-                    case '\t': sb.Append(' '); break;
-                    default: if (ch < ' ') sb.Append(' '); else sb.Append(ch); break;
-                }
-            }
-            return sb.ToString();
-        }
+        private static string Esc(string s) => JsonText.Esc(s);
     }
 }

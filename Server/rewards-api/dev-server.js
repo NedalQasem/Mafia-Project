@@ -8,6 +8,7 @@ const crypto = require('node:crypto');
 const { createApp } = require('./src/app');
 const { createChat } = require('./src/chat');
 const { createStore } = require('./src/store');
+const { createFriends } = require('./src/friends');
 
 const names = { OTHER0001: 'أم سعيد', OTHER0002: 'البيك', OTHER0003: 'لينا', OTHER0004: 'مازن' };
 const progress = { OTHER0001: { rankPoints: 3200 }, OTHER0002: { rankPoints: 4100 }, OTHER0003: { rankPoints: 2100 }, OTHER0004: { rankPoints: 1100 } };
@@ -27,5 +28,6 @@ const cfg = {
   chat: { publicCooldownMs: 2000 },
 };
 const chat = createChat({ cfg, playfab });
-const { server } = createApp({ cfg, playfab, store: createStore(null), chat });
+const friends = createFriends({ chat, cfg });
+const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends });
 server.listen(8788, '127.0.0.1', () => console.log('dev server on http://127.0.0.1:8788 (pretend PlayFab; players OTHER0001..OTHER0004 exist)'));

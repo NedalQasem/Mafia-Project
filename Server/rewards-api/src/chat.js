@@ -45,7 +45,8 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
   const lastSend = new Map();           // pf -> { ch -> ms }
   const lastSeen = new Map();           // pf -> ms of the last poll
   const waiters = new Map();            // pf -> { since, resolve, timer }
-  const people = new Map();             // pf -> { name, rank, at }
+  const people = new Map();             // pf -> { name, rank, level, at }
+  const events = new Map();             // pf -> [event]: short-lived news for a player (friend requests, invites) delivered with his next poll
   let saveTimer = null;
 
   function save() {
@@ -63,10 +64,10 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
   async function who(pf) {
     const cached = people.get(pf);
     if (cached && now() - cached.at < 10 * 60 * 1000) return cached;
-    let name = 'لاعب', rank = 0;
+    let name = 'لاعب', rank = 0, level = 1;
     try { name = (await playfab.getDisplayName(pf)) || name; } catch { /* keep the default */ }
-    try { const p = await playfab.getProgress(pf, 'Progress'); if (p) rank = rankIndex(p.rankPoints || 0); } catch { /* keep the default */ }
-    const entry = { name, rank, at: now() };
+    try { const p = await playfab.getProgress(pf, 'Progress'); if (p) { rank = rankIndex(p.rankPoints || 0); level = p.level || 1; } } catch { /* keep the default */ }
+    const entry = { name, rank, level, at: now() };
     people.set(pf, entry);
     return entry;
   }
@@ -146,7 +147,7 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
       if (!canSee(pf, ch)) continue;
       if (ch === PUBLIC && blocked(pf, from)) continue;
       clearTimeout(w.timer); waiters.delete(pf);
-      w.resolve({ cursor: Math.max(w.since, m.id), messages: collect(pf, w.since, false).map(pack) });
+      w.resolve({ cursor: Math.max(w.since, m.id), messages: collect(pf, w.since, false).map(pack), events: takeEvents(pf) });
     }
     return m;
   }
@@ -182,15 +183,34 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
     lastSeen.set(pf, now());
     since = Number.isFinite(since) && since >= 0 ? since : 0;
     const msgs = collect(pf, since, history || since === 0);
-    if (msgs.length || !waitMs) return { cursor: msgs.length ? msgs[msgs.length - 1].id : (since === 0 ? state.nextId : since), messages: msgs.map(pack) };
+    const evs = takeEvents(pf);
+    if (msgs.length || evs.length || !waitMs) return { cursor: msgs.length ? msgs[msgs.length - 1].id : (since === 0 ? state.nextId : since), messages: msgs.map(pack), events: evs };
     const old = waiters.get(pf);
-    if (old) { clearTimeout(old.timer); old.resolve({ cursor: since, messages: [] }); }
+    if (old) { clearTimeout(old.timer); old.resolve({ cursor: since, messages: [], events: [] }); }
     return new Promise(resolve => {
-      const timer = setTimeout(() => { waiters.delete(pf); lastSeen.set(pf, now()); resolve({ cursor: since, messages: [] }); }, Math.min(waitMs, c.pollMaxMs));
+      const timer = setTimeout(() => { waiters.delete(pf); lastSeen.set(pf, now()); resolve({ cursor: since, messages: [], events: [] }); }, Math.min(waitMs, c.pollMaxMs));
       timer.unref?.();
       waiters.set(pf, { since, resolve, timer });
     });
   }
+
+  // ---------------------------------------------------------------- news for a player (used by the friends part)
+
+  function takeEvents(pf) { const l = events.get(pf); if (!l || !l.length) return []; events.delete(pf); return l; }
+
+  /** Queues a piece of news for a player and wakes his waiting poll. */
+  function pushEvent(pf, evt) {
+    const list = events.get(pf) || [];
+    list.push(Object.assign({ at: now() }, evt));
+    if (list.length > 50) list.shift();
+    events.set(pf, list);
+    const w = waiters.get(pf);
+    if (w) { clearTimeout(w.timer); waiters.delete(pf); w.resolve({ cursor: w.since, messages: [], events: takeEvents(pf) }); }
+  }
+
+  function isOnline(pf) { return now() - (lastSeen.get(pf) || 0) < c.onlineWithinMs; }
+  function seenAt(pf) { return lastSeen.get(pf) || 0; }
+  function touch(pf) { lastSeen.set(pf, now()); }
 
   // ---------------------------------------------------------------- the list of conversations
 
@@ -312,7 +332,7 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
     try { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file + '.tmp', JSON.stringify(state)); fs.renameSync(file + '.tmp', file); } catch (e) { log.error('chat save failed', e.message); }
   }
 
-  return { send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, ChatError, _state: () => state };
+  return { who, pushEvent, isOnline, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, ChatError, _state: () => state };
 }
 
 module.exports = { createChat, ChatError, normalize, rankIndex, dmChannel, PUBLIC };

@@ -130,13 +130,14 @@ namespace MafiaNight.UI.Kit.Editor
             var nm = so.FindProperty("names"); nm.arraySize = names.Length;
             for (int i = 0; i < roots.Length; i++) { fr.GetArrayElementAtIndex(i).objectReferenceValue = roots[i]; nm.GetArrayElementAtIndex(i).stringValue = names[i]; }
             so.ApplyModifiedPropertiesWithoutUndo();
-            if (artDir.EndsWith("/Match/")) AddMatchView(canvasGo, roots, names, manifest, th);
+            if (artDir.EndsWith("/Match/")) AddMatchView(canvasGo, roots, names, manifest, th, "MatchSceneBinder");
+            else if (artDir.EndsWith("/Family/")) AddMatchView(canvasGo, roots, names, manifest, th, null);   // the family screens are driven by FamilyFlow (added by the app binder)
             EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), scenePath);
             Debug.Log("[UIKit] built " + frames.Count + " match frames");
         }
 
         /// <summary>The live driver of the match screens: the frames, their names, every sprite (so seats and chips can change look) and the heading font.</summary>
-        private static void AddMatchView(GameObject canvasGo, GameObject[] roots, string[] names, Dictionary<string, MSprite> manifest, KitTheme th)
+        private static void AddMatchView(GameObject canvasGo, GameObject[] roots, string[] names, Dictionary<string, MSprite> manifest, KitTheme th, string binderName)
         {
             var view = canvasGo.AddComponent<KitMatchView>();
             var so = new SerializedObject(view);
@@ -150,10 +151,12 @@ namespace MafiaNight.UI.Kit.Editor
             so.FindProperty("headFont").objectReferenceValue = th.fontLalezar != null ? th.fontLalezar : th.fontHeading;
             so.ApplyModifiedPropertiesWithoutUndo();
             // the App assembly sits above the kit, so its binder is added by name
-            foreach (var guid in AssetDatabase.FindAssets("MatchSceneBinder t:MonoScript"))
+            if (binderName == null && LoadPrefab("Toast") != null) InstChild("Toast", canvasGo.transform, "Toast");   // the family screens show short messages
+            if (string.IsNullOrEmpty(binderName)) return;
+            foreach (var guid in AssetDatabase.FindAssets(binderName + " t:MonoScript"))
             {
                 var cls = AssetDatabase.LoadAssetAtPath<MonoScript>(AssetDatabase.GUIDToAssetPath(guid))?.GetClass();
-                if (cls != null && cls.Name == "MatchSceneBinder") { canvasGo.AddComponent(cls); break; }
+                if (cls != null && cls.Name == binderName) { canvasGo.AddComponent(cls); break; }
             }
         }
 

@@ -44,7 +44,8 @@ namespace MafiaNight.App
 
         private static void Attach()
         {
-            if ((FindAnyObjectByType<KitTopBar>() == null && FindAnyObjectByType<KitLeaderboardsScreen>() == null && FindAnyObjectByType<KitScreenHeader>() == null) || FindAnyObjectByType<KitAppBinder>() != null) return;
+            bool familyScene = SceneManager.GetActiveScene().name == AppScenes.Family;       // the family screens have no top bar of the kit
+            if ((FindAnyObjectByType<KitTopBar>() == null && FindAnyObjectByType<KitLeaderboardsScreen>() == null && FindAnyObjectByType<KitScreenHeader>() == null && !familyScene) || FindAnyObjectByType<KitAppBinder>() != null) return;
             new GameObject("KitAppBinder").AddComponent<KitAppBinder>();
         }
 
@@ -84,6 +85,9 @@ namespace MafiaNight.App
             if (FindAnyObjectByType<KitSettingsScreen>() != null) gameObject.AddComponent<VoiceSettingsFlow>();
             MafiaNight.Services.Chat.ChatService.Ensure();   // listens for messages in every scene (the chat screen reads from it)
             if (FindAnyObjectByType<KitChatScreen>(FindObjectsInactive.Include) != null) gameObject.AddComponent<ChatFlow>();
+            MafiaNight.Services.Friends.FriendsService.Ensure();   // reports where the player sits and hears friend news in every scene
+            InviteFlow.Ensure();
+            if (SceneManager.GetActiveScene().name == AppScenes.Family && FindAnyObjectByType<KitMatchView>(FindObjectsInactive.Include) != null) gameObject.AddComponent<FamilyFlow>();
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
             if (lb != null) lb.OnBack += GoHome;
             header = FindAnyObjectByType<KitScreenHeader>();

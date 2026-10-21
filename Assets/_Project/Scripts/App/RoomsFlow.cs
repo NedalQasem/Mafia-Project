@@ -79,6 +79,7 @@ namespace MafiaNight.App
             }
             rooms.OnRoomChanged += OnRoomChanged;
             rooms.OnRoomLeft += OnRoomLeft;
+            rooms.OnRoomJoined += _ => { if (voice != null && !voice.gameObject.activeSelf) EnterVoice(); };   // joined from a friend's invitation or from the family screen
             rooms.OnHostChanged += Say;
             nextList = 0f;
             if (rooms.InRoom) EnterVoice();   // coming back from a match: the room is still ours

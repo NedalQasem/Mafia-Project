@@ -119,7 +119,7 @@ namespace MafiaNight.UI.Kit
         {
             var t = Node(frame, index);
             var v = t != null ? t.Find("V") : null;
-            var im = v != null ? v.GetComponent<Image>() : null;
+            var im = v != null ? v.GetComponent<Image>() : (t != null ? t.GetComponent<Image>() : null);   // icons carry their picture on the part itself
             var s = Sprite(spriteName);
             if (im != null && s != null) im.sprite = s;
         }
@@ -186,6 +186,31 @@ namespace MafiaNight.UI.Kit
                 lrt.anchoredPosition = new Vector2(w / 2f, lrt.anchoredPosition.y);
                 right -= w + gap;
             }
+        }
+
+        private readonly HashSet<string> scrollable = new HashSet<string>();
+
+        /// <summary>
+        /// Lets a frame whose page grew taller than the screen be dragged up and down: <paramref name="content"/> (the page part) gets the height
+        /// (mockup pixels) with its top fixed, and the frame itself scrolls it. Calling it again keeps the scroll position.
+        /// </summary>
+        public void MakeScrollable(string frame, RectTransform content, float heightCss)
+        {
+            Init();
+            if (content == null || !byName.TryGetValue(frame, out var idx)) return;
+            float h = heightCss * CssToCanvas;
+            float oldH = content.sizeDelta.y;
+            float offset = content.anchoredPosition.y + oldH / 2f;               // how far it was dragged up
+            content.sizeDelta = new Vector2(content.sizeDelta.x, h);
+            content.anchoredPosition = new Vector2(content.anchoredPosition.x, -h / 2f + Mathf.Clamp(offset, 0f, Mathf.Max(0f, h - oldH)));
+            if (!scrollable.Add(frame)) return;
+            var root = (RectTransform)frames[idx].transform;
+            var hit = root.GetComponent<Image>();
+            if (hit == null) { hit = root.gameObject.AddComponent<Image>(); hit.color = new Color(0, 0, 0, 0); }
+            hit.raycastTarget = true;
+            var sr = root.gameObject.AddComponent<ScrollRect>();
+            sr.content = content; sr.viewport = root; sr.horizontal = false; sr.vertical = true;
+            sr.movementType = ScrollRect.MovementType.Clamped; sr.inertia = true; sr.scrollSensitivity = 40f;
         }
 
         // ---------------------------------------------------------------- the table

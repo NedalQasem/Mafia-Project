@@ -9,7 +9,7 @@ const { PlayFabError } = require('./playfab');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -131,6 +131,18 @@ function createApp({ cfg, playfab, store, chat = null, now = () => Date.now(), l
     '/v1/chat/block': async (pf, b) => chat.block(pf, b.player, !!b.on),
   };
 
+  const friendsPost = friends ? {
+    '/v1/friends/lookup': (pf, b) => friends.lookup(pf, b),
+    '/v1/friends/request': (pf, b) => friends.request(pf, b),
+    '/v1/friends/respond': (pf, b) => friends.respond(pf, b),
+    '/v1/friends/cancel': async (pf, b) => friends.cancel(pf, b),
+    '/v1/friends/remove': async (pf, b) => friends.remove(pf, b),
+    '/v1/friends/invite': (pf, b) => friends.invite(pf, b),
+    '/v1/presence': async (pf, b) => friends.setPresence(pf, b),
+    '/v1/report/player': async (pf, b) => friends.reportPlayer(pf, b),
+  } : {};
+  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost);
+
   const server = http.createServer((req, res) => {
     const ip = (cfg.trustProxy && req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : req.socket.remoteAddress) || 'unknown';
     const url = new URL(req.url, 'http://local');
@@ -138,8 +150,8 @@ function createApp({ cfg, playfab, store, chat = null, now = () => Date.now(), l
     if (limited(ip)) return send(res, 429, { ok: false, error: 'slow down' });
 
     const isResult = req.method === 'POST' && url.pathname === '/v1/match-result';
-    const isChatPost = !!chat && req.method === 'POST' && chatPost[url.pathname];
-    const isChatGet = !!chat && req.method === 'GET' && (url.pathname === '/v1/chat/poll' || url.pathname === '/v1/chat/inbox' || url.pathname === '/v1/chat/blocked');
+    const isChatPost = req.method === 'POST' && !!posts[url.pathname];
+    const isChatGet = req.method === 'GET' && ((!!chat && (url.pathname === '/v1/chat/poll' || url.pathname === '/v1/chat/inbox' || url.pathname === '/v1/chat/blocked')) || (!!friends && (url.pathname === '/v1/friends' || url.pathname === '/v1/me')));
     if (!isResult && !isChatPost && !isChatGet) return send(res, 404, { ok: false, error: 'not found' });
 
     const ticket = req.headers['x-authorization'];
@@ -149,6 +161,8 @@ function createApp({ cfg, playfab, store, chat = null, now = () => Date.now(), l
       try {
         if (isChatGet) {
           const pf = await who(ticket);
+          if (url.pathname === '/v1/friends') return send(res, 200, await friends.list(pf));
+          if (url.pathname === '/v1/me') return send(res, 200, await friends.me(pf));
           if (url.pathname === '/v1/chat/inbox') return send(res, 200, await chat.inbox(pf));
           if (url.pathname === '/v1/chat/blocked') return send(res, 200, chat.blockedList(pf));
           const out = await chat.poll(pf, parseInt(url.searchParams.get('since') || '0', 10), Math.min(parseInt(url.searchParams.get('wait') || '0', 10) * 1000 || 0, 25000), url.searchParams.get('history') === '1');
@@ -158,7 +172,7 @@ function createApp({ cfg, playfab, store, chat = null, now = () => Date.now(), l
         if (body === undefined) return;
         if (isChatPost) {
           const pf = await who(ticket);
-          return send(res, 200, await chatPost[url.pathname](pf, body || {}));
+          return send(res, 200, await posts[url.pathname](pf, body || {}));
         }
         const out = await handleMatchResult(ticket, body);
         send(res, out.status, out.body);

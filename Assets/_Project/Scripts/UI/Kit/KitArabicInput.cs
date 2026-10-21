@@ -17,6 +17,35 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private GameObject placeholder;
         [SerializeField] private RectTransform caret;
 
+        /// <summary>
+        /// Makes an input over a part of a frame that is only a picture: an invisible real input (the phone keyboard talks to it) over
+        /// <paramref name="area"/>, with the picture's own Arabic text (<paramref name="mirror"/>) drawing what is typed.
+        /// </summary>
+        public static KitArabicInput Attach(RectTransform area, ArabicText mirror, GameObject placeholder, TMP_InputField.ContentType type, int characterLimit, bool multiline = false)
+        {
+            var go = new GameObject("Input", typeof(RectTransform));
+            go.SetActive(false);
+            var rt = (RectTransform)go.transform; rt.SetParent(area, false);
+            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
+            var hit = go.AddComponent<Image>(); hit.color = new Color(0, 0, 0, 0);
+            var vp = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D));
+            var vr = (RectTransform)vp.transform; vr.SetParent(rt, false); vr.anchorMin = Vector2.zero; vr.anchorMax = Vector2.one; vr.offsetMin = vr.offsetMax = Vector2.zero;
+            var tx = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+            var tr = (RectTransform)tx.transform; tr.SetParent(vr, false); tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one; tr.offsetMin = tr.offsetMax = Vector2.zero;
+            var tmp = tx.GetComponent<TextMeshProUGUI>();
+            var mt = mirror != null ? mirror.GetComponent<TMP_Text>() : null;
+            if (mt != null) { tmp.font = mt.font; tmp.fontSize = mt.fontSize; }
+            tmp.color = Color.clear; tmp.raycastTarget = false; tmp.alignment = TextAlignmentOptions.MidlineRight;
+            var field = go.AddComponent<TMP_InputField>();
+            field.textViewport = vr; field.textComponent = tmp; field.targetGraphic = hit;
+            field.contentType = type; field.characterLimit = characterLimit;
+            field.lineType = multiline ? TMP_InputField.LineType.MultiLineNewline : TMP_InputField.LineType.SingleLine;
+            var comp = go.AddComponent<KitArabicInput>();
+            comp.input = field; comp.mirror = mirror; comp.placeholder = placeholder;
+            go.SetActive(true);
+            return comp;
+        }
+
         public event Action<string> OnChanged;
         public event Action<string> OnSubmit;
 
