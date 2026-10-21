@@ -14,12 +14,16 @@ namespace MafiaNight.UI.Kit
         public string text;
         public string time;
         public int rank;
+        public int id;             // server id (0 for the demo data)
+        public string fromId;      // sender PlayFab id
         public bool Mine => from == "me";
     }
 
     [Serializable]
     public class ChatConversation
     {
+        public string id;          // channel on the server ("public", "dm:..", "grp:.."); empty for the demo data
+        public string peerId;      // direct chats: the other player's PlayFab id
         public ChatKind kind;
         public string name;
         public int rank;

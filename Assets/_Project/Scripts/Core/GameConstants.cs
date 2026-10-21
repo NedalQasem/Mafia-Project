@@ -8,6 +8,15 @@ namespace MafiaNight.Core
         #region Servers
         /// <summary>Our rewards server (XP, rank and coins for finished matches). Empty turns result reporting off.</summary>
         public const string REWARDS_API_URL = "https://api.mena-gaming.com";
+        /// <summary>The server the game talks to (rewards and chat). In the editor and development builds the PlayerPrefs key "MafiaApiUrl" can point it to a test server.</summary>
+        public static string ApiUrl
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            get { var o = UnityEngine.PlayerPrefs.GetString("MafiaApiUrl", ""); return string.IsNullOrEmpty(o) ? REWARDS_API_URL : o; }
+#else
+            get { return REWARDS_API_URL; }
+#endif
+        }
         #endregion
 
         #region PlayerPrefs Keys

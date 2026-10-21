@@ -33,7 +33,7 @@ namespace MafiaNight.Services.Match
 
         public static IEnumerator Run(MatchReport report, Action<RewardResult> progress)
         {
-            string baseUrl = GameConstants.REWARDS_API_URL;
+            string baseUrl = GameConstants.ApiUrl;
             if (string.IsNullOrEmpty(baseUrl) || report == null) yield break;
             var body = Encoding.UTF8.GetBytes(ToJson(report));
             int failures = 0;

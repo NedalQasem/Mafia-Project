@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +14,9 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private LayoutElement layout;
         [SerializeField] private float maxTextWidth = 640f;
         [SerializeField] private float padX = 34f, padTop = 22f, padBottom = 46f;
+
+        /// <summary>Makes the bubble tappable (to message, report or block the sender).</summary>
+        public void SetTap(Action clicked) { if (bubble != null) KitTap.On(bubble, clicked); }
 
         public void Bind(ChatMessage m, bool showSender)
         {

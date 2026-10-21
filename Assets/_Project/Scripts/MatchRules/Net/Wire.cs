@@ -42,6 +42,8 @@ namespace MafiaNight.MatchRules.Net
     /// <summary>The message types. Player to host: Act. Host to players: everything else.</summary>
     public static class Msg
     {
+        // any member -> every other member (room text chat, no host needed)
+        public const string Chat = "chat";          // text
         // player -> host
         public const string Act = "act";            // kind, target   (kinds: mafia, save, check, skip, vote, ready)
         // host -> players

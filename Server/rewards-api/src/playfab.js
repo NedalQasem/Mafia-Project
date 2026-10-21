@@ -37,6 +37,11 @@ function createPlayFab({ titleId, secretKey, baseUrl, fetchImpl }) {
       if (!id) throw new PlayFabError('no user', 401, 'NoUser');
       return id;
     },
+    /** The player's display name, or null when he has none. */
+    async getDisplayName(playFabId) {
+      const d = await call('/Server/GetPlayerProfile', { PlayFabId: playFabId, ProfileConstraints: { ShowDisplayName: true } });
+      return (d && d.PlayerProfile && d.PlayerProfile.DisplayName) || null;
+    },
     async getProgress(playFabId, key) {
       const d = await call('/Server/GetUserReadOnlyData', { PlayFabId: playFabId, Keys: [key] });
       const entry = d && d.Data && d.Data[key];

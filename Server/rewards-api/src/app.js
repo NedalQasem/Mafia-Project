@@ -9,9 +9,20 @@ const { PlayFabError } = require('./playfab');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
+  const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
+
+  async function who(ticket) {
+    const t = now();
+    const hit = tickets.get(ticket);
+    if (hit && hit.until > t) return hit.pf;
+    const pf = await playfab.authenticate(ticket);
+    tickets.set(ticket, { pf, until: t + 5 * 60 * 1000 });
+    if (tickets.size > 5000) for (const [k, v] of tickets) if (v.until < t) tickets.delete(k);
+    return pf;
+  }
 
   function limited(ip) {
     const t = now();
@@ -58,7 +69,7 @@ function createApp({ cfg, playfab, store, now = () => Date.now(), log = console 
   }
 
   async function handleMatchResult(ticket, body) {
-    const playFabId = await playfab.authenticate(ticket);
+    const playFabId = await who(ticket);
     const bad = R.validateReport(body, cfg);
     if (bad) return { status: 400, body: { ok: false, error: bad } };
     if (!body.players.includes(playFabId)) return { status: 403, body: { ok: false, error: 'not a player of this match' } };
@@ -92,30 +103,67 @@ function createApp({ cfg, playfab, store, now = () => Date.now(), log = console 
     res.end(text);
   }
 
+  function readJson(req, res) {
+    return new Promise(resolve => {
+      let size = 0; const chunks = [];
+      req.on('data', c => { size += c.length; if (size > 8192) { send(res, 413, { ok: false, error: 'too big' }); req.destroy(); resolve(undefined); } else chunks.push(c); });
+      req.on('end', () => {
+        if (res.writableEnded) return resolve(undefined);
+        if (size === 0) return resolve({});
+        try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch { send(res, 400, { ok: false, error: 'bad json' }); resolve(undefined); }
+      });
+    });
+  }
+
+  function fail(res, e, what) {
+    if (e instanceof PlayFabError && (e.status === 401 || e.status === 403 || e.code === 'InvalidSessionTicket' || e.code === 'NoUser')) return send(res, 401, { ok: false, error: 'bad ticket' });
+    if (e && e.code && e.status && !(e instanceof PlayFabError)) return send(res, e.status, Object.assign({ ok: false, error: e.code }, e.extra || {}));
+    log.error(what + ' failed:', e && e.message);
+    send(res, 502, { ok: false, error: 'try again' });
+  }
+
+  const chatPost = {
+    '/v1/chat/send': (pf, b) => chat.send(pf, b),
+    '/v1/chat/read': async (pf, b) => chat.markRead(pf, b.channel, b.upTo),
+    '/v1/chat/group/create': (pf, b) => chat.createGroup(pf, b),
+    '/v1/chat/group/leave': (pf, b) => chat.leaveGroup(pf, b.id),
+    '/v1/chat/report': async (pf, b) => chat.report(pf, b),
+    '/v1/chat/block': async (pf, b) => chat.block(pf, b.player, !!b.on),
+  };
+
   const server = http.createServer((req, res) => {
     const ip = (cfg.trustProxy && req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : req.socket.remoteAddress) || 'unknown';
-    if (req.method === 'GET' && req.url === '/health') return send(res, 200, { ok: true });
+    const url = new URL(req.url, 'http://local');
+    if (req.method === 'GET' && url.pathname === '/health') return send(res, 200, { ok: true });
     if (limited(ip)) return send(res, 429, { ok: false, error: 'slow down' });
-    if (req.method !== 'POST' || req.url !== '/v1/match-result') return send(res, 404, { ok: false, error: 'not found' });
+
+    const isResult = req.method === 'POST' && url.pathname === '/v1/match-result';
+    const isChatPost = !!chat && req.method === 'POST' && chatPost[url.pathname];
+    const isChatGet = !!chat && req.method === 'GET' && (url.pathname === '/v1/chat/poll' || url.pathname === '/v1/chat/inbox' || url.pathname === '/v1/chat/blocked');
+    if (!isResult && !isChatPost && !isChatGet) return send(res, 404, { ok: false, error: 'not found' });
 
     const ticket = req.headers['x-authorization'];
     if (typeof ticket !== 'string' || ticket.length < 10 || ticket.length > 2000) return send(res, 401, { ok: false, error: 'no ticket' });
 
-    let size = 0; const chunks = [];
-    req.on('data', c => { size += c.length; if (size > 8192) { send(res, 413, { ok: false, error: 'too big' }); req.destroy(); } else chunks.push(c); });
-    req.on('end', async () => {
-      if (res.writableEnded) return;
-      let body;
-      try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { return send(res, 400, { ok: false, error: 'bad json' }); }
+    (async () => {
       try {
+        if (isChatGet) {
+          const pf = await who(ticket);
+          if (url.pathname === '/v1/chat/inbox') return send(res, 200, await chat.inbox(pf));
+          if (url.pathname === '/v1/chat/blocked') return send(res, 200, chat.blockedList(pf));
+          const out = await chat.poll(pf, parseInt(url.searchParams.get('since') || '0', 10), Math.min(parseInt(url.searchParams.get('wait') || '0', 10) * 1000 || 0, 25000), url.searchParams.get('history') === '1');
+          return send(res, 200, Object.assign({ ok: true }, out));
+        }
+        const body = await readJson(req, res);
+        if (body === undefined) return;
+        if (isChatPost) {
+          const pf = await who(ticket);
+          return send(res, 200, await chatPost[url.pathname](pf, body || {}));
+        }
         const out = await handleMatchResult(ticket, body);
         send(res, out.status, out.body);
-      } catch (e) {
-        if (e instanceof PlayFabError && (e.status === 401 || e.status === 403 || e.code === 'InvalidSessionTicket' || e.code === 'NoUser')) return send(res, 401, { ok: false, error: 'bad ticket' });
-        log.error('match-result failed:', e.message);
-        send(res, 502, { ok: false, error: 'try again' });
-      }
-    });
+      } catch (e) { fail(res, e, url.pathname); }
+    })();
   });
 
   return { server, handleMatchResult };

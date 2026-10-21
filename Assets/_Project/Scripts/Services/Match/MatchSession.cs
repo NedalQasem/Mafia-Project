@@ -41,6 +41,8 @@ namespace MafiaNight.Services.Match
 
         /// <summary>The match was cancelled for everybody (reason in Arabic); the screens go back to the room.</summary>
         public event Action<string> Cancelled;
+        /// <summary>A member of the room wrote in the room chat (sender id as EOS reports it, text).</summary>
+        public event Action<string, string> RoomChat;
 
         public MatchSession(IEosPlatform eos, IRoomService rooms)
         {
@@ -68,6 +70,7 @@ namespace MafiaNight.Services.Match
 
         private void OnReceived(string sender, WireMessage m)
         {
+            if (m.Type == Msg.Chat) { RoomChat?.Invoke(sender, m.Arg(0)); return; }
             if (m.Type == Msg.Act) { Host?.Receive(sender, m); return; }
             if (m.Type == Msg.Snapshot)
             {
@@ -76,6 +79,13 @@ namespace MafiaNight.Services.Match
                 return;
             }
             if (sender == HostId) Client.Apply(m);        // only the room's host may tell us how the match goes
+        }
+
+        /// <summary>Sends a room chat line to every other member (peer to peer, nothing is stored on a server).</summary>
+        public void SendChat(string text)
+        {
+            var msg = new WireMessage(Msg.Chat, text);
+            foreach (var m in rooms.Members) if (m.Puid != myId) net.Send(m.Puid, msg);
         }
 
         /// <summary>Host only: deals the roles and starts. False if the room does not have 4–16 players.</summary>

@@ -18,6 +18,9 @@ namespace MafiaNight.Services.Match
     /// across scene changes. When the host starts a match, every player's device loads the match screens. Screens reach the session
     /// through <see cref="Session"/>. Create it with <see cref="Ensure"/>.
     /// </summary>
+    /// <summary>One line of the room's text chat.</summary>
+    public sealed class RoomChatLine { public string Puid, PlayFabId, Name, Text; public int Rank; public bool Mine; public long Ts; }
+
     public sealed class MatchRunner : MonoBehaviour
     {
         private const string Tag = "MatchRunner";
@@ -30,6 +33,53 @@ namespace MafiaNight.Services.Match
         /// <summary>What the rewards server paid for the last match (None until a match ends).</summary>
         public RewardResult Reward { get; private set; } = new RewardResult();
         public event System.Action RewardChanged;
+
+        private readonly System.Collections.Generic.List<RoomChatLine> roomChat = new System.Collections.Generic.List<RoomChatLine>();
+        private float lastRoomChatAt = -10f;
+        /// <summary>The room's chat lines since this player entered it.</summary>
+        public System.Collections.Generic.IReadOnlyList<RoomChatLine> RoomChatHistory => roomChat;
+        public event System.Action<RoomChatLine> RoomChatReceived;
+
+        /// <summary>Writes in the room chat. Returns an Arabic reason when it is refused, otherwise null.</summary>
+        public string SendRoomChat(string text)
+        {
+            if (Session == null || rooms == null || !rooms.InRoom) return "لست بغرفة.";
+            if (rooms.CurrentRoom != null && !rooms.CurrentRoom.ChatEnabled) return "الدردشة مقفلة بهالغرفة.";
+            text = CleanChat(text);
+            if (string.IsNullOrEmpty(text)) return "";
+            if (Time.unscaledTime - lastRoomChatAt < 1f) return "مهلاً، رسائلك سريعة.";
+            lastRoomChatAt = Time.unscaledTime;
+            Session.SendChat(text);
+            var me = System.Linq.Enumerable.FirstOrDefault(rooms.Members, m => m.IsMe);
+            AddRoomLine(new RoomChatLine { Puid = me?.Puid, PlayFabId = me?.PlayFabId, Name = me?.Name ?? "", Rank = me?.Rank ?? 0, Text = text, Mine = true, Ts = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+            return null;
+        }
+
+        private static string CleanChat(string s)
+        {
+            if (s == null) return "";
+            var sb = new System.Text.StringBuilder();
+            foreach (char ch in s) sb.Append(ch < ' ' ? ' ' : ch);
+            string t = System.Text.RegularExpressions.Regex.Replace(sb.ToString(), @"\s+", " ").Trim();
+            return t.Length > 300 ? t.Substring(0, 300) : t;
+        }
+
+        private void OnRoomChat(string senderPuid, string text)
+        {
+            if (rooms == null || !rooms.InRoom || (rooms.CurrentRoom != null && !rooms.CurrentRoom.ChatEnabled)) return;
+            var from = System.Linq.Enumerable.FirstOrDefault(rooms.Members, m => m.Puid == senderPuid);
+            if (from == null || from.IsMe) return;                     // only people in this room, and never an echo of ourselves
+            text = CleanChat(text);
+            if (string.IsNullOrEmpty(text)) return;
+            AddRoomLine(new RoomChatLine { Puid = from.Puid, PlayFabId = from.PlayFabId, Name = from.Name, Rank = from.Rank, Text = text, Ts = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+        }
+
+        private void AddRoomLine(RoomChatLine line)
+        {
+            roomChat.Add(line);
+            if (roomChat.Count > 100) roomChat.RemoveAt(0);
+            RoomChatReceived?.Invoke(line);
+        }
 
         /// <summary>Why the last match was cancelled (shown once by the room screen), or empty.</summary>
         public string TakeEndReason() { var r = endReason; endReason = ""; return r; }
@@ -90,6 +140,8 @@ namespace MafiaNight.Services.Match
             Session.Client.PhaseChanged += OnPhase;
             Session.Client.Changed += ApplyVoice;
             Session.Cancelled += OnCancelled;
+            Session.RoomChat += OnRoomChat;
+            roomChat.Clear();
             Session.Client.Finished += OnMatchFinished;
             lastVoicePlan = "";
             known.Clear();
@@ -102,6 +154,8 @@ namespace MafiaNight.Services.Match
             Session.Client.PhaseChanged -= OnPhase;
             Session.Client.Changed -= ApplyVoice;
             Session.Cancelled -= OnCancelled;
+            Session.RoomChat -= OnRoomChat;
+            roomChat.Clear();
             Session.Client.Finished -= OnMatchFinished;
             Session.Dispose();
             voice?.ClearGameVoice();

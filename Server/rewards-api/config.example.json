@@ -14,8 +14,23 @@
   "reportWindowSeconds": 900,
   "dailyMatchCap": 30,
   "rewards": {
-    "baseXp": 20, "winXp": 25, "survivedXp": 5,
-    "baseCoins": 10, "winCoins": 20,
-    "rankWin": 50, "rankLose": -20
+    "baseXp": 20,
+    "winXp": 25,
+    "survivedXp": 5,
+    "baseCoins": 10,
+    "winCoins": 20,
+    "rankWin": 50,
+    "rankLose": -20
+  },
+  "chat": {
+    "publicCooldownMs": 5000,
+    "cooldownMs": 1000,
+    "maxLen": 300,
+    "historyPerChannel": 50,
+    "maxGroups": 10,
+    "maxGroupMembers": 10,
+    "autoMuteReports": 3,
+    "autoMuteMinutes": 120,
+    "bannedWords": []
   }
 }

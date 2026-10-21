@@ -82,6 +82,8 @@ namespace MafiaNight.App
                 MafiaNight.Services.Match.MatchRunner.Ensure();
             }
             if (FindAnyObjectByType<KitSettingsScreen>() != null) gameObject.AddComponent<VoiceSettingsFlow>();
+            MafiaNight.Services.Chat.ChatService.Ensure();   // listens for messages in every scene (the chat screen reads from it)
+            if (FindAnyObjectByType<KitChatScreen>(FindObjectsInactive.Include) != null) gameObject.AddComponent<ChatFlow>();
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
             if (lb != null) lb.OnBack += GoHome;
             header = FindAnyObjectByType<KitScreenHeader>();
