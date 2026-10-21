@@ -11,6 +11,9 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private AvatarFrame avatar;
         [SerializeField] private Image arrow;
 
+        /// <summary>For this player's own row when he is not on the board yet.</summary>
+        public void ShowNoPosition() { posLabel.Text = "—"; }
+
         public void Bind(LeaderEntry e, int position, bool paper)
         {
             var th = KitTheme.Current;

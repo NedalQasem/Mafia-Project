@@ -11,6 +11,10 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private Button backButton;
         [SerializeField] private Image headerLine;
         public event System.Action OnBack;
+        /// <summary>The player opened a board (period 0 day, 1 week) and the app should answer with <see cref="ShowBoard"/>. With no listener the screen shows demo data.</summary>
+        public event System.Action<int, int> OnLoadBoard;
+        /// <summary>The player opened the hall of fame; answer with <see cref="ShowWall"/>.</summary>
+        public event System.Action OnLoadWall;
         [SerializeField] private GameObject boardView, wallView, chipsRow;
         [SerializeField] private Image boardBg;
         [SerializeField] private ArabicText boardTitle, boardUnit, rewardLabel, resetLabel, resetCaption;
@@ -51,6 +55,9 @@ namespace MafiaNight.UI.Kit
 
         private static void Del(GameObject g) { if (Application.isPlaying) Destroy(g); else DestroyImmediate(g); }
 
+        /// <summary>Asks the app for the board again (when it started listening after the screen had already asked).</summary>
+        public void Reload() { if (Application.isPlaying) Apply(); }
+
         public void SetPeriod(int p)
         {
             if (p == period) { Apply(); return; }
@@ -83,10 +90,11 @@ namespace MafiaNight.UI.Kit
                 mineWall.Text = "تدخل القاعة بالوصول إلى المركز الأول بموسم أو بتحطيم رقم قياسي";
                 mineRank.Text = "—"; mineNeed.Text = ""; mineValue.Text = ""; if (mineCaption != null) mineCaption.Text = "غير مصنف";
                 SetFill(0.12f);
-                resetLabel.Text = ""; SetResetVisible(false); return;
+                resetLabel.Text = ""; SetResetVisible(false);
+                OnLoadWall?.Invoke();
+                return;
             }
             mineWall.Text = ""; SetResetVisible(true); if (mineCaption != null) mineCaption.Text = "ترتيبك";
-            SetReset(period == 0 ? "٠٣:٤٢:١٠" : "٢ يوم ٠٥:١٨");
             boardBg.sprite = paper ? th.paper : th.boardDay;
             // newspaper = bold display type and a solid ink rule; chalkboard = calligraphy and a dashed chalk line
             var tt = boardTitle.GetComponent<TMPro.TMP_Text>();
@@ -103,29 +111,96 @@ namespace MafiaNight.UI.Kit
                 st.GetComponent<Image>().color = paper ? new Color(0.11f, 0.09f, 0.06f, 0.07f) : new Color(1f, 1f, 1f, 0.01f);
                 var hl = st.Find("Hl"); if (hl != null) hl.GetComponent<Image>().color = paper ? new Color(0.11f, 0.09f, 0.06f, 0.04f) : new Color(1f, 1f, 1f, 0.025f);
             }
-            var list = LeaderboardData.Make(period, cat);
             boardTitle.Text = (paper ? "جريدة الأسبوع · " : "سبورة الليلة · ") + LeaderboardData.Categories[cat];
             boardUnit.Text = LeaderboardData.Units[cat];
             boardTitle.GetComponent<TMPro.TMP_Text>().color = paper ? th.paperInk : new Color32(0xE9, 0xE6, 0xDC, 255);
             boardUnit.GetComponent<TMPro.TMP_Text>().color = paper ? th.crimson : new Color32(0xFF, 0xD9, 0x8A, 255);
-            for (int i = 0; i < 3; i++) podium[i].Bind(list[i], i + 1, paper);
+            boardView.transform.localRotation = paper ? Quaternion.Euler(0f, 0f, 0.6f) : Quaternion.identity;   // the newspaper lies slightly crooked
+            if (OnLoadBoard == null) { ShowBoard(period, cat, MockBoard(period, cat)); return; }
+            ShowLoading();
+            OnLoadBoard(period, cat);
+        }
+
+        private void ClearRows()
+        {
             for (int i = rowsRoot.childCount - 1; i >= 0; i--) Del(rowsRoot.GetChild(i).gameObject);
+        }
+
+        private void ShowLoading()
+        {
+            ClearRows();
+            for (int i = 0; i < 3; i++) podium[i].gameObject.SetActive(false);
+            rewardLabel.Text = "جارٍ تحميل الترتيب…";
+            mineRank.Text = "—"; mineNeed.Text = ""; mineValue.Text = ""; SetFill(0.05f);
+        }
+
+        /// <summary>The app answers <see cref="OnLoadBoard"/> with this. An answer for a board the player already left is ignored.</summary>
+        public void ShowBoard(int forPeriod, int forCat, LeaderBoardView view)
+        {
+            if (forPeriod != period || forCat != cat || period == 2 || view == null) return;
+            bool paper = period == 1;
+            var list = view.list;
+            for (int i = 0; i < 3; i++)
+            {
+                podium[i].gameObject.SetActive(i < list.Count);
+                if (i < list.Count) podium[i].Bind(list[i], i + 1, paper);
+            }
+            ClearRows();
             for (int i = 3; i < list.Count; i++)
             {
                 var go = Instantiate(rowPrefab, rowsRoot);
                 go.GetComponent<LeaderRowView>().Bind(list[i], i + 1, paper);
                 KitEnterAnim.Play(go, (i - 3) * 0.04f, 38f, 0.4f, 0.4f);
             }
-            var me = LeaderboardData.Me(period, cat);
-            var meGo = Instantiate(rowPrefab, rowsRoot);
-            meGo.GetComponent<LeaderRowView>().Bind(me, 42, paper);
-            KitEnterAnim.Play(meGo, (list.Count - 3) * 0.04f, 38f, 0.4f, 0.4f);
-            boardView.transform.localRotation = paper ? Quaternion.Euler(0f, 0f, 0.6f) : Quaternion.identity;   // the newspaper lies slightly crooked
-            rewardLabel.Text = period == 0 ? "جائزة الليلة: ٣٠٠ كوينز وشارة \"سيّد الليلة\" للأول" : "جوائز الأسبوع: ١: إطار \"ملك الأسبوع\" + ٥٬٠٠٠  ·  ٢: ٢٬٥٠٠  ·  ٣: ١٬٠٠٠";
-            mineRank.Text = "#" + CoinPill.Format(42);
-            mineNeed.Text = "تحتاج " + CoinPill.Format(period == 0 ? 320 : 1850) + " " + LeaderboardData.Units[cat] + " لتدخل أول ١٠";
-            mineValue.Text = CoinPill.Format(me.value);
-            SetFill(period == 0 ? 0.64f : 0.42f);
+            if (view.me != null)
+            {
+                var meGo = Instantiate(rowPrefab, rowsRoot);
+                meGo.GetComponent<LeaderRowView>().Bind(view.me, Mathf.Max(view.mePosition, 1), paper);
+                if (view.mePosition == 0) meGo.GetComponent<LeaderRowView>().ShowNoPosition();
+                KitEnterAnim.Play(meGo, Mathf.Max(0, list.Count - 3) * 0.04f, 38f, 0.4f, 0.4f);
+            }
+            rewardLabel.Text = view.failed ? "تعذّر تحميل الترتيب. حاول لاحقاً" : list.Count == 0 ? "السبورة فاضية. أول مباراة بتكتب اسمك عليها" : "الترتيب يتجدّد بعد كل مباراة. الجوائز قريباً";
+            resetSeconds = view.resetInSeconds > 0 ? view.resetInSeconds : resetSeconds; resetTick = 0f; ShowReset();
+            bool ranked = view.mePosition > 0;
+            mineRank.Text = ranked ? "#" + CoinPill.Format(view.mePosition) : "—";
+            mineNeed.Text = view.need > 0 ? "تحتاج " + CoinPill.Format(view.need) + " " + LeaderboardData.Units[cat] + " لتدخل أول ١٠" : (ranked ? "أنت ضمن أول ١٠" : "العب مباراة لتظهر على السبورة");
+            mineValue.Text = CoinPill.Format(view.me != null ? view.me.value : 0);
+            SetFill(Mathf.Clamp(view.fill, 0.04f, 1f));
+        }
+
+        private static LeaderBoardView MockBoard(int period, int cat)
+        {
+            var v = new LeaderBoardView { list = LeaderboardData.Make(period, cat), me = LeaderboardData.Me(period, cat), mePosition = 42, need = period == 0 ? 320 : 1850, fill = period == 0 ? 0.64f : 0.42f, resetInSeconds = period == 0 ? 3 * 3600 + 42 * 60 + 10 : 2 * 86400 + 5 * 3600 + 18 * 60 };
+            return v;
+        }
+
+        /// <summary>The hall of fame: the godfather plaque, the empty season frames and the six record cards.</summary>
+        public void ShowWall(LeaderWallView view)
+        {
+            if (period != 2 || view == null) return;
+            var hangs = new List<Transform>();
+            for (int i = 0; i < wallView.transform.childCount; i++) if (wallView.transform.GetChild(i).name == "Hang") hangs.Add(wallView.transform.GetChild(i));
+            if (hangs.Count >= 1) SetPlaque(hangs[0], view.godfather != null ? view.godfather.name : "—", view.godfather != null ? "العرّاب الحالي · " + view.godfather.value + " نقطة" : "لا عرّاب بعد", view.godfather != null);
+            for (int i = 1; i < hangs.Count; i++) SetPlaque(hangs[i], "—", "المواسم قريباً", false);
+            string[] labels = { "أطول سلسلة فوز", "أكثر مباريات", "أطول سهر (ساعة)", "أكثر فوز كمافيا", "أكثر فوز كمحقق", "أكثر نجاة" };
+            for (int i = 0; i < 6; i++)
+            {
+                var rc = wallView.transform.Find("Rec" + i); if (rc == null) continue;
+                var item = i < view.records.Length ? view.records[i] : null;
+                SetText(rc.Find("L"), labels[i]);
+                SetText(rc.Find("V"), item != null ? item.value : "—");
+                SetText(rc.Find("H"), item != null ? item.name : "لا أحد بعد");
+            }
+        }
+
+        private static void SetText(Transform t, string text) { if (t == null) return; var a = t.GetComponent<ArabicText>(); if (a != null) a.Text = text; }
+
+        private static void SetPlaque(Transform hang, string name, string sub, bool held)
+        {
+            var pl = hang.Find("Plaque"); if (pl == null) return;
+            SetText(pl.Find("N"), name); SetText(pl.Find("S"), sub);
+            if (!hang.TryGetComponent<CanvasGroup>(out var g)) g = hang.gameObject.AddComponent<CanvasGroup>();
+            g.alpha = held ? 1f : 0.55f;
         }
 
         // HTML .door: the picked door rises 5px and gets a cream outline; the others keep a dimmed, greyed icon and label
@@ -155,16 +230,19 @@ namespace MafiaNight.UI.Kit
                 float y = Mathf.Lerp(rt.anchoredPosition.y, target, 1f - Mathf.Exp(-16f * Time.unscaledDeltaTime));
                 rt.anchoredPosition = new Vector2(0f, Mathf.Abs(y - target) < 0.05f ? target : y);
             }
-            if (period == 0)
+            if (period != 2)
             {
                 resetTick += Time.unscaledDeltaTime;
-                if (resetTick >= 1f)
-                {
-                    resetTick -= 1f; resetSeconds = Mathf.Max(0f, resetSeconds - 1f);
-                    int s = (int)resetSeconds;
-                    SetReset(Ar2(s / 3600) + ":" + Ar2(s % 3600 / 60) + ":" + Ar2(s % 60));
-                }
+                if (resetTick >= 1f) { resetTick -= 1f; resetSeconds = Mathf.Max(0f, resetSeconds - 1f); ShowReset(); }
             }
+        }
+
+        /// <summary>The day counts down as hh:mm:ss, the week as days and hh:mm.</summary>
+        private void ShowReset()
+        {
+            int s = (int)resetSeconds;
+            if (period == 0) SetReset(Ar2(s / 3600) + ":" + Ar2(s % 3600 / 60) + ":" + Ar2(s % 60));
+            else SetReset(CoinPill.Format(s / 86400) + " يوم " + Ar2(s % 86400 / 3600) + ":" + Ar2(s % 3600 / 60));
         }
 
         // caption on the right, the amber countdown to its left; the pill is as wide as both

@@ -89,7 +89,7 @@ namespace MafiaNight.App
             InviteFlow.Ensure();
             if (SceneManager.GetActiveScene().name == AppScenes.Family && FindAnyObjectByType<KitMatchView>(FindObjectsInactive.Include) != null) gameObject.AddComponent<FamilyFlow>();
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
-            if (lb != null) lb.OnBack += GoHome;
+            if (lb != null) { lb.OnBack += GoHome; gameObject.AddComponent<LeaderboardsFlow>(); }
             header = FindAnyObjectByType<KitScreenHeader>();
             if (header != null) { header.OnBack += GoHome; header.SetCoins(currency.Coins); }
 

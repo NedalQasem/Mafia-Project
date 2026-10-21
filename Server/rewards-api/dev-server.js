@@ -9,6 +9,7 @@ const { createApp } = require('./src/app');
 const { createChat } = require('./src/chat');
 const { createStore } = require('./src/store');
 const { createFriends } = require('./src/friends');
+const { createLeaderboard } = require('./src/leaderboard');
 
 const names = { OTHER0001: 'أم سعيد', OTHER0002: 'البيك', OTHER0003: 'لينا', OTHER0004: 'مازن' };
 const progress = { OTHER0001: { rankPoints: 3200 }, OTHER0002: { rankPoints: 4100 }, OTHER0003: { rankPoints: 2100 }, OTHER0004: { rankPoints: 1100 } };
@@ -29,5 +30,14 @@ const cfg = {
 };
 const chat = createChat({ cfg, playfab });
 const friends = createFriends({ chat, cfg });
-const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends });
+const leaderboard = createLeaderboard({ chat, cfg });
+// demo numbers so the leaderboards screen has something to show
+const demo = ['أبو فارس', 'أم سعيد', 'البيك', 'لينا', 'الحج حسن', 'سارة', 'مازن', 'أبو خليل', 'ريما', 'الدكتور', 'نور', 'أبو جاسم', 'هدى', 'الأستاذ'];
+demo.forEach((n, i) => {
+  const pf = i < 4 ? 'OTHER000' + (i + 1) : 'DEMO' + String(i).padStart(4, '0');
+  names[pf] = n; progress[pf] = { rankPoints: 5200 - i * 330, level: 30 - i };
+  const games = 14 - i;
+  for (let g = 0; g < games; g++) leaderboard.record(pf, { won: (g + i) % 3 !== 0, role: g % 4 === 0 ? 'Mafia' : g % 5 === 0 ? 'Sheriff' : 'Civilian', survived: g % 2 === 0, durationSec: 900 + g * 40, rankPointsGained: (g + i) % 3 !== 0 ? 50 : -20, rankPointsNow: 5200 - i * 330 });
+});
+const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard });
 server.listen(8788, '127.0.0.1', () => console.log('dev server on http://127.0.0.1:8788 (pretend PlayFab; players OTHER0001..OTHER0004 exist)'));
