@@ -165,6 +165,7 @@ namespace MafiaNight.Services.Match
         /// <summary>The match ended: every player's device reports it to the rewards server, which pays once most players agree.</summary>
         private void OnMatchFinished()
         {
+            LastMatchStore.Clear();
             var report = Session?.Client.BuildReport();
             Reward = new RewardResult();
             if (report == null) { RewardChanged?.Invoke(); return; }
@@ -184,6 +185,7 @@ namespace MafiaNight.Services.Match
 
         private void OnCancelled(string reason)
         {
+            LastMatchStore.Clear();
             endReason = reason ?? "";
             voice?.ClearGameVoice();
             if (SceneManager.GetActiveScene().name != GameConstants.SCENE_MATCH) return;
@@ -193,7 +195,8 @@ namespace MafiaNight.Services.Match
         /// <summary>The first state message of a new match arrives: show the table.</summary>
         private void OnPhase(Phase p)
         {
-            if (p != Phase.RoleReveal) return;
+            if (p == Phase.Lobby || p == Phase.GameOver) return;
+            if (Session != null && Session.Client.MyRole.HasValue) LastMatchStore.Save(rooms?.CurrentRoom);     // so he can come back if the app or the network drops
             if (SceneManager.GetActiveScene().name == GameConstants.SCENE_MATCH) return;
             Log.Info("Match started: loading the table screens", Tag);
             if (scenes != null) scenes.LoadScene(GameConstants.SCENE_MATCH);

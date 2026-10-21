@@ -308,6 +308,127 @@ namespace MafiaNight.Tests
             Assert.AreEqual(Phase.Night, host.Match.Phase);
         }
 
+        // ------------------------------------------------------------------ a player who left comes back
+
+        /// <summary>The same account on a fresh device session: a new client that knows nothing yet.</summary>
+        private static ClientMatchController FreshClient(Hub hub, HostMatchController host, string id)
+        {
+            hub.Inbox[id] = new List<WireMessage>();
+            hub.Clients[id] = new ClientMatchController(id, m => host.Receive(id, WireMessage.FromBytes(m.ToBytes())));
+            return hub.Clients[id];
+        }
+
+        private static (Hub hub, HostMatchController host) AtNight(int n)
+        {
+            var (hub, host) = Setup(n);
+            host.Begin();
+            host.Tick(host.Match.Config.RoleRevealSeconds + 0.1f);
+            return (hub, host);
+        }
+
+        [Test]
+        public void A_player_who_comes_back_gets_his_seat_role_and_life_again()
+        {
+            var (hub, host) = AtNight(6);
+            string id = host.Match.Players.First(p => p.Role == Role.Civilian && p.Id != "p0").Id;
+            var role = host.Match.Get(id).Role;
+            host.PlayerLeft(id);
+            Assert.IsTrue(host.Match.Get(id).Left);
+            var back = FreshClient(hub, host, id);
+            host.AddSpectator(id);
+            Assert.IsFalse(host.Match.Get(id).Left);
+            Assert.IsTrue(host.Match.Get(id).Alive);
+            Assert.AreEqual(role, back.MyRole);
+            Assert.IsTrue(back.IAmAlive);
+            Assert.AreEqual(Phase.Night, back.Phase);
+            Assert.AreEqual(6, back.Seats.Count);
+            Assert.IsFalse(hub.Clients["p0"].Seat(id).Left, "the others see him back");
+        }
+
+        [Test]
+        public void A_mafia_player_who_comes_back_knows_his_mates_and_his_votes()
+        {
+            var (hub, host) = AtNight(8);
+            var mafia = host.Match.Players.Where(p => p.IsMafia).Select(p => p.Id).ToList();
+            string victim = host.Match.Players.First(p => !p.IsMafia).Id;
+            string id = mafia.Last(x => x != "p0");
+            hub.Clients[mafia.First()].MafiaPick(victim);
+            host.PlayerLeft(id);
+            var back = FreshClient(hub, host, id);
+            host.AddSpectator(id);
+            Assert.AreEqual(Role.Mafia, back.MyRole);
+            Assert.IsTrue(back.Seats.Any(s => s.IsMate), "his mates are known again");
+            Assert.IsTrue(back.MafiaVotes.ContainsKey(mafia.First()), "he sees what his mates picked");
+        }
+
+        [Test]
+        public void A_player_who_was_dead_comes_back_dead_and_sees_who_died()
+        {
+            var (hub, host) = AtNight(8);
+            var civs = host.Match.Players.Where(p => p.Role == Role.Civilian && p.Id != "p0").Select(p => p.Id).ToList();
+            string dead = civs[0], other = civs[1];
+            host.Match.Get(dead).Alive = false;          // killed earlier in the match
+            host.Match.Get(other).Alive = false;
+            host.PlayerLeft(other);
+            var back = FreshClient(hub, host, other);
+            host.AddSpectator(other);
+            Assert.IsFalse(host.Match.Get(other).Left);
+            Assert.IsFalse(host.Match.Get(other).Alive, "dead stays dead");
+            Assert.IsFalse(back.IAmAlive);
+            Assert.IsNotNull(back.MyRole);
+            Assert.AreEqual(Role.Civilian, back.Seat(dead).Role, "the roles of the dead are public");
+        }
+
+        [Test]
+        public void A_kicked_player_does_not_get_his_seat_back()
+        {
+            var (hub, host) = AtNight(6);
+            string id = host.Match.Players.First(p => p.Role == Role.Civilian && p.Id != "p0").Id;
+            host.Forbid(id);
+            host.PlayerLeft(id);
+            var back = FreshClient(hub, host, id);
+            host.AddSpectator(id);
+            Assert.IsTrue(host.Match.Get(id).Left);
+            Assert.IsNull(back.MyRole);
+            Assert.IsFalse(back.IAmAlive);
+        }
+
+        [Test]
+        public void A_player_whose_connection_broke_and_came_back_is_back_when_he_acts()
+        {
+            var (hub, host) = AtNight(6);
+            string id = host.Match.Players.First(p => p.Role == Role.Civilian && p.Id != "p0").Id;
+            host.PlayerLeft(id);                          // the connection closed: he counts as gone
+            Assert.IsTrue(host.Match.Get(id).Left);
+            var c = hub.Clients[id];
+            host.Receive(id, new WireMessage(Msg.Act, "ready", ""));
+            Assert.IsFalse(host.Match.Get(id).Left);
+            Assert.IsTrue(c.IAmAlive, "the host told him where the match stands");
+        }
+
+        [Test]
+        public void Nobody_comes_back_into_a_finished_match()
+        {
+            var (hub, host) = AtNight(4);
+            foreach (var m in host.Match.Players.Where(p => p.IsMafia).Select(p => p.Id).ToList()) if (m != "p0") host.PlayerLeft(m);
+            if (host.Match.Get("p0").IsMafia) host.Match.PlayerLeft("p0");
+            Assert.AreEqual(Phase.GameOver, host.Match.Phase);
+            string left = host.Match.Players.First(p => p.Left).Id;
+            Assert.IsFalse(host.Match.PlayerReturned(left));
+        }
+
+        [Test]
+        public void The_snapshot_remembers_whether_a_player_who_left_was_alive()
+        {
+            var (hub, host) = AtNight(6);
+            string id = host.Match.Players.First(p => p.Role == Role.Civilian && p.Id != "p0").Id;
+            host.PlayerLeft(id);
+            var back = MafiaMatch.Restore(new MatchConfig(), host.Match.Export(), new First());
+            Assert.IsNotNull(back);
+            Assert.IsTrue(back.PlayerReturned(id));
+            Assert.IsTrue(back.Get(id).Alive);
+        }
+
         [Test]
         public void A_host_cannot_start_a_match_that_is_too_small()
         {

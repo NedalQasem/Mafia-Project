@@ -22,6 +22,7 @@ namespace MafiaNight.MatchRules.Net
         private string matchId = "";
         private readonly Dictionary<string, string> roster = new Dictionary<string, string>();   // player id -> PlayFab id, for the reward report
         private readonly HashSet<string> spectators = new HashSet<string>();   // room members who arrived after the start: they watch
+        private readonly HashSet<string> forbidden = new HashSet<string>();    // players the host kicked: they may not take their seat back
         private float timeLeft;
         private float endIn = -1f;                    // countdown to an early end, -1 = none
         private float elapsedInPhase;
@@ -80,14 +81,16 @@ namespace MafiaNight.MatchRules.Net
             roster.Clear();
             if (playFabIds != null) foreach (var kv in playFabIds) roster[kv.Key] = kv.Value ?? "";
             ToAll(StartMessage());
-            foreach (var p in match.Players)
-            {
-                var args = new List<string> { p.Role.ToString() };
-                if (p.IsMafia) args.AddRange(match.MafiaTeam.Where(m => m.Id != p.Id).Select(m => m.Id));   // the mafia know each other
-                Send(p.Id, new WireMessage(Msg.Role, args.ToArray()));
-            }
+            foreach (var p in match.Players) SendRole(p);
             EnterPhase();
             return true;
+        }
+
+        private void SendRole(MatchPlayer p)
+        {
+            var args = new List<string> { p.Role.ToString() };
+            if (p.IsMafia) args.AddRange(match.MafiaTeam.Where(m => m.Id != p.Id).Select(m => m.Id));   // the mafia know each other
+            Send(p.Id, new WireMessage(Msg.Role, args.ToArray()));
         }
 
         private void EnterPhase()
@@ -175,24 +178,42 @@ namespace MafiaNight.MatchRules.Net
         {
             if (!Running) return;
             ToAll(StateMessage());
+            SendPhaseExtras(null);
+            Changed?.Invoke();
+        }
+
+        /// <summary>What belongs to the current phase besides the state: skips, the live tally, the mafia's picks. peer == null: everybody who may know.</summary>
+        private void SendPhaseExtras(string peer)
+        {
+            void To(WireMessage m) { if (peer == null) ToAll(m); else Send(peer, m); }
             switch (match.Phase)
             {
-                case Phase.Day: ToAll(new WireMessage(Msg.Skip, match.SkipCount.ToString(), (match.InPlayCount / 2 + 1).ToString())); break;
+                case Phase.Day: To(new WireMessage(Msg.Skip, match.SkipCount.ToString(), (match.InPlayCount / 2 + 1).ToString())); break;
                 case Phase.Voting:
                     var a = new List<string>();
                     foreach (var kv in match.CurrentTally()) { a.Add(kv.Key); a.Add(kv.Value.ToString()); }
-                    ToAll(new WireMessage(Msg.Tally, a.ToArray()));
+                    To(new WireMessage(Msg.Tally, a.ToArray()));
                     break;
                 case Phase.Night:
                     if (match.MafiaVotes.Count > 0)
                     {
                         var mv = new List<string>();
                         foreach (var kv in match.MafiaVotes) { mv.Add(kv.Key); mv.Add(kv.Value); }
-                        ToMafia(new WireMessage(Msg.MafiaVotes, mv.ToArray()));
+                        var msg = new WireMessage(Msg.MafiaVotes, mv.ToArray());
+                        if (peer == null) ToMafia(msg); else if (match.Get(peer)?.IsMafia == true) Send(peer, msg);
                     }
+                    if (peer != null && match.LastSheriff != null && match.LastSheriff.SheriffId == peer)
+                        Send(peer, new WireMessage(Msg.Sheriff, match.LastSheriff.TargetId, match.LastSheriff.IsMafia ? "1" : "0"));
                     break;
             }
-            Changed?.Invoke();
+        }
+
+        /// <summary>The roles of everybody who died (they are public from the moment of death): for somebody who joined or came back later.</summary>
+        private void SendRevealed(string peer)
+        {
+            var a = new List<string>();
+            foreach (var p in match.Players) if (p.Left ? !p.AliveWhenLeft : !p.Alive) { a.Add(p.Id); a.Add(p.Role.ToString()); }
+            if (a.Count > 0) Send(peer, new WireMessage(Msg.Reveal, a.ToArray()));
         }
 
         /// <summary>Call every frame with the time since the last one.</summary>
@@ -221,10 +242,41 @@ namespace MafiaNight.MatchRules.Net
         /// <summary>A room member arrived while the match runs: he sees the table (no role, no acts) until the next match.</summary>
         public void AddSpectator(string id)
         {
+            if (!Running || string.IsNullOrEmpty(id) || id == selfId) return;
             var known = match.Get(id);
-            if (!Running || string.IsNullOrEmpty(id) || id == selfId || (known != null && !known.Left) || !spectators.Add(id)) return;   // a player who left and came back watches too
+            if (known != null && !known.Left) return;                      // still sitting at the table: a repeated event
+            if (known != null && TryReturn(id)) return;                    // he played before, left and is back: his seat is his again
+            if (!spectators.Add(id)) return;
             Send(id, StartMessage());
             Send(id, StateMessage());
+            SendRevealed(id);
+        }
+
+        /// <summary>The host kicked this player: he watches if he comes back, he does not get his seat again.</summary>
+        public void Forbid(string id) { if (!string.IsNullOrEmpty(id)) forbidden.Add(id); }
+
+        /// <summary>A player who left (he closed the app, or his connection broke) is back: the match gives him his seat and his role again.</summary>
+        private bool TryReturn(string id)
+        {
+            if (forbidden.Contains(id) || !match.PlayerReturned(id)) return false;
+            spectators.Remove(id);
+            Send(id, StartMessage());
+            SendRole(match.Get(id));
+            ToAll(StateMessage());                                         // everybody sees him back, and he sees the table
+            SendRevealed(id);
+            if (match.Phase == Phase.Dawn && match.LastNight != null)
+            {
+                var n = match.LastNight;
+                Send(id, new WireMessage(Msg.Dawn, n.VictimId ?? "", n.Saved ? "1" : "0", n.DiedId ?? "", n.DiedRole?.ToString() ?? ""));
+            }
+            else if (match.Phase == Phase.Verdict && match.LastVerdict != null)
+            {
+                var v = match.LastVerdict;
+                Send(id, new WireMessage(Msg.Verdict, v.RemovedId ?? "", v.RemovedRole?.ToString() ?? "", v.Votes.ToString(), v.Abstained.ToString()));
+            }
+            SendPhaseExtras(id);
+            Changed?.Invoke();
+            return true;
         }
 
         /// <summary>A player left for good.</summary>
@@ -242,6 +294,7 @@ namespace MafiaNight.MatchRules.Net
         public void Receive(string sender, WireMessage m)
         {
             if (m == null || m.Type != Msg.Act || !Running) return;
+            if (match.Get(sender)?.Left == true) TryReturn(sender);        // he is acting, so his connection is back
             string kind = m.Arg(0), target = m.Arg(1);
             ActionResult res;
             switch (kind)

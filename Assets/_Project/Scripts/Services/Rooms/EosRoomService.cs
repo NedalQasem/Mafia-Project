@@ -202,14 +202,18 @@ namespace MafiaNight.Services.Rooms
 
         // ------------------------------------------------------------------------------------------ list / search
 
-        private void Search(Action<LobbySearch> configure, Action<Result, List<LobbyDetails>> done)
+        /// <param name="withBucket">false for a search by lobby id: EOS refuses any other search parameter next to the id.</param>
+        private void Search(Action<LobbySearch> configure, Action<Result, List<LobbyDetails>> done, bool withBucket = true)
         {
             var so = new CreateLobbySearchOptions { MaxResults = 50 };
             var rc = Lobby.CreateLobbySearch(ref so, out LobbySearch search);
             if (!IsOk(rc) || search == null) { done(rc, null); return; }
 
-            var bucket = new LobbySearchSetParameterOptions { Parameter = new AttributeData { Key = LobbyInterface.SEARCH_BUCKET_ID, Value = new AttributeDataValue { AsUtf8 = RoomRules.BucketId } }, ComparisonOp = ComparisonOp.Equal };
-            search.SetParameter(ref bucket);
+            if (withBucket)
+            {
+                var bucket = new LobbySearchSetParameterOptions { Parameter = new AttributeData { Key = LobbyInterface.SEARCH_BUCKET_ID, Value = new AttributeDataValue { AsUtf8 = RoomRules.BucketId } }, ComparisonOp = ComparisonOp.Equal };
+                search.SetParameter(ref bucket);
+            }
             configure(search);
 
             var fo = new LobbySearchFindOptions { LocalUserId = Me };
@@ -359,7 +363,7 @@ namespace MafiaNight.Services.Rooms
                 var rooms = Absorb(list);
                 if (rooms.Count == 0 || !found.TryGetValue(rooms[0].Id, out var d)) { done(RoomResult.Fail(RoomError.NotFound)); return; }
                 JoinDetails(d, done);
-            });
+            }, false);
         }
 
         public void JoinByCode(string code, Action<RoomResult> done)

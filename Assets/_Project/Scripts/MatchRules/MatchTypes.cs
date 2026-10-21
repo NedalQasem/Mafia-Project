@@ -75,6 +75,8 @@ namespace MafiaNight.MatchRules
         public bool Alive = true;
         /// <summary>The player left the match (disconnected for good). Counts as dead for the rules.</summary>
         public bool Left;
+        /// <summary>Whether he was alive when he left: a player who comes back gets that back (a dead player returns dead).</summary>
+        public bool AliveWhenLeft;
         public int SelfSavesUsed;
 
         public bool InPlay => Alive && !Left;

@@ -265,12 +265,25 @@ namespace MafiaNight.MatchRules
         public void PlayerLeft(string id)
         {
             var p = Get(id); if (p == null || p.Left) return;
+            p.AliveWhenLeft = p.Alive;
             p.Left = true; p.Alive = false;
             if (Phase != Phase.Lobby && Phase != Phase.GameOver && Winner == Winner.None)
             {
                 var w = CheckWinner();
                 if (w != Winner.None) { Winner = w; if (Phase == Phase.Night || Phase == Phase.Day || Phase == Phase.Voting) Phase = Phase.GameOver; }
             }
+        }
+
+        /// <summary>
+        /// A player who left comes back (same account) while the match still runs: he gets his seat, his role and his life (or death) back.
+        /// False when he never played, did not leave, or the match is not running any more.
+        /// </summary>
+        public bool PlayerReturned(string id)
+        {
+            var p = Get(id);
+            if (p == null || !p.Left || Phase == Phase.Lobby || Phase == Phase.GameOver || Winner != Winner.None) return false;
+            p.Left = false; p.Alive = p.AliveWhenLeft;
+            return true;
         }
 
         public Winner CheckWinner()
@@ -286,14 +299,14 @@ namespace MafiaNight.MatchRules
 
         // ---------------------------------------------------------------- snapshot (so another device can take over as host)
 
-        private const string SnapshotVersion = "m1";
+        private const string SnapshotVersion = "m2";
 
         /// <summary>Everything the match knows, as plain text pieces. <see cref="Restore"/> builds an identical match from it.</summary>
         public List<string> Export()
         {
             var o = new List<string> { SnapshotVersion, Phase.ToString(), Round.ToString(), Winner.ToString(), doctorTarget ?? "", sheriffDone ? "1" : "0" };
             o.Add(players.Count.ToString());
-            foreach (var p in players) { o.Add(p.Id); o.Add(p.Name ?? ""); o.Add(p.Role.ToString()); o.Add(p.Alive ? "1" : "0"); o.Add(p.Left ? "1" : "0"); o.Add(p.SelfSavesUsed.ToString()); }
+            foreach (var p in players) { o.Add(p.Id); o.Add(p.Name ?? ""); o.Add(p.Role.ToString()); o.Add(p.Alive ? "1" : "0"); o.Add(p.Left ? "1" : "0"); o.Add(p.AliveWhenLeft ? "1" : "0"); o.Add(p.SelfSavesUsed.ToString()); }
             o.Add(mafiaVotes.Count.ToString());
             foreach (var kv in mafiaVotes) { o.Add(kv.Key); o.Add(kv.Value); }
             o.Add(skipVotes.Count.ToString());
@@ -335,7 +348,7 @@ namespace MafiaNight.MatchRules
                 m.sheriffDone = NextBool();
                 int n = NextInt();
                 for (int k = 0; k < n; k++)
-                    m.players.Add(new MatchPlayer { Id = Next(), Name = Next(), Role = (Role)Enum.Parse(typeof(Role), Next()), Alive = NextBool(), Left = NextBool(), SelfSavesUsed = NextInt() });
+                    m.players.Add(new MatchPlayer { Id = Next(), Name = Next(), Role = (Role)Enum.Parse(typeof(Role), Next()), Alive = NextBool(), Left = NextBool(), AliveWhenLeft = NextBool(), SelfSavesUsed = NextInt() });
                 n = NextInt(); for (int k = 0; k < n; k++) { string a = Next(), b = Next(); m.mafiaVotes[a] = b; }
                 n = NextInt(); for (int k = 0; k < n; k++) m.skipVotes.Add(Next());
                 n = NextInt(); for (int k = 0; k < n; k++) { string a = Next(), b = Next(); m.votes[a] = NullIfEmpty(b); }

@@ -60,7 +60,7 @@ namespace MafiaNight.App
         }
 
         /// <summary>The canvas of the screen the player is looking at (not the persistent transition canvas of the scene loader).</summary>
-        private static Transform FindCanvas()
+        internal static Transform FindCanvas()
         {
             Canvas best = null;
             var active = SceneManager.GetActiveScene();

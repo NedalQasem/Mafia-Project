@@ -182,7 +182,7 @@ namespace MafiaNight.Tests
         }
 
         [Test]
-        public void A_player_who_left_and_comes_back_can_watch()
+        public void A_player_who_left_and_comes_back_gets_the_table_and_his_role_again()
         {
             var m = Played(6, out var mafia, out _);
             string civ = m.Players.First(p => p.Role == Role.Civilian && p.Id != "p0").Id;
@@ -194,7 +194,7 @@ namespace MafiaNight.Tests
             wire.Sent.Clear();
             host.AddSpectator(civ);
             Assert.IsTrue(wire.Sent.Any(s => s.Key == civ && s.Value.Type == Msg.State), "he gets the table again");
-            Assert.IsFalse(wire.Sent.Any(s => s.Key == civ && s.Value.Type == Msg.Role), "but not a role");
+            Assert.IsTrue(wire.Sent.Any(s => s.Key == civ && s.Value.Type == Msg.Role), "and his role: his seat is his again");
         }
     }
 }

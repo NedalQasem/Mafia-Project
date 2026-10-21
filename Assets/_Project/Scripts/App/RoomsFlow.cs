@@ -361,6 +361,8 @@ namespace MafiaNight.App
         {
             string who = "اللاعب";
             foreach (var m in rooms.Members) if (m.Puid == puid) { who = m.Name; break; }
+            var session = MafiaNight.Services.Match.MatchRunner.Instance != null ? MafiaNight.Services.Match.MatchRunner.Instance.Session : null;
+            session?.MemberKicked(puid);
             rooms.Kick(puid, ok =>
             {
                 if (this == null) return;

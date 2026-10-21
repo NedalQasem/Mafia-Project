@@ -118,6 +118,10 @@ namespace MafiaNight.MatchRules.Net
                     if (DawnDiedId != null && DawnDiedRole.HasValue) known[DawnDiedId] = DawnDiedRole.Value;
                     RefreshRoles();
                     break;
+                case Msg.Reveal:
+                    for (int i = 0; i + 1 < m.Args.Length; i += 2) if (Enum.TryParse(m.Args[i + 1], out Role rv)) known[m.Args[i]] = rv;
+                    RefreshRoles();
+                    break;
                 case Msg.Skip: SkipCount = m.Int(0); SkipNeeded = m.Int(1); break;
                 case Msg.Tally:
                     Tally.Clear();

@@ -112,8 +112,11 @@ namespace MafiaNight.Services.Match
         /// <summary>A player left the room: he counts as dead.</summary>
         public void MemberLeft(string puid) { Host?.PlayerLeft(puid); }
 
-        /// <summary>Somebody entered the room: during a match he watches.</summary>
+        /// <summary>Somebody entered the room: during a match he watches, or, if he played before and left, he gets his seat back.</summary>
         public void MemberJoined(string puid) { Host?.AddSpectator(puid); }
+
+        /// <summary>The host kicked a member: if he comes back during this match he only watches.</summary>
+        public void MemberKicked(string puid) { Host?.Forbid(puid); }
 
         // ---------------------------------------------------------------- losing the host
 
