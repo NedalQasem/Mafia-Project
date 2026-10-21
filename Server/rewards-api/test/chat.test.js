@@ -242,3 +242,28 @@ test('http: chat routes need a ticket, work with json and query strings, and lon
     assert.deepEqual((await call('GET', '/v1/chat/blocked', auth(B))).json.blocked, [A]);
   } finally { await new Promise(r => app.server.close(r)); }
 });
+
+test('the built-in list hides well-known insults as whole words and leaves innocent words alone', async () => {
+  const { chat, clock } = setup({});
+  const say = async text => { clock.advance(6000); return (await chat.send(A, { channel: 'public', text })).text; };
+  assert.equal(await say('يا شرموطة'), 'يا ******');                       // long word: caught inside the word too
+  assert.equal(await say('كس!'), '***');                                    // a short word: whole word, punctuation ignored
+  assert.equal(await say('كسر الباب وكسول'), 'كسر الباب وكسول');            // innocent words that merely contain it stay
+  assert.equal(await say('this is SHIT'), 'this is ****');
+  assert.equal(await say('the class had an assassin'), 'the class had an assassin');
+});
+
+test('the built-in list can be switched off and extended from the config', async () => {
+  const off = setup({ useDefaultBannedWords: false, bannedExact: ['xyz'] });
+  const r1 = await off.chat.send(A, { channel: 'public', text: 'fuck xyz' });
+  assert.equal(r1.text, 'fuck ***');
+});
+
+test('the built-in english words are caught, with a few spelling tricks, and innocent english words are not', async () => {
+  const { chat, clock } = setup({});
+  const say = async text => { clock.advance(6000); return (await chat.send(A, { channel: 'public', text })).text; };
+  assert.equal(await say('you MOTHERFUCKER'), 'you ************');
+  assert.equal(await say('what a b1tch and a douchebag'), 'what a ***** and a *********');
+  assert.equal(await say('fck this, stfu!'), '*** this, *****');
+  assert.equal(await say('analysis of the cumin and the dickens class'), 'analysis of the cumin and the dickens class');
+});

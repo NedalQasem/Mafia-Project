@@ -5,6 +5,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const DEFAULT_WORDS = require('./bannedwords');
 
 const PUBLIC = 'public';
 const RANK_THRESHOLDS = [0, 1000, 2000, 3000, 4000, 5000, 6000];   // same ladder as the game's RankRules
@@ -36,9 +37,11 @@ function dmMembers(ch) { return ch.slice(3).split(':'); }
 function createChat({ cfg, playfab, now = () => Date.now(), log = console, file = null, reportsFile = null }) {
   const c = Object.assign({
     maxLen: 300, publicCooldownMs: 5000, cooldownMs: 1000, publicKeep: 300, convKeep: 200, historyPerChannel: 50,
-    maxGroups: 10, maxGroupMembers: 10, autoMuteReports: 3, autoMuteMinutes: 120, bannedWords: [], pollMaxMs: 25000, onlineWithinMs: 45000,
+    maxGroups: 10, maxGroupMembers: 10, autoMuteReports: 3, autoMuteMinutes: 120, bannedWords: [], bannedExact: [], useDefaultBannedWords: true, pollMaxMs: 25000, onlineWithinMs: 45000,
   }, cfg.chat || {});
-  const banned = c.bannedWords.map(normalize).filter(Boolean);
+  const dflt = c.useDefaultBannedWords !== false;
+  const banned = [...(dflt ? DEFAULT_WORDS.CONTAINS : []), ...c.bannedWords].map(normalize).filter(Boolean);                 // hit anywhere inside a word
+  const bannedExact = new Set([...(dflt ? DEFAULT_WORDS.EXACT : []), ...c.bannedExact].map(normalize).filter(Boolean));   // hit only as a whole word
 
   let state = { nextId: 0, messages: { [PUBLIC]: [] }, groups: {}, reads: {}, blocks: {}, mutes: {}, reported: {} };
   try { if (file) state = Object.assign(state, JSON.parse(fs.readFileSync(file, 'utf8'))); } catch { /* first run */ }
@@ -83,8 +86,12 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
 
   /** Hides banned words behind stars: each word is compared after normalizing its spelling. (Letters split by spaces are not caught; reports cover that.) */
   function filter(text) {
-    if (!banned.length) return text;
-    return text.split(' ').map(word => { const n = normalize(word); return banned.some(w => n.includes(w)) ? '*'.repeat(word.length) : word; }).join(' ');
+    if (!banned.length && !bannedExact.size) return text;
+    return text.split(' ').map(word => {
+      const n = normalize(word);
+      const bare = n.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');          // "كس!" is still the word "كس"
+      return bannedExact.has(bare) || banned.some(w => n.includes(w)) ? '*'.repeat(word.length) : word;
+    }).join(' ');
   }
 
   function checkMute(pf) {
