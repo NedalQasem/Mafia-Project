@@ -9,7 +9,7 @@ const { PlayFabError } = require('./playfab');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -58,15 +58,18 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
       await playfab.setProgress(playFabId, PROGRESS_KEY, progress);
       g.progress = true;
       if (leaderboard) leaderboard.record(playFabId, { won: reward.won, role: rep.myRole, survived: rep.survived, durationSec: rep.durationSec, rankPointsGained: reward.rankPoints, rankPointsNow: progress.rankPoints });
+      if (events) events.record(playFabId, { won: reward.won });
       store.addDaily(playFabId, today());
       store.putMatch(match.id, match);
     }
+    // a running bonus event multiplies the coins (only the coins; xp and rank stay the same)
+    const coins = events ? Math.round(reward.coins * events.coinsMultiplier()) : reward.coins;
     if (!g.coins) {
-      if (reward.coins > 0) await playfab.addCurrency(playFabId, cfg.currencyCode, reward.coins);
+      if (coins > 0) await playfab.addCurrency(playFabId, cfg.currencyCode, coins);
       g.coins = true;
       store.putMatch(match.id, match);
     }
-    return { granted: true, xp: reward.xp, coins: reward.coins, rankPoints: reward.rankPoints, won: reward.won };
+    return { granted: true, xp: reward.xp, coins, rankPoints: reward.rankPoints, won: reward.won };
   }
 
   async function handleMatchResult(ticket, body) {
@@ -147,7 +150,11 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     '/v1/wall': async () => leaderboard.wall(),
   } : {};
   const offersPost = offers ? { '/v1/offers': async () => ({ ok: true, offers: offers.active() }) } : {};
-  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost);
+  const eventsPost = events ? {
+    '/v1/events': async pf => events.board(pf),
+    '/v1/events/claim': (pf, b) => withLock('pf:' + pf, () => events.claim(pf, b)),
+  } : {};
+  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost, eventsPost);
 
   const server = http.createServer((req, res) => {
     const ip = (cfg.trustProxy && req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : req.socket.remoteAddress) || 'unknown';

@@ -16,7 +16,8 @@
 ## 2. قبل الجلسة (عليك أنت، بالترتيب)
 
 1. **رفع السيرفر مرة وحدة** (فيه التصنيفات، عدّاد المتصلين، قائمة الكلمات الممنوعة):
-   الصق `Server/rewards-api-install.txt` بنافذة الـ VPS، ثم `docker compose -f docker-compose.rewards.yml up -d --build`، ثم تأكد: `docker exec mafia-rewards ls /app/src` لازم يطلع `leaderboard.js` و`bannedwords.js`.
+   الصق `Server/rewards-api-install.txt` بنافذة الـ VPS، ثم `docker compose -f docker-compose.rewards.yml up -d --build`، ثم تأكد: `docker exec mafia-rewards ls /app/src` لازم يطلع `leaderboard.js` و`bannedwords.js` و`events.js`.
+   **الأحداث (اختياري):** لو بدك أحداث بالجلسة، انسخ مثال `events` من `config.example.json` لملف `config.json` الحقيقي، فعّله (`"enabled": true`) وعدّل التواريخ، ثم `docker restart mafia-rewards`. بدون `events` اللعبة بتمشي عادي وأيقونة الأحداث بتظهر باسم "لا يوجد أحداث" (قسم 18 من خطة الاختبار).
 2. **لوحة PlayFab:** تأكد إن *Allow client to add virtual currency* و *Allow client to post player statistics* مقفولين (يغطي بند A5).
 3. **بيئة EOS:** المحرر دخل اليوم بنجاح بـ DeviceID على بيئة **Dev**. جرّب نفس الشي على الـ APK قبل الجلسة (ملف `04-technical-debt.md` فيه ملاحظة قديمة عن Live، لا تعتمد عليها).
 4. **البناء:** Development APK + نسخة Editor من **نفس الكوميت**. اكتب رقم الكوميت بالقسم 0 من خطة الاختبار.

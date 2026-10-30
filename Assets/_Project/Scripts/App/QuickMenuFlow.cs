@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using MafiaNight.Core;
+using MafiaNight.Services.Config;
+using MafiaNight.Services.Economy;
 using MafiaNight.Services.Rooms;
 using MafiaNight.Services.Scenes;
 using MafiaNight.UI.Kit;
@@ -11,8 +13,9 @@ namespace MafiaNight.App
 {
     /// <summary>
     /// Puts the quick menu (<see cref="KitQuickMenu"/>) on the home screen and keeps it fed: the offers (the same ones the launch banner shows,
-    /// without the ones the player blocked) and, later, the events. The offers icon reopens them after the banner was closed; blocking
-    /// hides an offer until it ends, with an undo. The menu hides itself while the player is in a room.
+    /// without the ones the player blocked) and the events (<see cref="KitEventsBoard"/>, from <see cref="EventsService"/>). The offers icon
+    /// reopens them after the banner was closed; blocking hides an offer until it ends, with an undo. The events icon opens the board, where a
+    /// finished challenge is claimed (the server pays). The menu hides itself while the player is in a room.
     /// </summary>
     public sealed class QuickMenuFlow : MonoBehaviour
     {
@@ -22,8 +25,10 @@ namespace MafiaNight.App
         private ISceneLoader scenes;
         private KitQuickMenu menu;
         private List<StoreAdCarousel.Ad> all = new List<StoreAdCarousel.Ad>();
+        private KitEventsBoard board;
+        private EventsBoard events;
         private float refetchAt;
-        private bool loading;
+        private bool loading, claiming;
 
         private void Start()
         {
@@ -37,6 +42,7 @@ namespace MafiaNight.App
         {
             BlockedOffers.Changed -= OnBlockedChanged;
             if (menu != null) Destroy(menu.gameObject);
+            if (board != null) Destroy(board.gameObject);
         }
 
         private void Update()
@@ -52,6 +58,7 @@ namespace MafiaNight.App
             List<StoreAdCarousel.Ad> ads = null;
             yield return LaunchBannerFlow.LoadAds(r => ads = r);
             all = ads ?? new List<StoreAdCarousel.Ad>();
+            yield return EventsService.Fetch(b => events = b ?? events);
             refetchAt = Time.unscaledTime + RefetchEvery;
             loading = false;
             if (menu == null && !Create()) { refetchAt = float.MaxValue; yield break; }
@@ -70,8 +77,56 @@ namespace MafiaNight.App
             menu.OnUndo += BlockedOffers.Unblock;
             menu.OnBuyOffer += id => { KitStoreScreen.PendingAdId = id; Open(AppScenes.Store); };
             menu.OnOpenPaper += () => LaunchBannerFlow.ShowNow(BlockedOffers.Filter(all));
+            menu.OnOpenEvents += () => { if (board == null) StartCoroutine(OpenEvents()); };
             BlockedOffers.Changed += OnBlockedChanged;
             return true;
+        }
+
+        // ---------------------------------------------------------------- the events board
+        private IEnumerator OpenEvents()
+        {
+            var th = KitTheme.Current;
+            var canvas = InviteFlow.FindCanvas();
+            if (th == null || th.eventsBoardPrefab == null || canvas == null) yield break;
+            yield return EventsService.Fetch(b => events = b ?? events);      // fresh numbers every time it opens
+            if (board != null) yield break;
+            if (events == null) events = new EventsBoard();      // no answer from the server: the board opens empty
+            var go = Instantiate(th.eventsBoardPrefab, canvas, false);
+            go.transform.SetAsLastSibling();
+            board = go.GetComponent<KitEventsBoard>();
+            board.OnAction += OnEventAction;
+            board.OnClosed += () => board = null;
+            board.Show(Cards(events.Live, 0), Cards(events.Soon, 1), Cards(events.Done, 2));
+            if (menu != null) menu.SetEvents(events.Live.Count);
+        }
+
+        private static List<KitEventsBoard.Card> Cards(List<GameEvent> list, int state)
+        {
+            var cards = new List<KitEventsBoard.Card>();
+            foreach (var e in list)
+                cards.Add(new KitEventsBoard.Card
+                {
+                    id = e.Id, kicker = e.Kicker, title = e.Title, body = e.Body, kind = (int)e.Kind == 1 ? 1 : (int)e.Kind == 2 ? 2 : 0, state = state,
+                    multiplier = e.Multiplier, goal = e.Goal, progress = e.Progress, reward = e.RewardCoins, countsGames = e.CountsGames,
+                    claimed = e.Claimed, claimable = e.Claimable, secret = e.Secret, seconds = state == 1 ? e.StartsInSeconds : e.EndsInSeconds,
+                });
+            return cards;
+        }
+
+        private void OnEventAction(KitEventsBoard.Card c)
+        {
+            if (c.kind == 1) { if (board != null) board.Close(); return; }       // a bonus: go and play (the rooms are this screen)
+            if (c.kind == 2 && c.claimable && !claiming) StartCoroutine(Claim(c));
+        }
+
+        private IEnumerator Claim(KitEventsBoard.Card c)
+        {
+            claiming = true;
+            int coins = 0;
+            yield return EventsService.Claim(c.id, r => coins = r);
+            claiming = false;
+            if (coins > 0 && ServiceLocator.TryGet(out ICurrencyService wallet)) wallet.FetchCurrencies();
+            if (board != null) board.ClaimDone(c.id, coins);
         }
 
         private void Open(string scene)
@@ -79,7 +134,11 @@ namespace MafiaNight.App
             if (scenes != null) scenes.LoadScene(scene); else SceneManager.LoadScene(scene);
         }
 
-        private void Feed() => menu.SetOffers(BlockedOffers.Filter(all));
+        private void Feed()
+        {
+            menu.SetOffers(BlockedOffers.Filter(all));
+            menu.SetEvents(events != null ? events.Live.Count : 0);
+        }
 
         private void OnBlockedChanged(string adId, bool blocked)
         {

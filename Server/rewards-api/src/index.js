@@ -11,6 +11,7 @@ const { createChat } = require('./chat');
 const { createFriends } = require('./friends');
 const { createLeaderboard } = require('./leaderboard');
 const { createOffers } = require('./offers');
+const { createEvents } = require('./events');
 
 const cfgPath = process.env.CONFIG || path.join(__dirname, '..', 'config.json');
 const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
@@ -26,10 +27,11 @@ const chat = createChat({ cfg, playfab, file: dataDir + '/chat.json', reportsFil
 const friends = createFriends({ chat, cfg, file: dataDir + '/friends.json', reportsFile: dataDir + '/chat-reports.jsonl' });
 const leaderboard = createLeaderboard({ chat, cfg, file: dataDir + '/leaderboard.json' });
 const offers = createOffers({ cfg });
-const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers });
+const events = createEvents({ cfg, playfab, file: dataDir + '/events.json' });
+const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events });
 
 setInterval(() => { chat.purge(); friends.purge(); leaderboard.purge(); }, 3600 * 1000).unref();
 setInterval(() => store.purge(Date.now(), 48 * 3600 * 1000, new Date().toISOString().slice(0, 10)), 3600 * 1000).unref();
-for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); } finally { process.exit(0); } });
+for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); } finally { process.exit(0); } });
 
 server.listen(cfg.port, cfg.host, () => console.log(`rewards api on ${cfg.host}:${cfg.port} (title ${cfg.titleId})`));

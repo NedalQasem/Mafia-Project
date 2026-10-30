@@ -101,7 +101,7 @@ namespace MafiaNight.UI.Kit
         }
 
         private int Total => ads.Count + events;
-        private bool Visible => !suppressed && (Total > 0 || panelOpen);
+        private bool Visible => !suppressed;
 
         private void BuildRows()
         {
@@ -168,8 +168,10 @@ namespace MafiaNight.UI.Kit
             sumDot.gameObject.SetActive(Total > 0);
             offDotText.Text = CoinPill.Format(ads.Count); offDot.gameObject.SetActive(ads.Count > 0);
             evDotText.Text = CoinPill.Format(events); evDot.gameObject.SetActive(events > 0);
-            bool offersIcon = ads.Count > 0 || panelOpen, eventsIcon = events > 0;
-            offersRt.gameObject.SetActive(offersIcon); eventsRt.gameObject.SetActive(eventsIcon);
+            bool offersIcon = ads.Count > 0 || panelOpen;
+            offersRt.gameObject.SetActive(offersIcon); eventsRt.gameObject.SetActive(true);       // the events icon is always there, it says so when there are none
+            var evText = evLabel.GetComponentInChildren<ArabicText>(true);
+            if (evText != null) evText.Text = events > 0 ? "الأحداث" : "لا يوجد أحداث";
             emptyState.SetActive(ads.Count == 0); openPaperGo.SetActive(ads.Count > 0);
             LayoutDrop();
             if (vis && !placed) { /* placed in LateUpdate once the canvas has a size */ }
@@ -370,7 +372,8 @@ namespace MafiaNight.UI.Kit
             // names next to the icons for a moment
             hintLeft -= dt;
             float la = open && hintLeft > 0f && openT > 0.8f ? 1f : 0f;
-            offLabelGroup.alpha = Mathf.MoveTowards(offLabelGroup.alpha, la, dt * 5f); evLabelGroup.alpha = Mathf.MoveTowards(evLabelGroup.alpha, la, dt * 5f);
+            float evLa = open && openT > 0.8f && (hintLeft > 0f || events == 0) ? 1f : 0f;   // "no events" stays written while the menu is open
+            offLabelGroup.alpha = Mathf.MoveTowards(offLabelGroup.alpha, la, dt * 5f); evLabelGroup.alpha = Mathf.MoveTowards(evLabelGroup.alpha, evLa, dt * 5f);
 
             // the ring that pulses while something is new
             if (Total > 0 && !open && !dragging)

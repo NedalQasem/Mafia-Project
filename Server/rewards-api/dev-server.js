@@ -10,6 +10,7 @@ const { createChat } = require('./src/chat');
 const { createStore } = require('./src/store');
 const { createFriends } = require('./src/friends');
 const { createLeaderboard } = require('./src/leaderboard');
+const { createEvents } = require('./src/events');
 
 const names = { OTHER0001: 'أم سعيد', OTHER0002: 'البيك', OTHER0003: 'لينا', OTHER0004: 'مازن' };
 const progress = { OTHER0001: { rankPoints: 3200 }, OTHER0002: { rankPoints: 4100 }, OTHER0003: { rankPoints: 2100 }, OTHER0004: { rankPoints: 1100 } };
@@ -39,5 +40,14 @@ demo.forEach((n, i) => {
   const games = 14 - i;
   for (let g = 0; g < games; g++) leaderboard.record(pf, { won: (g + i) % 3 !== 0, role: g % 4 === 0 ? 'Mafia' : g % 5 === 0 ? 'Sheriff' : 'Civilian', survived: g % 2 === 0, durationSec: 900 + g * 40, rankPointsGained: (g + i) % 3 !== 0 ? 50 : -20, rankPointsNow: 5200 - i * 330 });
 });
-const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard });
+// demo events (relative to now) for the events board; the test player can win matches through the bot practice match to move the challenge
+const iso = h => new Date(Date.now() + h * 3600 * 1000).toISOString();
+cfg.events = [
+  { id: 'dev-gold', kind: 'bonus', kicker: 'عرض الأسبوع', title: 'عطلة الذهب المضاعف', body: 'كل ربح من المباريات يتضاعف طول العطلة. العب أكثر واجمع أكثر.', coinsMultiplier: 2, from: iso(-12), until: iso(26) },
+  { id: 'dev-wins', kind: 'challenge', kicker: 'مهمّة', title: 'تحدّي ١٠ انتصارات', body: 'اربح ١٠ مباريات قبل نهاية الأسبوع واستلم مكافأتك.', metric: 'wins', goal: 10, rewardCoins: 500, from: iso(-24), until: iso(96) },
+  { id: 'dev-night', kind: 'info', kicker: 'بطولة', title: 'ليلة العصابة الكبرى', body: 'بطولة ليلية بجوائز نادرة.', secret: true, from: iso(48), until: iso(53) },
+  { id: 'dev-old', kind: 'info', kicker: 'أرشيف', title: 'أسبوع الرصاصة الذهبية', body: 'انتهى الحدث. شكراً لمشاركتك، وننتظرك بالحدث القادم.', from: iso(-200), until: iso(-100) },
+];
+const events = createEvents({ cfg, playfab });
+const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, events });
 server.listen(8788, '127.0.0.1', () => console.log('dev server on http://127.0.0.1:8788 (pretend PlayFab; players OTHER0001..OTHER0004 exist)'));
