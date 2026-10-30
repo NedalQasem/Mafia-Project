@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الرسالة الخاصة من الإدارة</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--soft:#4a3c24;--crim:#c0323a;--crimd:#8a1c24;--brass:#b99048;--green:#1d4a3c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:14px 10px 40px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+button{border:0;cursor:pointer;background:none}
+.cap{color:#8a8272;font-size:.8rem;margin:0 0 10px;text-align:center}
+.wrap{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;align-items:flex-start}
+.leather{background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal}
+.red{background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal}
+.greenb{background:var(--grain),linear-gradient(180deg,#2c6a55,#1d4a3c 55%,#102c24);background-blend-mode:multiply,normal}
+.btnk{padding:9px 30px;border-radius:10px;font-family:Lalezar;font-size:1.15rem;color:#f0dcd8;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000}
+.btnk:active{transform:translateY(3px)}
+.btnk[disabled]{filter:grayscale(1) brightness(.55);cursor:default}
+
+/* ---------- picker */
+.pick{width:230px;display:grid;gap:8px;position:sticky;top:10px}
+.pick h2{margin:0 0 4px;font-family:Lalezar;font-weight:400;font-size:1.5rem;color:#e6d9bd}
+.pick button{padding:10px 12px;text-align:right;border-radius:9px;font-weight:800;font-size:.86rem;background:#1a110d;box-shadow:0 0 0 1px #3a2a20}
+.pick button small{display:block;font-weight:600;font-size:.68rem;color:#8a8272}
+.pick button.on{box-shadow:0 0 0 1.5px #b99048;color:#f5e2a8}
+
+/* ---------- phone */
+.phone{width:390px;height:780px;border-radius:32px;position:relative;overflow:hidden;isolation:isolate;flex:none;background:radial-gradient(ellipse 90% 40% at 50% 0,#e8c27a1c,transparent 70%),linear-gradient(180deg,#15100d,#090605);box-shadow:0 0 0 8px #14100e,0 0 0 9px #ffffff14,0 24px 50px #000}
+.top{position:absolute;top:26px;left:12px;right:12px;height:58px;border-radius:8px;box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff14}
+.rooms{position:absolute;top:110px;left:12px;right:12px;display:grid;gap:10px}
+.rc{height:104px;border-radius:9px;box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff12}
+.dock{position:absolute;left:0;right:0;bottom:0;height:78px;background:linear-gradient(180deg,#1a110d,#080504)}
+.frame{display:none}.frame.on{display:block}
+.scrim{position:absolute;inset:0;z-index:8;background:radial-gradient(ellipse 80% 60% at 50% 50%,#000a,#000e 80%)}
+
+/* ---------- the arriving letter (popup) */
+.letter{position:absolute;z-index:10;left:22px;right:22px;top:92px;padding:0 0 18px;color:var(--ink);background:var(--paper);box-shadow:inset 0 0 40px #8a7a5a99,0 20px 40px #000;border-radius:3px;rotate:-1deg;animation:drop .55s cubic-bezier(.2,1.3,.4,1) both}
+.letter::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.12;mix-blend-mode:multiply;pointer-events:none}
+.letter::after{content:"";position:absolute;inset:8px;border:1.5px dashed #1c170f55;pointer-events:none}
+.letter>*{position:relative;z-index:1}
+@keyframes drop{from{translate:0 -120%;rotate:6deg;opacity:0}to{translate:0 0;rotate:-1deg;opacity:1}}
+.lhead{display:flex;justify-content:space-between;align-items:center;margin:20px 22px 0;padding-bottom:3px;border-bottom:2px solid var(--ink);font-weight:800;font-size:.66rem;color:var(--crim)}
+.lhead span:last-child{color:var(--soft)}
+.letter h3{margin:10px 22px 0;font-family:Lalezar;font-weight:400;font-size:1.7rem;line-height:1.15}
+.letter p{margin:6px 22px 0;font-weight:700;font-size:.82rem;line-height:1.75;color:var(--soft)}
+.seal{position:absolute;z-index:4;right:-10px;top:-14px;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-family:Lalezar;font-size:1.4rem;color:#e8a0a4;background:radial-gradient(circle at 35% 28%,#d8404a,#8a1c24 55%,#4a0b10);box-shadow:0 0 0 2.5px #6a141a,0 5px 8px #000a,inset 0 1px 0 #ffffff55}
+.seal svg{width:24px;height:24px;stroke:#ffd9db;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.lact{display:flex;justify-content:center;gap:10px;margin:16px 22px 0}
+.keep{margin:10px 22px 0;text-align:center;font-weight:800;font-size:.62rem;color:var(--soft)}
+
+/* the attached picture: a photo taped to the paper */
+.photo{position:relative;display:block;margin:12px auto 0;width:calc(100% - 52px);padding:7px 7px 7px;background:#efe6cf;box-shadow:0 5px 10px #0009,0 0 0 1px #1c170f44;rotate:1.2deg;cursor:zoom-in}
+.photo .img{display:block;width:100%;height:132px;object-fit:cover;background:#222;box-shadow:inset 0 0 0 1px #0006}
+.photo::before,.photo::after{content:"";position:absolute;top:-9px;width:54px;height:17px;background:#e7d9a8cc;box-shadow:0 1px 2px #0005;mix-blend-mode:multiply}
+.photo::before{left:14px;rotate:-12deg}.photo::after{right:14px;rotate:10deg}
+.photo i{position:absolute;left:12px;bottom:12px;padding:1px 8px;border-radius:4px;background:#0b0807cc;color:#e6d9bd;font-style:normal;font-weight:800;font-size:.58rem}
+
+/* warning variant */
+.letter.warn{background:#d6c8aa}
+.letter.warn .tape{position:absolute;left:0;right:0;height:14px;z-index:2;background:repeating-linear-gradient(-45deg,#14100c 0 12px,#c0323a 12px 24px);box-shadow:0 1px 3px #0008}
+.letter.warn .tape.t{top:0;border-radius:3px 3px 0 0}.letter.warn .tape.b{bottom:0;border-radius:0 0 3px 3px}
+.letter.warn .lhead{margin-top:30px;color:var(--crimd)}
+.letter.warn h3{color:var(--crimd)}
+.letter.warn{padding-bottom:30px;animation:drop .55s cubic-bezier(.2,1.3,.4,1) both,shake .5s .5s}
+@keyframes shake{20%{translate:-6px 0}40%{translate:6px 0}60%{translate:-4px 0}80%{translate:3px 0}}
+.wstamp{position:absolute;z-index:3;top:60px;left:14px;padding:0 12px;font-family:Lalezar;font-size:1.7rem;line-height:1.3;color:var(--crim);border:4px solid var(--crim);border-radius:5px;rotate:-13deg;background:#d6c8aacc;mix-blend-mode:multiply}
+.must{margin:12px 22px 0;padding:6px 10px;border-radius:5px;background:#8a1c2418;box-shadow:inset 0 0 0 1px #8a1c2466;font-weight:800;font-size:.66rem;color:var(--crimd);text-align:center}
+
+/* ---------- inside the mail */
+.board{position:absolute;z-index:9;left:12px;right:12px;top:74px;bottom:92px;border-radius:12px;display:flex;flex-direction:column;box-shadow:0 0 0 1px #000,0 0 0 3px #6e5224,0 22px 38px #000f,inset 0 1px 0 #ffffff22}
+.board::before{content:"";position:absolute;inset:6px;border-radius:8px;border:1.5px dashed #c9a35f66;pointer-events:none}
+.mast{position:relative;margin:16px 18px 0;padding:0 0 4px;text-align:center;color:var(--ink);background:var(--paper);border-radius:2px 2px 0 0;box-shadow:inset 0 0 22px #8a7a5a88,0 3px 0 #000;rotate:-.4deg}
+.mast::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.1;mix-blend-mode:multiply;pointer-events:none}
+.mast h3{margin:0;padding:4px 36px 0;font-family:Lalezar;font-weight:400;font-size:1.65rem;line-height:1.15;border-bottom:3px double var(--ink);margin-inline:12px}
+.mast small{display:flex;justify-content:space-between;padding:2px 14px 0;font-weight:800;font-size:.56rem;color:var(--soft)}
+.mast small em{font-style:normal;color:var(--crimd)}
+.x{position:absolute;z-index:3;top:-2px;left:-2px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 28%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1.5px #000,inset 0 1px 0 #fff8,0 3px 0 #000}
+.x svg{width:14px;height:14px;stroke:#2a1a08;stroke-width:3.2;fill:none;stroke-linecap:round}
+.list{flex:1;overflow:auto;margin:12px 10px 10px;padding:14px 8px 10px;scrollbar-width:none;background:#0b080866;border-radius:4px;box-shadow:inset 0 3px 8px #000a}
+.list::-webkit-scrollbar{display:none}
+.tg{position:relative;margin:0 2px 16px;padding:11px 13px 12px;color:var(--ink);background:var(--paper);box-shadow:inset 0 0 28px #8a7a5a88,0 7px 10px #000b;border-radius:2px;cursor:pointer}
+.tg::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.1;mix-blend-mode:multiply;pointer-events:none}
+.tg::after{content:"";position:absolute;inset:5px;border:1.5px dashed #1c170f55;pointer-events:none}
+.tg:nth-child(odd){rotate:-.6deg}.tg:nth-child(even){rotate:.5deg}
+.tg>*{position:relative;z-index:1}
+.tg .from{display:flex;justify-content:space-between;font-weight:800;font-size:.58rem;color:var(--crim);border-bottom:1.5px solid var(--ink);padding-bottom:2px;margin:0 4px 6px}
+.tg .from span:last-child{color:var(--soft)}
+.tg h4{margin:0 4px;font-family:Lalezar;font-weight:400;font-size:1.2rem;line-height:1.1;padding-inline-end:6px}
+.tg p{margin:3px 4px 7px;font-size:.68rem;font-weight:700;line-height:1.55;color:var(--soft);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dot{position:absolute;z-index:3;top:-5px;right:-5px;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e0525a,#8a1c24);box-shadow:0 0 0 1.5px #000}
+.tg .mini{display:flex;gap:9px;margin:0 4px 6px;align-items:flex-start}
+.tg .mini .th{flex:none;width:76px;height:54px;padding:3px;background:#efe6cf;box-shadow:0 2px 5px #0008;rotate:-2deg}
+.tg .mini .th img{display:block;width:100%;height:100%;object-fit:cover}
+.tg .mini p{margin:0;flex:1}
+.tg .row{display:flex;align-items:center;gap:8px;margin:0 4px}
+.tg .row .exp{font-weight:800;font-size:.6rem;color:var(--soft)}
+.tg .row .go{margin-inline-start:auto;padding:4px 16px;border-radius:8px;font-family:Lalezar;font-size:.86rem;color:#f0dcd8;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000}
+.kind{display:inline-flex;align-items:center;gap:4px;font-weight:800}
+.kind svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.tg.w{background:#d6c8aa;box-shadow:inset 0 0 28px #8a7a5a88,inset 5px 0 0 var(--crim),0 7px 10px #000b}
+.tg.w .from{color:var(--crimd)}
+.tg.w h4{color:var(--crimd)}
+.tg.w .tapeb{position:absolute;left:0;right:0;top:0;height:7px;z-index:2;background:repeating-linear-gradient(-45deg,#14100c 0 8px,#c0323a 8px 16px)}
+.tg.w .wst{position:absolute;z-index:2;top:26px;left:12px;padding:0 9px;font-family:Lalezar;font-size:1rem;line-height:1.3;color:var(--crim);border:3px solid var(--crim);border-radius:4px;rotate:-12deg;background:#d6c8aacc;mix-blend-mode:multiply}
+.tg.read{filter:saturate(.55) brightness(.94)}
+.tg.read .wst{color:var(--green);border-color:var(--green)}
+.stud{position:absolute;z-index:4;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff2c0,#b99048 50%,#5a3a10);box-shadow:0 0 0 1px #000,0 2px 2px #000a}
+.stud.b{bottom:9px;right:9px}.stud.c{bottom:9px;left:9px}
+
+/* picture viewer */
+.viewer{position:absolute;inset:0;z-index:20;display:none;background:#000e;padding:70px 14px;place-items:center}
+.viewer.on{display:grid}
+.viewer .big{width:100%;padding:9px;background:#efe6cf;box-shadow:0 14px 30px #000;rotate:-.8deg}
+.viewer .big svg,.viewer .big img{display:block;width:100%;height:auto}
+.viewer .cl{position:absolute;top:34px;left:18px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 28%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1.5px #000,0 3px 0 #000}
+.viewer .cl svg{width:15px;height:15px;stroke:#2a1a08;stroke-width:3.2;fill:none;stroke-linecap:round}
+.viewer small{position:absolute;bottom:50px;left:0;right:0;text-align:center;color:#8a8272;font-weight:700;font-size:.7rem}
+
+/* ---------- admin panel (the cream paper of the board) */
+.adm{width:min(760px,100%);padding:18px 20px;color:var(--ink);background:var(--paper);box-shadow:inset 0 0 40px #8a7a5a88,0 10px 24px #000;border-radius:3px;position:relative}
+.adm::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.1;mix-blend-mode:multiply;pointer-events:none}
+.adm>*{position:relative}
+.adm h3{margin:0 0 4px;font-family:Lalezar;font-weight:400;font-size:1.4rem;border-bottom:3px double var(--ink)}
+.adm .sub{font-weight:700;font-size:.78rem;color:var(--soft);margin:6px 0 12px}
+.cols{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+@media(max-width:700px){.cols{grid-template-columns:1fr}}
+.tile{padding:12px 14px;border-radius:6px;background:#1c170f0d;box-shadow:inset 0 0 0 1px #1c170f33}
+.tile h6{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1.05rem}
+.seg{display:flex;gap:0;margin-bottom:10px;border-radius:7px;overflow:hidden;box-shadow:0 0 0 2px #1c170f66}
+.seg button{flex:1;padding:7px 8px;font-weight:800;font-size:.82rem;background:#f0e8d2;color:var(--soft)}
+.seg button.on{background:#1d4a3c;color:#f0dcd8}
+.seg button.on.wn{background:#8a1c24}
+.fi{width:100%;margin-bottom:8px;padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+textarea.fi{min-height:78px;resize:vertical;line-height:1.6}
+.pickimg{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.pickimg .box{flex:none;width:92px;height:64px;border-radius:5px;background:#1c170f14;box-shadow:inset 0 0 0 2px #1c170f55;border:0;overflow:hidden;display:grid;place-items:center;font-size:.62rem;font-weight:800;color:var(--soft);text-align:center}
+.pickimg .box svg{width:100%;height:100%;display:block}
+.sbtn{padding:5px 14px;border-radius:7px;font-family:Lalezar;font-size:.92rem;color:#f0dcd8;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000}
+.hint{display:block;margin:2px 0 8px;font-weight:700;font-size:.7rem;color:var(--soft)}
+.chk{display:flex;gap:8px;align-items:center;font-weight:800;font-size:.8rem;margin-bottom:8px}
+.tbl{width:100%;border-collapse:collapse;font-weight:700;font-size:.74rem}
+.tbl th{text-align:right;border-bottom:2px solid var(--ink);padding:3px 4px}
+.tbl td{padding:4px;border-bottom:1px dashed #1c170f55}
+.pill{display:inline-block;padding:0 8px;border-radius:9px;font-weight:800;font-size:.66rem}
+.pill.ok{background:#1d4a3c;color:#d6f0e4}.pill.no{background:#8a1c24;color:#f6d6d8}.pill.mid{background:#6e4b1c;color:#fbe9c4}
+
+.notes{width:300px;background:#0d0a08;border-radius:12px;padding:12px 16px;font-size:.8rem;line-height:1.8;color:#a39b89;box-shadow:0 0 0 1px #2a2018;position:sticky;top:10px}
+.notes b{color:#e6d9bd}.notes ul{margin:4px 0 8px;padding-inline-start:18px}
+</style>
+</head>
+<body>
+<p class="cap">الرسالة الخاصة من الإدارة: كيف بتوصل للاعب، وكيف بتضل بالبريد، وكيف الأدمن بيبعتها</p>
+
+<div class="wrap">
+  <div class="pick" id="pick">
+    <h2>المشاهد</h2>
+    <button data-s="a" class="on">١ · وصلت رسالة عادية<small>بتنزل فوق الشاشة لحظة ما توصل</small></button>
+    <button data-s="b">٢ · وصل تحذير<small>شريط خطر وختم «تحذير»، وزر «فهمت» بعد ٣ ثواني</small></button>
+    <button data-s="c">٣ · داخل البريد<small>رسالة عادية، تحذير، وتحذير مقروء</small></button>
+    <button data-s="d">٤ · الصورة مكبّرة<small>بالضغط على الصورة</small></button>
+    <button data-s="e">٥ · لوحة الإدارة<small>نموذج الإرسال وحالة القراءة</small></button>
+  </div>
+
+  <div class="phone" id="phone">
+    <div class="top leather"></div>
+    <div class="rooms"><div class="rc leather"></div><div class="rc leather"></div><div class="rc leather"></div></div>
+    <div class="dock"></div>
+
+    <!-- 1: normal message arrives -->
+    <div class="frame on" id="fa">
+      <div class="scrim"></div>
+      <div class="letter">
+        <span class="seal">م</span>
+        <div class="lhead"><span>رسالة خاصة · من مكتب الريّس</span><span>هلأ</span></div>
+        <h3>ملاحظة على ملفك</h3>
+        <p>أهلاً أبو فارس. شفنا إنك ساعدت لاعبين جداد بالغرفة أمس، وهاد شي منقدّره. هاي صورة من سهرة الأسبوع الماضي.</p>
+        <a class="photo" data-zoom><svg class="img" viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice"><use href="#pic"/></svg><i>صورة مرفقة · اضغط للتكبير</i></a>
+        <div class="lact"><button class="btnk greenb">حسناً</button></div>
+        <div class="keep">الرسالة ضلّت محفوظة بالبريد</div>
+      </div>
+    </div>
+
+    <!-- 2: warning arrives -->
+    <div class="frame" id="fb">
+      <div class="scrim"></div>
+      <div class="letter warn">
+        <i class="tape t"></i><i class="tape b"></i>
+        <span class="seal"><svg viewBox="0 0 24 24"><path d="M12 3l10 17H2z"/><path d="M12 10v5M12 18h.01"/></svg></span>
+        <span class="wstamp">تحذير</span>
+        <div class="lhead"><span>تحذير رسمي · من مكتب الريّس</span><span>هلأ</span></div>
+        <h3 style="padding-inline-end:100px">ألفاظ غير لائقة بالدردشة</h3>
+        <p>انسجّلت عليك بلاغات عن ألفاظ مسيئة بالدردشة العامة. هاد التحذير الأول: التكرار بيوصل لكتم الدردشة، وبعدها الحظر.</p>
+        <a class="photo" data-zoom><svg class="img" viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice"><use href="#pic2"/></svg><i>لقطة الدردشة · اضغط للتكبير</i></a>
+        <div class="must">قراءة التحذير إلزامية قبل ما تكمّل</div>
+        <div class="lact"><button class="btnk red" id="ack" disabled>فهمت (٣)</button></div>
+      </div>
+    </div>
+
+    <!-- 3: inside the mail -->
+    <div class="frame" id="fc">
+      <div class="scrim"></div>
+      <section class="board leather">
+        <div class="mast"><button class="x" aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></button><h3>البريد</h3><small><span>برقيات من مكتب الريّس</span><em>٢ جديدة</em></small></div>
+        <div class="list">
+          <article class="tg w" data-open="b"><i class="tapeb"></i><span class="dot"></span><span class="wst">تحذير</span>
+            <div class="from"><span class="kind"><svg viewBox="0 0 24 24"><path d="M12 3l10 17H2z"/><path d="M12 10v5M12 18h.01"/></svg>تحذير · من مكتب الريّس</span><span>قبل دقيقة</span></div>
+            <h4 style="padding-inline-end:76px;margin-top:4px">ألفاظ غير لائقة بالدردشة</h4>
+            <div class="mini"><div class="th"><svg viewBox="0 0 320 132" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><use href="#pic2"/></svg></div><p>انسجّلت عليك بلاغات عن ألفاظ مسيئة بالدردشة العامة. هاد التحذير الأول…</p></div>
+            <div class="row"><span class="exp" style="color:var(--crimd)">لازم تقراها</span><button class="go red">اقرأ</button></div></article>
+          <article class="tg" data-open="a"><span class="dot"></span>
+            <div class="from"><span class="kind"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/></svg>رسالة خاصة · من مكتب الريّس</span><span>قبل ساعة</span></div>
+            <h4>ملاحظة على ملفك</h4>
+            <div class="mini"><div class="th"><svg viewBox="0 0 320 132" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><use href="#pic"/></svg></div><p>أهلاً أبو فارس. شفنا إنك ساعدت لاعبين جداد بالغرفة أمس…</p></div>
+            <div class="row"><span class="exp">اضغط لتقرأ</span><button class="go greenb">افتح</button></div></article>
+          <article class="tg w read"><i class="tapeb"></i><span class="wst">تمّ الاطلاع</span>
+            <div class="from"><span class="kind"><svg viewBox="0 0 24 24"><path d="M12 3l10 17H2z"/><path d="M12 10v5M12 18h.01"/></svg>تحذير · من مكتب الريّس</span><span>قبل ٤ أيام</span></div>
+            <h4 style="padding-inline-end:96px;margin-top:4px">سلوك غير رياضي بالمباراة</h4>
+            <p>تركت المباراة قبل نهايتها ٣ مرات هالأسبوع…</p>
+            <div class="row"><span class="exp">انقرأ قبل ٤ أيام</span></div></article>
+        </div>
+        <span class="stud b"></span><span class="stud c"></span>
+      </section>
+    </div>
+
+    <!-- 4: picture viewer -->
+    <div class="viewer" id="fd">
+      <button class="cl" aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      <div class="big"><svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet"><use href="#pic" /></svg></div>
+      <small>اضغط بأي مكان لتسكير الصورة</small>
+    </div>
+  </div>
+
+  <!-- 5: admin -->
+  <div class="adm" id="fe" style="display:none">
+    <h3>رسالة خاصة للاعب</h3>
+    <div class="sub">اللاعب: <b>أبو فارس</b> · رقم ٤٨٢٩١٦ · الرسالة بتنزل فوق شاشته لحظة وصولها لو كان بالعبة، وبتنحفظ ببريده</div>
+    <div class="cols">
+      <div class="tile">
+        <h6>اكتب الرسالة</h6>
+        <div class="seg" id="seg"><button class="on" data-k="n">رسالة عادية</button><button data-k="w">تحذير</button></div>
+        <input class="fi" placeholder="العنوان (عربي)" value="ألفاظ غير لائقة بالدردشة">
+        <input class="fi" placeholder="Title (English, optional)" dir="ltr">
+        <textarea class="fi" placeholder="نص الرسالة">انسجّلت عليك بلاغات عن ألفاظ مسيئة بالدردشة العامة. هاد التحذير الأول: التكرار بيوصل لكتم الدردشة، وبعدها الحظر.</textarea>
+        <div class="pickimg"><div class="box"><svg viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice"><use href="#pic2"/></svg></div><div><button class="sbtn leather">اختر صورة</button> <button class="sbtn" style="background:#8a1c2433;color:var(--crimd);box-shadow:none">شيلها</button><small class="hint">JPG أو PNG حتى ٢ ميغا، بتتصغّر تلقائياً وبتنحفظ على السيرفر</small></div></div>
+        <label class="chk" id="mustrow" style="display:none"><input type="checkbox" checked> قراءة إلزامية (زر «فهمت» بعد ٣ ثواني)</label>
+        <div style="display:flex;gap:8px"><button class="sbtn greenb">معاينة بشكل اللاعب</button><button class="sbtn red" id="sendb">ابعت الرسالة</button></div>
+      </div>
+      <div class="tile">
+        <h6>رسائل هاللاعب</h6>
+        <table class="tbl"><tr><th>النوع</th><th>العنوان</th><th>الحالة</th></tr>
+          <tr><td><span class="pill no">تحذير</span></td><td>ألفاظ غير…</td><td><span class="pill mid">وصلت · لسا</span></td></tr>
+          <tr><td><span class="pill ok">عادية</span></td><td>ملاحظة على ملفك</td><td><span class="pill ok">انقرأت</span></td></tr>
+          <tr><td><span class="pill no">تحذير</span></td><td>سلوك غير رياضي</td><td><span class="pill ok">انقرأ قبل ٤ أيام</span></td></tr>
+        </table>
+        <small class="hint" style="margin-top:10px">كل رسالة بتنسجّل بسجل العمليات على اللاعب، والتحذيرات بتضل ظاهرة بالبطاقة لحتى ما تنسى شو انبعت.</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <b>شو الفكرة</b>
+    <ul>
+      <li>الأدمن بيبعت من بطاقة اللاعب: <b>عادية</b> أو <b>تحذير</b>، مع عنوان ونص (عربي وإنجليزي) وصورة اختيارية.</li>
+      <li>لو اللاعب داخل اللعبة بتنزل فوق الشاشة خلال ثواني (نفس إشارة البريد الفوري). لو برا اللعبة بتنزل أول ما يفتح.</li>
+      <li>العادية: ورقة مع ختم الريّس، زر «حسناً». <b>التحذير</b>: شريط خطر، ختم «تحذير» أحمر، وزر «فهمت» بيشتغل بعد ٣ ثواني.</li>
+      <li>الاثنتين بتضلّ بالبريد، وبتنقرا مرة ثانية. ما فيها استلام جوائز.</li>
+      <li>الصورة: بتتلصق بلاصق كأنها صورة فوتوغرافية، وبالضغط عليها بتكبر.</li>
+      <li>الأدمن بيشوف إذا انقرأت (وقت القراءة).</li>
+      <li>بتنضاف لسجل العمليات على اللاعب.</li>
+    </ul>
+    <b>أسئلة للقرار</b>
+    <ul>
+      <li>هل التحذير يوقّف اللاعب لحد ما يضغط «فهمت» (بيمنع الشاشة)، أم يضل ينزل ورا الشاشة؟ أنا مقترح <b>يمنع</b>.</li>
+      <li>رسالة وحدة بالمرة أم ممكن لأكتر من لاعب؟ هون للاعب واحد.</li>
+    </ul>
+  </div>
+</div>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+  <!-- a stand-in photo: a night street -->
+  <symbol id="pic" viewBox="0 0 320 200"><rect width="320" height="200" fill="#1c1411"/><rect y="120" width="320" height="80" fill="#0d0907"/><circle cx="238" cy="52" r="22" fill="#f1e1b0"/><g fill="#2a1d17"><rect x="12" y="70" width="46" height="130"/><rect x="64" y="46" width="38" height="154"/><rect x="108" y="86" width="54" height="114"/><rect x="170" y="60" width="40" height="140"/><rect x="262" y="78" width="50" height="122"/></g><g fill="#e8b85a"><rect x="22" y="84" width="8" height="10"/><rect x="38" y="104" width="8" height="10"/><rect x="74" y="64" width="8" height="10"/><rect x="88" y="94" width="8" height="10"/><rect x="120" y="102" width="8" height="10"/><rect x="140" y="124" width="8" height="10"/><rect x="180" y="82" width="8" height="10"/><rect x="274" y="96" width="8" height="10"/></g><path d="M0 170h320" stroke="#6e5224" stroke-width="3"/></symbol>
+  <!-- a stand-in screenshot of a chat -->
+  <symbol id="pic2" viewBox="0 0 320 200"><rect width="320" height="200" fill="#2a2018"/><g font-family="Cairo,sans-serif" font-weight="700" font-size="13"><rect x="14" y="14" width="170" height="30" rx="6" fill="#3b2a20"/><rect x="136" y="56" width="170" height="30" rx="6" fill="#5a2a22"/><rect x="14" y="98" width="200" height="30" rx="6" fill="#3b2a20"/><rect x="100" y="140" width="206" height="38" rx="6" fill="#8a1c24"/></g><g fill="#e6d9bd" opacity=".8"><rect x="24" y="26" width="110" height="6" rx="3"/><rect x="146" y="68" width="120" height="6" rx="3"/><rect x="24" y="110" width="140" height="6" rx="3"/><rect x="110" y="153" width="150" height="6" rx="3"/></g></symbol>
+</defs></svg>
+
+<script>
+const ids = { a: 'fa', b: 'fb', c: 'fc', d: 'fd' };
+let timer;
+function show(s) {
+  document.querySelectorAll('#pick button').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+  const phone = document.getElementById('phone'), adm = document.getElementById('fe');
+  phone.style.display = s === 'e' ? 'none' : ''; adm.style.display = s === 'e' ? '' : 'none';
+  ['fa', 'fb', 'fc'].forEach(i => document.getElementById(i).classList.toggle('on', ids[s] === i));
+  document.getElementById('fd').classList.toggle('on', s === 'd');
+  if (s === 'd') document.getElementById('fc').classList.add('on');
+  clearInterval(timer);
+  if (s === 'b') {
+    const b = document.getElementById('ack'); let n = 3; b.disabled = true; b.textContent = 'فهمت (٣)';
+    timer = setInterval(() => { n--; if (n <= 0) { clearInterval(timer); b.disabled = false; b.textContent = 'فهمت'; } else b.textContent = 'فهمت (' + '٠١٢٣'[n] + ')'; }, 1000);
+  }
+  if (s === 'a' || s === 'b') { const l = document.querySelector('#' + ids[s] + ' .letter'); l.style.animation = 'none'; void l.offsetWidth; l.style.animation = ''; }
+}
+document.getElementById('pick').addEventListener('click', e => { const b = e.target.closest('button'); if (b) show(b.dataset.s); });
+document.querySelectorAll('[data-zoom]').forEach(a => a.addEventListener('click', () => show('d')));
+document.getElementById('fd').addEventListener('click', () => { document.getElementById('fd').classList.remove('on'); show('c'); });
+document.querySelectorAll('[data-open]').forEach(a => a.addEventListener('click', () => show(a.dataset.open)));
+document.getElementById('seg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#seg button').forEach(x => x.classList.remove('on', 'wn')); b.classList.add('on'); if (b.dataset.k === 'w') b.classList.add('wn');
+  document.getElementById('mustrow').style.display = b.dataset.k === 'w' ? 'flex' : 'none';
+});
+document.getElementById('seg').querySelectorAll('button')[1].click();
+show(location.hash.slice(1) || 'a');
+</script>
+</body>
+</html>

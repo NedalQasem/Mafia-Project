@@ -20,6 +20,10 @@ namespace MafiaNight.UI.Kit
             public int coins, gems;
             public string[] items;
             public bool claimed;
+            /// <summary>0 = a telegram with a package, 1 = a private note, 2 = a warning. For a message, claimed means read.</summary>
+            public int type;
+            public string imageId;
+            public bool must;
         }
 
         [SerializeField] private RectTransform board, content;
@@ -82,10 +86,10 @@ namespace MafiaNight.UI.Kit
                 card.OnClaim += c => OnClaim?.Invoke(c);
                 cards.Add(card);
             }
-            int fresh = 0; foreach (var c in items) if (!c.claimed) fresh++;
+            int fresh = 0, packs = 0; foreach (var c in items) if (!c.claimed) { fresh++; if (c.type == 0) packs++; }
             countText.Text = CoinPill.Format(items.Count) + " برقيات";
             newText.Text = fresh > 0 ? CoinPill.Format(fresh) + " جديدة" : "";
-            claimAllButton.gameObject.SetActive(fresh > 1);
+            claimAllButton.gameObject.SetActive(packs > 1);       // messages are read one by one, "collect all" is for packages
             emptyNote.SetActive(items.Count == 0);
             LayoutRebuilder.ForceRebuildLayoutImmediate(content);
         }

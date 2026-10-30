@@ -43,6 +43,7 @@ namespace MafiaNight.App
             if (SceneManager.GetActiveScene().name != AppScenes.Home) { Destroy(this); return; }
             ServiceLocator.TryGet(out rooms);
             ServiceLocator.TryGet(out scenes);
+            KitImages.Loader = MailService.LoadImage;
             refetchAt = Time.unscaledTime + Settle;
         }
 
@@ -122,6 +123,54 @@ namespace MafiaNight.App
             if (menu != null) menu.SetMail(mailData != null ? mailData.Unread : 0);
             if (mailBoard != null && !mailClaiming && MailSignature() != before) mailBoard.Refresh(MailCards());
             if (mailBoard == null) NoticeMail(); else SeeMail();
+            TryLetter();
+        }
+
+        // ---------------------------------------------------------------- private messages (note / warning)
+        // A message from the office lands over the screen as a letter the moment it is read from the server (the mail check runs at once when the
+        // server announces new mail). Pressing its button tells the server it was read. Each message pops up once per run, even if telling the server failed.
+        private readonly HashSet<string> lettersShown = new HashSet<string>();
+        private bool letterOpen;
+
+        private void TryLetter()
+        {
+            if (letterOpen || mailData == null || (rooms != null && rooms.InRoom)) return;
+            if (FindAnyObjectByType<KitRewardPopup>() != null || FindAnyObjectByType<KitLaunchBanner>() != null || FindAnyObjectByType<KitDirectLetter>() != null) return;
+            MailItem pick = null;
+            foreach (var m in mailData.Items)
+            {
+                if (!m.IsMessage || m.Claimed > 0 || lettersShown.Contains(m.Id)) continue;
+                if (pick == null || (m.Kind == "warn" && pick.Kind != "warn") || (m.Kind == pick.Kind && m.Ts < pick.Ts)) pick = m;
+            }
+            if (pick != null) ShowLetter(pick.Id);
+        }
+
+        private void ShowLetter(string id)
+        {
+            var th = KitTheme.Current;
+            var canvas = InviteFlow.FindCanvas();
+            MailItem m = null;
+            if (mailData != null) foreach (var x in mailData.Items) if (x.Id == id) m = x;
+            if (m == null || th == null || th.directLetterPrefab == null || canvas == null) return;
+            lettersShown.Add(id);
+            var go = Instantiate(th.directLetterPrefab, canvas, false);
+            go.transform.SetAsLastSibling();
+            var letter = go.GetComponent<KitDirectLetter>();
+            letterOpen = true;
+            letter.OnDismissed += () => { letterOpen = false; StartCoroutine(MarkRead(id)); };
+            letter.Show(new KitDirectLetter.Data { type = m.Kind == "warn" ? 2 : 1, title = m.Title, body = m.Body, imageId = m.ImageId, must = m.Must, when = m.Claimed > 0 ? Ago(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - m.Ts) : "هلأ" });
+        }
+
+        private IEnumerator MarkRead(string id)
+        {
+            bool ok = false;
+            yield return MailService.Read(id, r => ok = r);
+            if (mailData == null) yield break;
+            foreach (var m in mailData.Items)
+                if (m.Id == id && m.Claimed == 0) { m.Claimed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(); mailData.Unread = Math.Max(0, mailData.Unread - 1); }
+            if (menu != null) menu.SetMail(mailData.Unread);
+            if (mailBoard != null) mailBoard.Refresh(MailCards());
+            if (!ok) mailAt = Time.unscaledTime + 30f;          // the server did not get it: the next check shows the message as unread again
         }
 
         /// <summary>What the list shows (ids and collected marks): the open board is rebuilt only when this changes.</summary>
@@ -148,7 +197,7 @@ namespace MafiaNight.App
             var go = Instantiate(th.mailBoardPrefab, canvas, false);
             go.transform.SetAsLastSibling();
             mailBoard = go.GetComponent<KitMailBoard>();
-            mailBoard.OnClaim += c => { if (!mailClaiming) StartCoroutine(ClaimMail(c)); };
+            mailBoard.OnClaim += c => { if (c.type != 0) { if (!letterOpen) ShowLetter(c.id); } else if (!mailClaiming) StartCoroutine(ClaimMail(c)); };
             mailBoard.OnClaimAll += () => { if (!mailClaiming) StartCoroutine(ClaimAllMail()); };
             mailBoard.OnRedeem += code => StartCoroutine(RedeemCode(code));
             mailBoard.OnClosed += () => { mailBoard = null; mailAt = 0f; };      // the number on the icon is refreshed right after
@@ -169,6 +218,7 @@ namespace MafiaNight.App
                 list.Add(new KitMailBoard.Card
                 {
                     id = m.Id, title = m.Title, body = m.Body, coins = m.Coins, gems = m.Gems, items = names, claimed = m.Claimed > 0,
+                    type = m.Kind == "warn" ? 2 : m.Kind == "note" ? 1 : 0, imageId = m.ImageId, must = m.Must,
                     when = Ago(now - m.Ts), expiry = m.Exp > 0 && m.Claimed == 0 ? "تنتهي بعد " + Span(m.Exp - now) : "",
                 });
             }
@@ -370,7 +420,7 @@ namespace MafiaNight.App
         {
             if (notice == null || mailData == null) return;
             var fresh = new List<MailItem>();
-            foreach (var m in mailData.Items) if (m.Claimed == 0 && Fresh("ml:" + m.Id)) fresh.Add(m);
+            foreach (var m in mailData.Items) if (m.Claimed == 0 && !m.IsMessage && Fresh("ml:" + m.Id)) fresh.Add(m);       // messages come as a letter, not a notice
             if (fresh.Count == 0) return;
             var keys = new string[fresh.Count];
             for (int i = 0; i < keys.Length; i++) { keys[i] = "ml:" + fresh[i].Id; queued.Add(keys[i]); }

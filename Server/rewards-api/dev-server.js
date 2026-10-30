@@ -17,6 +17,7 @@ const { createEvents } = require('./src/events');
 const { createAdminStore } = require('./src/adminstore');
 const { createAdmin, hashPassword } = require('./src/admin');
 const { createRecovery } = require('./src/recovery');
+const { createImages } = require('./src/images');
 const os = require('node:os');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -85,8 +86,9 @@ fs.writeFileSync(reportsFile, [
   { ts: iso(-5), type: 'player', reporter: 'OTHER0004', target: 'OTHER0001', reason: 'spam', note: '' },
 ].map(r => JSON.stringify(r)).join('\n') + '\n');
 const recovery = createRecovery({ store: adminStore, playfab });
-const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, reportsFile, adminCfg: { passwordHash: hashPassword('dev-password-123'), path: '/admin' } });
+const images = createImages({ dir: path.join(devDir, 'images') });
+const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, images, reportsFile, adminCfg: { passwordHash: hashPassword('dev-password-123'), path: '/admin' } });
 for (let i = 0; i < 40; i++) adminStore.noteMatch('dev-m' + i, leaderboard.dayKey(Date.now() - (i % 7) * 86400000));
 for (const [pf, n] of [['OTHER0001', 9], ['OTHER0002', 7], ['OTHER0003', 5], ['OTHER0004', 2]]) for (let i = 0; i < n; i++) events.record(pf, { won: true, points: 50, secs: 600 });
-const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, events, offers, mail, codes, recovery, admin });
+const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, events, offers, mail, codes, recovery, images, admin });
 server.listen(8788, '127.0.0.1', () => console.log('dev server on http://127.0.0.1:8788 (pretend PlayFab; players OTHER0001..OTHER0004 exist) · admin board: http://127.0.0.1:8788/admin password dev-password-123'));

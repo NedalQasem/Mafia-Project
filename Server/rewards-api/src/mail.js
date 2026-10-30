@@ -3,6 +3,8 @@
 // and English and, usually, a package (coins, gems, store items) the player collects with one tap. The server pays the package itself, once.
 //   one / list / active7  -> one telegram per player (state.inbox)
 //   all                   -> one broadcast that every player sees (state.broadcasts) with his own claim record
+// A private message (kind 'note' or 'warn') is a telegram without a package: a title, a longer text, maybe a picture, and for a warning "must read".
+// Collecting it means reading it, so `claimed` is its read time, and "claim all" never reads messages for the player.
 // A claim is safe to repeat: each step of the package (coins, gems, items) is marked when paid, so a failure half-way never pays twice.
 
 const fs = require('node:fs');
@@ -30,16 +32,18 @@ function createMail({ cfg = {}, playfab = null, now = () => Date.now(), log = co
   }
 
   const bi = o => ({ ar: String((o && o.ar) || '').slice(0, 80), en: String((o && o.en) || '').slice(0, 80) });
-  const bb = o => ({ ar: String((o && o.ar) || '').slice(0, 200), en: String((o && o.en) || '').slice(0, 200) });
+  const bb = (o, n = 200) => ({ ar: String((o && o.ar) || '').slice(0, n), en: String((o && o.en) || '').slice(0, n) });
   const packOf = p => ({ coins: Math.max(0, Math.floor(Number(p && p.coins) || 0)), gems: Math.max(0, Math.floor(Number(p && p.gems) || 0)), items: Array.isArray(p && p.items) ? p.items.map(String).slice(0, 10) : [] });
   const hasPack = p => p.coins > 0 || p.gems > 0 || p.items.length > 0;
 
   /**
    * Sends a telegram. audience: 'all' (a broadcast) or 'players' (recipients = list of PlayFab ids). Returns how many players it reaches ('all': 0 = everybody).
    */
-  function send({ audience, recipients = [], title, body, pack, expiresInDays = 7, label = '' }) {
-    const t = now(), exp = expiresInDays > 0 ? t + expiresInDays * 86400000 : 0;
-    const base = { ts: t, title: bi(title), body: bb(body), pack: packOf(pack), exp, from: 'office' };
+  function send({ audience, recipients = [], title, body, pack, expiresInDays = 7, label = '', kind = '', image = '', must = false }) {
+    const isMsg = kind === 'note' || kind === 'warn';
+    const t = now(), exp = !isMsg && expiresInDays > 0 ? t + expiresInDays * 86400000 : 0;
+    const base = { ts: t, title: bi(title), body: bb(body, isMsg ? 600 : 200), pack: packOf(isMsg ? null : pack), exp, from: 'office' };
+    if (isMsg) Object.assign(base, { kind, image: String(image || ''), must: kind === 'warn' && !!must });
     const id = state.nextId++;
     let count = 0;
     if (audience === 'all') {
@@ -52,7 +56,7 @@ function createMail({ cfg = {}, playfab = null, now = () => Date.now(), log = co
         count++;
       }
     }
-    state.sent.push({ id: 'b' + id, ts: t, title: base.title, audience, count, pack: base.pack, label });
+    state.sent.push({ id: 'b' + id, ts: t, title: base.title, audience, count, pack: base.pack, label, kind: base.kind || '' });
     if (state.sent.length > KEEP_SENT) state.sent.splice(0, state.sent.length - KEEP_SENT);
     save();
     if (notify) { try { notify(audience === 'all' ? null : recipients.slice()); } catch (e) { log.error('mail notify failed', e.message); } }
@@ -64,7 +68,7 @@ function createMail({ cfg = {}, playfab = null, now = () => Date.now(), log = co
   /** Everything the player's mail shows: his telegrams and the broadcasts, newest first, expired ones left out. */
   function list(pf) {
     const t = now(), out = [];
-    const view = (m, rec) => ({ id: m.id, ts: m.ts, title: m.title, body: m.body, pack: m.pack, exp: m.exp, claimed: rec.claimed || 0 });
+    const view = (m, rec) => Object.assign({ id: m.id, ts: m.ts, title: m.title, body: m.body, pack: m.pack, exp: m.exp, claimed: rec.claimed || 0 }, m.kind ? { kind: m.kind, image: m.image || '', must: !!m.must } : {});
     for (const m of state.inbox[pf] || []) {
       if (m.exp && m.exp < t && !m.claimed) continue;
       if (m.claimed && t - m.claimed > SHOW_CLAIMED_MS) continue;
@@ -106,11 +110,26 @@ function createMail({ cfg = {}, playfab = null, now = () => Date.now(), log = co
     const total = { coins: 0, gems: 0, items: [] };
     let n = 0, failed = 0;
     for (const m of list(pf).items) {
-      if (m.claimed) continue;
+      if (m.claimed || m.kind) continue;
       try { const r = await claim(pf, m.id); total.coins += r.coins; total.gems += r.gems; total.items.push(...r.items); n++; }
       catch (e) { if (!(e instanceof ChatError)) failed++; }
     }
     return { ok: true, claimed: n, failed, coins: total.coins, gems: total.gems, items: total.items };
+  }
+
+  /** The player read a private message (or a telegram without a package). Safe to repeat. Call it under his lock. */
+  function read(pf, id) {
+    let m = (state.inbox[pf] || []).find(x => x.id === id), rec = m;
+    if (!m) { m = state.broadcasts.find(x => x.id === id); if (m) rec = claimRecord(pf, m); }
+    if (!m) throw new ChatError('not_found', 404);
+    if (hasPack(m.pack)) throw new ChatError('has_pack', 409);
+    if (!rec.claimed) { rec.claimed = now(); save(); }
+    return { ok: true, id, read: rec.claimed };
+  }
+
+  /** The private messages one player got, newest first (the player card of the admin board). */
+  function messagesFor(pf) {
+    return (state.inbox[pf] || []).filter(m => m.kind).map(m => ({ id: m.id, kind: m.kind, title: m.title, ts: m.ts, read: m.claimed || 0, image: m.image || '', must: !!m.must })).sort((a, b) => b.ts - a.ts);
   }
 
   /** For the admin board: what was sent, and how many of each broadcast / telegram batch were collected. */
@@ -135,7 +154,7 @@ function createMail({ cfg = {}, playfab = null, now = () => Date.now(), log = co
     save();
   }
 
-  return { send, list, unread, claim, claimAll, sentList, pendingFor, purge, flushNow };
+  return { send, list, unread, claim, claimAll, read, messagesFor, sentList, pendingFor, purge, flushNow };
 }
 
 module.exports = { createMail };

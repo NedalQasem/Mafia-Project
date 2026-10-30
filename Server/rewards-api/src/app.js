@@ -9,7 +9,7 @@ const { PlayFabError } = require('./playfab');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, admin = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, admin = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -161,6 +161,7 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     '/v1/mail': async pf => mail.list(pf),
     '/v1/mail/claim': (pf, b) => withLock('pf:' + pf, () => mail.claim(pf, String(b.id || ''))),
     '/v1/mail/claim-all': pf => withLock('pf:' + pf, () => mail.claimAll(pf)),
+    '/v1/mail/read': (pf, b) => withLock('pf:' + pf, async () => mail.read(pf, String(b.id || ''))),
   } : {};
   const codesPost = codes ? { '/v1/codes/redeem': async (pf, b) => codes.redeem(pf, b.code) } : {};
   const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost);
@@ -172,6 +173,13 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     if (limited(ip)) return send(res, 429, { ok: false, error: 'slow down' });
     if (admin && admin.owns(url.pathname)) return admin.handle(req, res, url, ip);      // the admin board (its own login)
 
+    // a picture of a private message: its name is random and unguessable, so it needs no ticket (the game loads it as a texture)
+    if (images && req.method === 'GET' && url.pathname.startsWith('/v1/img/')) {
+      const img = images.get(url.pathname.slice(8));
+      if (!img) return send(res, 404, { ok: false, error: 'not found' });
+      res.writeHead(200, { 'Content-Type': img.mime, 'Content-Length': img.buf.length, 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' });
+      return res.end(img.buf);
+    }
     // sign in with a user name and password (account recovery): the one route that has no session ticket yet
     if (recovery && req.method === 'POST' && url.pathname === '/v1/recover/login') {
       (async () => {

@@ -83,7 +83,7 @@ namespace MafiaNight.UI.Kit.Editor
             var ink = (Color)th.paperInk; var crimDark = (Color)th.crimson; var crim = new Color32(0xC0, 0x32, 0x3A, 255);
             var lalezar = th.fontLalezar != null ? th.fontLalezar : th.fontHeading; var cairo = th.fontBody;
             var soft = new Color32(0x4A, 0x3C, 0x24, 255); var gold = new Color32(0xFF, 0xD9, 0x8A, 255);
-            EnsureEventSprites(); EnsureMailSprites(); EnsureQuickMenuSprites();
+            EnsureEventSprites(); EnsureMailSprites(); EnsureQuickMenuSprites(); EnsureDmSprites();
             var sBoard = Spr("ev_board"); var sGreen = Spr("ev_green"); var sTime = Spr("ev_time"); var sSeal = Spr("ev_seal"); var sStud = Spr("ev_stud"); var sHole = Spr("ev_hole");
             var sPaper = Spr("ml_paper"); var sGem = Spr("ml_gem"); var sBadge = Spr("qm_badge");
 
@@ -112,13 +112,19 @@ namespace MafiaNight.UI.Kit.Editor
                 var v = card.AddComponent<VerticalLayoutGroup>(); v.padding = new RectOffset(46, 46, 40, 44); v.spacing = 8; v.childAlignment = TextAnchor.UpperCenter;
                 v.childControlWidth = true; v.childControlHeight = true; v.childForceExpandWidth = true; v.childForceExpandHeight = false;
                 card.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-                var kc = card.AddComponent<KitMailCard>(); SetRef(kc, "greenFace", sGreen);
+                var kc = card.AddComponent<KitMailCard>(); SetRef(kc, "greenFace", sGreen); SetRef(kc, "redFace", th.leatherRed);
 
                 var deco = Go("Deco", card.transform); Stretch(Rt(deco)); Le(deco).ignoreLayout = true;
                 var dot = Pic("Dot", deco.transform, sBadge, 46, 46); At(dot, new Vector2(1f, 1f), new Vector2(-6, -2), new Vector2(46, 46));
                 var st = Go("Stamp", deco.transform); At(st, new Vector2(0f, 1f), new Vector2(200, -150), new Vector2(300, 100)); st.transform.localRotation = Quaternion.Euler(0, 0, 12f);
                 var sti = Img(st, th.stampFrame, true, .9f); sti.color = new Color32(0x1D, 0x4A, 0x3C, 255);
                 var stt = Txt(st.transform, "Text", "تمّ الاستلام", lalezar, 44, new Color32(0x1D, 0x4A, 0x3C, 255)); NoWrap(stt); Stretch(Rt(stt.gameObject), 6, 6, 6, 6);
+
+                // a private message: red edge and hazard tape for a warning, a small taped photo for a picture
+                var band = Go("Band", deco.transform); { var br = Rt(band); br.anchorMin = new Vector2(0, 0); br.anchorMax = new Vector2(0, 1); br.pivot = new Vector2(0, .5f); br.sizeDelta = new Vector2(16, -20); br.anchoredPosition = Vector2.zero; var bi = band.AddComponent<Image>(); bi.color = crim; bi.raycastTarget = false; }
+                var tp = Go("Tape", deco.transform); { var tr = Rt(tp); tr.anchorMin = new Vector2(0, 1); tr.anchorMax = new Vector2(1, 1); tr.pivot = new Vector2(.5f, 1); tr.sizeDelta = new Vector2(-20, 22); tr.anchoredPosition = new Vector2(0, -8); var ti = tp.AddComponent<Image>(); ti.sprite = Spr("dm_tape"); ti.type = Image.Type.Tiled; ti.raycastTarget = false; }
+                var thumb = Go("Thumb", deco.transform); At(thumb, new Vector2(1f, 1f), new Vector2(-50, -186), new Vector2(224, 160), new Vector2(1f, 1f)); thumb.transform.localRotation = Quaternion.Euler(0, 0, -2f);
+                { var tfi = Img(thumb, Spr("dm_photo"), true, 1f); tfi.raycastTarget = false; var tpic = Go("Pic", thumb.transform); Stretch(Rt(tpic), 10, 10, 10, 10); var tr2 = tpic.AddComponent<RawImage>(); tr2.raycastTarget = false; tr2.color = new Color(1, 1, 1, 0); }
 
                 var from = Go("From", card.transform); Le(from, -1, 48);
                 var who = Txt(from.transform, "Who", "من: مكتب الريّس", cairo, 25, crim, TextAlignmentOptions.MidlineRight); who.fontStyle = FontStyles.Bold; NoWrap(who); Stretch(Rt(who.gameObject), 0, 6, 0, 0);

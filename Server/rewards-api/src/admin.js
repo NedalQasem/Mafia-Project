@@ -111,7 +111,7 @@ function cleanPack(b, id) {
   return { id, name, coins, gems, items };
 }
 
-function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, htmlFile = null, now = () => Date.now(), log = console }) {
+function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, htmlFile = null, now = () => Date.now(), log = console }) {
   const base = '/' + String(adminCfg.path || '/admin').replace(/^\/+|\/+$/g, '');
   const passwordHash = adminCfg.passwordHash || '';
   const sessionMs = (adminCfg.sessionHours || 12) * 3600 * 1000;
@@ -141,6 +141,16 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       let size = 0; const chunks = [];
       req.on('data', c => { size += c.length; if (size > 16384) { reject(new AdminError('too_big', 413)); req.destroy(); } else chunks.push(c); });
       req.on('end', () => { if (!size) return resolve({}); try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch { reject(new AdminError('bad_json')); } });
+      req.on('error', () => reject(new AdminError('read_failed')));
+    });
+  }
+
+  // a picture arrives as base64 inside JSON, so this reader allows a bigger body than readJson
+  function readBig(req, max) {
+    return new Promise((resolve, reject) => {
+      let size = 0; const chunks = [];
+      req.on('data', c => { size += c.length; if (size > max) { reject(new AdminError('too_big', 413)); req.destroy(); } else chunks.push(c); });
+      req.on('end', () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch { reject(new AdminError('bad_json')); } });
       req.on('error', () => reject(new AdminError('read_failed')));
     });
   }
@@ -228,7 +238,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
     const against = readReports().filter(r => r.target === pf).length;
     let balances = null;
     if (playfab && playfab.getBalances) { try { const b = await playfab.getBalances(pf); balances = { coins: b[cfg.currencyCode] || 0, gems: b[cfg.gemsCode || 'GM'] || 0 }; } catch (e) { log.error('[admin] balances failed:', e && (e.code || e.message), e && e.message); } }
-    return { pf, name: p.name, rank: p.rank, level: p.level, num: f && f.nums[pf] ? f.nums[pf] : null, stats, reportsAgainst: against, mutedUntil: chat.muteUntil(pf) || 0, balances, pendingMail: mail ? mail.pendingFor(pf) : 0, ban: store.bans()[pf] || null, log: store.auditFor(pf, 12), recovery: recovery ? recovery.info(pf) : null };
+    return { pf, name: p.name, rank: p.rank, level: p.level, num: f && f.nums[pf] ? f.nums[pf] : null, stats, reportsAgainst: against, mutedUntil: chat.muteUntil(pf) || 0, balances, pendingMail: mail ? mail.pendingFor(pf) : 0, ban: store.bans()[pf] || null, log: store.auditFor(pf, 12), recovery: recovery ? recovery.info(pf) : null, messages: mail ? mail.messagesFor(pf).slice(0, 8) : [] };
   }
 
   function resolveTarget(t) {
@@ -493,6 +503,31 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       const r = mail.send({ audience, recipients, title, body, pack, expiresInDays: days, label });
       store.audit('mail_send', (title.ar || title.en) + ' -> ' + who + (label ? ' · ' + label : ''), recipients.length === 1 ? recipients[0] : '');
       return send(res, 200, { ok: true, id: r.id, count: r.count });
+    }
+
+    // ---- private messages: a picture upload, then the message itself
+    if (rest === '/api/upload-image' && method === 'POST') {
+      if (!images) throw new AdminError('no_images', 404);
+      const b = await readBig(req, 1.6 * 1024 * 1024);
+      let id;
+      try { id = images.save(Buffer.from(String(b.data || ''), 'base64')); } catch (e) { throw new AdminError(e.code || 'bad_image', e.code === 'image_too_big' ? 413 : 400); }
+      store.audit('image_upload', id);
+      return send(res, 200, { ok: true, id });
+    }
+    if (rest === '/api/players/message' && method === 'POST') {
+      if (!mail) throw new AdminError('no_mail', 404);
+      const b = await readJson(req); const pf = String(b.pf || '');
+      if (!PF_ID.test(pf)) throw new AdminError('bad_player');
+      const kind = b.kind === 'warn' ? 'warn' : b.kind === 'note' ? 'note' : '';
+      if (!kind) throw new AdminError('bad_kind');
+      const title = bi(b.title, 80), body = bi(b.body, 600);
+      if (!title.ar && !title.en) throw new AdminError('title_required');
+      if (!body.ar && !body.en) throw new AdminError('body_required');
+      const image = String(b.image || '');
+      if (image && !(images && images.exists(image))) throw new AdminError('image_not_found', 404);
+      const r = mail.send({ audience: 'players', recipients: [pf], title, body, kind, image, must: kind === 'warn' && b.must !== false });
+      store.audit('message_send', (kind === 'warn' ? 'warn: ' : 'note: ') + (title.ar || title.en) + (image ? ' [image]' : ''), pf);
+      return send(res, 200, { ok: true, id: r.id });
     }
 
     // ---- support: rename, ban, unban

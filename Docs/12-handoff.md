@@ -16,7 +16,7 @@
 
 لعبة مافيا صوتية عربية: Unity + **EOS** (غرف، صوت، P2P، دخول بهوية الجهاز) + **PlayFab** (title `107B73` اسمه "MafiaVoiceChat withEOS"؛ في title ثاني "MafiaVoiceChat" لا تلمسه) + **سيرفر Node خاص** على VPS.
 
-- **السيرفر:** `Server/rewards-api` (جوائز المباريات، الدردشة، العائلة، التصنيفات، الأحداث، العروض، البريد، الأكواد، الاسترجاع، لوحة الإدارة). الاختبارات: `cd Server/rewards-api && npm test` (115 ناجحة). نسخة محلية للتجربة: `node dev-server.js` (بورت 8788، PlayFab وهمي، لوحة الإدارة `/admin` بكلمة سر `dev-password-123`).
+- **السيرفر:** `Server/rewards-api` (جوائز المباريات، الدردشة، العائلة، التصنيفات، الأحداث، العروض، البريد، الأكواد، الاسترجاع، لوحة الإدارة). الاختبارات: `cd Server/rewards-api && npm test` (121 ناجحة). نسخة محلية للتجربة: `node dev-server.js` (بورت 8788، PlayFab وهمي، لوحة الإدارة `/admin` بكلمة سر `dev-password-123`).
 - **منشور على:** `https://api.mena-gaming.com` (VPS `187.127.79.192`، Docker container `mafia-rewards`، المجلد `/root/rewards-api`). لوحة الإدارة: `https://api.mena-gaming.com/admin`.
 - **اللعبة:** `Assets/_Project/Scripts` (asmdefs: Core, Data, Services, MatchRules, UI.Kit, App). الواجهات تنبنى بقوائم `Mafia Night/UI Kit/...` من ملفات `UI/Kit/Editor/KitBuilder*.cs`. الثيم `Assets/_Project/Resources/Kit/KitTheme.asset`.
 - **الوثائق:** `Docs/README.md` فهرس، `Docs/10-test-plan.md` كل بنود الاختبار، `Docs/11-test1-readiness.md` جاهزية Test 1.
@@ -54,6 +54,8 @@ cd Server/rewards-api && B=$(tar czf - --owner=0 --group=0 package.json Dockerfi
 
 ## 5. الخطوة الجاية
 
+0. **الرسائل الخاصة:** لازم ترفع السيرفر (القسم 3) قبل ما تشتغل، وAPK جديد. لوحة الإدارة (بطاقة اللاعب ← «رسالة خاصة») ما انفحصت بالمتصفح (بس فحص صياغة السكربت والاختبارات)، فجرّبها أول ما ترفع: اختيار صورة، التصغير، الإرسال. الورقة نفسها انصوّرت بالـEditor وطابقت التصميم؛ التجربة الكاملة (وصول لحظي، وقراءة، وعدم التكرار) بجلسة Test 1، قسم 27.
+
 1. **تأكد إنه السيرفر محدّث بـ `760ae1e`** (البريد الفوري). إذا لا: ابنِ ملف التثبيت (القسم 3) وخلّيه يرفعه، وبعدين يجرّب يبعت هدية واللعبة مفتوحة (لازم تطلع البرقية خلال ثواني).
 2. بعدها صاحب المشروع بيختار:
    - **APK جديد** يجرّب فيه كل شي على الموبايل.
@@ -78,3 +80,4 @@ cd Server/rewards-api && B=$(tar czf - --owner=0 --group=0 package.json Dockerfi
 | التاريخ | مين (الحساب/الجلسة) | شو انعمل | الكوميت |
 |---|---|---|---|
 | 2026-10-31 | جلسة «Live Ops» | هالملف + `CLAUDE.md`، وقاعدة التحديث الدائم | `b326da3` وما بعده |
+| 2026-10-31 | جلسة «Live Ops» | **الرسائل الخاصة من الإدارة** (عادية/تحذير + صورة): تصميم `direct-message.html` (موافَق عليه)، السيرفر (`kind` بالبريد، `/v1/mail/read`، `images.js` + `/v1/img/<id>`، رفع الصور وإرسال الرسالة بلوحة الإدارة، 121 اختبار)، Unity (ورقة `DirectLetter` منبثقة بالرئيسية، بطاقات البريد بشكل التحذير والصورة، `KitImages.Loader`)، قسم 27 بخطة الاختبار | هالكوميت |

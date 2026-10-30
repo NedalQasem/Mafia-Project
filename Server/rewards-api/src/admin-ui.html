@@ -190,6 +190,13 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
 .tile{padding:12px 14px;border-radius:6px;background:#1c170f0d;box-shadow:inset 0 0 0 1px #1c170f33}
 .tile h6{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1rem}
 .rowin{display:flex;gap:8px;margin-bottom:8px}
+.seg{display:flex;margin-bottom:10px;border-radius:7px;overflow:hidden;box-shadow:0 0 0 2px #1c170f66}
+.seg button{flex:1;padding:6px 8px;font-weight:800;font-size:.82rem;background:#f0e8d2;color:var(--soft);border:0;cursor:pointer;font-family:inherit}
+.seg button.on{background:#1d4a3c;color:#f0dcd8}.seg button.on.wn{background:#8a1c24}
+.dmimg{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.dmimg .box{flex:none;width:84px;height:58px;border-radius:5px;background:#1c170f14;box-shadow:inset 0 0 0 2px #1c170f55;overflow:hidden;display:grid;place-items:center;font-size:.62rem;font-weight:800;color:var(--soft);text-align:center}
+.dmimg .box img{width:100%;height:100%;object-fit:cover;display:block}
+.mpill{display:inline-block;padding:0 8px;border-radius:9px;font-weight:800;font-size:.66rem;color:#f6efe0}.mpill.n{background:#1d4a3c}.mpill.w{background:#8a1c24}.mpill.m{background:#6e4b1c}
 .rowin input,.rowin select{flex:1;min-width:0;padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
 .mono{font-family:Consolas,monospace;direction:ltr;display:inline-block;font-weight:800;letter-spacing:1px}
 .ok{color:var(--green);font-weight:800;font-size:.82rem}
@@ -485,7 +492,7 @@ const setBadge = (el, n) => { el.textContent = ar(n); el.classList.toggle('hide'
 // ------------------------------------------------------------------ home
 const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 const ACT = { login: 'دخول إلى اللوحة', login_failed: 'محاولة دخول فاشلة', event_save: 'حفظ حدث', event_delete: 'حذف حدث', event_toggle: 'تفعيل/تعطيل حدث', offer_save: 'حفظ عرض', offer_delete: 'حذف عرض', offer_toggle: 'تفعيل/تعطيل عرض', word_add: 'إضافة كلمة ممنوعة', word_remove: 'حذف كلمة ممنوعة', report_mute: 'كتم بسبب بلاغ', report_ignore: 'تجاهل بلاغ', player_mute: 'كتم لاعب', player_unmute: 'فك كتم لاعب' };
-Object.assign(ACT, { recovery_set: 'حساب استرجاع', recovery_remove: 'إلغاء حساب استرجاع', rename: 'تغيير اسم', ban: 'حظر', unban: 'فك حظر', balance_add: 'إضافة رصيد', balance_remove: 'سحب رصيد', mail_send: 'إرسال بريد', pack_save: 'حفظ حزمة', pack_delete: 'حذف حزمة', code_save: 'حفظ كود', code_toggle: 'تفعيل/تعطيل كود', code_delete: 'حذف كود', ranking_distribute: 'توزيع جوائز تصنيف' });
+Object.assign(ACT, { message_send: 'رسالة خاصة', image_upload: 'رفع صورة', recovery_set: 'حساب استرجاع', recovery_remove: 'إلغاء حساب استرجاع', rename: 'تغيير اسم', ban: 'حظر', unban: 'فك حظر', balance_add: 'إضافة رصيد', balance_remove: 'سحب رصيد', mail_send: 'إرسال بريد', pack_save: 'حفظ حزمة', pack_delete: 'حذف حزمة', code_save: 'حفظ كود', code_toggle: 'تفعيل/تعطيل كود', code_delete: 'حذف كود', ranking_distribute: 'توزيع جوائز تصنيف' });
 const bad = a => a === 'login_failed';
 function ago(ts) { const s = Math.max(0, (Date.now() - ts) / 1000); return s < 60 ? 'قبل لحظات' : s < 3600 ? 'قبل ' + ar(Math.floor(s / 60)) + ' د' : s < 86400 ? 'قبل ' + ar(Math.floor(s / 3600)) + ' س' : 'قبل ' + ar(Math.floor(s / 86400)) + ' يوم'; }
 async function loadHome() {
@@ -685,6 +692,7 @@ document.addEventListener('click', async e => {
 // ------------------------------------------------------------------ live ops: packs, mail, balance
 ERR.name_required = 'الاسم مطلوب'; ERR.empty_pack = 'الحزمة فاضية: حط كوينز أو جواهر أو عنصر'; ERR.bad_coins = 'الكوينز بين ٠ ومليون'; ERR.bad_gems = 'الجواهر بين ٠ و١٠٠٠٠'; ERR.bad_items = 'معرّفات العناصر غير صحيحة';
 ERR.unknown_player = 'ما في لاعب بهالرقم أو المعرّف'; ERR.no_recipients = 'ما في مستلمين'; ERR.bad_targets = 'اكتب من لاعب لـ٢٠٠ لاعب'; ERR.confirm_required = 'لازم تأكد الإرسال'; ERR.pack_not_found = 'الحزمة ما انوجدت';
+ERR.bad_kind = 'نوع الرسالة غلط'; ERR.body_required = 'اكتب نص الرسالة'; ERR.image_not_found = 'الصورة مش موجودة'; ERR.bad_image = 'الملف مش صورة JPG أو PNG'; ERR.image_too_big = 'الصورة كبيرة، جرّب أصغر';
 ERR.bad_username = 'اسم المستخدم: ٤ لـ٢٤ حرف إنجليزي أو رقم'; ERR.bad_password = 'كلمة السر من ٨ لـ٦٤'; ERR.username_taken = 'اسم المستخدم محجوز'; ERR.playfab_failed = 'تعذّر الربط مع PlayFab';
 ERR.bad_name = 'الاسم من ٣ لـ٢٥ حرف'; ERR.name_taken = 'الاسم مستخدم'; ERR.bad_hours = 'المدة غير صحيحة';
 ERR.reason_required = 'اكتب سبب (٣ أحرف على الأقل)'; ERR.bad_amount = 'الكمية بين ١ ومليون'; ERR.insufficient_or_failed = 'فشل: يمكن الرصيد أقل من المطلوب'; ERR.playfab_failed = 'فشل عند PlayFab، جرّب بعد شوي'; ERR.no_playfab = 'PlayFab غير متصل';
@@ -782,11 +790,32 @@ function playerCard(p) {
         <button class="btn greenb sm" data-mail-go="${pf}">ابعت لهاللاعب</button></div>
       <div class="tile"><h6>حظر من اللعبة</h6>${p.ban ? `<div class="warn">محظور: ${esc(p.ban.reason)} · ${p.ban.until ? 'لحد ' + new Date(p.ban.until).toLocaleDateString('ar') : 'للأبد'}</div><button class="btn greenb sm" data-unban-go="${pf}">فك الحظر</button>` : `<div class="rowin"><select data-ban="hours"><option value="24">٢٤ ساعة</option><option value="168">أسبوع</option><option value="720">٣٠ يوم</option><option value="0">للأبد</option></select></div><div class="rowin"><input data-ban="reason" placeholder="السبب (إجباري، بيتسجّل)" maxlength="140"></div><button class="btn red sm" data-ban-go="${pf}">احظر</button><div class="warn" style="margin-top:8px">PlayFab بيرفض دخوله. فكّ الحظر من هون.</div>`}</div>
       <div class="tile"><h6>حساب استرجاع</h6>${p.recovery ? `<div class="warn" style="background:#e8f1e3;color:#2f4a2a">فعّال · اسم المستخدم: <b dir="ltr">${esc(p.recovery.username)}</b><br>انستخدم ${p.recovery.count || 0} مرة${p.recovery.last ? ' · آخر مرة ' + ago(p.recovery.last) : ''}</div><div class="rowin"><button class="btn red sm" data-rec-new="${pf}">كلمة سر جديدة</button><button class="btn sm" data-rec-off="${pf}">ألغِ الحساب</button></div>` : `<div class="rowin"><input data-rec="username" dir="ltr" placeholder="اسم المستخدم (إنجليزي)" maxlength="24"></div><button class="btn greenb sm" data-rec-go="${pf}">أنشئ حساب استرجاع</button><small class="hint">بيطلع لك كلمة سر مرة وحدة بس. بتعطيها للاعب، وهو بيدخل فيها من جهاز جديد.</small>`}<div id="rec-out-${pf}"></div></div>
+      <div class="tile"><h6>رسالة خاصة</h6><div class="seg" data-dm-seg><button class="on" data-dm-kind="note">رسالة عادية</button><button data-dm-kind="warn">تحذير</button></div>
+        <div class="rowin"><input data-dm="tar" placeholder="العنوان (عربي)" maxlength="80"></div><div class="rowin"><input data-dm="ten" class="ltr" dir="ltr" placeholder="Title (English, optional)" maxlength="80"></div>
+        <div class="rowin"><textarea data-dm="bar" rows="3" placeholder="نص الرسالة (عربي)" maxlength="600" style="flex:1;padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700;font-family:inherit"></textarea></div>
+        <div class="rowin"><textarea data-dm="ben" class="ltr" dir="ltr" rows="2" placeholder="Text (English, optional)" maxlength="600" style="flex:1;padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700;font-family:inherit"></textarea></div>
+        <div class="dmimg"><div class="box" data-dm="prev">بدون صورة</div><div><input type="file" accept="image/jpeg,image/png" data-dm="file" hidden><button class="btn ghost sm" data-dm-pick>اختر صورة</button> <button class="btn sm" data-dm-clear>شيلها</button><small class="hint">JPG أو PNG. بتتصغّر لحد ٩٠٠ بكسل قبل ما تنرفع.</small></div></div>
+        <label class="hint" data-dm="mustrow" style="display:none;margin:0 0 8px"><input type="checkbox" data-dm="must" checked> قراءة إلزامية (زر «فهمت» بعد ٣ ثواني)</label>
+        <button class="btn greenb sm" data-dm-go="${pf}">ابعت الرسالة</button>
+        ${(p.messages || []).length ? `<table class="tbl" style="margin-top:10px"><tr><th>النوع</th><th>العنوان</th><th>الحالة</th></tr>${p.messages.map(m => `<tr><td><span class="mpill ${m.kind === 'warn' ? 'w' : 'n'}">${m.kind === 'warn' ? 'تحذير' : 'عادية'}</span></td><td>${esc(m.title.ar || m.title.en)}</td><td>${m.read ? `<span class="mpill n">انقرأت ${ago(m.read)}</span>` : '<span class="mpill m">وصلت · لسا</span>'}</td></tr>`).join('')}</table>` : ''}</div>
     </div></div>
     <div class="sect"><h5>سجلّ العمليات على هاللاعب</h5>${(p.log || []).length ? `<table class="tbl"><tr><th>الوقت</th><th>العملية</th><th>التفاصيل</th></tr>${p.log.map(l => `<tr><td>${ago(l.ts)}</td><td>${esc(ACT[l.action] || l.action)}</td><td>${esc(l.detail)}</td></tr>`).join('')}</table>` : '<p class="hint">ما في عمليات مسجّلة على هاللاعب.</p>'}</div></div>`;
 }
+const DM_IMG = {};
+const shrink = file => new Promise((ok, no) => { const fr = new FileReader(); fr.onerror = no; fr.onload = () => { const im = new Image(); im.onerror = no; im.onload = () => { const k = Math.min(1, 900 / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', 0.85)); }; im.src = fr.result; }; fr.readAsDataURL(file); });
+document.addEventListener('change', async e => { const fi = e.target.closest('[data-dm=file]'); if (!fi || !fi.files[0]) return; const t = fi.closest('.tile'); const pf = t.querySelector('[data-dm-go]').dataset.dmGo; try { DM_IMG[pf] = await shrink(fi.files[0]); t.querySelector('[data-dm=prev]').innerHTML = `<img src="${DM_IMG[pf]}" alt="">`; } catch { toast('تعذّر قراءة الصورة'); } });
 const showRec = (pf, r) => { const o = document.getElementById('rec-out-' + pf); if (o) o.innerHTML = `<div class="warn" style="margin-top:8px">انسخها هلأ، ما رح تنعرض مرة ثانية:<br><b dir="ltr">${esc(r.username)}</b><br><b dir="ltr" style="font-size:1.1rem">${esc(r.password)}</b></div>`; };
 document.addEventListener('click', async e => {
+  const dk = e.target.closest('[data-dm-kind]');
+  if (dk) { const t = dk.closest('.tile'); t.querySelectorAll('[data-dm-kind]').forEach(x => x.classList.remove('on', 'wn')); dk.classList.add('on'); if (dk.dataset.dmKind === 'warn') dk.classList.add('wn'); t.querySelector('[data-dm=mustrow]').style.display = dk.dataset.dmKind === 'warn' ? 'block' : 'none'; return; }
+  const dp = e.target.closest('[data-dm-pick]'); if (dp) { dp.closest('.tile').querySelector('[data-dm=file]').click(); return; }
+  const dc = e.target.closest('[data-dm-clear]'); if (dc) { const t = dc.closest('.tile'); delete DM_IMG[t.querySelector('[data-dm-go]').dataset.dmGo]; t.querySelector('[data-dm=file]').value = ''; t.querySelector('[data-dm=prev]').textContent = 'بدون صورة'; return; }
+  const dg = e.target.closest('[data-dm-go]');
+  if (dg) { const t = dg.closest('.tile'), pf = dg.dataset.dmGo, v = k => t.querySelector('[data-dm=' + k + ']').value.trim(); const kind = t.querySelector('[data-dm-kind].on').dataset.dmKind;
+    if (!v('tar') && !v('ten')) return toast(errText('title_required')); if (!v('bar') && !v('ben')) return toast(errText('body_required'));
+    if (!confirm(kind === 'warn' ? 'إرسال تحذير لهاللاعب؟' : 'إرسال الرسالة لهاللاعب؟')) return;
+    try { let image = ''; if (DM_IMG[pf]) image = (await api('/upload-image', { data: DM_IMG[pf].split(',')[1] })).id;
+      await api('/players/message', { pf, kind, title: { ar: v('tar'), en: v('ten') }, body: { ar: v('bar'), en: v('ben') }, image, must: t.querySelector('[data-dm=must]').checked }); delete DM_IMG[pf]; toast('انبعتت الرسالة'); searchPlayers(); } catch (x) { toast(errText(x.code)); } return; }
   const rc = e.target.closest('[data-rec-go],[data-rec-new]');
   if (rc) { const pf = rc.dataset.recGo || rc.dataset.recNew; const inp = rc.closest('.tile').querySelector('[data-rec=username]'); const username = inp ? inp.value.trim() : (rc.closest('.tile').querySelector('b[dir=ltr]') || {}).textContent; try { const r = await api('/players/recovery', { pf, username }); await searchPlayers(); showRec(pf, r); } catch (x) { toast(errText(x.code)); } return; }
   const ro = e.target.closest('[data-rec-off]');
