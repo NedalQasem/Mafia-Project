@@ -192,6 +192,12 @@ namespace MafiaNight.App
             return th != null && th.storeFrames != null && variant >= 1 && variant <= th.storeFrames.Length ? th.storeFrames[variant - 1] : null;
         }
 
+        private System.Collections.IEnumerator AfterPurchase(StoreItem item)
+        {
+            yield return new WaitForSecondsRealtime(1f);
+            RewardFlow.Show("من متجر الحارة", "اشتريت " + item.name, new System.Collections.Generic.List<RewardItem> { RewardFlow.FromStore(item) });
+        }
+
         private void WireStore()
         {
             store.Coins = currency.Coins;
@@ -199,7 +205,12 @@ namespace MafiaNight.App
             store.OwnedResolver = item => storeService.Owns(item.id);
             store.EquippedResolver = item => storeService.IsEquipped(item.id);
             store.EquipHandler = item => storeService.Equip(item.id);
-            store.PurchaseHandler = (item, done) => storeService.Purchase(item.id, item.price, item.storeId, done);
+            store.PurchaseHandler = (item, done) => storeService.Purchase(item.id, item.price, item.storeId, (ok, msg) =>
+            {
+                done(ok, msg);
+                // the bought item comes out of the loot briefcase, a moment after the buy sheet closes
+                if (ok && this != null) StartCoroutine(AfterPurchase(item));
+            });
         }
     }
 }

@@ -22,23 +22,28 @@ namespace MafiaNight.App
             var list = new List<RewardItem>();
             if (coins > 0) list.Add(new RewardItem { kind = "coins", amount = coins, rarity = coins >= 10000 ? RewardRarity.Legend : coins >= 3000 ? RewardRarity.Rare : RewardRarity.Common });
             if (gems > 0) list.Add(new RewardItem { kind = "gems", amount = gems, rarity = gems >= 100 ? RewardRarity.Legend : RewardRarity.Rare });
-            var catalog = StoreData.Catalog;
             if (itemIds != null)
                 foreach (var id in itemIds)
                 {
-                    var def = catalog != null ? catalog.GetItem(id) : null;
-                    var cat = def != null && catalog != null ? catalog.GetCategory(def.categoryId) : null;
-                    list.Add(new RewardItem
-                    {
-                        id = id,
-                        kind = def == null ? "item" : def.artKind == StoreArtKind.Frame ? "frame" : def.artKind == StoreArtKind.ChatBubble ? "bubble" : "item",
-                        name = def != null && !string.IsNullOrEmpty(def.nameAr) ? def.nameAr : id,
-                        sub = cat != null ? cat.tabName : "",
-                        rarity = def == null || def.rarity == ItemRarity.Common ? RewardRarity.Common : def.rarity == ItemRarity.Rare ? RewardRarity.Rare : RewardRarity.Legend,
-                        art = def != null ? def.sprite : null,
-                    });
+                    var it = StoreData.Find(id);
+                    list.Add(it != null ? FromStore(it) : new RewardItem { id = id, kind = "item", name = id, rarity = RewardRarity.Common });
                 }
             return list;
+        }
+
+        /// <summary>One store item as a loot card (drawn like in the store).</summary>
+        public static RewardItem FromStore(StoreItem it)
+        {
+            var catalog = StoreData.Catalog;
+            var cat = catalog != null ? catalog.GetCategory(it.categoryId) : null;
+            return new RewardItem
+            {
+                id = it.id, store = it,
+                kind = it.art == "ring" ? "frame" : it.art == "bubble" ? "bubble" : "item",
+                name = !string.IsNullOrEmpty(it.name) ? it.name : it.id,
+                sub = cat != null ? cat.tabName : "",
+                rarity = it.rarity == Rarity.Common ? RewardRarity.Common : it.rarity == Rarity.Rare ? RewardRarity.Rare : RewardRarity.Legend,
+            };
         }
 
         /// <summary>Opens the briefcase over the current screen; false when it cannot (no prefab, no canvas, nothing to give).</summary>

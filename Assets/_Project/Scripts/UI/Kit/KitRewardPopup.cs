@@ -21,6 +21,8 @@ namespace MafiaNight.UI.Kit
         public RewardRarity rarity;
         /// <summary>Optional picture of a store item; without it the built-in drawing of its kind is used.</summary>
         public Sprite art;
+        /// <summary>A store item: the card draws it exactly as the store does (frame, room, gift, title...).</summary>
+        public StoreItem store;
         public bool IsMoney => kind == "coins" || kind == "gems";
     }
 
@@ -238,6 +240,17 @@ namespace MafiaNight.UI.Kit
             c.Find("Face").GetComponent<Image>().sprite = it.rarity == RewardRarity.Legend ? cardLegend : it.rarity == RewardRarity.Rare ? cardRare : cardCommon;
             var art = c.Find("Art").GetComponent<Image>();
             art.sprite = it.art != null ? it.art : it.kind == "coins" ? artCoins : it.kind == "gems" ? artGems : it.kind == "frame" ? artFrame : artBubble;
+            // a store item is drawn by the store's own code in a 300 x 300 box, shrunk into the 70 px picture of the card
+            bool drawn = it.store != null && it.art == null && KitTheme.Current != null;
+            art.enabled = !drawn;
+            if (drawn)
+            {
+                var box = new GameObject("StoreArt", typeof(RectTransform)).GetComponent<RectTransform>();
+                box.SetParent(c, false); box.SetSiblingIndex(art.transform.GetSiblingIndex() + 1);
+                box.anchoredPosition = ((RectTransform)art.transform).anchoredPosition; box.sizeDelta = new Vector2(300, 300);
+                box.localScale = Vector3.one * (70f * k / 300f);
+                StoreArt.Create(it.store, box, KitTheme.Current);
+            }
             var amount = c.Find("Amount").gameObject; amount.SetActive(it.IsMoney);
             amount.GetComponent<TextMeshProUGUI>().text = "+" + CoinPill.Format(0);
             var nm = c.Find("Name"); nm.gameObject.SetActive(!it.IsMoney);

@@ -18,6 +18,7 @@ namespace MafiaNight.App
         [SerializeField] private string practiceName = "أبو سالم";
 
         private LocalMatchSession practice;
+        private bool rewardShown;       // the loot briefcase of this match's coins was already shown
 
         private static void GoToRoom(ISceneLoader scenes)
         {
@@ -37,7 +38,19 @@ namespace MafiaNight.App
             {
                 flow.Attach(view, runner.Session.Client);
                 flow.SetReward(runner.Reward);
-                runner.RewardChanged += () => { if (flow != null) flow.SetReward(runner.Reward); };
+                runner.RewardChanged += () =>
+                {
+                    if (flow == null) return;
+                    flow.SetReward(runner.Reward);
+                    // the server paid: the coins of the night come out of the loot briefcase (once per match)
+                    var r = runner.Reward;
+                    if (r != null && r.Status == RewardStatus.Granted && r.Coins > 0 && !rewardShown)
+                    {
+                        rewardShown = true;
+                        RewardFlow.Show(r.Won ? "فزت بالسهرة" : "انتهت السهرة", "جائزة السهرة", RewardFlow.FromPack(r.Coins, 0, null));
+                    }
+                    else if (r != null && r.Status != RewardStatus.Granted) rewardShown = false;
+                };
                 // another match with the same room: the host starts it, the others wait in the room
                 flow.PlayAgainRequested += () =>
                 {
