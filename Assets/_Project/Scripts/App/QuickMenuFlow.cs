@@ -35,6 +35,8 @@ namespace MafiaNight.App
         private bool mailLoading, mailClaiming;
         private float refetchAt;
         private bool loading, claiming;
+        private KitQuickNotice notice;
+        private bool offersSeenOnce;
 
         private void Start()
         {
@@ -71,6 +73,7 @@ namespace MafiaNight.App
             loading = false;
             if (menu == null && !Create()) { refetchAt = float.MaxValue; yield break; }
             Feed();
+            NoticeEvents(); NoticeOffers();
         }
 
         private bool Create()
@@ -88,6 +91,12 @@ namespace MafiaNight.App
             menu.OnOpenEvents += () => { if (board == null) StartCoroutine(OpenEvents()); };
             menu.OnOpenMail += () => { if (mailBoard == null) StartCoroutine(OpenMail()); };
             BlockedOffers.Changed += OnBlockedChanged;
+            if (th.quickNoticePrefab != null)
+            {
+                notice = Instantiate(th.quickNoticePrefab).GetComponent<KitQuickNotice>();
+                notice.Attach(menu);
+                notice.CanShow = Free;
+            }
             return true;
         }
 
@@ -103,6 +112,7 @@ namespace MafiaNight.App
             mailLoading = false;
             if (menu != null) menu.SetMail(mailData != null ? mailData.Unread : 0);
             if (mailBoard != null && !mailClaiming && MailSignature() != before) mailBoard.Refresh(MailCards());
+            if (mailBoard == null) NoticeMail(); else SeeMail();
         }
 
         /// <summary>What the list shows (ids and collected marks): the open board is rebuilt only when this changes.</summary>
@@ -125,6 +135,7 @@ namespace MafiaNight.App
             yield return MailService.Fetch(m => mailData = m ?? mailData);
             if (mailBoard != null) yield break;
             if (mailData == null) mailData = new MailBoxData();
+            SeeMail();
             var go = Instantiate(th.mailBoardPrefab, canvas, false);
             go.transform.SetAsLastSibling();
             mailBoard = go.GetComponent<KitMailBoard>();
@@ -231,6 +242,7 @@ namespace MafiaNight.App
             var canvas = InviteFlow.FindCanvas();
             if (th == null || th.eventsBoardPrefab == null || canvas == null) yield break;
             yield return EventsService.Fetch(b => events = b ?? events);      // fresh numbers every time it opens
+            SeeEvents();
             if (board != null) yield break;
             if (events == null) events = new EventsBoard();      // no answer from the server: the board opens empty
             var go = Instantiate(th.eventsBoardPrefab, canvas, false);
@@ -300,6 +312,113 @@ namespace MafiaNight.App
         private void Open(string scene)
         {
             if (scenes != null) scenes.LoadScene(scene); else SceneManager.LoadScene(scene);
+        }
+
+        // ---------------------------------------------------------------- the notices that slide out of the tab
+        // Every piece of news has a key; once noticed (or seen on its own board) it is kept on the device and never shown again.
+        private const string SeenPref = "mafia.quick.seen";
+        private const int KeepSeen = 300;
+        private List<string> seenList;
+        private HashSet<string> seenSet;
+        private float freeCheckAt; private bool freeCache;
+
+        private bool Seen(string key)
+        {
+            if (seenSet == null) { seenList = new List<string>(PlayerPrefs.GetString(SeenPref, "").Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)); seenSet = new HashSet<string>(seenList); }
+            return seenSet.Contains(key);
+        }
+
+        private void MarkSeen(string key)
+        {
+            if (Seen(key)) return;
+            seenSet.Add(key); seenList.Add(key);
+            if (seenList.Count > KeepSeen) { seenSet.Remove(seenList[0]); seenList.RemoveAt(0); }
+            PlayerPrefs.SetString(SeenPref, string.Join("|", seenList));
+        }
+
+        /// <summary>No sheet, popup or banner is over the home screen (checked twice a second).</summary>
+        private bool Free()
+        {
+            if (Time.unscaledTime < freeCheckAt) return freeCache;
+            freeCheckAt = Time.unscaledTime + .5f;
+            freeCache = mailBoard == null && board == null && FindAnyObjectByType<KitLaunchBanner>() == null && FindAnyObjectByType<KitRewardPopup>() == null;
+            return freeCache;
+        }
+
+        private static string Pack(int coins, int gems, int items)
+        {
+            var parts = new List<string>();
+            if (coins > 0) parts.Add(CoinPill.Format(coins) + " كوينز");
+            if (gems > 0) parts.Add(CoinPill.Format(gems) + " جوهرة");
+            if (items > 0) parts.Add(items == 1 ? "غرض من المتجر" : CoinPill.Format(items) + " أغراض");
+            return string.Join(" + ", parts);
+        }
+
+        private void NoticeMail()
+        {
+            if (notice == null || mailData == null) return;
+            var fresh = new List<MailItem>();
+            foreach (var m in mailData.Items) if (m.Claimed == 0 && !Seen("ml:" + m.Id)) fresh.Add(m);
+            if (fresh.Count == 0) return;
+            foreach (var m in fresh) MarkSeen("ml:" + m.Id);
+            Action open = () => { if (mailBoard == null) StartCoroutine(OpenMail()); };
+            if (fresh.Count == 1)
+            {
+                var m = fresh[0]; string pack = Pack(m.Coins, m.Gems, m.Items.Length);
+                notice.Enqueue(KitQuickNotice.Kind.Mail, "برقية جديدة", string.IsNullOrEmpty(pack) ? m.Title : m.Title + " · " + pack, open);
+            }
+            else notice.Enqueue(KitQuickNotice.Kind.Mail, "وصلك " + CoinPill.Format(fresh.Count) + " برقيات", fresh[0].Title + "، وغيرها", open);
+        }
+
+        private void SeeMail() { if (mailData != null) foreach (var m in mailData.Items) MarkSeen("ml:" + m.Id); }
+
+        private void NoticeEvents()
+        {
+            if (notice == null || events == null) return;
+            Action open = () => { if (board == null) StartCoroutine(OpenEvents()); };
+            // a prize to collect first, then an event about to end, then the new ones
+            foreach (var list in new[] { events.Live, events.Done })
+                foreach (var e in list)
+                    if (e.Claimable && !e.Claimed && !Seen("rw:" + e.Id))
+                    {
+                        MarkSeen("rw:" + e.Id);
+                        notice.Enqueue(KitQuickNotice.Kind.Reward, "جائزتك جاهزة!", e.Title + (e.RewardCoins > 0 ? " · استلم " + CoinPill.Format(e.RewardCoins) + " كوينز" : ""), open);
+                    }
+            foreach (var e in events.Live)
+                if (e.EndsInSeconds > 0 && e.EndsInSeconds <= 3600 && (e.HasRanking || ((int)e.Kind == 2 && e.Progress > 0 && !e.Claimed)) && !Seen("end:" + e.Id))
+                {
+                    MarkSeen("end:" + e.Id);
+                    notice.Enqueue(KitQuickNotice.Kind.Ending, e.Title + " بتخلص", "باقي " + Span(e.EndsInSeconds * 1000L) + (e.RankMine > 0 ? " · إنت بالمركز " + CoinPill.Format(e.RankMine) : ""), open);
+                }
+            int fresh = 0;
+            foreach (var e in events.Live)
+                if (!Seen("ev:" + e.Id))
+                {
+                    MarkSeen("ev:" + e.Id);
+                    if (++fresh > 2) continue;              // a pile of new events at once: two notices are enough
+                    notice.Enqueue(KitQuickNotice.Kind.Event, "حدث جديد: " + e.Title, !string.IsNullOrEmpty(e.Kicker) ? e.Kicker : (e.Body ?? ""), open);
+                }
+        }
+
+        private void SeeEvents()
+        {
+            if (events == null) return;
+            foreach (var e in events.Live) { MarkSeen("ev:" + e.Id); if (e.Claimable) MarkSeen("rw:" + e.Id); }
+            foreach (var e in events.Done) if (e.Claimable) MarkSeen("rw:" + e.Id);
+        }
+
+        private void NoticeOffers()
+        {
+            if (notice == null) return;
+            var shown = BlockedOffers.Filter(all);
+            // the first load of the run: the launch banner shows the offers anyway
+            if (!offersSeenOnce) { offersSeenOnce = true; foreach (var ad in shown) MarkSeen("of:" + ad.id); return; }
+            foreach (var ad in shown)
+                if (!Seen("of:" + ad.id))
+                {
+                    MarkSeen("of:" + ad.id);
+                    notice.Enqueue(KitQuickNotice.Kind.Offer, "عرض جديد بالسوق", (ad.headline ?? "").Replace('\n', ' '), () => { if (menu != null) menu.OpenOffers(); });
+                }
         }
 
         private void Feed()

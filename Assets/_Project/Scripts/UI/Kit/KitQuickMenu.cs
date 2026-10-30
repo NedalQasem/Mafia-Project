@@ -106,6 +106,37 @@ namespace MafiaNight.UI.Kit
             undoId = adId; toastText.Text = text; toastLeft = 4.2f; toastGroup.blocksRaycasts = true;
         }
 
+        // ---------------------------------------------------------------- for the notices (KitQuickNotice) that slide out of the tab
+        /// <summary>The tab's moving root (83 x 138, pivot top-left): a notice is parented here, behind the tab.</summary>
+        public RectTransform Anchor => menu;
+        public bool IsRight => right;
+        /// <summary>True while a notice must wait: hidden in a room, open, a sheet open, being carried, or not placed yet.</summary>
+        public bool Busy => suppressed || open || panelOpen || dragging || !placed || snap != null;
+        /// <summary>Opens the small offers sheet (a notice about a new offer was tapped).</summary>
+        public void OpenOffers() { if (!suppressed) OpenPanel(); }
+
+        /// <summary>Something new: the tab knocks twice, its ring pulses in the colour of the news and the red number jumps.</summary>
+        public void Knock(Color ring) { knockLeft = KnockTime; knockColor = ring; }
+
+        private const float KnockTime = 1.2f;
+        private float knockLeft;
+        private Color knockColor;
+        private Vector2 tabAt = new Vector2(float.NaN, 0f);
+
+        private void KnockFrame(float dt)
+        {
+            if (float.IsNaN(tabAt.x)) tabAt = tabRt.anchoredPosition;
+            if (knockLeft <= 0f) return;
+            knockLeft -= dt;
+            float t = Mathf.Clamp01(1f - knockLeft / KnockTime);
+            // the mockup's knock (0 -5 2 -3 1 0 px in 0.6 s), towards the middle of the screen
+            float u = Mathf.Clamp01(t / .5f), x = u < .2f ? -5f * u / .2f : u < .4f ? Mathf.Lerp(-5f, 2f, (u - .2f) / .2f) : u < .6f ? Mathf.Lerp(2f, -3f, (u - .4f) / .2f) : u < .8f ? Mathf.Lerp(-3f, 1f, (u - .6f) / .2f) : Mathf.Lerp(1f, 0f, (u - .8f) / .2f);
+            tabRt.anchoredPosition = tabAt + new Vector2((right ? 1f : -1f) * x * 2.769f, 0f);
+            float pop = t < .4f ? 1f + .45f * Mathf.Sin(t / .4f * Mathf.PI) : 1f;
+            sumDot.localScale = Vector3.one * pop;
+            if (knockLeft <= 0f) { tabRt.anchoredPosition = tabAt; sumDot.localScale = Vector3.one; }
+        }
+
         private int Total => ads.Count + events + mail;
         private bool Visible => !suppressed;
 
@@ -384,8 +415,16 @@ namespace MafiaNight.UI.Kit
             float evLa = open && openT > 0.8f && (hintLeft > 0f || events == 0) ? 1f : 0f;   // "no events" stays written while the menu is open
             offLabelGroup.alpha = Mathf.MoveTowards(offLabelGroup.alpha, la, dt * 5f); mailLabelGroup.alpha = Mathf.MoveTowards(mailLabelGroup.alpha, la, dt * 5f); evLabelGroup.alpha = Mathf.MoveTowards(evLabelGroup.alpha, evLa, dt * 5f);
 
-            // the ring that pulses while something is new
-            if (Total > 0 && !open && !dragging)
+            KnockFrame(dt);
+            // the ring that pulses while something is new (faster, in the colour of the news, while the tab knocks)
+            if (knockLeft > 0f && !open && !dragging)
+            {
+                float p = (KnockTime - knockLeft) % .6f / .6f;
+                float s = Mathf.Lerp(0.85f, 1.45f, p) * 1.06f;
+                ringImage.rectTransform.localScale = new Vector3((right ? 1f : -1f) * s, s, 1f);
+                var c = knockColor; c.a = 0.9f * (1f - p); ringImage.color = c;
+            }
+            else if (Total > 0 && !open && !dragging)
             {
                 float p = Time.unscaledTime % 2f / 2f;
                 float s = Mathf.Lerp(0.8f, 1.35f, p) * 1.06f;
