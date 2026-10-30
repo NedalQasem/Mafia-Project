@@ -317,14 +317,14 @@ namespace MafiaNight.UI.Kit
             // the red counts sit on the side away from the edge
             void Corner(RectTransform r, float inX, float yy, float parentW) { r.anchorMin = r.anchorMax = new Vector2(0f, 1f); r.anchoredPosition = new Vector2(right ? inX : parentW - inX, yy); }
             Corner(sumDot, 14f, -8f, TabW);
-            Corner(offDot, 8f, -8f, BtnSize); Corner(evDot, 8f, -8f, BtnSize);
+            Corner(offDot, 8f, -8f, BtnSize); Corner(evDot, 8f, -8f, BtnSize); Corner(mailDot, 8f, -8f, BtnSize);
             // labels: next to the button, away from the edge
             void Side(RectTransform r, float x, bool inButton)
             {
                 r.anchorMin = r.anchorMax = new Vector2(0.5f, 0.5f); r.pivot = new Vector2(right ? 1f : 0f, 0.5f);
                 r.anchoredPosition = new Vector2(right ? -x : x, 0f);
             }
-            Side(offLabel, 66f, true); Side(evLabel, 66f, true);
+            Side(offLabel, 66f, true); Side(evLabel, 66f, true); Side(mailLabel, 66f, true);
             bubble.anchorMin = bubble.anchorMax = new Vector2(right ? 0f : 1f, 1f); bubble.pivot = new Vector2(right ? 1f : 0f, 1f);
             bubble.anchoredPosition = new Vector2(right ? -14f : 14f, -26f);
             panel.anchorMin = panel.anchorMax = new Vector2(right ? 1f : 0f, 1f); panel.pivot = new Vector2(right ? 1f : 0f, 1f);
