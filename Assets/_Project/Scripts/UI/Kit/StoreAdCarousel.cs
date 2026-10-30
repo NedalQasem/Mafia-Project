@@ -21,6 +21,8 @@ namespace MafiaNight.UI.Kit
         public event Action<StoreItem> OnBuy;
         /// <summary>The page's "see it in the store" link (only pages that have one, like the launch banner's).</summary>
         public event Action OnMore;
+        /// <summary>The page's block button (only pages that have one): the player does not want to see this offer again.</summary>
+        public event Action<Ad> OnBlock;
 
         [Serializable]
         public class Ad { public string id, mast, headline, body, stamp, price, was; public StoreItem item; public bool countdown; public int countdownSeconds; }
@@ -79,6 +81,8 @@ namespace MafiaNight.UI.Kit
                 }
                 var more = go.transform.Find("More");
                 if (more != null) more.GetComponent<Button>().onClick.AddListener(() => OnMore?.Invoke());
+                var block = go.transform.Find("Block");
+                if (block != null) block.GetComponent<Button>().onClick.AddListener(() => OnBlock?.Invoke(ad));
                 var buy = go.transform.Find("Buy");
                 buy.GetComponentInChildren<ArabicText>().Text = ad.price;
                 var item = ad.item;

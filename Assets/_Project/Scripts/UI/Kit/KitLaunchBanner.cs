@@ -24,6 +24,8 @@ namespace MafiaNight.UI.Kit
         public event Action<string, StoreItem> OnBuy;
         /// <summary>The player pressed "see it in the store".</summary>
         public event Action OnMore;
+        /// <summary>The player blocked the offer on the page (its ad id); the app hides it and the banner goes away.</summary>
+        public event Action<string> OnBlock;
         /// <summary>The banner is gone; the argument is true when "don't show it again today" was ticked.</summary>
         public event Action<bool> OnClosed;
 
@@ -39,6 +41,7 @@ namespace MafiaNight.UI.Kit
             nextButton.onClick.AddListener(() => carousel.Go(carousel.Current + 1));
             carousel.OnBuy += item => { var ad = shown.Find(a => a.item != null && item != null && a.item.id == item.id); OnBuy?.Invoke(ad != null ? ad.id : null, item); };
             carousel.OnMore += () => OnMore?.Invoke();
+            carousel.OnBlock += ad => OnBlock?.Invoke(ad.id);
         }
 
         public void Show(IList<StoreAdCarousel.Ad> ads)

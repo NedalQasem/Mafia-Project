@@ -26,14 +26,12 @@ namespace MafiaNight.App
         private static bool shownThisRun;
 
         private IRoomService rooms;
-        private ISceneLoader scenes;
         private float showAt;
 
         private void Start()
         {
             if (shownThisRun || SceneManager.GetActiveScene().name != AppScenes.Home) { Destroy(this); return; }
             ServiceLocator.TryGet(out rooms);
-            ServiceLocator.TryGet(out scenes);
             showAt = Time.unscaledTime + Wait;
         }
 
@@ -53,39 +51,57 @@ namespace MafiaNight.App
             if (mr != null && mr.Session != null && mr.Session.Client.Phase != MafiaNight.MatchRules.Phase.Lobby && mr.Session.Client.Phase != MafiaNight.MatchRules.Phase.GameOver) { Destroy(this); yield break; }
             if (!PlayerPrefs.HasKey(SeenKey)) { PlayerPrefs.SetInt(SeenKey, 1); PlayerPrefs.Save(); Destroy(this); yield break; }     // first start ever
 
-            // the server decides what is promoted (its config); without an answer or without offers the game's own store ads are used
-            List<ServerOffer> fromServer = null;
-            yield return OffersService.Fetch(r => fromServer = r);
-            var ads = fromServer != null && fromServer.Count > 0 ? Resolve(fromServer) : new List<StoreAdCarousel.Ad>();
-            if (ads.Count == 0) ads = Offers();
+            List<StoreAdCarousel.Ad> ads = null;
+            yield return LoadAds(r => ads = r);
+            ads = BlockedOffers.Filter(ads);                // what the player blocked stays out
             if (ads.Count == 0) { Destroy(this); yield break; }
             string sig = string.Join(",", ads.ConvertAll(a => a.id));
             bool hiddenToday = PlayerPrefs.GetString(HideDayKey, "") == Today && PlayerPrefs.GetString(SigKey, "") == sig;
             if (hiddenToday) { Destroy(this); yield break; }
 
-            var th = KitTheme.Current;
-            var canvas = InviteFlow.FindCanvas();
-            if (th == null || th.launchBannerPrefab == null || canvas == null) { Destroy(this); yield break; }
-            shownThisRun = true;
-            var go = Instantiate(th.launchBannerPrefab, canvas, false);
-            go.transform.SetAsLastSibling();
-            var banner = go.GetComponent<KitLaunchBanner>();
-            banner.OnBuy += (adId, item) => { KitStoreScreen.PendingAdId = adId; OpenStore(banner); };
-            banner.OnMore += () => OpenStore(banner);
-            banner.OnClosed += hide =>
+            shownThisRun = ShowNow(ads, hide =>
             {
                 PlayerPrefs.SetString(SigKey, sig);
                 PlayerPrefs.SetString(HideDayKey, hide ? Today : "");
                 PlayerPrefs.Save();
-            };
-            banner.Show(ads);
+            });
             Destroy(this);
         }
 
-        private void OpenStore(KitLaunchBanner banner)
+        /// <summary>
+        /// The offers of the moment: the server decides what is promoted (its config); without an answer or without offers the game's own
+        /// store ads are used. Blocked offers are still in the list (see <see cref="BlockedOffers.Filter"/>).
+        /// </summary>
+        public static IEnumerator LoadAds(Action<List<StoreAdCarousel.Ad>> done)
         {
-            banner.Close();
-            if (scenes != null) scenes.LoadScene(AppScenes.Store); else SceneManager.LoadScene(AppScenes.Store);
+            List<ServerOffer> fromServer = null;
+            yield return OffersService.Fetch(r => fromServer = r);
+            var ads = fromServer != null && fromServer.Count > 0 ? Resolve(fromServer) : new List<StoreAdCarousel.Ad>();
+            if (ads.Count == 0) ads = Offers();
+            done(ads);
+        }
+
+        /// <summary>Opens the banner over the current screen. Returns false when the kit prefab or a canvas is missing.</summary>
+        public static bool ShowNow(IList<StoreAdCarousel.Ad> ads, Action<bool> closed = null)
+        {
+            var th = KitTheme.Current;
+            var canvas = InviteFlow.FindCanvas();
+            if (th == null || th.launchBannerPrefab == null || canvas == null || ads == null || ads.Count == 0) return false;
+            ServiceLocator.TryGet(out ISceneLoader scenes);
+            var go = Instantiate(th.launchBannerPrefab, canvas, false);
+            go.transform.SetAsLastSibling();
+            var banner = go.GetComponent<KitLaunchBanner>();
+            void OpenStore() { banner.Close(); if (scenes != null) scenes.LoadScene(AppScenes.Store); else SceneManager.LoadScene(AppScenes.Store); }
+            banner.OnBuy += (adId, item) => { KitStoreScreen.PendingAdId = adId; OpenStore(); };
+            banner.OnMore += OpenStore;
+            banner.OnBlock += adId =>
+            {
+                foreach (var ad in ads) if (ad.id == adId) { BlockedOffers.Block(ad); break; }
+                banner.Close();
+            };
+            if (closed != null) banner.OnClosed += closed;
+            banner.Show(ads);
+            return true;
         }
 
         private static StoreAdCarousel.Ad MakeAd(StoreAdDef def, ServerOffer over)

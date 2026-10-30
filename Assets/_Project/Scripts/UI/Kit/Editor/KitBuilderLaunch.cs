@@ -46,6 +46,7 @@ namespace MafiaNight.UI.Kit.Editor
             var ink = (Color)th.paperInk; var crim = new Color32(0xC0, 0x32, 0x3A, 255); var crimDark = (Color)th.crimson;
             var lalezar = th.fontLalezar != null ? th.fontLalezar : th.fontHeading; var cairo = th.fontBody;
             var soft = new Color32(0x4A, 0x3C, 0x24, 255);
+            EnsureQuickMenuSprites();
 
             // ---------------------------------------------------------------- one offer (a page of the carousel)
             {
@@ -57,7 +58,7 @@ namespace MafiaNight.UI.Kit.Editor
 
                 // kicker: crimson title between two hairlines (HTML .kick)
                 var mast = Go("Mast", page.transform);
-                var mh = mast.AddComponent<HorizontalLayoutGroup>(); mh.spacing = 22; mh.childAlignment = TextAnchor.MiddleCenter; mh.childControlWidth = true; mh.childControlHeight = true; mh.childForceExpandWidth = false; mh.childForceExpandHeight = false;
+                var mh = mast.AddComponent<HorizontalLayoutGroup>(); mh.spacing = 22; mh.childAlignment = TextAnchor.MiddleCenter; mh.childControlWidth = true; mh.childControlHeight = true; mh.childForceExpandWidth = false; mh.childForceExpandHeight = false; mh.padding = new RectOffset(100, 100, 0, 0);   // room for the block button in the corner
                 mast.AddComponent<LayoutElement>().preferredHeight = 58;
                 for (int side = 0; side < 3; side++)
                 {
@@ -127,6 +128,13 @@ namespace MafiaNight.UI.Kit.Editor
                 st.AddComponent<LayoutElement>().ignoreLayout = true;
                 var sti = Img(st, th.stampFrame, true, 1f); sti.color = crim;
                 var stt = Txt(st.transform, "T", "−٣٠٪", lalezar, 66, crim); stt.overflowMode = TextOverflowModes.Overflow; stt.textWrappingMode = TextWrappingModes.NoWrap; Stretch(Rt(stt.gameObject), 6, 6, 6, 6);
+                // block button in the top corner: "I do not want to see this offer" (the app hides it until it ends)
+                var blk = Go("Block", page.transform); var blr = Rt(blk); blr.anchorMin = blr.anchorMax = new Vector2(1, 1); blr.pivot = new Vector2(1, 1); blr.anchoredPosition = new Vector2(-2, 0); blr.sizeDelta = new Vector2(92, 92);
+                blk.AddComponent<LayoutElement>().ignoreLayout = true;
+                var blkImg = Img(blk, th.dotWhite, false, 1f, true); blkImg.color = new Color(ink.r, ink.g, ink.b, 0.1f); blkImg.preserveAspect = false;
+                var blkBtn = blk.AddComponent<Button>(); blkBtn.targetGraphic = blkImg; blkBtn.transition = Selectable.Transition.None;
+                var blkIc = Go("Icon", blk.transform); Place(Rt(blkIc), new Vector2(.5f, .5f), Vector2.zero, new Vector2(52, 52));
+                var blkIcImg = Img(blkIc, Spr("qm_ic_block")); blkIcImg.color = soft;
                 Save(page, "LaunchAdPage");
             }
 
