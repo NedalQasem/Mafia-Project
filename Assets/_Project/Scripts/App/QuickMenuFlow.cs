@@ -183,7 +183,9 @@ namespace MafiaNight.App
             {
                 foreach (var m in mailData.Items) if (m.Id == c.id) m.Claimed = 1;
                 mailData.Unread = Math.Max(0, mailData.Unread - 1);
-                if ((r.Coins > 0 || r.Gems > 0) && ServiceLocator.TryGet(out ICurrencyService wallet)) wallet.FetchCurrencies();
+                // the loot briefcase reads the wallet again when the player collects; without it (nothing to show) the wallet is read here
+                bool shown = RewardFlow.Show("من بريد الحارة", c.title, RewardFlow.FromPack(r.Coins, r.Gems, r.Items));
+                if (!shown && (r.Coins > 0 || r.Gems > 0) && ServiceLocator.TryGet(out ICurrencyService wallet)) wallet.FetchCurrencies();
             }
             if (mailBoard != null) mailBoard.ClaimDone(c.id, ok, ok ? (r.Coins > 0 || r.Gems > 0 || r.Items.Length > 0 ? "انضاف الرصيد لحسابك" : "تمام") : "ما زبطت، جرّب بعد شوي");
             if (menu != null) menu.SetMail(mailData.Unread);
@@ -212,7 +214,8 @@ namespace MafiaNight.App
             yield return MailService.ClaimAll(x => r = x);
             mailClaiming = false;
             yield return MailService.Fetch(m => mailData = m ?? mailData);
-            if (r != null && r.Ok && (r.Coins > 0 || r.Gems > 0) && ServiceLocator.TryGet(out ICurrencyService wallet)) wallet.FetchCurrencies();
+            bool shown = r != null && r.Ok && r.Claimed > 0 && RewardFlow.Show("البريد", "استلمت " + CoinPill.Format(r.Claimed) + " برقيات", RewardFlow.FromPack(r.Coins, r.Gems, r.Items));
+            if (!shown && r != null && r.Ok && (r.Coins > 0 || r.Gems > 0) && ServiceLocator.TryGet(out ICurrencyService wallet)) wallet.FetchCurrencies();
             if (mailBoard != null)
             {
                 mailBoard.Refresh(MailCards());
@@ -289,7 +292,8 @@ namespace MafiaNight.App
             int coins = 0;
             yield return EventsService.Claim(c.id, r => coins = r);
             claiming = false;
-            if (coins > 0 && ServiceLocator.TryGet(out ICurrencyService wallet)) wallet.FetchCurrencies();
+            bool shown = coins > 0 && RewardFlow.Show("جائزة من أخبار الحارة", c.title, RewardFlow.FromPack(coins, 0, null));
+            if (!shown && coins > 0 && ServiceLocator.TryGet(out ICurrencyService wallet)) wallet.FetchCurrencies();
             if (board != null) board.ClaimDone(c.id, coins);
         }
 
