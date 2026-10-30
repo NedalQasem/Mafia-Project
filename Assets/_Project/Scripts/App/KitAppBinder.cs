@@ -55,8 +55,16 @@ namespace MafiaNight.App
             KitLiveMode.Active = ServiceLocator.IsRegistered<IPlayerProfileService>() && ServiceLocator.IsRegistered<ICurrencyService>();
         }
 
+        private static bool testServerWarned;
+
         private void Start()
         {
+            // a test server left in PlayerPrefs sends the whole game (chat, mail, rewards) away from the real one, so it must not go unnoticed
+            if (!testServerWarned && PlayerPrefs.HasKey("MafiaApiUrl"))
+            {
+                testServerWarned = true;
+                Log.Warning("Using the TEST server " + GameConstants.ApiUrl + " (PlayerPrefs MafiaApiUrl). Delete the key to use the real server.", Tag);
+            }
             topBar = FindAnyObjectByType<KitTopBar>();
             navBar = FindAnyObjectByType<KitNavBar>();
             if (!ServiceLocator.TryGet(out profile) || !ServiceLocator.TryGet(out currency))
