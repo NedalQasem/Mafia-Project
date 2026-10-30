@@ -94,6 +94,8 @@ namespace MafiaNight.UI.Kit
         private void Update()
         {
             if (menu == null) return;
+            // nobody is looking (another app, or another window over the editor): the news waits and the time stands still
+            if (!Application.isFocused) return;
             if (menu.IsRight != sideRight && showing == null) Layout(menu.IsRight);
             bool free = !menu.Busy && (CanShow == null || CanShow());
             if (showing == null)
