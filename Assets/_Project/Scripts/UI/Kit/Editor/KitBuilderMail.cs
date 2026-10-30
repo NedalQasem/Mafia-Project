@@ -168,7 +168,7 @@ namespace MafiaNight.UI.Kit.Editor
             var all = MakeButton("ClaimAll", sGreen, th.ivory, "استلم الكل", lalezar, 38); all.transform.SetParent(tools.transform, false); At(all, new Vector2(0f, .5f), new Vector2(4, 0), new Vector2(300, 74), new Vector2(0f, .5f));
 
             // the list
-            var lb = Go("List", brd.transform); Stretch(Rt(lb), 28, 130, 28, 306); var lbi = lb.AddComponent<Image>(); lbi.color = new Color(.043f, .031f, .027f, .4f);
+            var lb = Go("List", brd.transform); Stretch(Rt(lb), 28, 232, 28, 306); var lbi = lb.AddComponent<Image>(); lbi.color = new Color(.043f, .031f, .027f, .4f);
             var vp = Go("Viewport", lb.transform); Stretch(Rt(vp)); var vpi = vp.AddComponent<Image>(); vpi.color = new Color(0, 0, 0, 0); vp.AddComponent<RectMask2D>();
             var content = Go("Content", vp.transform); var cr = Rt(content); cr.anchorMin = new Vector2(0, 1); cr.anchorMax = new Vector2(1, 1); cr.pivot = new Vector2(.5f, 1); cr.sizeDelta = Vector2.zero;
             var cv = content.AddComponent<VerticalLayoutGroup>(); cv.padding = new RectOffset(22, 22, 34, 30); cv.spacing = 44; cv.childAlignment = TextAnchor.UpperCenter;
@@ -185,7 +185,17 @@ namespace MafiaNight.UI.Kit.Editor
             // the promo code strip (the app turns it on when codes exist)
             var strip = Go("CodeStrip", brd.transform); At(strip, new Vector2(.5f, 0f), new Vector2(0, 56), new Vector2(900, 110), new Vector2(.5f, 0f)); Img(strip, th.leatherDark, true, 2.2f);
             { var t = Txt(strip.transform, "Label", "عندك كود؟", cairo, 30, new Color32(0xB9, 0xA9, 0x8A, 255), TextAlignmentOptions.MidlineRight); t.fontStyle = FontStyles.Bold; NoWrap(t); At(t.gameObject, new Vector2(1f, .5f), new Vector2(-26, 0), new Vector2(220, 80), new Vector2(1f, .5f)); }
-            strip.SetActive(false);
+            // input field (Latin letters and digits only), the "activate" button on the left, a line for the answer above the strip
+            var inp = Go("Input", strip.transform); { var ir = Rt(inp); ir.anchorMin = new Vector2(0f, .5f); ir.anchorMax = new Vector2(1f, .5f); ir.offsetMin = new Vector2(236, -40); ir.offsetMax = new Vector2(-262, 40); }
+            var inpImg = Img(inp, th.paper, true, 2.2f, true); inpImg.color = new Color32(0xF0, 0xE8, 0xD2, 255);
+            var area = Go("TextArea", inp.transform); Stretch(Rt(area), 18, 6, 18, 6); area.AddComponent<RectMask2D>();
+            var ph = Txt(area.transform, "Placeholder", "MAFIA2026", cairo, 40, new Color(.3f, .25f, .15f, .45f), TextAlignmentOptions.Center); ph.characterSpacing = 6f; NoWrap(ph); Stretch(Rt(ph.gameObject));
+            var typed = Go("Text", area.transform); Stretch(Rt(typed)); var tm = typed.AddComponent<TextMeshProUGUI>();
+            tm.font = cairo; tm.fontSize = 42; tm.fontStyle = FontStyles.Bold; tm.color = ink; tm.alignment = TextAlignmentOptions.Center; tm.characterSpacing = 6f; tm.raycastTarget = false; tm.textWrappingMode = TextWrappingModes.NoWrap;
+            var field = inp.AddComponent<TMP_InputField>();
+            field.textViewport = Rt(area); field.textComponent = tm; field.placeholder = ph; field.characterLimit = 20; field.contentType = TMP_InputField.ContentType.Alphanumeric; field.targetGraphic = inpImg;
+            var redeem = MakeButton("Redeem", th.leatherRed, th.ivory, "فعّل", lalezar, 42); redeem.transform.SetParent(strip.transform, false); At(redeem, new Vector2(0f, .5f), new Vector2(18, 0), new Vector2(200, 80), new Vector2(0f, .5f));
+            var cmsg = Txt(brd.transform, "CodeMessage", "", cairo, 28, new Color32(0x8F, 0xE0, 0xBD, 255), TextAlignmentOptions.Center); cmsg.fontStyle = FontStyles.Bold; NoWrap(cmsg); At(cmsg.gameObject, new Vector2(.5f, 0f), new Vector2(0, 178), new Vector2(880, 46), new Vector2(.5f, 0f));
 
             At(Pic("StudA", brd.transform, sStud, 36, 36), new Vector2(0f, 0f), new Vector2(34, 34), new Vector2(36, 36));
             At(Pic("StudB", brd.transform, sStud, 36, 36), new Vector2(1f, 0f), new Vector2(-34, 34), new Vector2(36, 36));
@@ -197,7 +207,7 @@ namespace MafiaNight.UI.Kit.Editor
             var clFx = close.AddComponent<KitButtonFx>(); SetRef(clFx, "face", Rt(close));
             for (int s = -1; s <= 1; s += 2) { var b = Bar(close.transform, "X", new Color32(0x2A, 0x1A, 0x08, 255), 42, 9); Rt(b.gameObject).localRotation = Quaternion.Euler(0, 0, s * 45f); }
 
-            var toast = Go("Toast", brd.transform); At(toast, new Vector2(.5f, 0f), new Vector2(0, 190), new Vector2(620, 96)); Img(toast, th.leatherDark, true, 2.4f);
+            var toast = Go("Toast", brd.transform); At(toast, new Vector2(.5f, 0f), new Vector2(0, 250), new Vector2(620, 96)); Img(toast, th.leatherDark, true, 2.4f);
             var toastCg = toast.AddComponent<CanvasGroup>(); toastCg.blocksRaycasts = false;
             var tt = Txt(toast.transform, "Label", "انضاف الرصيد لحسابك", cairo, 36, th.brassLight, TextAlignmentOptions.Center); tt.fontStyle = FontStyles.Bold; NoWrap(tt); Stretch(Rt(tt.gameObject), 16, 10, 16, 6);
 
@@ -205,6 +215,7 @@ namespace MafiaNight.UI.Kit.Editor
             SetRef(view, "scrimGroup", scrimCg); SetRef(view, "boardGroup", boardCg); SetRef(view, "toastGroup", toastCg);
             SetRef(view, "closeButton", clb); SetRef(view, "scrimButton", scrimBtn); SetRef(view, "claimAllButton", all.GetComponent<Button>());
             SetRef(view, "emptyNote", empty); SetRef(view, "codeStrip", strip);
+            SetRef(view, "codeInput", field); SetRef(view, "redeemButton", redeem.GetComponent<Button>()); SetRef(view, "codeMessage", cmsg.GetComponent<ArabicText>());
             SetRef(view, "countText", cnt.GetComponent<ArabicText>()); SetRef(view, "newText", ml.GetComponent<ArabicText>()); SetRef(view, "toastText", tt.GetComponent<ArabicText>());
             SetRef(view, "cardPrefab", LoadPrefab("MailCard"));
             th.mailBoardPrefab = Save(root, "MailBoard");

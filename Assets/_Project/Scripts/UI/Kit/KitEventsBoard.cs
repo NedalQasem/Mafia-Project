@@ -22,7 +22,21 @@ namespace MafiaNight.UI.Kit
             public int multiplier, goal, progress, reward;
             public bool countsGames, claimed, claimable, secret;
             public int seconds;                           // left while running, until it starts while soon
+            public bool hasRank, rankDistributed;
+            public string rankMetric;
+            public int rankMine, rankValue;               // my place (0 = none yet) and my number
         }
+
+        /// <summary>The ranking sheet of one event.</summary>
+        public sealed class RankData
+        {
+            public string title, metric, endsText;
+            public bool distributed;
+            public List<(int rank, string name, int value, bool me)> rows = new List<(int, string, int, bool)>();
+            public List<(string range, int coins, int gems, string items)> prizes = new List<(string, int, int, string)>();
+        }
+
+        public static string MetricName(string m) => m == "games" ? "مباراة" : m == "points" ? "نقطة" : m == "secs" ? "دقيقة" : "انتصار";
 
         [SerializeField] private RectTransform board, content;
         [SerializeField] private ScrollRect scroll;
@@ -35,15 +49,23 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private ArabicText liveBadgeText, countText, toastText, emptyText;
         [SerializeField] private GameObject cardPrefab;
         [SerializeField] private Sprite paperTab, leatherTab;
+        [SerializeField] private GameObject tabsRoot, listRoot, rankPanel, closeObject, backObject, rankRowPrefab, rankGapPrefab, prizePillPrefab;
+        [SerializeField] private Button backButton;
+        [SerializeField] private RectTransform rankRows, prizeRow;
+        [SerializeField] private ArabicText mastTitle, mastSub, rankNote;
 
         /// <summary>The button of a clipping was pressed: a bonus asks to play, a challenge asks to claim.</summary>
         public event Action<Card> OnAction;
+        /// <summary>The "ranking" button of an event card.</summary>
+        public event Action<Card> OnRank;
         /// <summary>The board is gone.</summary>
         public event Action OnClosed;
 
         private readonly List<Card>[] lists = { new List<Card>(), new List<Card>(), new List<Card>() };
         private readonly List<KitEventCard> cards = new List<KitEventCard>();
         private int tab = -1;
+        private bool inRanking;
+        private string mastTitle0, mastSub0, count0;
         private float toastLeft;
         private bool closing;
 
@@ -54,6 +76,8 @@ namespace MafiaNight.UI.Kit
             scrimButton.onClick.AddListener(Close);
             for (int i = 0; i < 3; i++) { int k = i; tabButtons[i].onClick.AddListener(() => Select(k)); }
             toastGroup.alpha = 0f; scrimGroup.alpha = 0f; boardGroup.alpha = 0f;
+            backButton.onClick.AddListener(HideRanking);
+            rankPanel.SetActive(false); backObject.SetActive(false);
         }
 
         public void Show(IList<Card> live, IList<Card> soon, IList<Card> done)
@@ -104,6 +128,7 @@ namespace MafiaNight.UI.Kit
                 var card = go.GetComponent<KitEventCard>();
                 card.Bind(list[i], i);
                 card.OnAction += c => OnAction?.Invoke(c);
+                card.OnRank += c => OnRank?.Invoke(c);
                 cards.Add(card);
             }
             emptyNote.SetActive(list.Count == 0);
@@ -118,6 +143,52 @@ namespace MafiaNight.UI.Kit
             foreach (var l in lists) foreach (var c in l) if (c.id == id && coins > 0) { c.claimed = true; c.claimable = false; }
             foreach (var kc in cards) if (kc != null && kc.Card != null && kc.Card.id == id) kc.Bind(kc.Card, cards.IndexOf(kc));
             Toast(coins > 0 ? "+" + CoinPill.Format(coins) + " ذهب" : "ما زبطت، جرّب بعد شوي");
+        }
+
+        /// <summary>Opens the ranking sheet of an event instead of the list (the back button returns).</summary>
+        public void ShowRanking(RankData d)
+        {
+            if (!inRanking) { mastTitle0 = mastTitle.Text; mastSub0 = mastSub.Text; count0 = countText.Text; }
+            inRanking = true;
+            tabsRoot.SetActive(false); listRoot.SetActive(false); rankPanel.SetActive(true); closeObject.SetActive(false); backObject.SetActive(true);
+            mastTitle.Text = "تصنيف الحدث"; mastSub.Text = d.title + " · " + d.metric; countText.Text = d.endsText ?? "";
+            rankNote.Text = d.distributed ? "انوزّعت الجوائز على البريد" : "بتنوزّع على البريد عند انتهاء الحدث";
+            foreach (Transform t in rankRows) Destroy(t.gameObject);
+            foreach (Transform t in prizeRow) Destroy(t.gameObject);
+            foreach (var p in d.prizes)
+            {
+                var g = Instantiate(prizePillPrefab, prizeRow, false); g.SetActive(true);
+                g.transform.Find("Range").GetComponent<ArabicText>().Text = p.range;
+                string val = p.coins > 0 ? CoinPill.Format(p.coins) : (p.gems > 0 ? CoinPill.Format(p.gems) + " جوهرة" : "");
+                g.transform.Find("ValueRow/Value").GetComponent<ArabicText>().Text = val;
+                var extra = g.transform.Find("Items").GetComponent<ArabicText>(); extra.Text = p.items ?? ""; extra.gameObject.SetActive(!string.IsNullOrEmpty(p.items));
+                g.transform.Find("ValueRow/Coin").gameObject.SetActive(p.coins > 0);
+            }
+            prizeRow.gameObject.SetActive(d.prizes.Count > 0);
+            int last = 0;
+            foreach (var r in d.rows)
+            {
+                if (r.rank > last + 1 && r.me) Instantiate(rankGapPrefab, rankRows, false);
+                var go = Instantiate(rankRowPrefab, rankRows, false);
+                go.transform.Find("Number").GetComponent<ArabicText>().Text = CoinPill.Format(r.rank);
+                go.transform.Find("Name").GetComponent<ArabicText>().Text = r.name;
+                go.transform.Find("Value").GetComponent<ArabicText>().Text = CoinPill.Format(r.value);
+                go.transform.Find("Me").gameObject.SetActive(r.me);
+                var num = go.transform.Find("Number").GetComponent<TMPro.TMP_Text>();
+                num.color = r.rank == 1 ? new Color32(0x9A, 0x6B, 0x00, 255) : r.rank == 2 ? new Color32(0x5C, 0x60, 0x66, 255) : r.rank == 3 ? new Color32(0x7A, 0x4A, 0x1C, 255) : new Color32(0x1C, 0x17, 0x0F, 255);
+                last = r.rank;
+            }
+            if (d.rows.Count == 0) rankNote.Text = "ما حدا بالتصنيف لسا. العب مباريات وكن أول واحد!";
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rankPanel.GetComponent<ScrollRect>().content);
+        }
+
+        /// <summary>Back from the ranking sheet to the list.</summary>
+        public void HideRanking()
+        {
+            if (!inRanking) return;
+            inRanking = false;
+            rankPanel.SetActive(false); tabsRoot.SetActive(true); listRoot.SetActive(true); closeObject.SetActive(true); backObject.SetActive(false);
+            mastTitle.Text = mastTitle0; mastSub.Text = mastSub0; countText.Text = count0;
         }
 
         public void Toast(string text) { toastText.Text = text; toastLeft = 2.4f; }

@@ -113,6 +113,7 @@ namespace MafiaNight.App
             mailBoard = go.GetComponent<KitMailBoard>();
             mailBoard.OnClaim += c => { if (!mailClaiming) StartCoroutine(ClaimMail(c)); };
             mailBoard.OnClaimAll += () => { if (!mailClaiming) StartCoroutine(ClaimAllMail()); };
+            mailBoard.OnRedeem += code => StartCoroutine(RedeemCode(code));
             mailBoard.OnClosed += () => { mailBoard = null; mailAt = 0f; };      // the number on the icon is refreshed right after
             mailBoard.Show(MailCards());
             if (menu != null) menu.SetMail(mailData.Unread);
@@ -170,6 +171,22 @@ namespace MafiaNight.App
             if (menu != null) menu.SetMail(mailData.Unread);
         }
 
+        private IEnumerator RedeemCode(string code)
+        {
+            MailClaimResult r = null;
+            yield return MailService.Redeem(code, x => r = x);
+            if (mailBoard == null) yield break;
+            if (r != null && r.Ok)
+            {
+                yield return MailService.Fetch(m => mailData = m ?? mailData);       // the package is now a telegram in the list
+                if (mailBoard != null) { mailBoard.Refresh(MailCards()); mailBoard.CodeResult(true, "الكود صح! نزل البكج على بريدك."); }
+                if (menu != null && mailData != null) menu.SetMail(mailData.Unread);
+                yield break;
+            }
+            string why = r == null ? "network" : r.Error;
+            mailBoard.CodeResult(false, why == "already_used" ? "استخدمت هالكود قبل." : why == "locked" ? "محاولات كثيرة، جرّب بعد شوي." : why == "bad_code" ? "الكود غير صحيح أو انتهى." : "ما زبطت، جرّب بعد شوي.");
+        }
+
         private IEnumerator ClaimAllMail()
         {
             mailClaiming = true;
@@ -199,6 +216,7 @@ namespace MafiaNight.App
             go.transform.SetAsLastSibling();
             board = go.GetComponent<KitEventsBoard>();
             board.OnAction += OnEventAction;
+            board.OnRank += c => StartCoroutine(OpenRanking(c));
             board.OnClosed += () => board = null;
             board.Show(Cards(events.Live, 0), Cards(events.Soon, 1), Cards(events.Done, 2));
             if (menu != null) menu.SetEvents(events.Live.Count);
@@ -213,9 +231,33 @@ namespace MafiaNight.App
                     id = e.Id, kicker = e.Kicker, title = e.Title, body = e.Body, kind = (int)e.Kind == 1 ? 1 : (int)e.Kind == 2 ? 2 : 0, state = state,
                     multiplier = e.Multiplier, goal = e.Goal, progress = e.Progress, reward = e.RewardCoins, countsGames = e.CountsGames,
                     claimed = e.Claimed, claimable = e.Claimable, secret = e.Secret, seconds = state == 1 ? e.StartsInSeconds : e.EndsInSeconds,
+                    hasRank = e.HasRanking, rankDistributed = e.RankDistributed, rankMetric = e.RankMetric, rankMine = e.RankMine, rankValue = e.RankValue,
                 });
             return cards;
         }
+
+        // the ranking sheet of one event: fetched when the player presses "التصنيف"
+        private IEnumerator OpenRanking(KitEventsBoard.Card c)
+        {
+            EventRanking r = null;
+            yield return EventsService.Ranking(c.id, x => r = x);
+            if (board == null) yield break;
+            if (r == null) { board.Toast("ما زبطت، جرّب بعد شوي"); yield break; }
+            var d = new KitEventsBoard.RankData { title = c.title, metric = MetricLabel(r.Metric), distributed = r.Distributed, endsText = r.EndsInSeconds > 0 ? "ينتهي بعد " + Span(r.EndsInSeconds * 1000L) : "انتهى" };
+            foreach (var row in r.Rows) d.rows.Add((row.Rank, row.Name, row.Value, row.Me));
+            if (r.MineRank > 10) d.rows.Add((r.MineRank, "أنت", r.MineValue, true));        // not in the top ten: my own line below the gap
+            var catalog = StoreData.Catalog;
+            foreach (var p in r.Prizes)
+            {
+                var names = new List<string>();
+                foreach (var id in p.Items) { var def = catalog != null ? catalog.GetItem(id) : null; names.Add(def != null && !string.IsNullOrEmpty(def.nameAr) ? def.nameAr : id); }
+                if (p.Coins > 0 && p.Gems > 0) names.Insert(0, CoinPill.Format(p.Gems) + " جوهرة");
+                d.prizes.Add((p.From == p.To ? CoinPill.Format(p.From) : CoinPill.Format(p.From) + "-" + CoinPill.Format(p.To), p.Coins, p.Gems, string.Join("، ", names)));
+            }
+            board.ShowRanking(d);
+        }
+
+        private static string MetricLabel(string m) => m == "games" ? "المباريات" : m == "points" ? "نقاط الرتبة" : m == "secs" ? "الدقائق" : "الانتصارات";
 
         private void OnEventAction(KitEventsBoard.Card c)
         {

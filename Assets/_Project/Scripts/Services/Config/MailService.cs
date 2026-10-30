@@ -81,6 +81,14 @@ namespace MafiaNight.Services.Config
             done?.Invoke(Parse(text));
         }
 
+        /// <summary>The player typed a promo code: the package arrives as a telegram. The result carries the reason when it failed (bad_code, already_used, locked).</summary>
+        public static IEnumerator Redeem(string code, Action<MailClaimResult> done)
+        {
+            string text = null;
+            yield return Post("/v1/codes/redeem", "{\"code\":\"" + Clean(code) + "\"}", (ok, t) => text = t);
+            done?.Invoke(Parse(text));
+        }
+
         public static IEnumerator ClaimAll(Action<MailClaimResult> done)
         {
             string text = null;

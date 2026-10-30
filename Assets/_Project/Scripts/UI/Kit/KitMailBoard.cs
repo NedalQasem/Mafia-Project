@@ -27,11 +27,15 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private CanvasGroup scrimGroup, boardGroup, toastGroup;
         [SerializeField] private Button closeButton, scrimButton, claimAllButton;
         [SerializeField] private GameObject emptyNote, codeStrip;
-        [SerializeField] private ArabicText countText, newText, toastText;
+        [SerializeField] private ArabicText countText, newText, toastText, codeMessage;
+        [SerializeField] private TMPro.TMP_InputField codeInput;
+        [SerializeField] private Button redeemButton;
         [SerializeField] private GameObject cardPrefab;
 
         /// <summary>The "collect" button of a telegram.</summary>
         public event Action<Card> OnClaim;
+        /// <summary>The player typed a promo code and pressed "activate".</summary>
+        public event Action<string> OnRedeem;
         /// <summary>"Collect all".</summary>
         public event Action OnClaimAll;
         /// <summary>The board is gone.</summary>
@@ -48,6 +52,7 @@ namespace MafiaNight.UI.Kit
             closeButton.onClick.AddListener(Close);
             scrimButton.onClick.AddListener(Close);
             claimAllButton.onClick.AddListener(() => OnClaimAll?.Invoke());
+            redeemButton.onClick.AddListener(() => { var c = (codeInput.text ?? "").Trim(); if (c.Length == 0) { CodeResult(false, "اكتب الكود أول"); return; } codeMessage.Text = ""; OnRedeem?.Invoke(c); });
             toastGroup.alpha = 0f; scrimGroup.alpha = 0f; boardGroup.alpha = 0f;
         }
 
@@ -91,6 +96,14 @@ namespace MafiaNight.UI.Kit
             if (ok) foreach (var c in items) if (c.id == id) c.claimed = true;
             Refresh(items);
             Toast(message);
+        }
+
+        /// <summary>The server answered a promo code: a green line when it worked (the field is cleared), a red one when not.</summary>
+        public void CodeResult(bool ok, string message)
+        {
+            codeMessage.Text = message;
+            codeMessage.GetComponent<TMPro.TMP_Text>().color = ok ? new Color32(0x8F, 0xE0, 0xBD, 255) : new Color32(0xFF, 0x8B, 0x8B, 255);
+            if (ok) codeInput.text = "";
         }
 
         public void Toast(string text) { toastText.Text = text; toastLeft = 2.6f; }

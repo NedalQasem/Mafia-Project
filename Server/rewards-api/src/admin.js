@@ -7,12 +7,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { ChatError } = require('./chat');
+const { normalize: normCode, CODE_RE } = require('./codes');
 
 const PF_ID = /^[A-Za-z0-9]{6,32}$/;
 const ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
 const REF_RE = /^[A-Za-z0-9_-]{1,64}$/;
 const KINDS = ['bonus', 'challenge', 'info'];
 const MAX_WORDS = 500;
+const METRICS = ['wins', 'games', 'points', 'secs'];
 
 class AdminError extends Error {
   constructor(code, status = 400) { super(code); this.code = code; this.status = status; }
@@ -47,7 +49,7 @@ function isoOrEmpty(v, name) {
 }
 function newId(prefix) { return prefix + '-' + Date.now().toString(36) + crypto.randomBytes(2).toString('hex'); }
 
-function cleanEvent(b, id) {
+function cleanEvent(b, id, packs = []) {
   if (!b || typeof b !== 'object') throw new AdminError('bad_event');
   if (!KINDS.includes(b.kind)) throw new AdminError('bad_kind');
   const e = { id, kind: b.kind, kicker: text(b.kicker, 24), title: text(b.title, 60), body: text(b.body, 160), enabled: b.enabled !== false };
@@ -65,6 +67,18 @@ function cleanEvent(b, id) {
     e.goal = goal; e.rewardCoins = reward; e.metric = b.metric === 'games' ? 'games' : 'wins';
   } else {
     e.secret = b.secret === true;
+  }
+  if (b.ranking && b.ranking.enabled === true) {
+    const r = b.ranking;
+    if (!METRICS.includes(r.metric)) throw new AdminError('bad_metric');
+    const winners = Math.floor(Number(r.winners));
+    if (!(winners >= 1 && winners <= 20)) throw new AdminError('bad_winners');
+    const prizes = (Array.isArray(r.prizes) ? r.prizes : []).slice(0, 20).map(p => ({ from: Math.floor(Number(p.from)), to: Math.floor(Number(p.to)), packId: text(p.packId, 40) }));
+    for (const p of prizes) {
+      if (!(p.from >= 1 && p.to >= p.from && p.to <= winners)) throw new AdminError('bad_prize_ranks');
+      if (!packs.some(k => k.id === p.packId)) throw new AdminError('pack_not_found');
+    }
+    e.ranking = { enabled: true, metric: r.metric, winners, prizes, distribution: r.distribution === 'manual' ? 'manual' : 'auto' };
   }
   return e;
 }
@@ -96,7 +110,7 @@ function cleanPack(b, id) {
   return { id, name, coins, gems, items };
 }
 
-function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, htmlFile = null, now = () => Date.now(), log = console }) {
+function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, htmlFile = null, now = () => Date.now(), log = console }) {
   const base = '/' + String(adminCfg.path || '/admin').replace(/^\/+|\/+$/g, '');
   const passwordHash = adminCfg.passwordHash || '';
   const sessionMs = (adminCfg.sessionHours || 12) * 3600 * 1000;
@@ -282,7 +296,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       const list = ensureOwnEvents();
       const idx = b.id ? list.findIndex(e => e.id === b.id) : -1;
       if (b.id && !ID_RE.test(String(b.id))) throw new AdminError('bad_id');
-      const e = cleanEvent(b, idx >= 0 ? list[idx].id : (b.id && ID_RE.test(b.id) ? b.id : newId('ev')));
+      const e = cleanEvent(b, idx >= 0 ? list[idx].id : (b.id && ID_RE.test(b.id) ? b.id : newId('ev')), store.packs);
       if (idx < 0 && list.some(x => x.id === e.id)) throw new AdminError('id_taken', 409);
       if (idx >= 0) list[idx] = e; else list.push(e);
       store.events = list;
@@ -301,6 +315,49 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       if (!e) throw new AdminError('not_found', 404);
       e.enabled = b.enabled === true; store.events = list;
       store.audit('event_toggle', e.id + ' ' + e.enabled);
+      return send(res, 200, { ok: true });
+    }
+
+    if (rest === '/api/events/ranking' && method === 'GET') { if (!events) throw new AdminError('no_events', 404); return send(res, 200, await events.adminRanking(String(url.searchParams.get('id') || ''))); }
+    if (rest === '/api/events/distribute' && method === 'POST') {
+      if (!events) throw new AdminError('no_events', 404);
+      const b = await readJson(req);
+      const r = await events.distribute(String(b.id || ''), { by: 'admin' });
+      store.audit('ranking_distribute', String(b.id) + ' · ' + r.count + ' players');
+      return send(res, 200, r);
+    }
+
+    // ---- promo codes
+    if (rest === '/api/codes' && method === 'GET') { if (!codes) throw new AdminError('no_codes', 404); return send(res, 200, { ok: true, codes: codes.list().map(c => ({ code: c.code, packId: c.packId, maxUses: c.maxUses || 0, uses: c.uses || 0, until: c.until || '', enabled: c.enabled !== false })) }); }
+    if (rest === '/api/codes/save' && method === 'POST') {
+      if (!codes) throw new AdminError('no_codes', 404);
+      const b = await readJson(req);
+      const code = b.code ? normCode(b.code) : codes.randomCode();
+      if (!CODE_RE.test(code)) throw new AdminError('bad_code_format');
+      if (!store.packs.some(p => p.id === b.packId)) throw new AdminError('pack_not_found', 404);
+      const maxUses = Math.floor(Number(b.maxUses) || 0);
+      if (!(maxUses >= 0 && maxUses <= 1000000)) throw new AdminError('bad_max_uses');
+      const until = isoOrEmpty(b.until, 'until');
+      const list = codes.list().slice(), old = list.find(c => c.code === code);
+      if (old && b.isNew === true) throw new AdminError('code_exists', 409);
+      const c = Object.assign(old || { code, uses: 0, by: {} }, { packId: b.packId, maxUses, until, enabled: b.enabled !== false });
+      if (!old) list.push(c);
+      store.codes = list; store.audit('code_save', code + ' · ' + b.packId);
+      return send(res, 200, { ok: true, code });
+    }
+    if (rest === '/api/codes/toggle' && method === 'POST') {
+      if (!codes) throw new AdminError('no_codes', 404);
+      const b = await readJson(req); const c = codes.find(normCode(b.code));
+      if (!c) throw new AdminError('not_found', 404);
+      c.enabled = b.enabled === true; store.touch(); store.audit('code_toggle', c.code + ' ' + c.enabled);
+      return send(res, 200, { ok: true });
+    }
+    if (rest === '/api/codes/delete' && method === 'POST') {
+      if (!codes) throw new AdminError('no_codes', 404);
+      const b = await readJson(req); const code = normCode(b.code); const n = codes.list().length;
+      store.codes = codes.list().filter(c => c.code !== code);
+      if (store.codes.length === n) throw new AdminError('not_found', 404);
+      store.audit('code_delete', code);
       return send(res, 200, { ok: true });
     }
 

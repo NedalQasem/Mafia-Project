@@ -13,6 +13,7 @@ const { createLeaderboard } = require('./leaderboard');
 const { createOffers } = require('./offers');
 const { createEvents } = require('./events');
 const { createMail } = require('./mail');
+const { createCodes } = require('./codes');
 const { createAdminStore } = require('./adminstore');
 const { createAdmin } = require('./admin');
 
@@ -32,16 +33,18 @@ const friends = createFriends({ chat, cfg, file: dataDir + '/friends.json', repo
 const leaderboard = createLeaderboard({ chat, cfg, file: dataDir + '/leaderboard.json' });
 // events and offers: the admin board's own list once it saved one, otherwise the ones of config.json
 const offers = createOffers({ cfg, source: () => (adminStore.offers !== null ? adminStore.offers : cfg.offers) });
-const events = createEvents({ cfg, playfab, source: () => (adminStore.events !== null ? adminStore.events : cfg.events), file: dataDir + '/events.json' });
 const mail = createMail({ cfg, playfab, file: dataDir + '/mail.json' });
+const events = createEvents({ cfg, playfab, mail, packs: () => adminStore.packs, nameOf: async pf => (await chat.who(pf)).name, source: () => (adminStore.events !== null ? adminStore.events : cfg.events), file: dataDir + '/events.json' });
+const codes = createCodes({ store: adminStore, mail, packs: () => adminStore.packs });
 // the admin board: needs ADMIN_PASSWORD_HASH (made by set-admin.sh); without it the board does not exist
 const admin = createAdmin({
-  cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, reportsFile: dataDir + '/chat-reports.jsonl',
+  cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, reportsFile: dataDir + '/chat-reports.jsonl',
   adminCfg: Object.assign({}, cfg.admin, process.env.ADMIN_PASSWORD_HASH ? { passwordHash: process.env.ADMIN_PASSWORD_HASH } : {}, process.env.ADMIN_PATH ? { path: process.env.ADMIN_PATH } : {}),
 });
-const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, admin });
+const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, admin });
 if (admin.enabled) console.log('admin board on ' + admin.base); else console.log('admin board is off (no ADMIN_PASSWORD_HASH)');
 
+setInterval(() => { events.autoDistribute().catch(() => {}); }, 60 * 1000).unref();      // prizes of the events that ended
 setInterval(() => { chat.purge(); friends.purge(); leaderboard.purge(); events.purge(); mail.purge(); }, 3600 * 1000).unref();
 setInterval(() => store.purge(Date.now(), 48 * 3600 * 1000, new Date().toISOString().slice(0, 10)), 3600 * 1000).unref();
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); mail.flushNow(); adminStore.flushNow(); } finally { process.exit(0); } });

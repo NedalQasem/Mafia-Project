@@ -9,7 +9,7 @@ const { PlayFabError } = require('./playfab');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, admin = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, admin = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -58,7 +58,7 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
       await playfab.setProgress(playFabId, PROGRESS_KEY, progress);
       g.progress = true;
       if (leaderboard) leaderboard.record(playFabId, { won: reward.won, role: rep.myRole, survived: rep.survived, durationSec: rep.durationSec, rankPointsGained: reward.rankPoints, rankPointsNow: progress.rankPoints });
-      if (events) events.record(playFabId, { won: reward.won });
+      if (events) events.record(playFabId, { won: reward.won, points: reward.rankPoints, secs: rep.durationSec });
       store.addDaily(playFabId, today());
       if (admin) admin.noteMatch(match.id);
       store.putMatch(match.id, match);
@@ -153,6 +153,7 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
   const offersPost = offers ? { '/v1/offers': async () => ({ ok: true, offers: offers.active() }) } : {};
   const eventsPost = events ? {
     '/v1/events': async pf => events.board(pf),
+    '/v1/events/ranking': (pf, b) => events.ranking(pf, b),
     '/v1/events/claim': (pf, b) => withLock('pf:' + pf, () => events.claim(pf, b)),
   } : {};
   const mailPost = mail ? {
@@ -160,7 +161,8 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     '/v1/mail/claim': (pf, b) => withLock('pf:' + pf, () => mail.claim(pf, String(b.id || ''))),
     '/v1/mail/claim-all': pf => withLock('pf:' + pf, () => mail.claimAll(pf)),
   } : {};
-  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost, eventsPost, mailPost);
+  const codesPost = codes ? { '/v1/codes/redeem': async (pf, b) => codes.redeem(pf, b.code) } : {};
+  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost);
 
   const server = http.createServer((req, res) => {
     const ip = (cfg.trustProxy && req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : req.socket.remoteAddress) || 'unknown';

@@ -9,7 +9,7 @@ const path = require('node:path');
 const KEEP_AUDIT = 200, KEEP_DAYS = 14, KEEP_COUNTED_MS = 3 * 24 * 3600 * 1000;
 
 function createAdminStore({ file = null, now = () => Date.now(), log = console } = {}) {
-  let data = { events: null, offers: null, packs: [], words: { exact: [], contains: [] }, handled: {}, audit: [], days: {}, counted: {} };
+  let data = { events: null, offers: null, packs: [], codes: [], words: { exact: [], contains: [] }, handled: {}, audit: [], days: {}, counted: {} };
   try { if (file) data = Object.assign(data, JSON.parse(fs.readFileSync(file, 'utf8'))); } catch { /* first run */ }
   data.words = Object.assign({ exact: [], contains: [] }, data.words);
   let timer = null;
@@ -29,6 +29,7 @@ function createAdminStore({ file = null, now = () => Date.now(), log = console }
     get events() { return data.events; }, set events(v) { data.events = v; save(); },
     get offers() { return data.offers; }, set offers(v) { data.offers = v; save(); },
     get packs() { return data.packs; }, set packs(v) { data.packs = v; save(); },
+    get codes() { return data.codes; }, set codes(v) { data.codes = v; save(); },
     get words() { return data.words; },
     touch: save,
     handled: id => data.handled[id] || null,

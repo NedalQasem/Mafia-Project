@@ -12,6 +12,7 @@ const { createFriends } = require('./src/friends');
 const { createLeaderboard } = require('./src/leaderboard');
 const { createOffers } = require('./src/offers');
 const { createMail } = require('./src/mail');
+const { createCodes } = require('./src/codes');
 const { createEvents } = require('./src/events');
 const { createAdminStore } = require('./src/adminstore');
 const { createAdmin, hashPassword } = require('./src/admin');
@@ -62,10 +63,15 @@ const iso = h => new Date(Date.now() + h * 3600 * 1000).toISOString();
 cfg.events = [
   { id: 'dev-gold', kind: 'bonus', kicker: 'عرض الأسبوع', title: 'عطلة الذهب المضاعف', body: 'كل ربح من المباريات يتضاعف طول العطلة. العب أكثر واجمع أكثر.', coinsMultiplier: 2, from: iso(-12), until: iso(26) },
   { id: 'dev-wins', kind: 'challenge', kicker: 'مهمّة', title: 'تحدّي ١٠ انتصارات', body: 'اربح ١٠ مباريات قبل نهاية الأسبوع واستلم مكافأتك.', metric: 'wins', goal: 10, rewardCoins: 500, from: iso(-24), until: iso(96) },
+  { id: 'dev-race', kind: 'info', kicker: 'سباق الأسبوع', title: 'سباق الانتصارات', body: 'أكتر ٥ لاعبين انتصاراً بياخدوا جوائز كبيرة.', from: iso(-48), until: iso(5), ranking: { enabled: true, metric: 'wins', winners: 3, distribution: 'auto', prizes: [{ from: 1, to: 1, packId: 'pk-gold' }, { from: 2, to: 2, packId: 'pk-silver' }, { from: 3, to: 3, packId: 'pk-small' }] } },
   { id: 'dev-night', kind: 'info', kicker: 'بطولة', title: 'ليلة العصابة الكبرى', body: 'بطولة ليلية بجوائز نادرة.', secret: true, from: iso(48), until: iso(53) },
   { id: 'dev-old', kind: 'info', kicker: 'أرشيف', title: 'أسبوع الرصاصة الذهبية', body: 'انتهى الحدث. شكراً لمشاركتك، وننتظرك بالحدث القادم.', from: iso(-200), until: iso(-100) },
 ];
-const events = createEvents({ cfg, playfab, source: () => (adminStore.events !== null ? adminStore.events : cfg.events) });
+const mail = createMail({ cfg, playfab });
+adminStore.packs = [{ id: 'pk-gold', name: { ar: 'جائزة ذهبية', en: 'Gold prize' }, coins: 5000, gems: 0, items: [] }, { id: 'pk-silver', name: { ar: 'جائزة فضية', en: 'Silver prize' }, coins: 3000, gems: 0, items: [] }, { id: 'pk-small', name: { ar: 'تشجيعية', en: 'Encouragement' }, coins: 1000, gems: 2, items: [] }];
+adminStore.codes = [{ code: 'MAFIA2026', packId: 'pk-gold', maxUses: 1000, uses: 312, until: '', enabled: true, by: {} }, { code: 'INSTA50', packId: 'pk-small', maxUses: 0, uses: 48, until: '', enabled: true, by: {} }];
+const codes = createCodes({ store: adminStore, mail, packs: () => adminStore.packs });
+const events = createEvents({ cfg, playfab, mail, packs: () => adminStore.packs, nameOf: async pf => (await chat.who(pf)).name, source: () => (adminStore.events !== null ? adminStore.events : cfg.events) });
 const offers = createOffers({ cfg, source: () => (adminStore.offers !== null ? adminStore.offers : cfg.offers) });
 cfg.offers = [{ adId: 'ad_ember', stamp: '−٣٠٪', until: iso(2) }, { itemId: 'chat_port', mast: 'وصل حديثاً', headline: 'خلفية الميناء\nسفن وليل أسود', stamp: 'جديد' }];
 fs.writeFileSync(reportsFile, [
@@ -73,8 +79,8 @@ fs.writeFileSync(reportsFile, [
   { ts: iso(-1), type: 'player', reporter: 'OTHER0003', target: 'OTHER0002', reason: 'cheat', note: '' },
   { ts: iso(-5), type: 'player', reporter: 'OTHER0004', target: 'OTHER0001', reason: 'spam', note: '' },
 ].map(r => JSON.stringify(r)).join('\n') + '\n');
-const mail = createMail({ cfg, playfab });
-const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, reportsFile, adminCfg: { passwordHash: hashPassword('dev-password-123'), path: '/admin' } });
+const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, reportsFile, adminCfg: { passwordHash: hashPassword('dev-password-123'), path: '/admin' } });
 for (let i = 0; i < 40; i++) adminStore.noteMatch('dev-m' + i, leaderboard.dayKey(Date.now() - (i % 7) * 86400000));
-const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, events, offers, mail, admin });
+for (const [pf, n] of [['OTHER0001', 9], ['OTHER0002', 7], ['OTHER0003', 5], ['OTHER0004', 2]]) for (let i = 0; i < n; i++) events.record(pf, { won: true, points: 50, secs: 600 });
+const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, events, offers, mail, codes, admin });
 server.listen(8788, '127.0.0.1', () => console.log('dev server on http://127.0.0.1:8788 (pretend PlayFab; players OTHER0001..OTHER0004 exist) · admin board: http://127.0.0.1:8788/admin password dev-password-123'));

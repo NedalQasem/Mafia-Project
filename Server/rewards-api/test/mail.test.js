@@ -172,3 +172,97 @@ test('balance: add and take coins or gems with a reason, never below zero, and i
     assert.ok(log.includes('balance_add') && log.includes('balance_remove'));
   } finally { b.close(); }
 });
+
+test('admin: an event with a ranking is saved only with valid prizes, shows its ranking, and gives the prizes once', async () => {
+  const { createEvents } = require('../src/events');
+  const cfg = { currencyCode: 'CO', requestsPerMinutePerIp: 100000, trustProxy: false, chat: { publicCooldownMs: 0, cooldownMs: 0 } };
+  const playfab = fakePlayfab();
+  const adminStore = createAdminStore({ file: null });
+  const chat = createChat({ cfg, playfab });
+  const friends = createFriends({ chat, cfg });
+  const leaderboard = createLeaderboard({ chat, cfg });
+  const mail = createMail({ cfg, playfab });
+  const events = createEvents({ cfg, playfab, mail, packs: () => adminStore.packs, nameOf: async pf => (await chat.who(pf)).name, source: () => adminStore.events });
+  const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, adminCfg: { passwordHash: hashPassword(PASSWORD), path: '/office' } });
+  const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, mail, events, admin });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const url = 'http://127.0.0.1:' + server.address().port;
+  let cookie = '';
+  const adm = async (p, body) => {
+    const h = {}; if (cookie) h.cookie = cookie;
+    if (body !== undefined) { h['content-type'] = 'application/json'; h['x-admin'] = '1'; }
+    const res = await fetch(url + '/office' + p, { method: body !== undefined ? 'POST' : 'GET', headers: h, body: body !== undefined ? JSON.stringify(body) : undefined });
+    const sc = res.headers.get('set-cookie'); if (sc) cookie = sc.split(';')[0];
+    return { status: res.status, json: await res.json() };
+  };
+  try {
+    await adm('/api/login', { password: PASSWORD });
+    const pack = (await adm('/api/packs/save', { name: { ar: 'ذهبية' }, coins: 5000 })).json.id;
+    const base = { kind: 'info', title: 'سباق', from: '2020-01-01T00:00:00Z', until: '2999-01-01T00:00:00Z' };
+    const bad = async ranking => (await adm('/api/events/save', Object.assign({}, base, { ranking }))).json.error;
+    assert.equal(await bad({ enabled: true, metric: 'luck', winners: 3, prizes: [] }), 'bad_metric');
+    assert.equal(await bad({ enabled: true, metric: 'wins', winners: 99, prizes: [] }), 'bad_winners');
+    assert.equal(await bad({ enabled: true, metric: 'wins', winners: 3, prizes: [{ from: 2, to: 5, packId: pack }] }), 'bad_prize_ranks');
+    assert.equal(await bad({ enabled: true, metric: 'wins', winners: 3, prizes: [{ from: 1, to: 1, packId: 'nope' }] }), 'pack_not_found');
+    const id = (await adm('/api/events/save', Object.assign({}, base, { ranking: { enabled: true, metric: 'wins', winners: 3, distribution: 'manual', prizes: [{ from: 1, to: 1, packId: pack }] } }))).json.id;
+    events.record('PLAYER0001', { won: true, points: 50, secs: 100 }); events.record('PLAYER0001', { won: true, points: 50, secs: 100 }); events.record('PLAYER0002', { won: true, points: 50, secs: 100 });
+    const r = (await adm('/api/events/ranking?id=' + id)).json;
+    assert.deepEqual(r.rows.map(x => [x.rank, x.pf, x.value]), [[1, 'PLAYER0001', 2], [2, 'PLAYER0002', 1]]); assert.equal(r.rows[0].prize.coins, 5000); assert.equal(r.rows[1].prize, null); assert.equal(r.distributed, null);
+    assert.equal((await adm('/api/events/distribute', { id })).json.count, 1);
+    assert.equal(mail.list('PLAYER0001').items[0].pack.coins, 5000);
+    assert.equal((await adm('/api/events/distribute', { id })).json.error, 'already_distributed');
+    assert.equal((await adm('/api/events/ranking?id=' + id)).json.distributed.by, 'admin');
+    assert.equal((await adm('/api/events/ranking?id=nope')).status, 404);
+  } finally { server.close(); }
+});
+
+test('codes through the admin and the player routes: create, redeem once, wrong codes, switch off, delete', async () => {
+  const { createCodes } = require('../src/codes');
+  const cfg = { currencyCode: 'CO', requestsPerMinutePerIp: 100000, trustProxy: false, chat: { publicCooldownMs: 0, cooldownMs: 0 } };
+  const playfab = fakePlayfab();
+  const adminStore = createAdminStore({ file: null });
+  const chat = createChat({ cfg, playfab });
+  const friends = createFriends({ chat, cfg });
+  const leaderboard = createLeaderboard({ chat, cfg });
+  const mail = createMail({ cfg, playfab });
+  const codes = createCodes({ store: adminStore, mail, packs: () => adminStore.packs });
+  const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, codes, adminCfg: { passwordHash: hashPassword(PASSWORD), path: '/office' } });
+  const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, mail, codes, admin });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const url = 'http://127.0.0.1:' + server.address().port;
+  let cookie = '';
+  const adm = async (p, body) => {
+    const h = {}; if (cookie) h.cookie = cookie;
+    if (body !== undefined) { h['content-type'] = 'application/json'; h['x-admin'] = '1'; }
+    const res = await fetch(url + '/office' + p, { method: body !== undefined ? 'POST' : 'GET', headers: h, body: body !== undefined ? JSON.stringify(body) : undefined });
+    const sc = res.headers.get('set-cookie'); if (sc) cookie = sc.split(';')[0];
+    return { status: res.status, json: await res.json() };
+  };
+  const player = async (pf, code) => {
+    const res = await fetch(url + '/v1/codes/redeem', { method: 'POST', headers: { 'content-type': 'application/json', 'x-authorization': pf + '-ticket-0123456789' }, body: JSON.stringify({ code }) });
+    return { status: res.status, json: await res.json() };
+  };
+  playfab.authenticate = async t => t.replace('-ticket-0123456789', '');
+  try {
+    await adm('/api/login', { password: PASSWORD });
+    const pack = (await adm('/api/packs/save', { name: { ar: 'عيد' }, coins: 1000, gems: 5 })).json.id;
+    assert.equal((await adm('/api/codes/save', { code: 'x', packId: pack })).json.error, 'bad_code_format');
+    assert.equal((await adm('/api/codes/save', { code: 'MAFIA2026', packId: 'nope' })).json.error, 'pack_not_found');
+    assert.equal((await adm('/api/codes/save', { code: 'MAFIA2026', packId: pack, maxUses: -4 })).json.error, 'bad_max_uses');
+    assert.equal((await adm('/api/codes/save', { code: 'mafia2026', packId: pack, maxUses: 2 })).json.code, 'MAFIA2026');
+    const random = (await adm('/api/codes/save', { packId: pack })).json.code; assert.match(random, /^[A-Z2-9]{8}$/);
+    assert.equal((await adm('/api/codes')).json.codes.length, 2);
+    assert.equal((await player('PLAYER0001', 'mafia2026')).status, 200);
+    assert.equal(mail.list('PLAYER0001').items[0].pack.coins, 1000);
+    assert.equal((await player('PLAYER0001', 'MAFIA2026')).json.error, 'already_used');
+    assert.equal((await player('PLAYER0002', 'WRONGCODE')).json.error, 'bad_code');
+    assert.equal((await adm('/api/codes')).json.codes.find(c => c.code === 'MAFIA2026').uses, 1);
+    await adm('/api/codes/toggle', { code: 'MAFIA2026', enabled: false });
+    assert.equal((await player('PLAYER0003', 'MAFIA2026')).json.error, 'bad_code');
+    await adm('/api/codes/toggle', { code: 'MAFIA2026', enabled: true });
+    assert.equal((await player('PLAYER0003', 'MAFIA2026')).status, 200);
+    assert.equal((await player('PLAYER0004', 'MAFIA2026')).json.error, 'bad_code');                 // two uses were the limit
+    assert.equal((await adm('/api/codes/delete', { code: 'MAFIA2026' })).status, 200);
+    assert.equal((await adm('/api/codes/delete', { code: 'MAFIA2026' })).status, 404);
+  } finally { server.close(); }
+});

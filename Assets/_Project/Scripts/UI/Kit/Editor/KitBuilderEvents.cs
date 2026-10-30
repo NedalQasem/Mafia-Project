@@ -186,10 +186,10 @@ namespace MafiaNight.UI.Kit.Editor
             var ink = (Color)th.paperInk; var crimDark = (Color)th.crimson; var crim = new Color32(0xC0, 0x32, 0x3A, 255);
             var lalezar = th.fontLalezar != null ? th.fontLalezar : th.fontHeading; var cairo = th.fontBody; var aref = th.fontAref != null ? th.fontAref : th.fontCalligraphy;
             var soft = new Color32(0x4A, 0x3C, 0x24, 255); var gold = new Color32(0xFF, 0xD9, 0x8A, 255);
-            EnsureEventSprites();
+            EnsureEventSprites(); EnsureMailSprites();
             EnsureQuickMenuSprites();
             var sBoard = Spr("ev_board"); var sPaper = Spr("ev_paper"); var sGreen = Spr("ev_green"); var sTape = Spr("ev_tape"); var sClip = Spr("ev_clip"); var sRing = Spr("ev_ring");
-            var sBurn = Spr("ev_burn"); var sSeal = Spr("ev_seal"); var sStud = Spr("ev_stud"); var sHole = Spr("ev_hole"); var sBadge = Spr("qm_badge");
+            var sBurn = Spr("ev_burn"); var sSeal = Spr("ev_seal"); var sStud = Spr("ev_stud"); var sHole = Spr("ev_hole"); var sBadge = Spr("qm_badge"); var sTime = Spr("ev_time");
 
             GameObject Pic(string n, Transform parent, Sprite s, float w, float h)
             {
@@ -234,6 +234,14 @@ namespace MafiaNight.UI.Kit.Editor
 
                 var body = Txt(card.transform, "Body", "وصف الحدث", cairo, 30, soft, TextAlignmentOptions.TopRight, true); body.fontStyle = FontStyles.Bold; Le(body.gameObject, -1, 96);
 
+                // my place in the ranking of this event: [button] ..... [my number and value] [big place]
+                var rk = Go("Rank", card.transform); Le(rk, -1, 100); var rki = rk.AddComponent<Image>(); rki.color = new Color(.11f, .09f, .06f, .08f); rki.raycastTarget = false;
+                var rkh = Row(rk, TextAnchor.MiddleCenter, 16); rkh.padding = new RectOffset(18, 24, 8, 8);
+                var rkGo = MakeButton("Go", th.leatherRed, th.ivory, "التصنيف", lalezar, 38); rkGo.transform.SetParent(rk.transform, false); Le(rkGo, 250, 76);
+                var rkSp = Go("Spacer", rk.transform); Le(rkSp, 0, 0, 1);
+                var rkLb = Txt(rk.transform, "Label", "مركزك\n٣٢ انتصار", cairo, 26, soft, TextAlignmentOptions.MidlineRight); rkLb.fontStyle = FontStyles.Bold; NoWrap(rkLb); Le(rkLb.gameObject, -1, 80);
+                var rkNum = Txt(rk.transform, "Number", "٧", lalezar, 84, crimDark, TextAlignmentOptions.Center); NoWrap(rkNum); Le(rkNum.gameObject, 90, 90);
+
                 // typed "top secret" and the black bars over the prize
                 var ty = Go("TypedRow", card.transform); Le(ty, -1, 46); Row(ty, TextAnchor.MiddleRight);
                 var tbox = Go("Box", ty.transform); Le(tbox, 300, 46); var tbi = Img(tbox, th.stampFrame, true, .7f); tbi.color = ink;
@@ -274,6 +282,31 @@ namespace MafiaNight.UI.Kit.Editor
                 var rco = Go("Coin", rw.transform); var rci = Img(rco, th.coin); rci.raycastTarget = false; Le(rco, 40, 40);
                 var rv = Txt(rw.transform, "Value", "×٢", lalezar, 44, ink); NoWrap(rv);
                 Save(card, "EventCard");
+            }
+
+            // ================================================================ pieces of the ranking sheet
+            {
+                var row = new GameObject("EventRankRow", typeof(RectTransform)); Rt(row).sizeDelta = new Vector2(820, 76);
+                var ri = row.AddComponent<Image>(); ri.color = Color.clear; ri.raycastTarget = false; Le(row, -1, 76);
+                var me = Go("Me", row.transform); Stretch(Rt(me)); var mi = me.AddComponent<Image>(); mi.color = new Color(.75f, .2f, .23f, .16f); mi.raycastTarget = false; Le(me).ignoreLayout = true; me.SetActive(false);
+                var line = Bar(row.transform, "Line", new Color(ink.r, ink.g, ink.b, .22f), 100, 3); { var lr = Rt(line.gameObject); lr.anchorMin = new Vector2(0, 0); lr.anchorMax = new Vector2(1, 0); lr.pivot = new Vector2(.5f, 0); lr.sizeDelta = new Vector2(0, 3); lr.anchoredPosition = Vector2.zero; Le(line.gameObject).ignoreLayout = true; }
+                var rh = Row(row, TextAnchor.MiddleCenter, 18); rh.padding = new RectOffset(14, 14, 4, 6);
+                var vv = Txt(row.transform, "Value", "٣٢", lalezar, 46, ink, TextAlignmentOptions.MidlineLeft); NoWrap(vv); Le(vv.gameObject, 170, 70);
+                var nn = Txt(row.transform, "Name", "اسم اللاعب", cairo, 36, ink, TextAlignmentOptions.MidlineRight); nn.fontStyle = FontStyles.Bold; NoWrap(nn); Le(nn.gameObject, -1, 70, 1);
+                var nu = Txt(row.transform, "Number", "١", lalezar, 56, ink, TextAlignmentOptions.Center); NoWrap(nu); Le(nu.gameObject, 90, 70);
+                Save(row, "EventRankRow");
+                var gap = new GameObject("EventRankGap", typeof(RectTransform)); Rt(gap).sizeDelta = new Vector2(820, 46); Le(gap, -1, 46);
+                var gt = Txt(gap.transform, "Dots", "· · ·", cairo, 34, soft, TextAlignmentOptions.Center); gt.characterSpacing = 8f; NoWrap(gt); Stretch(Rt(gt.gameObject));
+                Save(gap, "EventRankGap");
+                var pill = new GameObject("EventPrizePill", typeof(RectTransform)); Rt(pill).sizeDelta = new Vector2(190, 140);
+                Img(pill, sTime, true, 1f).raycastTarget = false; Le(pill, 150, -1, 1);
+                var pv = pill.AddComponent<VerticalLayoutGroup>(); pv.padding = new RectOffset(10, 10, 10, 14); pv.spacing = 2; pv.childAlignment = TextAnchor.MiddleCenter; pv.childControlWidth = true; pv.childControlHeight = true; pv.childForceExpandWidth = true; pv.childForceExpandHeight = false;
+                var pr = Txt(pill.transform, "Range", "١", lalezar, 36, gold, TextAlignmentOptions.Center); NoWrap(pr); Le(pr.gameObject, -1, 46);
+                var pvr = Go("ValueRow", pill.transform); Le(pvr, -1, 46); Row(pvr, TextAnchor.MiddleCenter, 8);
+                var pco = Go("Coin", pvr.transform); var pci = Img(pco, th.coin); pci.raycastTarget = false; Le(pco, 30, 30);
+                var pva = Txt(pvr.transform, "Value", "٥٬٠٠٠", lalezar, 34, gold, TextAlignmentOptions.Center); NoWrap(pva);
+                var pit = Txt(pill.transform, "Items", "إطار الجمر", cairo, 22, new Color32(0xB9, 0xA9, 0x8A, 255), TextAlignmentOptions.Center); pit.fontStyle = FontStyles.Bold; NoWrap(pit); Le(pit.gameObject, -1, 30);
+                Save(pill, "EventPrizePill");
             }
 
             // ================================================================ the board
@@ -344,6 +377,31 @@ namespace MafiaNight.UI.Kit.Editor
             var clFx = close.AddComponent<KitButtonFx>(); SetRef(clFx, "face", Rt(close));
             for (int s = -1; s <= 1; s += 2) { var b = Bar(close.transform, "X", new Color32(0x2A, 0x1A, 0x08, 255), 42, 9); Rt(b.gameObject).localRotation = Quaternion.Euler(0, 0, s * 45f); }
 
+            // back button (same place as the close one) and the ranking sheet that replaces the list
+            var back = Go("Back", brd.transform); At(back, new Vector2(0f, 1f), new Vector2(44, -39), new Vector2(94, 94), new Vector2(0f, 1f));
+            var bki = Img(back, th.coin, false, 1f, true); bki.preserveAspect = true;
+            var bkb = back.AddComponent<Button>(); bkb.targetGraphic = bki; bkb.transition = Selectable.Transition.None;
+            var bkFx = back.AddComponent<KitButtonFx>(); SetRef(bkFx, "face", Rt(back));
+            { var chev = Chevron(back.transform, "Chevron", new Color32(0x2A, 0x1A, 0x08, 255), 1, 40f, 9f); Place(Rt(chev), new Vector2(.5f, .5f), Vector2.zero, new Vector2(50, 50)); }
+            back.SetActive(false);
+
+            var rp = Go("RankPanel", brd.transform); Stretch(Rt(rp), 28, 130, 28, 236); var rpi = rp.AddComponent<Image>(); rpi.color = new Color(.043f, .031f, .027f, .4f);
+            var rvp = Go("Viewport", rp.transform); Stretch(Rt(rvp)); var rvi = rvp.AddComponent<Image>(); rvi.color = new Color(0, 0, 0, 0); rvp.AddComponent<RectMask2D>();
+            var rct = Go("Content", rvp.transform); var rcr = Rt(rct); rcr.anchorMin = new Vector2(0, 1); rcr.anchorMax = new Vector2(1, 1); rcr.pivot = new Vector2(.5f, 1); rcr.sizeDelta = Vector2.zero;
+            var rcv = rct.AddComponent<VerticalLayoutGroup>(); rcv.padding = new RectOffset(22, 22, 34, 30); rcv.spacing = 20; rcv.childAlignment = TextAnchor.UpperCenter; rcv.childControlWidth = true; rcv.childControlHeight = true; rcv.childForceExpandWidth = true; rcv.childForceExpandHeight = false;
+            rct.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            var rsc = rp.AddComponent<ScrollRect>(); rsc.viewport = Rt(rvp); rsc.content = rcr; rsc.horizontal = false; rsc.vertical = true; rsc.movementType = ScrollRect.MovementType.Elastic; rsc.scrollSensitivity = 40f;
+            var sheet = Go("Sheet", rct.transform); Img(sheet, Spr("ml_paper"), true, 1f).raycastTarget = false;
+            var shv = sheet.AddComponent<VerticalLayoutGroup>(); shv.padding = new RectOffset(40, 40, 34, 40); shv.spacing = 12; shv.childAlignment = TextAnchor.UpperCenter; shv.childControlWidth = true; shv.childControlHeight = true; shv.childForceExpandWidth = true; shv.childForceExpandHeight = false;
+            sheet.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            { var r0 = Bar(sheet.transform, "Rule0", ink, 700, 4); Le(r0.gameObject, -1, 4); }
+            var sh = Txt(sheet.transform, "Head", "الجوائز", lalezar, 58, ink, TextAlignmentOptions.Center); NoWrap(sh); Le(sh.gameObject, -1, 76);
+            { var r1 = Bar(sheet.transform, "Rule1", ink, 700, 4); Le(r1.gameObject, -1, 4); }
+            var snote = Txt(sheet.transform, "Note", "بتنوزّع على البريد عند انتهاء الحدث", cairo, 24, soft, TextAlignmentOptions.Center); snote.fontStyle = FontStyles.Bold; NoWrap(snote); Le(snote.gameObject, -1, 40);
+            var prizeGo = Go("Prizes", sheet.transform); Le(prizeGo, -1, 150); var prh = Row(prizeGo, TextAnchor.MiddleCenter, 12); prh.childForceExpandWidth = true;
+            var rowsGo = Go("Rows", sheet.transform); var rwv = rowsGo.AddComponent<VerticalLayoutGroup>(); rwv.spacing = 0; rwv.childControlWidth = true; rwv.childControlHeight = true; rwv.childForceExpandWidth = true; rwv.childForceExpandHeight = false;
+            rp.SetActive(false);
+
             // toast
             var toast = Go("Toast", brd.transform); At(toast, new Vector2(.5f, 0f), new Vector2(0, 150), new Vector2(560, 96)); Img(toast, th.leatherDark, true, 2.4f);
             var toastCg = toast.AddComponent<CanvasGroup>(); toastCg.blocksRaycasts = false;
@@ -357,6 +415,10 @@ namespace MafiaNight.UI.Kit.Editor
             SetRef(view, "liveBadgeText", bt.GetComponent<ArabicText>()); SetRef(view, "countText", ml.GetComponent<ArabicText>());
             SetRef(view, "toastText", tt.GetComponent<ArabicText>()); SetRef(view, "emptyText", em.GetComponent<ArabicText>());
             SetRef(view, "cardPrefab", LoadPrefab("EventCard")); SetRef(view, "paperTab", th.paper); SetRef(view, "leatherTab", th.leatherDark);
+            SetRef(view, "tabsRoot", tabsRoot); SetRef(view, "listRoot", lb); SetRef(view, "rankPanel", rp); SetRef(view, "closeObject", close); SetRef(view, "backObject", back); SetRef(view, "backButton", bkb);
+            SetRef(view, "rankRowPrefab", LoadPrefab("EventRankRow")); SetRef(view, "rankGapPrefab", LoadPrefab("EventRankGap")); SetRef(view, "prizePillPrefab", LoadPrefab("EventPrizePill"));
+            SetRef(view, "rankRows", Rt(rowsGo)); SetRef(view, "prizeRow", Rt(prizeGo));
+            SetRef(view, "mastTitle", mt.GetComponent<ArabicText>()); SetRef(view, "mastSub", mr.GetComponent<ArabicText>()); SetRef(view, "rankNote", snote.GetComponent<ArabicText>());
             th.eventsBoardPrefab = Save(root, "EventsBoard");
             EditorUtility.SetDirty(th);
         }

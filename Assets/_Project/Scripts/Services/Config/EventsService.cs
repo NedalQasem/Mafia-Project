@@ -22,6 +22,22 @@ namespace MafiaNight.Services.Config
         public int RewardCoins;
         public bool Claimed, Claimable, Secret;
         public int EndsInSeconds, StartsInSeconds;
+        public bool HasRanking, RankDistributed;
+        public string RankMetric;
+        public int RankMine, RankValue;          // my place (0 = not ranked yet) and my number
+    }
+
+    public sealed class RankRowData { public int Rank, Value; public string Name; public bool Me; }
+    public sealed class RankPrizeData { public int From, To, Coins, Gems; public string[] Items = new string[0]; }
+
+    /// <summary>The ranking inside one event: the top ten, my place and the prizes.</summary>
+    public sealed class EventRanking
+    {
+        public string Id, Metric;
+        public List<RankRowData> Rows = new List<RankRowData>();
+        public int MineRank, MineValue, EndsInSeconds, Winners;
+        public bool Distributed;
+        public List<RankPrizeData> Prizes = new List<RankPrizeData>();
     }
 
     public sealed class EventsBoard
@@ -35,7 +51,13 @@ namespace MafiaNight.Services.Config
         public string id, kind, kicker, title, body, metric;
         public int multiplier, goal, progress, rewardCoins, endsInSec, startsInSec;
         public bool claimed, claimable, secret;
+        public RankingDto ranking;
     }
+    [Serializable] internal sealed class PlaceDto { public int rank, value; }
+    [Serializable] internal sealed class RankingDto { public string metric; public int winners; public bool distributed; public PlaceDto mine; }
+    [Serializable] internal sealed class RankRowDto { public int rank, value; public string name; public bool me; }
+    [Serializable] internal sealed class PrizeDto { public int from, to, coins, gems; public string[] items; }
+    [Serializable] internal sealed class RankingViewDto { public bool ok; public string id, metric; public int winners, endsInSec; public bool distributed; public PlaceDto mine; public List<RankRowDto> rows; public List<PrizeDto> prizes; }
     [Serializable] internal sealed class EventsDto { public bool ok; public List<EventDto> live, soon, done; }
     [Serializable] internal sealed class ClaimDto { public bool ok; public int coins; public string error; }
 
@@ -61,6 +83,20 @@ namespace MafiaNight.Services.Config
             done?.Invoke(b);
         }
 
+        /// <summary>The ranking of one event. The callback gets null when it failed.</summary>
+        public static IEnumerator Ranking(string id, Action<EventRanking> done)
+        {
+            string text = null;
+            yield return Post("/v1/events/ranking", "{\"id\":\"" + (id ?? "").Replace("\\", "").Replace("\"", "") + "\"}", (ok, t) => text = ok ? t : null);
+            RankingViewDto d = null;
+            if (text != null) { try { d = JsonUtility.FromJson<RankingViewDto>(text); } catch { } }
+            if (d == null || !d.ok) { done?.Invoke(null); yield break; }
+            var r = new EventRanking { Id = d.id, Metric = d.metric, Winners = d.winners, EndsInSeconds = d.endsInSec, Distributed = d.distributed, MineRank = d.mine != null ? d.mine.rank : 0, MineValue = d.mine != null ? d.mine.value : 0 };
+            if (d.rows != null) foreach (var x in d.rows) r.Rows.Add(new RankRowData { Rank = x.rank, Value = x.value, Name = x.name, Me = x.me });
+            if (d.prizes != null) foreach (var p in d.prizes) r.Prizes.Add(new RankPrizeData { From = p.from, To = p.to, Coins = p.coins, Gems = p.gems, Items = p.items ?? new string[0] });
+            done?.Invoke(r);
+        }
+
         /// <summary>Asks the server to pay the reward of a finished challenge. The callback gets the coins paid, or 0 when it was refused or failed.</summary>
         public static IEnumerator Claim(string id, Action<int> done)
         {
@@ -81,6 +117,8 @@ namespace MafiaNight.Services.Config
                     Kind = e.kind == "bonus" ? GameEventKind.Bonus : e.kind == "challenge" ? GameEventKind.Challenge : GameEventKind.Info,
                     Multiplier = e.multiplier, Goal = e.goal, Progress = e.progress, CountsGames = e.metric == "games", RewardCoins = e.rewardCoins,
                     Claimed = e.claimed, Claimable = e.claimable, Secret = e.secret, EndsInSeconds = e.endsInSec, StartsInSeconds = e.startsInSec,
+                    HasRanking = e.ranking != null && !string.IsNullOrEmpty(e.ranking.metric), RankMetric = e.ranking != null ? e.ranking.metric : null, RankDistributed = e.ranking != null && e.ranking.distributed,
+                    RankMine = e.ranking != null && e.ranking.mine != null ? e.ranking.mine.rank : 0, RankValue = e.ranking != null && e.ranking.mine != null ? e.ranking.mine.value : 0,
                 });
         }
 

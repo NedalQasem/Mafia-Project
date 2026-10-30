@@ -17,6 +17,8 @@ namespace MafiaNight.UI.Kit
 
         /// <summary>The action button was pressed: the event's id.</summary>
         public event Action<KitEventsBoard.Card> OnAction;
+        /// <summary>The "ranking" button of an event that has one.</summary>
+        public event Action<KitEventsBoard.Card> OnRank;
 
         private KitEventsBoard.Card card;
         private Image paper, stampFrame, actionFace;
@@ -24,7 +26,9 @@ namespace MafiaNight.UI.Kit
         private GameObject stamp, bigStamp, tape, clip, ring, burn, typedRow, redactRow, tallyRow, countRow, rewardRow, coin;
         private Image[] slots = new Image[10];
         private RectTransform[] strikes = new RectTransform[2];
-        private Button action;
+        private GameObject rankRow;
+        private ArabicText rankNumber, rankLabel;
+        private Button action, rankButton;
         private CanvasGroup actionGroup;
         private float left;
         private int shown = -1;
@@ -49,6 +53,8 @@ namespace MafiaNight.UI.Kit
             rewardValue = A("Reward/Value"); rewardLabel = A("Reward/Label"); coin = T("Reward/Coin").gameObject;
             action = T("Reward/Action").GetComponent<Button>(); actionFace = T("Reward/Action/Face").GetComponent<Image>(); actionLabel = A("Reward/Action/Face/Label");
             actionGroup = action.GetComponent<CanvasGroup>();
+            rankRow = T("Rank").gameObject; rankNumber = A("Rank/Number"); rankLabel = A("Rank/Label"); rankButton = T("Rank/Go").GetComponent<Button>();
+            rankButton.onClick.AddListener(() => { if (card != null) OnRank?.Invoke(card); });
             action.onClick.AddListener(() => { if (card != null) OnAction?.Invoke(card); });
         }
 
@@ -81,6 +87,12 @@ namespace MafiaNight.UI.Kit
             bigStamp.SetActive(done);
             tape.SetActive(!challenge); clip.SetActive(challenge); ring.SetActive(bonus && live); burn.SetActive(done);
 
+            rankRow.SetActive(c.hasRank && !c.secret);
+            if (c.hasRank)
+            {
+                rankNumber.Text = c.rankMine > 0 ? CoinPill.Format(c.rankMine) : "—";
+                rankLabel.Text = c.rankMine > 0 ? "مركزك\n" + CoinPill.Format(c.rankValue) + " " + KitEventsBoard.MetricName(c.rankMetric) : "لسا ما دخلت\nالتصنيف";
+            }
             typedRow.SetActive(c.secret); redactRow.SetActive(c.secret);
             tallyRow.SetActive(challenge && !c.secret && !done && c.goal > 0);
             if (tallyRow.activeSelf) Tally(c);

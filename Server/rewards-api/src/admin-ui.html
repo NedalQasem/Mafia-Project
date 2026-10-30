@@ -196,6 +196,12 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
 
 /* the narrow table of the sent list */
 .cols2 .tbl{min-width:0}
+/* ranking block of the event editor */
+.rankbox{margin:6px 0 12px;padding:12px 14px;border-radius:6px;background:#1c170f0d;box-shadow:inset 0 0 0 1px #1c170f33}
+.rankbox h6{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1.05rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.prizes{display:grid;gap:6px}
+.prizes .pz{display:grid;grid-template-columns:64px 64px 1fr 40px;gap:8px;align-items:center}
+.prizes .pz input,.prizes .pz select{padding:6px 8px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700;min-width:0}
 /* narrow screens: the collapsed sidebar keeps only a tiny name */
 @media(max-width:1100px){aside .brand b{font-size:.58rem;letter-spacing:.5px;overflow:hidden}aside{padding:14px 8px}}
 /* phones */
@@ -240,6 +246,8 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
 
     <button class="nav" data-v="packs"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8zM3 8l9 5 9-5M12 13v8"/></svg><span>الحزم</span></button>
     <button class="nav" data-v="mail"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/></svg><span>البريد</span></button>
+
+    <button class="nav" data-v="codes"><svg viewBox="0 0 24 24"><path d="M4 8h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4V8zM10 8v10" stroke-dasharray="2 2"/></svg><span>الأكواد</span></button>
     <button class="nav" data-v="words"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span>الكلمات الممنوعة</span></button>
     <button class="nav" data-v="reports"><svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg><span>البلاغات</span><i class="n hide" id="nReports"></i></button>
     <button class="nav" data-v="players"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-4 3.2-6 6.5-6s5.9 2 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .6 3.3 2.5 3.5 6"/></svg><span>اللاعبون</span></button>
@@ -301,6 +309,13 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
       </div>
     </section>
 
+
+    <section class="view" id="v-codes">
+      <div class="top"><h1>أكواد الترويج<small>عروض برا اللعبة: انشر الكود (انستغرام، واتساب…) واللاعب بيكتبه بالبريد</small></h1><button class="btn red sp" id="newCode">+ كود جديد</button></div>
+      <div class="paper card"><div class="empty hide" id="cdEmpty">ما في أكواد. اضغط «كود جديد».</div><table class="tbl" id="cdTable"></table>
+        <p class="hint">كل لاعب بيستخدم الكود مرة وحدة. اللعبة بتقفل اللاعب ١٠ دقايق بعد ٥ محاولات غلط ورا بعض عشان ما حدا يخمّن الأكواد.</p></div>
+    </section>
+
     <section class="view" id="v-words">
       <div class="top"><h1>الكلمات الممنوعة<small>بتتفلتر من الدردشة قبل ما توصل، فوق القائمة الجاهزة باللعبة</small></h1></div>
       <div class="grid" style="grid-template-columns:1fr 1fr">
@@ -345,6 +360,15 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
         <div class="row2" id="gBonus"><div class="f"><label for="eMul">مضاعف الذهب</label><input id="eMul" type="number" min="1" max="5" step="0.5" value="2"><small>أقصى ٥ مرات. بينطبّق على الكوينز بس، مش الخبرة ولا الرتبة</small></div><div></div></div>
         <div class="row2 hide" id="gChal"><div class="f"><label for="eGoal">الهدف (عدد المباريات)</label><input id="eGoal" type="number" min="1" max="1000" value="10"></div><div class="f"><label for="eMetric">بتنعدّ</label><select id="eMetric"><option value="wins">الانتصارات</option><option value="games">المباريات الملعوبة</option></select></div><div class="f"><label for="eRw">المكافأة (كوينز)</label><input id="eRw" type="number" min="0" max="10000" value="500"></div></div>
         <div class="f hide" id="gSecret"><label class="sw"><span class="tog" id="eSecret" role="switch" aria-checked="false" tabindex="0"></span> أخفِ الجائزة لحد ما يبدأ الحدث</label></div>
+
+        <div class="rankbox"><h6><span class="tog" id="rkTog" role="switch" aria-checked="false" tabindex="0"></span> تصنيف لهذا الحدث <small style="font-family:Cairo;font-weight:700;font-size:.7rem;color:var(--soft)">لاعبين بيتنافسوا ضمن الحدث ومراكزهم بتظهر باللعبة</small></h6>
+          <div id="rkFields" class="hide">
+            <div class="row2"><div class="f"><label for="rkMetric">بيتصنّفوا حسب</label><select id="rkMetric"><option value="wins">الانتصارات خلال الحدث</option><option value="games">المباريات الملعوبة</option><option value="points">نقاط الرتبة المكسوبة</option><option value="secs">الدقائق الملعوبة</option></select></div><div class="f"><label for="rkWinners">عدد المراكز اللي بتاخد جوائز</label><input id="rkWinners" type="number" value="5" min="1" max="20"></div></div>
+            <label style="display:block;font-weight:800;font-size:.8rem;color:var(--soft);margin-bottom:3px">الجوائز (من مركز، لمركز، الحزمة)</label>
+            <div class="prizes" id="rkPrizes"></div>
+            <button class="btn ghost sm" type="button" id="rkAdd" style="margin-top:8px">+ جائزة</button>
+            <div class="f" style="margin-top:10px"><label for="rkDist">توزيع الجوائز</label><select id="rkDist"><option value="auto">تلقائي عند نهاية الحدث (بيوصلوا على البريد)</option><option value="manual">يدوي: أنا بضغط «وزّع الجوائز»</option></select></div>
+          </div></div>
         <div class="err" id="eErr" role="alert"></div>
         <div class="foot-act"><button class="btn red" type="submit">احفظ وطبّق</button><button class="btn ghost" type="button" data-cancel>إلغاء</button></div>
       </form>
@@ -381,6 +405,26 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
     <div class="f"><label for="pkItems">عناصر من المتجر (اختياري)</label><input id="pkItems" class="ltr" dir="ltr" placeholder="frame_ember, chat_port"><small>معرّفات العناصر بالكتالوج، مفصولة بفاصلة. لازم تكون موجودة بمتجر PlayFab.</small></div>
     <div class="err" id="pkErr" role="alert"></div>
     <div class="foot-act"><button class="btn red" type="submit">احفظ</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
+  </form>
+</div></div></div>
+
+<div class="drawer" id="d-rank"><div class="paper edit" style="grid-template-columns:1fr"><div class="form">
+  <h2><span id="rkTitle">تصنيف الحدث</span><button class="x" data-close aria-label="إغلاق" type="button">×</button></h2>
+  <div class="srcnote" id="rkInfo"></div>
+  <div class="empty hide" id="rkEmpty">ما حدا بالتصنيف لسا.</div>
+  <table class="tbl" id="rkTable"></table>
+  <div class="warn" id="rkWarn"></div>
+  <div class="foot-act"><button class="btn greenb" id="rkDistBtn" type="button">وزّع الجوائز الآن</button><button class="btn ghost" type="button" data-close>إغلاق</button></div>
+</div></div></div>
+
+<div class="drawer" id="d-code"><div class="paper edit" style="grid-template-columns:1fr"><div class="form">
+  <h2><span id="cdTitle">كود ترويج جديد</span><button class="x" data-close aria-label="إغلاق" type="button">×</button></h2>
+  <form id="codeForm" autocomplete="off">
+    <div class="row2"><div class="f"><label for="cdCode">الكود</label><input id="cdCode" class="ltr" dir="ltr" maxlength="20" placeholder="MAFIA2026"><small>حروف إنجليزي وأرقام (٣ لـ٢٠). ما بيفرّق كبير وصغير. فاضي = كود عشوائي</small></div><div class="f"><label>&nbsp;</label><button class="btn ghost sm" type="button" id="cdRandom">ولّد كود عشوائي</button></div></div>
+    <div class="f"><label for="cdPack">الحزمة</label><select id="cdPack"></select></div>
+    <div class="row2"><div class="f"><label for="cdMax">أقصى عدد استخدامات</label><input id="cdMax" type="number" min="0" value="1000"><small>٠ = بلا حد</small></div><div class="f"><label for="cdUntil">ينتهي</label><input id="cdUntil" type="datetime-local"><small>فاضي = بلا نهاية</small></div></div>
+    <div class="err" id="cdErr" role="alert"></div>
+    <div class="foot-act"><button class="btn red" type="submit">احفظ وفعّل</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
   </form>
 </div></div></div>
 <div class="toast" id="toast" role="status"></div>
@@ -466,10 +510,11 @@ async function loadEvents() {
   $('#evEmpty').classList.toggle('hide', EVENTS.length > 0);
   $('#evTable').innerHTML = EVENTS.length ? '<tr><th>الحدث</th><th>النوع</th><th>الحالة</th><th>الموعد</th><th>التفاصيل</th><th>فعّال</th><th></th></tr>' + EVENTS.map(e =>
     `<tr><td><div class="t">${esc(e.title)}</div><div class="m">${esc(e.kicker)}</div></td><td><span class="${KIND[e.kind][1]}">${KIND[e.kind][0]}</span></td><td>${stampOf(e.status)}</td><td>${span(e)}</td><td>${detail(e)}</td><td>${tog(e.enabled !== false, e.id)}</td>
-    <td><div class="act"><button class="btn ghost sm" data-edit="${esc(e.id)}">عدّل</button><button class="btn ghost sm del" data-del="${esc(e.id)}">احذف</button></div></td></tr>`).join('') : '';
+    <td><div class="act">${e.ranking && e.ranking.enabled ? `<button class="btn greenb sm" data-rank="${esc(e.id)}">التصنيف</button>` : ''}<button class="btn ghost sm" data-edit="${esc(e.id)}">عدّل</button><button class="btn ghost sm del" data-del="${esc(e.id)}">احذف</button></div></td></tr>`).join('') : '';
   setBadge($('#nEvents'), EVENTS.filter(e => e.status === 'live').length);
 }
-function detail(e) { return e.kind === 'bonus' ? '×' + ar(e.coinsMultiplier) + ' كوينز' : e.kind === 'challenge' ? (e.metric === 'games' ? 'العب ' : 'اربح ') + ar(e.goal) + ' · ' + ar(e.rewardCoins) + ' كوينز' : e.secret ? 'الجائزة مخفية' : '—'; }
+function detail(e) { const rk = e.ranking && e.ranking.enabled ? ' · تصنيف ' + (METRIC_SHORT[e.ranking.metric] || '') : ''; return (e.kind === 'bonus' ? '×' + ar(e.coinsMultiplier) + ' كوينز' : e.kind === 'challenge' ? (e.metric === 'games' ? 'العب ' : 'اربح ') + ar(e.goal) + ' · ' + ar(e.rewardCoins) + ' كوينز' : e.secret ? 'الجائزة مخفية' : '—') + rk; }
+const METRIC_SHORT = { wins: 'الانتصارات', games: 'المباريات', points: 'نقاط الرتبة', secs: 'الدقائق' };
 
 let edit = { type: 'event', id: null, kind: 'bonus', ref: 'adId' };
 function openDrawer(type, id) {
@@ -482,6 +527,7 @@ function openDrawer(type, id) {
     $('#eTitle').value = e.title; $('#eKick').value = e.kicker || ''; $('#eBody').value = e.body || ''; $('#eFrom').value = toLocal(e.from); $('#eUntil').value = toLocal(e.until);
     $('#eMul').value = e.coinsMultiplier || 2; $('#eGoal').value = e.goal || 10; $('#eRw').value = e.rewardCoins == null ? 500 : e.rewardCoins; $('#eMetric').value = e.metric || 'wins';
     setSwitch($('#eSecret'), e.secret === true);
+    fillRanking(e);
     setKind(e.kind);
   } else {
     const o = OFFERS.find(x => x.id === id) || { adId: '', mast: '', headline: '', body: '', stamp: '' };
@@ -537,6 +583,7 @@ $('#formEvent').onsubmit = async e => {
   if (edit.kind === 'challenge') { body.goal = Number($('#eGoal').value); body.rewardCoins = Number($('#eRw').value); body.metric = $('#eMetric').value; }
   if (edit.kind === 'info') body.secret = $('#eSecret').classList.contains('on');
   const old = EVENTS.find(x => x.id === edit.id); if (old) body.enabled = old.enabled !== false;
+  body.ranking = readRanking();
   try { await api('/events/save', body); closeDrawer(); toast('انحفظ وطُبّق عند اللاعبين فوراً'); loadEvents(); } catch (x) { $('#eErr').textContent = errText(x.code); }
 };
 
@@ -731,6 +778,100 @@ document.addEventListener('click', async e => {
   }
 });
 api('/packs').then(r => { PACKS = r.packs; }).catch(() => {});
+
+// ------------------------------------------------------------------ live ops: ranking inside an event
+ERR.bad_metric = 'نوع التصنيف غير صحيح'; ERR.bad_winners = 'عدد المراكز بين ١ و٢٠'; ERR.bad_prize_ranks = 'مراكز الجائزة لازم تكون ضمن عدد المراكز (من ≤ إلى)'; ERR.already_distributed = 'الجوائز انوزّعت قبل'; ERR.no_ranking = 'هالحدث بدون تصنيف';
+const METRIC = { wins: 'الانتصارات', games: 'المباريات', points: 'نقاط الرتبة', secs: 'الدقائق' };
+function prizeRow(p) {
+  const row = document.createElement('div'); row.className = 'pz';
+  row.innerHTML = `<input type="number" min="1" max="20" value="${p.from}" aria-label="من مركز"><input type="number" min="1" max="20" value="${p.to}" aria-label="إلى مركز"><select aria-label="الحزمة">${PACKS.map(k => `<option value="${esc(k.id)}" ${k.id === p.packId ? 'selected' : ''}>${esc(k.name.ar || k.name.en)} (${k.coins ? ar(k.coins) + ' كوينز' : ''}${k.gems ? ' ' + ar(k.gems) + ' جواهر' : ''})</option>`).join('') || '<option value="">ضيف حزمة من صفحة الحزم</option>'}</select><button type="button" class="btn ghost sm del" aria-label="احذف">×</button>`;
+  row.querySelector('button').onclick = () => row.remove();
+  $('#rkPrizes').appendChild(row);
+}
+function fillRanking(e) {
+  const r = (e && e.ranking) || null;
+  setSwitch($('#rkTog'), !!(r && r.enabled)); $('#rkFields').classList.toggle('hide', !(r && r.enabled));
+  $('#rkMetric').value = r ? r.metric : 'wins'; $('#rkWinners').value = r ? r.winners : 5; $('#rkDist').value = r ? r.distribution : 'auto';
+  $('#rkPrizes').innerHTML = '';
+  ((r && r.prizes) || []).forEach(prizeRow);
+}
+function readRanking() {
+  if (!$('#rkTog').classList.contains('on')) return { enabled: false };
+  const prizes = [...$$('#rkPrizes .pz')].map(row => { const [a, b] = row.querySelectorAll('input'); return { from: Number(a.value), to: Number(b.value), packId: row.querySelector('select').value }; });
+  return { enabled: true, metric: $('#rkMetric').value, winners: Number($('#rkWinners').value), prizes, distribution: $('#rkDist').value };
+}
+$('#rkTog').onclick = () => { setSwitch($('#rkTog'), !$('#rkTog').classList.contains('on')); $('#rkFields').classList.toggle('hide', !$('#rkTog').classList.contains('on')); };
+$('#rkAdd').onclick = () => { const n = $$('#rkPrizes .pz').length; prizeRow({ from: n + 1, to: n + 1, packId: PACKS[0] ? PACKS[0].id : '' }); };
+
+let rkEvent = null;
+async function openRanking(id) {
+  rkEvent = id;
+  try {
+    const r = await api('/events/ranking?id=' + encodeURIComponent(id));
+    $('#rkTitle').textContent = 'تصنيف: ' + r.title;
+    $('#rkInfo').textContent = (r.endsInSec ? 'شغّال · ينتهي بعد ' + ago(Date.now() - r.endsInSec * 1000).replace('قبل ', '') + ' · ' : 'انتهى · ') + 'بيتصنّفوا حسب: ' + METRIC[r.metric] + ' · الجوائز: ' + (r.distribution === 'auto' ? 'تلقائية عند النهاية' : 'يدوية');
+    $('#rkEmpty').classList.toggle('hide', r.rows.length > 0);
+    $('#rkTable').innerHTML = r.rows.length ? '<tr><th>#</th><th>اللاعب</th><th>' + METRIC[r.metric] + '</th><th>الجائزة</th></tr>' + r.rows.map(x =>
+      `<tr><td class="t">${ar(x.rank)}</td><td><div class="t">${esc(x.name)}</div><div class="m mono">${esc(x.pf)}</div></td><td class="t">${ar(x.value)}</td><td>${x.prize ? pills(x.prize) : '<span class="m">—</span>'}</td></tr>`).join('') : '';
+    const d = r.distributed;
+    $('#rkWarn').className = d ? 'srcnote' : 'warn';
+    $('#rkWarn').textContent = d ? 'الجوائز انوزّعت (' + (d.by === 'auto' ? 'تلقائياً' : 'يدوياً') + ') على ' + ar(d.count) + ' لاعب. التصنيف متجمّد.' : 'الجوائز لسا ما انوزّعت. بتنوزّع ' + (r.distribution === 'auto' ? 'تلقائياً بنهاية الحدث' : 'لما تضغط الزر') + '، أو اضغط الزر هلأ وبتروح لبريد أصحاب المراكز. مرة وحدة بس، وبعدها التصنيف بيتجمّد.';
+    $('#rkDistBtn').classList.toggle('hide', !!d);
+    $('#d-rank').classList.add('on');
+  } catch (x) { toast(errText(x.code)); }
+}
+$('#rkDistBtn').onclick = async () => {
+  if (!confirm('توزيع الجوائز على أصحاب المراكز؟ بتنبعت للبريد وما بيتراجع عنه، والتصنيف بيتجمّد.')) return;
+  try { const r = await api('/events/distribute', { id: rkEvent }); toast('انوزّعت الجوائز على ' + ar(r.count) + ' لاعب'); openRanking(rkEvent); } catch (x) { toast(errText(x.code)); }
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-rank]'); if (b) openRanking(b.dataset.rank);
+  if (e.target === $('#d-rank')) $('#d-rank').classList.remove('on');
+});
+
+
+// ------------------------------------------------------------------ live ops: promo codes
+ERR.bad_code_format = 'الكود لازم يكون ٣ لـ٢٠ حرف إنجليزي أو أرقام'; ERR.bad_max_uses = 'الحد بين ٠ ومليون'; ERR.code_exists = 'الكود موجود';
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+let CODES = [];
+async function loadCodes() {
+  PACKS = (await api('/packs')).packs;
+  CODES = (await api('/codes')).codes;
+  const packName = id => { const p = PACKS.find(x => x.id === id); return p ? esc(p.name.ar || p.name.en) : '<span class="m">محذوفة</span>'; };
+  $('#cdEmpty').classList.toggle('hide', CODES.length > 0);
+  $('#cdTable').innerHTML = CODES.length ? '<tr><th>الكود</th><th>الحزمة</th><th>الاستخدام</th><th>ينتهي</th><th>الحالة</th><th>فعّال</th><th></th></tr>' + CODES.map(c => {
+    const done = (c.maxUses && c.uses >= c.maxUses) || (c.until && Date.parse(c.until) <= Date.now());
+    const state = !c.enabled ? 'off' : done ? 'done' : 'live';
+    return `<tr><td><span class="mono">${esc(c.code)}</span></td><td>${packName(c.packId)}</td><td>${ar(c.uses)} / ${c.maxUses ? ar(c.maxUses) : '∞'}</td><td>${c.until ? fmtDate(c.until) : 'بدون نهاية'}</td><td>${stampOf(state)}</td><td>${tog(c.enabled, c.code)}</td>
+      <td><div class="act"><button class="btn ghost sm" data-cd-edit="${esc(c.code)}">عدّل</button><button class="btn ghost sm del" data-cd-del="${esc(c.code)}">احذف</button></div></td></tr>`; }).join('') : '';
+}
+let cdEditing = null;
+function openCode(code) {
+  cdEditing = code || null;
+  const c = CODES.find(x => x.code === code) || { code: '', packId: PACKS[0] ? PACKS[0].id : '', maxUses: 1000, until: '', enabled: true };
+  $('#cdTitle').textContent = code ? 'تعديل الكود' : 'كود ترويج جديد'; $('#cdErr').textContent = '';
+  $('#cdCode').value = c.code; $('#cdCode').readOnly = !!code; $('#cdRandom').classList.toggle('hide', !!code);
+  $('#cdPack').innerHTML = PACKS.map(p => `<option value="${esc(p.id)}" ${p.id === c.packId ? 'selected' : ''}>${esc(p.name.ar || p.name.en)}</option>`).join('') || '<option value="">ضيف حزمة من صفحة الحزم أول</option>';
+  $('#cdMax').value = c.maxUses; $('#cdUntil').value = toLocal(c.until);
+  $('#d-code').classList.add('on'); setTimeout(() => $('#cdCode').focus(), 30);
+}
+$('#newCode').onclick = async () => { try { PACKS = (await api('/packs')).packs; } catch {} openCode(); };
+$('#cdRandom').onclick = () => { let s = ''; for (let i = 0; i < 8; i++) s += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)]; $('#cdCode').value = s; };
+$('#codeForm').onsubmit = async e => {
+  e.preventDefault(); $('#cdErr').textContent = '';
+  const old = CODES.find(x => x.code === cdEditing);
+  const body = { code: $('#cdCode').value.trim() || undefined, isNew: cdEditing ? undefined : true, packId: $('#cdPack').value, maxUses: Number($('#cdMax').value), until: toIso($('#cdUntil').value), enabled: old ? old.enabled : true };
+  try { const r = await api('/codes/save', body); $('#d-code').classList.remove('on'); toast('انحفظ الكود ' + r.code); loadCodes(); } catch (x) { $('#cdErr').textContent = errText(x.code); }
+};
+document.addEventListener('click', async e => {
+  if (e.target === $('#d-code')) $('#d-code').classList.remove('on');
+  const ed = e.target.closest('[data-cd-edit]'); if (ed) { openCode(ed.dataset.cdEdit); return; }
+  const del = e.target.closest('[data-cd-del]');
+  if (del) { if (!confirm('تأكيد حذف الكود؟ اللي استخدموه بيضل معهم البكج.')) return; try { await api('/codes/delete', { code: del.dataset.cdDel }); toast('انحذف'); loadCodes(); } catch (x) { toast(errText(x.code)); } return; }
+  const t = e.target.closest('#cdTable [data-tog]');
+  if (t) { e.stopPropagation(); try { await api('/codes/toggle', { code: t.dataset.tog, enabled: !t.classList.contains('on') }); toast(t.classList.contains('on') ? 'اتعطّل' : 'تفعّل'); loadCodes(); } catch (x) { toast(errText(x.code)); } }
+}, true);
+loaders.codes = loadCodes;
 
 // ------------------------------------------------------------------ start: a valid cookie goes straight in
 api('/overview').then(() => showApp()).catch(() => showLogin());
