@@ -22,6 +22,9 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private Image sheetBuyImage, sheetChipBg;
         [SerializeField] private int playerRank = 3;
 
+        /// <summary>The launch banner's offer the player pressed "buy" on: the store opens that ad's buy sheet when it builds (then this is cleared).</summary>
+        public static string PendingAdId;
+
         public event Action<int> OnCoinsChanged;
         public int Coins { get; set; } = 1250;
 
@@ -85,6 +88,7 @@ namespace MafiaNight.UI.Kit
             }
             // ads (newspaper pages) come from the catalog too
             var ads = new List<StoreAdCarousel.Ad>();
+            var adItems = new Dictionary<string, StoreItem>();
             var catalog = StoreData.Catalog;
             if (catalog != null)
                 foreach (var def in catalog.ads)
@@ -94,12 +98,18 @@ namespace MafiaNight.UI.Kit
                     if (item == null) continue;
                     if (def.offerPrice > 0 && def.offerPrice != item.price) { item.price = def.offerPrice; item.storeId = def.offerStoreId; }
                     string price = !string.IsNullOrEmpty(item.priceText) ? item.priceText : CoinPill.Format(item.price);
-                    ads.Add(new StoreAdCarousel.Ad { mast = def.mast, headline = def.headline, body = def.body, stamp = def.stamp, price = price, item = item, countdown = def.countdownSeconds > 0, countdownSeconds = def.countdownSeconds });
+                    adItems[def.id] = item;
+                    ads.Add(new StoreAdCarousel.Ad { id = def.id, mast = def.mast, headline = def.headline, body = def.body, stamp = def.stamp, price = price, item = item, countdown = def.countdownSeconds > 0, countdownSeconds = def.countdownSeconds });
                 }
             carousel.gameObject.SetActive(ads.Count > 0);
             carousel.SetAds(ads);
             carousel.OnBuy -= OnAdBuy; carousel.OnBuy += OnAdBuy;
             Select(category);
+            if (!string.IsNullOrEmpty(PendingAdId))
+            {
+                string want = PendingAdId; PendingAdId = null;
+                if (Application.isPlaying && adItems.TryGetValue(want, out var wanted)) OnAdBuy(wanted);
+            }
         }
 
         private void OnAdBuy(StoreItem item) { Resolve(item); OpenSheet(item); }

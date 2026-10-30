@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -48,6 +49,10 @@ namespace MafiaNight.UI.Kit
                 tmp.isRightToLeftText = false;     // we already output visual order
                 tmp.richText = false;
                 tmp.textWrappingMode = TextWrappingModes.NoWrap;
+                // Lalezar's pair-kerning table throws joined letters on top of each other (a final reh after a yaa jumps ~100 px back and hides
+                // under its neighbours): shaped text needs no kerning from it
+                if (tmp.font != null && tmp.font.name.IndexOf("Lalezar", StringComparison.OrdinalIgnoreCase) >= 0 && tmp.fontFeatures != null && tmp.fontFeatures.Count > 0)
+                    tmp.fontFeatures = new System.Collections.Generic.List<UnityEngine.TextCore.OTL_FeatureTag>();
 
                 if (!ArabicShaper.ContainsArabic(text)) { tmp.text = text; return; }
                 tmp.text = wrap ? WrapShaped() : Shape(text);

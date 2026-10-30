@@ -15,12 +15,18 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private GameObject pagePrefab;
         [SerializeField] private GameObject dotPrefab;
         [SerializeField] private float period = 5.5f;
+        [SerializeField] private float pageTilt = -1f;      // degrees each page lies crooked (the store tilts its ads; the launch banner tilts its whole sheet instead)
         [SerializeField] private RectTransform progress;   // thin red bar above the ad that runs out before the next page
 
         public event Action<StoreItem> OnBuy;
+        /// <summary>The page's "see it in the store" link (only pages that have one, like the launch banner's).</summary>
+        public event Action OnMore;
 
         [Serializable]
-        public class Ad { public string mast, headline, body, stamp, price; public StoreItem item; public bool countdown; public int countdownSeconds; }
+        public class Ad { public string id, mast, headline, body, stamp, price, was; public StoreItem item; public bool countdown; public int countdownSeconds; }
+
+        public int Current => current;
+        public int Count => pages.Count;
 
         private readonly List<CanvasGroup> pages = new List<CanvasGroup>();
         private readonly List<Image> shades = new List<Image>();
@@ -43,8 +49,8 @@ namespace MafiaNight.UI.Kit
                 var ad = ads[i];
                 var go = Instantiate(pagePrefab, pagesRoot);
                 // pages turn around their right edge, like a newspaper (HTML: transform-origin 100% 50%, rotate -1deg)
-                var prt = (RectTransform)go.transform; prt.pivot = new Vector2(1f, 0.5f); prt.anchoredPosition = new Vector2(prt.rect.width * 0.5f, 0f);
-                prt.localRotation = Quaternion.Euler(0f, 0f, -1f);
+                var prt = (RectTransform)go.transform; prt.pivot = new Vector2(1f, 0.5f); prt.anchoredPosition = prt.anchorMin.x == prt.anchorMax.x ? new Vector2(prt.rect.width * 0.5f, 0f) : Vector2.zero;   // stretched pages already fit their parent
+                prt.localRotation = Quaternion.Euler(0f, 0f, pageTilt);
                 var cg = go.GetComponent<CanvasGroup>(); cg.alpha = i == 0 ? 1f : 0f; cg.blocksRaycasts = i == 0;
                 shades.Add(go.transform.Find("Shade").GetComponent<Image>());
                 go.transform.Find("Mast/Right").GetComponent<ArabicText>().Text = ad.mast;
@@ -58,6 +64,21 @@ namespace MafiaNight.UI.Kit
                 var cd = go.transform.Find("Countdown");
                 cd.gameObject.SetActive(ad.countdown);
                 if (ad.countdown) { countdowns.Add(cd.Find("Value").GetComponent<ArabicText>()); secondsLeft = ad.countdownSeconds; }
+                // optional parts of the bigger launch-banner page: the normal price crossed out, and a link to the store
+                var was = go.transform.Find("Was");
+                if (was != null)
+                {
+                    was.gameObject.SetActive(!string.IsNullOrEmpty(ad.was));
+                    if (!string.IsNullOrEmpty(ad.was))
+                    {
+                        var wv = was.Find("Value").GetComponent<ArabicText>(); wv.Text = ad.was;
+                        var wt = wv.GetComponent<TMPro.TMP_Text>(); wt.ForceMeshUpdate();
+                        var strike = wv.transform.Find("Strike") as RectTransform;
+                        if (strike != null) strike.sizeDelta = new Vector2(wt.preferredWidth + 8f, strike.sizeDelta.y);
+                    }
+                }
+                var more = go.transform.Find("More");
+                if (more != null) more.GetComponent<Button>().onClick.AddListener(() => OnMore?.Invoke());
                 var buy = go.transform.Find("Buy");
                 buy.GetComponentInChildren<ArabicText>().Text = ad.price;
                 var item = ad.item;
@@ -106,20 +127,20 @@ namespace MafiaNight.UI.Kit
             var a = pages[from]; var b = pages[to];
             b.transform.SetSiblingIndex(0); a.transform.SetAsLastSibling();
             b.alpha = 1f; b.blocksRaycasts = true; a.blocksRaycasts = false;
-            b.transform.localRotation = Quaternion.Euler(0f, 0f, -1f); shades[to].color = new Color(0, 0, 0, 0);
+            b.transform.localRotation = Quaternion.Euler(0f, 0f, pageTilt); shades[to].color = new Color(0, 0, 0, 0);
             current = to; Paint();                                    // dots follow at once, as in the mockup
             for (float t = 0; t < dur; t += Time.unscaledDeltaTime)
             {
                 float k = Bezier(t / dur);
                 float angle = -118f * dir * k;
-                a.transform.localRotation = Quaternion.Euler(0f, angle, -1f);
+                a.transform.localRotation = Quaternion.Euler(0f, angle, pageTilt);
                 float bright = k < 0.6f ? Mathf.Lerp(1f, 0.7f, k / 0.6f) : Mathf.Lerp(0.7f, 0.4f, (k - 0.6f) / 0.4f);
                 shades[from].color = new Color(0, 0, 0, 1f - bright);
                 a.alpha = Mathf.Abs(angle) >= 90f ? 0f : 1f - k;   // backface hidden once it is edge-on
                 yield return null;
             }
             a.alpha = 0f; shades[from].color = new Color(0, 0, 0, 0);
-            a.transform.localRotation = Quaternion.Euler(0f, 0f, -1f);
+            a.transform.localRotation = Quaternion.Euler(0f, 0f, pageTilt);
             timer = 0f; turn = null;
         }
 

@@ -9,7 +9,7 @@ const { PlayFabError } = require('./playfab');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -146,7 +146,8 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     '/v1/leaderboard': (pf, b) => leaderboard.board(pf, b),
     '/v1/wall': async () => leaderboard.wall(),
   } : {};
-  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost);
+  const offersPost = offers ? { '/v1/offers': async () => ({ ok: true, offers: offers.active() }) } : {};
+  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost);
 
   const server = http.createServer((req, res) => {
     const ip = (cfg.trustProxy && req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : req.socket.remoteAddress) || 'unknown';
