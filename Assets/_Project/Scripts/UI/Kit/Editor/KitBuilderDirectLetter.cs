@@ -14,7 +14,7 @@ namespace MafiaNight.UI.Kit.Editor
     /// </summary>
     public static partial class KitBuilder
     {
-        private static readonly string[] DmNames = { "dm_tape", "dm_photo", "dm_strip" };
+        private static readonly string[] DmNames = { "dm_tape", "dm_photo", "dm_strip", "dm_paper", "dm_grain", "dm_dash_h", "dm_dash_v" };
 
         [MenuItem("Mafia Night/UI Kit/Build Direct Letter")]
         public static void BuildDirectLetterMenu()
@@ -41,10 +41,10 @@ namespace MafiaNight.UI.Kit.Editor
                 if (imp == null) continue;
                 imp.textureType = TextureImporterType.Sprite; imp.spriteImportMode = SpriteImportMode.Single;
                 imp.alphaIsTransparency = true; imp.mipmapEnabled = false; imp.filterMode = FilterMode.Bilinear; imp.spritePixelsPerUnit = 100;
-                imp.wrapMode = n == "dm_tape" ? TextureWrapMode.Repeat : TextureWrapMode.Clamp; imp.textureCompression = TextureImporterCompression.Uncompressed;
+                imp.wrapMode = n == "dm_tape" || n == "dm_grain" || n.StartsWith("dm_dash") ? TextureWrapMode.Repeat : TextureWrapMode.Clamp; imp.filterMode = n == "dm_grain" || n.StartsWith("dm_dash") ? FilterMode.Point : FilterMode.Bilinear; imp.textureCompression = TextureImporterCompression.Uncompressed;
                 var s = new TextureImporterSettings(); imp.ReadTextureSettings(s);
                 s.spriteMeshType = SpriteMeshType.FullRect;
-                s.spriteBorder = n == "dm_photo" ? new Vector4(14, 14, 14, 14) : Vector4.zero;
+                s.spriteBorder = n == "dm_photo" ? new Vector4(14, 14, 14, 14) : n == "dm_paper" ? new Vector4(80, 80, 80, 80) : Vector4.zero;
                 imp.SetTextureSettings(s);
                 imp.SaveAndReimport();
             }
@@ -64,6 +64,20 @@ namespace MafiaNight.UI.Kit.Editor
                 else if (edge < 6f) c = Over(C(0x8a7a5a, .16f * (1f - edge / 6f)), c);
                 return c;
             });
+            // the letter paper: smooth (the grain and the dashed edge are drawn crisp on top, like the mockup does), darker toward the edges
+            Make("dm_paper", 256, 256, (x, y) =>
+            {
+                float d = RoundRectSdf(x, y, 128f, 128f, 128f, 128f, 6f);
+                if (d > 0f) return Color.clear;
+                float dist = Mathf.Min(Mathf.Min(x, 256f - x), Mathf.Min(y, 256f - y));
+                float t = Mathf.Clamp01(1f - dist / 60f); t = t * t * .6f;
+                return Color.Lerp(C(0xd9cfb4), C(0x8a7a5a), t);
+            });
+            // fine grain: black specks of random strength, tiled at 1:1
+            Make("dm_grain", 128, 128, (x, y) => new Color(0f, 0f, 0f, Hash((int)x, (int)y) * .14f));
+            // dashed lines for the inner edge
+            Make("dm_dash_h", 24, 4, (x, y) => x < 14f ? C(0x1c170f, .38f) : Color.clear);
+            Make("dm_dash_v", 4, 24, (x, y) => y < 14f ? C(0x1c170f, .38f) : Color.clear);
             // a strip of yellowed sticky tape
             Make("dm_strip", 128, 40, (x, y) =>
             {
@@ -80,7 +94,7 @@ namespace MafiaNight.UI.Kit.Editor
             var lalezar = th.fontLalezar != null ? th.fontLalezar : th.fontHeading; var cairo = th.fontBody;
             var soft = new Color32(0x4A, 0x3C, 0x24, 255);
             EnsureEventSprites(); EnsureMailSprites(); EnsureDmSprites();
-            var sPaper = Spr("ml_paper"); var sSeal = Spr("ev_seal"); var sGreen = Spr("ev_green");
+            var sPaper = Spr("dm_paper"); var sSeal = Spr("ev_seal"); var sGreen = Spr("ev_green");
             var sTape = Spr("dm_tape"); var sPhoto = Spr("dm_photo"); var sStrip = Spr("dm_strip");
 
             void NoWrap(TextMeshProUGUI t) { t.overflowMode = TextOverflowModes.Overflow; t.textWrappingMode = TextWrappingModes.NoWrap; }
@@ -108,6 +122,15 @@ namespace MafiaNight.UI.Kit.Editor
             {
                 var t = Go(name, deco.transform); var r = Rt(t); r.anchorMin = new Vector2(0, top ? 1 : 0); r.anchorMax = new Vector2(1, top ? 1 : 0); r.pivot = new Vector2(.5f, top ? 1 : 0); r.sizeDelta = new Vector2(0, 36); r.anchoredPosition = Vector2.zero;
                 var i = t.AddComponent<Image>(); i.sprite = sTape; i.type = Image.Type.Tiled; i.raycastTarget = false; return t;
+            }
+            // grain and the dashed inner edge, crisp (the paper sprite itself is smooth)
+            { var gr = Go("Grain", deco.transform); Stretch(Rt(gr)); var gi = gr.AddComponent<Image>(); gi.sprite = Spr("dm_grain"); gi.type = Image.Type.Tiled; gi.raycastTarget = false; }
+            for (int side = 0; side < 4; side++)
+            {
+                bool horiz = side < 2; var dl = Go("Dash" + side, deco.transform); var dr = Rt(dl);
+                if (horiz) { dr.anchorMin = new Vector2(0, side == 0 ? 1 : 0); dr.anchorMax = new Vector2(1, side == 0 ? 1 : 0); dr.pivot = new Vector2(.5f, side == 0 ? 1 : 0); dr.sizeDelta = new Vector2(-48, 4); dr.anchoredPosition = new Vector2(0, side == 0 ? -24 : 24); }
+                else { dr.anchorMin = new Vector2(side == 2 ? 0 : 1, 0); dr.anchorMax = new Vector2(side == 2 ? 0 : 1, 1); dr.pivot = new Vector2(side == 2 ? 0 : 1, .5f); dr.sizeDelta = new Vector2(4, -48); dr.anchoredPosition = new Vector2(side == 2 ? 24 : -24, 0); }
+                var di = dl.AddComponent<Image>(); di.sprite = Spr(horiz ? "dm_dash_h" : "dm_dash_v"); di.type = Image.Type.Tiled; di.raycastTarget = false;
             }
             var tapeTop = Tape("TapeTop", true); var tapeBottom = Tape("TapeBottom", false);
             var seal = Go("Seal", deco.transform); At(seal, new Vector2(1f, 1f), new Vector2(-44, 36), new Vector2(130, 130));
