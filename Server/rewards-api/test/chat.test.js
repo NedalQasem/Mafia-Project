@@ -267,3 +267,17 @@ test('the built-in english words are caught, with a few spelling tricks, and inn
   assert.equal(await say('fck this, stfu!'), '*** this, *****');
   assert.equal(await say('analysis of the cumin and the dickens class'), 'analysis of the cumin and the dickens class');
 });
+
+test('names of players seen are kept on disk, so a search still finds them after a restart', async () => {
+  const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
+  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'chat-')), 'chat.json');
+  const pf = { getDisplayName: async id => (id === 'PLAYER6009' ? 'Player6009' : null), getProgress: async () => null };
+  const a = createChat({ cfg: {}, playfab: pf, file, log: { error() {} } });
+  await a.who('PLAYER6009'); await a.who('NONAME0001');
+  a.flushNow();
+  const b = createChat({ cfg: {}, playfab: pf, file, log: { error() {} } });
+  assert.deepEqual(b.searchPeople('player6009').map(x => x.pf), ['PLAYER6009']);
+  assert.deepEqual(b.searchPeople('لاعب'), []);                         // the default name is not kept
+  b.forgetPerson('PLAYER6009'); b.flushNow();
+  assert.deepEqual(createChat({ cfg: {}, playfab: pf, file, log: { error() {} } }).searchPeople('player'), []);
+});

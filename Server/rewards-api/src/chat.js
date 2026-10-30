@@ -53,7 +53,8 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     extraExact = new Set(((x && x.exact) || []).map(normalize).filter(Boolean));
   }
 
-  let state = { nextId: 0, messages: { [PUBLIC]: [] }, groups: {}, reads: {}, blocks: {}, mutes: {}, reported: {} };
+  // names: pf -> display name of every player seen, kept on disk so the admin search still finds them after a restart
+  let state = { nextId: 0, messages: { [PUBLIC]: [] }, groups: {}, reads: {}, blocks: {}, mutes: {}, reported: {}, names: {} };
   try { if (file) state = Object.assign(state, JSON.parse(fs.readFileSync(file, 'utf8'))); } catch { /* first run */ }
   const lastSend = new Map();           // pf -> { ch -> ms }
   const lastSeen = new Map();           // pf -> ms of the last poll
@@ -82,6 +83,7 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     try { const p = await playfab.getProgress(pf, 'Progress'); if (p) { rank = rankIndex(p.rankPoints || 0); level = p.level || 1; } } catch { /* keep the default */ }
     const entry = { name, rank, level, at: now() };
     people.set(pf, entry);
+    if (name !== 'لاعب' && state.names[pf] !== name) { state.names[pf] = name; save(); }
     return entry;
   }
 
@@ -362,14 +364,15 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     return state.mutes[pf] || 0;
   }
   /** Forgets the cached name of a player (after the admin renamed him). */
-  function forgetPerson(pf) { people.delete(pf); }
+  function forgetPerson(pf) { people.delete(pf); if (state.names[pf]) { delete state.names[pf]; save(); } }
   function muteUntil(pf) { const u = state.mutes[pf] || 0; return u > now() ? u : 0; }
-  /** Players seen since the service started whose name contains the text (the names are not stored anywhere else). */
+  /** Players ever seen whose name contains the text: the fresh cache first, then the names kept on disk. */
   function searchPeople(text) {
     const q = normalize(String(text || '').trim());
     if (!q) return [];
-    const out = [];
-    for (const [pf, p] of people) if (normalize(p.name).includes(q)) out.push({ pf, name: p.name, rank: p.rank, level: p.level });
+    const out = [], seen = new Set();
+    for (const [pf, p] of people) if (normalize(p.name).includes(q)) { out.push({ pf, name: p.name, rank: p.rank, level: p.level }); seen.add(pf); }
+    for (const [pf, name] of Object.entries(state.names)) if (!seen.has(pf) && normalize(name).includes(q)) out.push({ pf, name, rank: 0, level: 1 });
     return out.slice(0, 20);
   }
 
