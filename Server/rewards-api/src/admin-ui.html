@@ -448,7 +448,8 @@ const ERR = {
   ad_or_item_required: 'اكتب معرّف الإعلان أو العنصر', bad_adId: 'معرّف الإعلان غير صحيح (حروف وأرقام و_ و- فقط)', bad_itemId: 'معرّف العنصر غير صحيح (حروف وأرقام و_ و- فقط)',
   bad_word: 'الكلمة لازم تكون كلمة وحدة بدون فراغ', too_many: 'وصلت الحد الأقصى للكلمات', not_found: 'ما انوجد (يمكن انحذف)', id_taken: 'المعرّف مستخدم',
 };
-const errText = c => ERR[c] || 'صار خطأ (' + c + ')';
+let lastPf = '';   // PlayFab's own reason of the last refusal, shown after our text
+const errText = c => (ERR[c] || 'صار خطأ (' + c + ')') + (lastPf && /playfab|insufficient/.test(c) ? ' · ' + lastPf : '');
 
 function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2400); }
 
@@ -458,6 +459,7 @@ async function api(path, body) {
   let res, j = null;
   try { res = await fetch(BASE + '/api' + path, opt); j = await res.json(); } catch { throw { code: 'network' }; }
   if (res.status === 401 && path !== '/login') { showLogin(); throw { code: 'not_logged_in' }; }
+  lastPf = (j && j.playfab) || '';
   if (!j || !j.ok) throw Object.assign({ code: (j && j.error) || 'error' }, j || {});
   return j;
 }
@@ -476,7 +478,7 @@ const loaders = { home: loadHome, events: loadEvents, offers: loadOffers, words:
 $$('.nav[data-v]').forEach(b => b.onclick = () => {
   $$('.nav').forEach(x => x.classList.toggle('on', x === b));
   $$('section.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
-  loaders[b.dataset.v]().catch(() => {});
+  Promise.resolve(loaders[b.dataset.v]()).catch(() => {});
 });
 const setBadge = (el, n) => { el.textContent = ar(n); el.classList.toggle('hide', !n); };
 
