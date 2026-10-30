@@ -6,15 +6,16 @@
 
 const MAX = 3;
 
-function createOffers({ cfg = {}, now = () => Date.now() }) {
-  const list = Array.isArray(cfg.offers) ? cfg.offers : [];
+function createOffers({ cfg = {}, source = null, now = () => Date.now() }) {
+  // from the admin board's own list when it has one (source), otherwise from config.json; read on every call so an edit applies at once
+  const items = () => { const l = source ? source() : cfg.offers; return Array.isArray(l) ? l : []; };
 
   function text(v, max) { return typeof v === 'string' ? v.slice(0, max) : ''; }
 
   function active() {
     const t = now();
     const out = [];
-    for (const o of list) {
+    for (const o of items()) {
       if (!o || o.enabled === false) continue;
       const adId = text(o.adId, 64), itemId = text(o.itemId, 64);
       if (!adId && !itemId) continue;

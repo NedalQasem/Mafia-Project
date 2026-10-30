@@ -144,7 +144,10 @@ function createLeaderboard({ chat, cfg = {}, now = () => Date.now(), log = conso
     save();
   }
 
-  return { record, board, wall, purge, flushNow, secondsToReset, dayKey, weekKey, CATS, _state: () => state };
+  /** All-time numbers of one player (null when he never finished a paid match) and how many players have any. */
+  function playerStats(pf) { return state.all[pf] ? Object.assign({}, state.all[pf]) : null; }
+  function playerCount() { return Object.keys(state.all).length; }
+  return { record, board, wall, purge, flushNow, playerStats, playerCount, secondsToReset, dayKey, weekKey, CATS, _state: () => state };
 }
 
 module.exports = { createLeaderboard, CATS };

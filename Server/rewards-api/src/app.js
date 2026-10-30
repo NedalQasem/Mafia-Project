@@ -9,7 +9,7 @@ const { PlayFabError } = require('./playfab');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, admin = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -60,6 +60,7 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
       if (leaderboard) leaderboard.record(playFabId, { won: reward.won, role: rep.myRole, survived: rep.survived, durationSec: rep.durationSec, rankPointsGained: reward.rankPoints, rankPointsNow: progress.rankPoints });
       if (events) events.record(playFabId, { won: reward.won });
       store.addDaily(playFabId, today());
+      if (admin) admin.noteMatch(match.id);
       store.putMatch(match.id, match);
     }
     // a running bonus event multiplies the coins (only the coins; xp and rank stay the same)
@@ -161,6 +162,7 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     const url = new URL(req.url, 'http://local');
     if (req.method === 'GET' && url.pathname === '/health') return send(res, 200, { ok: true });
     if (limited(ip)) return send(res, 429, { ok: false, error: 'slow down' });
+    if (admin && admin.owns(url.pathname)) return admin.handle(req, res, url, ip);      // the admin board (its own login)
 
     const isResult = req.method === 'POST' && url.pathname === '/v1/match-result';
     const isChatPost = req.method === 'POST' && !!posts[url.pathname];

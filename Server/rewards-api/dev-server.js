@@ -10,7 +10,13 @@ const { createChat } = require('./src/chat');
 const { createStore } = require('./src/store');
 const { createFriends } = require('./src/friends');
 const { createLeaderboard } = require('./src/leaderboard');
+const { createOffers } = require('./src/offers');
 const { createEvents } = require('./src/events');
+const { createAdminStore } = require('./src/adminstore');
+const { createAdmin, hashPassword } = require('./src/admin');
+const os = require('node:os');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const names = { OTHER0001: 'أم سعيد', OTHER0002: 'البيك', OTHER0003: 'لينا', OTHER0004: 'مازن' };
 const progress = { OTHER0001: { rankPoints: 3200 }, OTHER0002: { rankPoints: 4100 }, OTHER0003: { rankPoints: 2100 }, OTHER0004: { rankPoints: 1100 } };
@@ -29,8 +35,12 @@ const cfg = {
   rewards: { baseXp: 20, winXp: 25, survivedXp: 5, baseCoins: 10, winCoins: 20, rankWin: 50, rankLose: -20 },
   chat: { publicCooldownMs: 2000 },
 };
-const chat = createChat({ cfg, playfab });
-const friends = createFriends({ chat, cfg });
+// the admin board has its own data in a temp folder; password for the local test: dev-password-123, address http://127.0.0.1:8788/admin
+const devDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mafia-dev-'));
+const reportsFile = path.join(devDir, 'chat-reports.jsonl');
+const adminStore = createAdminStore({ file: path.join(devDir, 'admin.json') });
+const chat = createChat({ cfg, playfab, extraWords: () => adminStore.words, reportsFile });
+const friends = createFriends({ chat, cfg, reportsFile });
 const leaderboard = createLeaderboard({ chat, cfg });
 // demo numbers so the leaderboards screen has something to show
 const demo = ['أبو فارس', 'أم سعيد', 'البيك', 'لينا', 'الحج حسن', 'سارة', 'مازن', 'أبو خليل', 'ريما', 'الدكتور', 'نور', 'أبو جاسم', 'هدى', 'الأستاذ'];
@@ -48,6 +58,15 @@ cfg.events = [
   { id: 'dev-night', kind: 'info', kicker: 'بطولة', title: 'ليلة العصابة الكبرى', body: 'بطولة ليلية بجوائز نادرة.', secret: true, from: iso(48), until: iso(53) },
   { id: 'dev-old', kind: 'info', kicker: 'أرشيف', title: 'أسبوع الرصاصة الذهبية', body: 'انتهى الحدث. شكراً لمشاركتك، وننتظرك بالحدث القادم.', from: iso(-200), until: iso(-100) },
 ];
-const events = createEvents({ cfg, playfab });
-const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, events });
-server.listen(8788, '127.0.0.1', () => console.log('dev server on http://127.0.0.1:8788 (pretend PlayFab; players OTHER0001..OTHER0004 exist)'));
+const events = createEvents({ cfg, playfab, source: () => (adminStore.events !== null ? adminStore.events : cfg.events) });
+const offers = createOffers({ cfg, source: () => (adminStore.offers !== null ? adminStore.offers : cfg.offers) });
+cfg.offers = [{ adId: 'ad_ember', stamp: '−٣٠٪', until: iso(2) }, { itemId: 'chat_port', mast: 'وصل حديثاً', headline: 'خلفية الميناء\nسفن وليل أسود', stamp: 'جديد' }];
+fs.writeFileSync(reportsFile, [
+  { ts: iso(-0.05), reporter: 'OTHER0001', target: 'OTHER0002', channel: 'public', messageId: 1, text: 'كلام مسيء', reason: 'abuse' },
+  { ts: iso(-1), type: 'player', reporter: 'OTHER0003', target: 'OTHER0002', reason: 'cheat', note: '' },
+  { ts: iso(-5), type: 'player', reporter: 'OTHER0004', target: 'OTHER0001', reason: 'spam', note: '' },
+].map(r => JSON.stringify(r)).join('\n') + '\n');
+const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, reportsFile, adminCfg: { passwordHash: hashPassword('dev-password-123'), path: '/admin' } });
+for (let i = 0; i < 40; i++) adminStore.noteMatch('dev-m' + i, leaderboard.dayKey(Date.now() - (i % 7) * 86400000));
+const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, events, offers, admin });
+server.listen(8788, '127.0.0.1', () => console.log('dev server on http://127.0.0.1:8788 (pretend PlayFab; players OTHER0001..OTHER0004 exist) · admin board: http://127.0.0.1:8788/admin password dev-password-123'));

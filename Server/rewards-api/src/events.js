@@ -14,9 +14,10 @@ const KINDS = ['bonus', 'challenge', 'info'];
 const MAX = { live: 6, soon: 3, done: 3 };
 const MAX_MULTIPLIER = 5, MAX_GOAL = 1000, MAX_REWARD = 10000;
 
-function createEvents({ cfg = {}, playfab = null, now = () => Date.now(), log = console, file = null }) {
+function createEvents({ cfg = {}, source = null, playfab = null, now = () => Date.now(), log = console, file = null }) {
   const c = Object.assign({ archiveDays: 14, claimGraceDays: 3 }, cfg.eventsSettings || {});
-  const list = (Array.isArray(cfg.events) ? cfg.events : []).filter(e => e && typeof e.id === 'string' && e.id && e.enabled !== false && KINDS.includes(e.kind));
+  // the events come from the admin board when it has its own list (source), otherwise from config.json; read on every call so an edit applies at once
+  const items = () => { const l = source ? source() : cfg.events; return (Array.isArray(l) ? l : []).filter(e => e && typeof e.id === 'string' && e.id && e.enabled !== false && KINDS.includes(e.kind)); };
   let state = {};   // eventId -> playFabId -> { p: progress, c: claimed }
   try { if (file) state = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* first run */ }
   let timer = null;
@@ -49,14 +50,14 @@ function createEvents({ cfg = {}, playfab = null, now = () => Date.now(), log = 
   function coinsMultiplier() {
     const t = now();
     let best = 1;
-    for (const e of list) if (e.kind === 'bonus' && running(e, t)) best = Math.max(best, Math.min(MAX_MULTIPLIER, Number(e.coinsMultiplier) || 1));
+    for (const e of items()) if (e.kind === 'bonus' && running(e, t)) best = Math.max(best, Math.min(MAX_MULTIPLIER, Number(e.coinsMultiplier) || 1));
     return best;
   }
 
   /** Called once per player and match when he is paid: moves the challenges that are running. */
   function record(pf, { won }) {
     const t = now();
-    for (const e of list) {
+    for (const e of items()) {
       if (e.kind !== 'challenge' || !running(e, t)) continue;
       const metric = e.metric === 'games' ? 'games' : 'wins';
       if (metric === 'wins' && !won) continue;
@@ -70,7 +71,7 @@ function createEvents({ cfg = {}, playfab = null, now = () => Date.now(), log = 
   function board(pf) {
     const t = now();
     const live = [], soon = [], done = [];
-    for (const e of list) {
+    for (const e of items()) {
       const s = span(e), g = goalOf(e), mine = (state[e.id] && state[e.id][pf]) || { p: 0, c: false };
       const claimable = g > 0 && mine.p >= g && !mine.c && rewardOf(e) > 0;
       const out = {
@@ -99,7 +100,7 @@ function createEvents({ cfg = {}, playfab = null, now = () => Date.now(), log = 
 
   /** The player collects the reward of a finished challenge. Marked first, so two taps can never pay twice. */
   async function claim(pf, { id } = {}) {
-    const e = list.find(x => x.id === id);
+    const e = items().find(x => x.id === id);
     const g = e ? goalOf(e) : 0;
     if (!e || e.kind !== 'challenge') throw new ChatError('unknown event', 404);
     const t = now(), s = span(e);
@@ -114,7 +115,7 @@ function createEvents({ cfg = {}, playfab = null, now = () => Date.now(), log = 
     return { ok: true, coins };
   }
 
-  return { board, record, claim, coinsMultiplier, flushNow, purge: () => { const ids = new Set(list.map(e => e.id)); for (const k of Object.keys(state)) if (!ids.has(k)) delete state[k]; save(); } };
+  return { board, record, claim, coinsMultiplier, flushNow, purge: () => { const l = source ? source() : cfg.events; const ids = new Set((Array.isArray(l) ? l : []).map(e => e && e.id)); for (const k of Object.keys(state)) if (!ids.has(k)) delete state[k]; save(); } };
 }
 
 module.exports = { createEvents };

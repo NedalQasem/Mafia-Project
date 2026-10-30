@@ -34,7 +34,7 @@ function normalize(s) {
 function dmChannel(a, b) { return 'dm:' + [a, b].sort().join(':'); }
 function dmMembers(ch) { return ch.slice(3).split(':'); }
 
-function createChat({ cfg, playfab, now = () => Date.now(), log = console, file = null, reportsFile = null }) {
+function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), log = console, file = null, reportsFile = null }) {
   const c = Object.assign({
     maxLen: 300, publicCooldownMs: 5000, cooldownMs: 1000, publicKeep: 300, convKeep: 200, historyPerChannel: 50,
     maxGroups: 10, maxGroupMembers: 10, autoMuteReports: 3, autoMuteMinutes: 120, bannedWords: [], bannedExact: [], useDefaultBannedWords: true, pollMaxMs: 25000, onlineWithinMs: 45000,
@@ -42,6 +42,16 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
   const dflt = c.useDefaultBannedWords !== false;
   const banned = [...(dflt ? DEFAULT_WORDS.CONTAINS : []), ...c.bannedWords].map(normalize).filter(Boolean);                 // hit anywhere inside a word
   const bannedExact = new Set([...(dflt ? DEFAULT_WORDS.EXACT : []), ...c.bannedExact].map(normalize).filter(Boolean));   // hit only as a whole word
+  // words added from the admin board (extraWords() -> { exact: [], contains: [] }) are merged in without a restart
+  let extraKey = '', extraContains = [], extraExact = new Set();
+  function syncExtra() {
+    const x = extraWords ? extraWords() : null;
+    const key = x ? JSON.stringify(x) : '';
+    if (key === extraKey) return;
+    extraKey = key;
+    extraContains = ((x && x.contains) || []).map(normalize).filter(Boolean);
+    extraExact = new Set(((x && x.exact) || []).map(normalize).filter(Boolean));
+  }
 
   let state = { nextId: 0, messages: { [PUBLIC]: [] }, groups: {}, reads: {}, blocks: {}, mutes: {}, reported: {} };
   try { if (file) state = Object.assign(state, JSON.parse(fs.readFileSync(file, 'utf8'))); } catch { /* first run */ }
@@ -86,11 +96,12 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
 
   /** Hides banned words behind stars: each word is compared after normalizing its spelling. (Letters split by spaces are not caught; reports cover that.) */
   function filter(text) {
-    if (!banned.length && !bannedExact.size) return text;
+    syncExtra();
+    if (!banned.length && !bannedExact.size && !extraContains.length && !extraExact.size) return text;
     return text.split(' ').map(word => {
       const n = normalize(word);
       const bare = n.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');          // "كس!" is still the word "كس"
-      return bannedExact.has(bare) || banned.some(w => n.includes(w)) ? '*'.repeat(word.length) : word;
+      return bannedExact.has(bare) || extraExact.has(bare) || banned.some(w => n.includes(w)) || extraContains.some(w => n.includes(w)) ? '*'.repeat(word.length) : word;
     }).join(' ');
   }
 
@@ -340,7 +351,27 @@ function createChat({ cfg, playfab, now = () => Date.now(), log = console, file 
     try { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file + '.tmp', JSON.stringify(state)); fs.renameSync(file + '.tmp', file); } catch (e) { log.error('chat save failed', e.message); }
   }
 
-  return { who, pushEvent, isOnline, onlineCount, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, ChatError, _state: () => state };
+  // ---------------------------------------------------------------- for the admin board
+
+  /** Mutes a player for some minutes (0 lifts the mute). Returns the time the mute ends (ms), or 0. */
+  function adminMute(pf, minutes) {
+    if (!PF_ID.test(String(pf))) throw new ChatError('bad_player');
+    const m = Math.max(0, Math.min(10080, Math.floor(Number(minutes) || 0)));
+    if (m === 0) delete state.mutes[pf]; else state.mutes[pf] = now() + m * 60 * 1000;
+    save();
+    return state.mutes[pf] || 0;
+  }
+  function muteUntil(pf) { const u = state.mutes[pf] || 0; return u > now() ? u : 0; }
+  /** Players seen since the service started whose name contains the text (the names are not stored anywhere else). */
+  function searchPeople(text) {
+    const q = normalize(String(text || '').trim());
+    if (!q) return [];
+    const out = [];
+    for (const [pf, p] of people) if (normalize(p.name).includes(q)) out.push({ pf, name: p.name, rank: p.rank, level: p.level });
+    return out.slice(0, 20);
+  }
+
+  return { who, pushEvent, isOnline, onlineCount, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, adminMute, muteUntil, searchPeople, ChatError, _state: () => state };
 }
 
 module.exports = { createChat, ChatError, normalize, rankIndex, dmChannel, PUBLIC };

@@ -12,6 +12,8 @@ const { createFriends } = require('./friends');
 const { createLeaderboard } = require('./leaderboard');
 const { createOffers } = require('./offers');
 const { createEvents } = require('./events');
+const { createAdminStore } = require('./adminstore');
+const { createAdmin } = require('./admin');
 
 const cfgPath = process.env.CONFIG || path.join(__dirname, '..', 'config.json');
 const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
@@ -23,15 +25,23 @@ if (!secretKey) { console.error('PLAYFAB_SECRET_KEY is not set (put it in the se
 const store = createStore(cfg.dataFile);
 const playfab = createPlayFab({ titleId: cfg.titleId, secretKey });
 const dataDir = require('node:path').dirname(cfg.dataFile);
-const chat = createChat({ cfg, playfab, file: dataDir + '/chat.json', reportsFile: dataDir + '/chat-reports.jsonl' });
+const adminStore = createAdminStore({ file: dataDir + '/admin.json' });
+const chat = createChat({ cfg, playfab, extraWords: () => adminStore.words, file: dataDir + '/chat.json', reportsFile: dataDir + '/chat-reports.jsonl' });
 const friends = createFriends({ chat, cfg, file: dataDir + '/friends.json', reportsFile: dataDir + '/chat-reports.jsonl' });
 const leaderboard = createLeaderboard({ chat, cfg, file: dataDir + '/leaderboard.json' });
-const offers = createOffers({ cfg });
-const events = createEvents({ cfg, playfab, file: dataDir + '/events.json' });
-const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events });
+// events and offers: the admin board's own list once it saved one, otherwise the ones of config.json
+const offers = createOffers({ cfg, source: () => (adminStore.offers !== null ? adminStore.offers : cfg.offers) });
+const events = createEvents({ cfg, playfab, source: () => (adminStore.events !== null ? adminStore.events : cfg.events), file: dataDir + '/events.json' });
+// the admin board: needs ADMIN_PASSWORD_HASH (made by set-admin.sh); without it the board does not exist
+const admin = createAdmin({
+  cfg, store: adminStore, chat, friends, leaderboard, reportsFile: dataDir + '/chat-reports.jsonl',
+  adminCfg: Object.assign({}, cfg.admin, process.env.ADMIN_PASSWORD_HASH ? { passwordHash: process.env.ADMIN_PASSWORD_HASH } : {}, process.env.ADMIN_PATH ? { path: process.env.ADMIN_PATH } : {}),
+});
+const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, admin });
+if (admin.enabled) console.log('admin board on ' + admin.base); else console.log('admin board is off (no ADMIN_PASSWORD_HASH)');
 
-setInterval(() => { chat.purge(); friends.purge(); leaderboard.purge(); }, 3600 * 1000).unref();
+setInterval(() => { chat.purge(); friends.purge(); leaderboard.purge(); events.purge(); }, 3600 * 1000).unref();
 setInterval(() => store.purge(Date.now(), 48 * 3600 * 1000, new Date().toISOString().slice(0, 10)), 3600 * 1000).unref();
-for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); } finally { process.exit(0); } });
+for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); adminStore.flushNow(); } finally { process.exit(0); } });
 
 server.listen(cfg.port, cfg.host, () => console.log(`rewards api on ${cfg.host}:${cfg.port} (title ${cfg.titleId})`));
