@@ -30,8 +30,12 @@ namespace MafiaNight.UI.Kit
 
         /// <summary>The app can hold the notices back (another sheet or popup is open).</summary>
         public Func<bool> CanShow;
+        /// <summary>The app's record of news already seen: a queued notice whose keys are all seen meanwhile (its board was opened) is dropped.</summary>
+        public Func<string, bool> IsSeen;
+        /// <summary>Called with each key of a notice when it really comes out (only then does it count as seen).</summary>
+        public Action<string> Shown;
 
-        private sealed class Item { public Kind kind; public string title, detail; public Action tap; }
+        private sealed class Item { public Kind kind; public string title, detail; public Action tap; public string[] keys; }
         private readonly Queue<Item> queue = new Queue<Item>();
         private KitQuickMenu menu;
         private Item showing;
@@ -54,9 +58,9 @@ namespace MafiaNight.UI.Kit
         }
 
         /// <summary>Adds news to the queue (shown when its turn comes and the menu is free).</summary>
-        public void Enqueue(Kind kind, string titleText, string detailText, Action onTap)
+        public void Enqueue(Kind kind, string titleText, string detailText, Action onTap, params string[] keys)
         {
-            queue.Enqueue(new Item { kind = kind, title = titleText, detail = detailText, tap = onTap });
+            queue.Enqueue(new Item { kind = kind, title = titleText, detail = detailText, tap = onTap, keys = keys ?? new string[0] });
             UpdateMore();
         }
 
@@ -100,6 +104,7 @@ namespace MafiaNight.UI.Kit
             bool free = !menu.Busy && (CanShow == null || CanShow());
             if (showing == null)
             {
+                while (queue.Count > 0 && Stale(queue.Peek())) queue.Dequeue();
                 if (queue.Count > 0 && free && anim == null) Show(queue.Dequeue());
                 return;
             }
@@ -110,8 +115,16 @@ namespace MafiaNight.UI.Kit
             if (shownFor >= Stay) Leave();
         }
 
+        private bool Stale(Item it)
+        {
+            if (IsSeen == null || it.keys.Length == 0) return false;
+            foreach (var key in it.keys) if (!IsSeen(key)) return false;
+            return true;
+        }
+
         private void Show(Item it)
         {
+            if (Shown != null) foreach (var key in it.keys) Shown(key);
             showing = it; shownFor = 0f; leaving = false; dragged = false;
             title.Text = it.title ?? ""; detail.Text = it.detail ?? "";
             sealImage.sprite = it.kind == Kind.Mail ? sealMail : it.kind == Kind.Reward ? sealReward : it.kind == Kind.Event ? sealEvent : it.kind == Kind.Ending ? sealEnding : sealOffer;

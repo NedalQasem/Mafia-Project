@@ -96,6 +96,8 @@ namespace MafiaNight.App
                 notice = Instantiate(th.quickNoticePrefab).GetComponent<KitQuickNotice>();
                 notice.Attach(menu);
                 notice.CanShow = Free;
+                notice.IsSeen = Seen;
+                notice.Shown = MarkSeen;
             }
             return true;
         }
@@ -321,6 +323,9 @@ namespace MafiaNight.App
         private List<string> seenList;
         private HashSet<string> seenSet;
         private float freeCheckAt; private bool freeCache;
+        private readonly HashSet<string> queued = new HashSet<string>();      // waiting in the notice's queue (seen only once it really comes out)
+
+        private bool Fresh(string key) => !Seen(key) && !queued.Contains(key);
 
         private bool Seen(string key)
         {
@@ -358,16 +363,17 @@ namespace MafiaNight.App
         {
             if (notice == null || mailData == null) return;
             var fresh = new List<MailItem>();
-            foreach (var m in mailData.Items) if (m.Claimed == 0 && !Seen("ml:" + m.Id)) fresh.Add(m);
+            foreach (var m in mailData.Items) if (m.Claimed == 0 && Fresh("ml:" + m.Id)) fresh.Add(m);
             if (fresh.Count == 0) return;
-            foreach (var m in fresh) MarkSeen("ml:" + m.Id);
+            var keys = new string[fresh.Count];
+            for (int i = 0; i < keys.Length; i++) { keys[i] = "ml:" + fresh[i].Id; queued.Add(keys[i]); }
             Action open = () => { if (mailBoard == null) StartCoroutine(OpenMail()); };
             if (fresh.Count == 1)
             {
                 var m = fresh[0]; string pack = Pack(m.Coins, m.Gems, m.Items.Length);
-                notice.Enqueue(KitQuickNotice.Kind.Mail, "برقية جديدة", string.IsNullOrEmpty(pack) ? m.Title : m.Title + " · " + pack, open);
+                notice.Enqueue(KitQuickNotice.Kind.Mail, "برقية جديدة", string.IsNullOrEmpty(pack) ? m.Title : m.Title + " · " + pack, open, keys);
             }
-            else notice.Enqueue(KitQuickNotice.Kind.Mail, "وصلك " + CoinPill.Format(fresh.Count) + " برقيات", fresh[0].Title + "، وغيرها", open);
+            else notice.Enqueue(KitQuickNotice.Kind.Mail, "وصلك " + CoinPill.Format(fresh.Count) + " برقيات", fresh[0].Title + "، وغيرها", open, keys);
         }
 
         private void SeeMail() { if (mailData != null) foreach (var m in mailData.Items) MarkSeen("ml:" + m.Id); }
@@ -379,24 +385,24 @@ namespace MafiaNight.App
             // a prize to collect first, then an event about to end, then the new ones
             foreach (var list in new[] { events.Live, events.Done })
                 foreach (var e in list)
-                    if (e.Claimable && !e.Claimed && !Seen("rw:" + e.Id))
+                    if (e.Claimable && !e.Claimed && Fresh("rw:" + e.Id))
                     {
-                        MarkSeen("rw:" + e.Id);
-                        notice.Enqueue(KitQuickNotice.Kind.Reward, "جائزتك جاهزة!", e.Title + (e.RewardCoins > 0 ? " · استلم " + CoinPill.Format(e.RewardCoins) + " كوينز" : ""), open);
+                        queued.Add("rw:" + e.Id);
+                        notice.Enqueue(KitQuickNotice.Kind.Reward, "جائزتك جاهزة!", e.Title + (e.RewardCoins > 0 ? " · استلم " + CoinPill.Format(e.RewardCoins) + " كوينز" : ""), open, "rw:" + e.Id);
                     }
             foreach (var e in events.Live)
-                if (e.EndsInSeconds > 0 && e.EndsInSeconds <= 3600 && (e.HasRanking || ((int)e.Kind == 2 && e.Progress > 0 && !e.Claimed)) && !Seen("end:" + e.Id))
+                if (e.EndsInSeconds > 0 && e.EndsInSeconds <= 3600 && (e.HasRanking || ((int)e.Kind == 2 && e.Progress > 0 && !e.Claimed)) && Fresh("end:" + e.Id))
                 {
-                    MarkSeen("end:" + e.Id);
-                    notice.Enqueue(KitQuickNotice.Kind.Ending, e.Title + " بتخلص", "باقي " + Span(e.EndsInSeconds * 1000L) + (e.RankMine > 0 ? " · إنت بالمركز " + CoinPill.Format(e.RankMine) : ""), open);
+                    queued.Add("end:" + e.Id);
+                    notice.Enqueue(KitQuickNotice.Kind.Ending, e.Title + " بتخلص", "باقي " + Span(e.EndsInSeconds * 1000L) + (e.RankMine > 0 ? " · إنت بالمركز " + CoinPill.Format(e.RankMine) : ""), open, "end:" + e.Id);
                 }
             int fresh = 0;
             foreach (var e in events.Live)
-                if (!Seen("ev:" + e.Id))
+                if (Fresh("ev:" + e.Id))
                 {
-                    MarkSeen("ev:" + e.Id);
-                    if (++fresh > 2) continue;              // a pile of new events at once: two notices are enough
-                    notice.Enqueue(KitQuickNotice.Kind.Event, "حدث جديد: " + e.Title, !string.IsNullOrEmpty(e.Kicker) ? e.Kicker : (e.Body ?? ""), open);
+                    if (++fresh > 2) { MarkSeen("ev:" + e.Id); continue; }     // a pile of new events at once: two notices are enough
+                    queued.Add("ev:" + e.Id);
+                    notice.Enqueue(KitQuickNotice.Kind.Event, "حدث جديد: " + e.Title, !string.IsNullOrEmpty(e.Kicker) ? e.Kicker : (e.Body ?? ""), open, "ev:" + e.Id);
                 }
         }
 
@@ -414,10 +420,10 @@ namespace MafiaNight.App
             // the first load of the run: the launch banner shows the offers anyway
             if (!offersSeenOnce) { offersSeenOnce = true; foreach (var ad in shown) MarkSeen("of:" + ad.id); return; }
             foreach (var ad in shown)
-                if (!Seen("of:" + ad.id))
+                if (Fresh("of:" + ad.id))
                 {
-                    MarkSeen("of:" + ad.id);
-                    notice.Enqueue(KitQuickNotice.Kind.Offer, "عرض جديد بالسوق", (ad.headline ?? "").Replace('\n', ' '), () => { if (menu != null) menu.OpenOffers(); });
+                    queued.Add("of:" + ad.id);
+                    notice.Enqueue(KitQuickNotice.Kind.Offer, "عرض جديد بالسوق", (ad.headline ?? "").Replace('\n', ' '), () => { if (menu != null) menu.OpenOffers(); }, "of:" + ad.id);
                 }
         }
 
