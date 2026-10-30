@@ -9,7 +9,7 @@ const { PlayFabError } = require('./playfab');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, admin = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, admin = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -171,6 +171,17 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     if (limited(ip)) return send(res, 429, { ok: false, error: 'slow down' });
     if (admin && admin.owns(url.pathname)) return admin.handle(req, res, url, ip);      // the admin board (its own login)
 
+    // sign in with a user name and password (account recovery): the one route that has no session ticket yet
+    if (recovery && req.method === 'POST' && url.pathname === '/v1/recover/login') {
+      (async () => {
+        try {
+          const body = await readJson(req, res);
+          if (body === undefined) return;
+          send(res, 200, await recovery.login(body && body.username, body && body.password, ip));
+        } catch (e) { fail(res, e, url.pathname); }
+      })();
+      return;
+    }
     const isResult = req.method === 'POST' && url.pathname === '/v1/match-result';
     const isChatPost = req.method === 'POST' && !!posts[url.pathname];
     const isChatGet = req.method === 'GET' && ((!!chat && (url.pathname === '/v1/chat/poll' || url.pathname === '/v1/chat/inbox' || url.pathname === '/v1/chat/blocked')) || (!!friends && (url.pathname === '/v1/friends' || url.pathname === '/v1/me')));

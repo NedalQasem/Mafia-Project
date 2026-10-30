@@ -14,6 +14,7 @@ const { createOffers } = require('./offers');
 const { createEvents } = require('./events');
 const { createMail } = require('./mail');
 const { createCodes } = require('./codes');
+const { createRecovery } = require('./recovery');
 const { createAdminStore } = require('./adminstore');
 const { createAdmin } = require('./admin');
 
@@ -36,12 +37,13 @@ const offers = createOffers({ cfg, source: () => (adminStore.offers !== null ? a
 const mail = createMail({ cfg, playfab, file: dataDir + '/mail.json' });
 const events = createEvents({ cfg, playfab, mail, packs: () => adminStore.packs, nameOf: async pf => (await chat.who(pf)).name, source: () => (adminStore.events !== null ? adminStore.events : cfg.events), file: dataDir + '/events.json' });
 const codes = createCodes({ store: adminStore, mail, packs: () => adminStore.packs });
+const recovery = createRecovery({ store: adminStore, playfab });
 // the admin board: needs ADMIN_PASSWORD_HASH (made by set-admin.sh); without it the board does not exist
 const admin = createAdmin({
-  cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, reportsFile: dataDir + '/chat-reports.jsonl',
+  cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, reportsFile: dataDir + '/chat-reports.jsonl',
   adminCfg: Object.assign({}, cfg.admin, process.env.ADMIN_PASSWORD_HASH ? { passwordHash: process.env.ADMIN_PASSWORD_HASH } : {}, process.env.ADMIN_PATH ? { path: process.env.ADMIN_PATH } : {}),
 });
-const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, admin });
+const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, admin });
 if (admin.enabled) console.log('admin board on ' + admin.base); else console.log('admin board is off (no ADMIN_PASSWORD_HASH)');
 
 setInterval(() => { events.autoDistribute().catch(() => {}); }, 60 * 1000).unref();      // prizes of the events that ended

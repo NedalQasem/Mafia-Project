@@ -82,7 +82,7 @@ namespace MafiaNight.App
                 gameObject.AddComponent<RoomsFlow>();
                 MafiaNight.Services.Match.MatchRunner.Ensure();
             }
-            if (FindAnyObjectByType<KitSettingsScreen>() != null) gameObject.AddComponent<VoiceSettingsFlow>();
+            if (FindAnyObjectByType<KitSettingsScreen>() != null) { gameObject.AddComponent<VoiceSettingsFlow>(); gameObject.AddComponent<RecoveryFlow>(); }
             MafiaNight.Services.Chat.ChatService.Ensure();   // listens for messages in every scene (the chat screen reads from it)
             if (FindAnyObjectByType<KitChatScreen>(FindObjectsInactive.Include) != null) gameObject.AddComponent<ChatFlow>();
             MafiaNight.Services.Friends.FriendsService.Ensure();   // reports where the player sits and hears friend news in every scene

@@ -111,7 +111,7 @@ function cleanPack(b, id) {
   return { id, name, coins, gems, items };
 }
 
-function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, htmlFile = null, now = () => Date.now(), log = console }) {
+function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, htmlFile = null, now = () => Date.now(), log = console }) {
   const base = '/' + String(adminCfg.path || '/admin').replace(/^\/+|\/+$/g, '');
   const passwordHash = adminCfg.passwordHash || '';
   const sessionMs = (adminCfg.sessionHours || 12) * 3600 * 1000;
@@ -221,7 +221,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
     const against = readReports().filter(r => r.target === pf).length;
     let balances = null;
     if (playfab && playfab.getBalances) { try { const b = await playfab.getBalances(pf); balances = { coins: b[cfg.currencyCode] || 0, gems: b[cfg.gemsCode || 'GM'] || 0 }; } catch { /* PlayFab down: no balances */ } }
-    return { pf, name: p.name, rank: p.rank, level: p.level, num: f && f.nums[pf] ? f.nums[pf] : null, stats, reportsAgainst: against, mutedUntil: chat.muteUntil(pf) || 0, balances, pendingMail: mail ? mail.pendingFor(pf) : 0, ban: store.bans()[pf] || null, log: store.auditFor(pf, 12) };
+    return { pf, name: p.name, rank: p.rank, level: p.level, num: f && f.nums[pf] ? f.nums[pf] : null, stats, reportsAgainst: against, mutedUntil: chat.muteUntil(pf) || 0, balances, pendingMail: mail ? mail.pendingFor(pf) : 0, ban: store.bans()[pf] || null, log: store.auditFor(pf, 12), recovery: recovery ? recovery.info(pf) : null };
   }
 
   function resolveTarget(t) {
@@ -511,6 +511,23 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       if (!PF_ID.test(pf)) throw new AdminError('bad_player');
       try { await playfab.unbanUser(pf); } catch { throw new AdminError('playfab_failed', 409); }
       store.setBan(pf, null); store.audit('unban', '', pf);
+      return send(res, 200, { ok: true });
+    }
+
+    // ---- recovery account (a user name and password to get the account back on a new device)
+    if (rest === '/api/players/recovery' && method === 'POST') {
+      if (!recovery) throw new AdminError('no_recovery', 404);
+      const b = await readJson(req); const pf = String(b.pf || '');
+      if (!PF_ID.test(pf)) throw new AdminError('bad_player');
+      const r = await recovery.set(pf, b.username, b.password);
+      store.audit('recovery_set', r.username, pf);
+      return send(res, 200, { ok: true, username: r.username, password: r.password });
+    }
+    if (rest === '/api/players/recovery/remove' && method === 'POST') {
+      if (!recovery) throw new AdminError('no_recovery', 404);
+      const b = await readJson(req); const pf = String(b.pf || '');
+      if (!PF_ID.test(pf)) throw new AdminError('bad_player');
+      await recovery.remove(pf); store.audit('recovery_remove', '', pf);
       return send(res, 200, { ok: true });
     }
 

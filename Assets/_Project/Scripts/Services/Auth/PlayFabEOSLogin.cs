@@ -78,6 +78,33 @@ namespace MafiaNight.Services.Auth
             else _eos.StartLogin();
         }
 
+        public void LinkDeviceToAccount(string oldAccountSessionTicket, Action<bool, string> done)
+        {
+            if (string.IsNullOrEmpty(openIdConnectionId) || string.IsNullOrEmpty(oldAccountSessionTicket) || !_eos.TryGetIdToken(out string idToken))
+            {
+                done?.Invoke(false, "no_identity");
+                return;
+            }
+            // the link call belongs to the OLD account, so it runs with that account's session; a failure puts the current session back
+            var player = PlayFabSettings.staticPlayer;
+            string current = player.ClientSessionTicket;
+            player.ClientSessionTicket = oldAccountSessionTicket;
+            var request = new LinkOpenIdConnectRequest { ConnectionId = openIdConnectionId, IdToken = idToken, ForceLink = true };
+            PlayFabMeter.Allow("LinkOpenIdConnect", false);
+            PlayFabClientAPI.LinkOpenIdConnect(request,
+                _ =>
+                {
+                    Log.Info("Device linked to the recovered account", Tag);
+                    done?.Invoke(true, "");
+                },
+                error =>
+                {
+                    player.ClientSessionTicket = current;
+                    Log.Warning($"Linking the device failed: {error.GenerateErrorReport()}", Tag);
+                    done?.Invoke(false, "link_failed");
+                });
+        }
+
         #region EOS
 
         private void HandleEOSLoggedIn(ProductUserId userId)

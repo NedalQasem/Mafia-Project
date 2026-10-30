@@ -108,7 +108,7 @@ namespace MafiaNight.UI.Kit.Editor
                 return comp;
             }
 
-            void LinkRow(RectTransform parent, string title, string extra)
+            GameObject LinkRow(RectTransform parent, string title, string extra)
             {
                 var row = Go("Link_" + title, parent); Rt(row).sizeDelta = new Vector2(940, 96);
                 row.AddComponent<LayoutElement>().preferredHeight = 96;
@@ -116,6 +116,7 @@ namespace MafiaNight.UI.Kit.Editor
                 var t = Txt(row.transform, "T", title, th.fontBody, 36, th.leatherText, TextAlignmentOptions.MidlineRight); Place(Rt(t.gameObject), new Vector2(1, 0.5f), new Vector2(-320, 0), new Vector2(600, 56));
                 if (extra != null) { var e = Txt(row.transform, "E", extra, th.fontBody, 26, th.ivoryDim, TextAlignmentOptions.MidlineLeft); Place(Rt(e.gameObject), new Vector2(0, 0.5f), new Vector2(190, 0), new Vector2(300, 40)); }
                 var ch = Go("Arrow", row.transform); Place(Rt(ch), new Vector2(0, 0.5f), new Vector2(36, 0), new Vector2(36, 36)); var chi = Img(ch, arrow); chi.color = th.ivoryDim; ch.transform.localRotation = Quaternion.Euler(0, 0, 90f);
+                return row;
             }
 
             RectTransform c;
@@ -176,7 +177,8 @@ namespace MafiaNight.UI.Kit.Editor
             ToggleRow(c, "توفير البطارية", "يخفض الحركة وسرعة الرسم", false); ToggleRow(c, "تقليل الحركة", "يوقف التأرجح والومضات", false); ToggleRow(c, "الاهتزاز", null, true);
 
             MakeSection("الحساب", "الاسم واللغة والربط", th.avatarDefault, false, out c);
-            LinkRow(c, "تغيير الاسم", "مرة كل ٣٠ يوماً"); LinkRow(c, "ربط الحساب (حفظ تقدمك)", "غير مربوط"); LinkRow(c, "استعادة المشتريات", null);
+            LinkRow(c, "تغيير الاسم", "مرة كل ٣٠ يوماً"); LinkRow(c, "ربط الحساب (حفظ تقدمك)", "غير مربوط");
+            var recoveryRow = LinkRow(c, RecoveryRowTitle, null); LinkRow(c, "استعادة المشتريات", null);
             SegRow(c, "اللغة", new[] { "العربية", "English" }, 0);
 
             MakeSection("المساعدة", "القواعد والدعم", th.levelSeal, false, out c);
@@ -206,6 +208,8 @@ namespace MafiaNight.UI.Kit.Editor
             SetRef(ss, "sensitivity", sensSeg); SetRef(ss, "noiseToggle", noiseTg); SetRef(ss, "pttToggle", pttTg); SetRef(ss, "muteJoinToggle", muteJoinTg); SetRef(ss, "narratorToggle", narratorTg);
 
             foreach (var s in sections) { var o = new SerializedObject(s); s.SetOpen(o.FindProperty("openAtStart").boolValue, false); }
+            BuildRecoverySheet(th);
+            AddRecoverySheet(recoveryRow, canvasGo.transform);
             AddScreenHeader(canvasGo, th, "الإعدادات", "الإصدار ١٫٠٫٠", false);
             LayoutRebuilder.ForceRebuildLayoutImmediate(cRt);
             SaveScene(SettingsScenePath);
