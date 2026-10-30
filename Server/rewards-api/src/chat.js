@@ -231,6 +231,8 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
   function isOnline(pf) { return now() - (lastSeen.get(pf) || 0) < c.onlineWithinMs; }
   function seenAt(pf) { return lastSeen.get(pf) || 0; }
   function touch(pf) { lastSeen.set(pf, now()); }
+  /** The players whose game is polling now (seen within onlineWithinMs). */
+  function onlinePlayers() { const t = now(), out = []; for (const [pf, at] of lastSeen) if (t - at < c.onlineWithinMs) out.push(pf); return out; }
   function onlineCount() { let n = 0; const t = now(); for (const at of lastSeen.values()) if (t - at < c.onlineWithinMs) n++; return n; }
 
   // ---------------------------------------------------------------- the list of conversations
@@ -376,7 +378,7 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     return out.slice(0, 20);
   }
 
-  return { who, pushEvent, isOnline, onlineCount, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, adminMute, muteUntil, searchPeople, forgetPerson, ChatError, _state: () => state };
+  return { who, pushEvent, isOnline, onlineCount, onlinePlayers, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, adminMute, muteUntil, searchPeople, forgetPerson, ChatError, _state: () => state };
 }
 
 module.exports = { createChat, ChatError, normalize, rankIndex, dmChannel, PUBLIC };

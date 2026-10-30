@@ -72,7 +72,7 @@ cfg.events = [
   { id: 'dev-night', kind: 'info', kicker: 'بطولة', title: 'ليلة العصابة الكبرى', body: 'بطولة ليلية بجوائز نادرة.', secret: true, from: iso(48), until: iso(53) },
   { id: 'dev-old', kind: 'info', kicker: 'أرشيف', title: 'أسبوع الرصاصة الذهبية', body: 'انتهى الحدث. شكراً لمشاركتك، وننتظرك بالحدث القادم.', from: iso(-200), until: iso(-100) },
 ];
-const mail = createMail({ cfg, playfab });
+const mail = createMail({ cfg, playfab, notify: pfs => { for (const pf of (pfs || chat.onlinePlayers())) chat.pushEvent(pf, { type: 'mail' }); } });
 adminStore.packs = [{ id: 'pk-gold', name: { ar: 'جائزة ذهبية', en: 'Gold prize' }, coins: 5000, gems: 0, items: [] }, { id: 'pk-silver', name: { ar: 'جائزة فضية', en: 'Silver prize' }, coins: 3000, gems: 0, items: [] }, { id: 'pk-small', name: { ar: 'تشجيعية', en: 'Encouragement' }, coins: 1000, gems: 2, items: [] }];
 adminStore.codes = [{ code: 'MAFIA2026', packId: 'pk-gold', maxUses: 1000, uses: 312, until: '', enabled: true, by: {} }, { code: 'INSTA50', packId: 'pk-small', maxUses: 0, uses: 48, until: '', enabled: true, by: {} }];
 const codes = createCodes({ store: adminStore, mail, packs: () => adminStore.packs });

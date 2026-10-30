@@ -318,3 +318,18 @@ test('support: rename (3 to 25 characters, taken names refused), ban and unban, 
     assert.equal((await b.adm('/api/players/rename', { pf: 'x', name: 'valid name' })).json.error, 'bad_player');
   } finally { b.close(); }
 });
+
+test('new mail is announced at once on the chat poll: to its recipients, and a broadcast to everybody online', async () => {
+  const chat = createChat({ cfg: { chat: { pollMaxMs: 2000 } }, playfab: { getDisplayName: async () => null, getProgress: async () => null }, log: { error() {} } });
+  const mail = createMail({ cfg: { currencyCode: 'CO' }, playfab: null, notify: pfs => { for (const pf of (pfs || chat.onlinePlayers())) chat.pushEvent(pf, { type: 'mail' }); } });
+  await chat.poll('PLAYER0001', 0, 0); await chat.poll('PLAYER0002', 0, 0);           // both games are polling
+  const waiting = chat.poll('PLAYER0001', 0, 2000);                                    // a long poll that waits for news
+  const t0 = Date.now();
+  mail.send({ audience: 'players', recipients: ['PLAYER0001'], title: { ar: 'هدية' }, pack: { coins: 100 } });
+  const r = await waiting;
+  assert.ok(Date.now() - t0 < 500, 'woken at once');
+  assert.deepEqual(r.events.map(e => e.type), ['mail']);
+  assert.deepEqual((await chat.poll('PLAYER0002', 0, 0)).events, []);                  // not his mail
+  mail.send({ audience: 'all', title: { ar: 'للكل' } });
+  assert.deepEqual((await chat.poll('PLAYER0002', 0, 0)).events.map(e => e.type), ['mail']);
+});

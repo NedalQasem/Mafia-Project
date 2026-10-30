@@ -34,7 +34,8 @@ const friends = createFriends({ chat, cfg, file: dataDir + '/friends.json', repo
 const leaderboard = createLeaderboard({ chat, cfg, file: dataDir + '/leaderboard.json' });
 // events and offers: the admin board's own list once it saved one, otherwise the ones of config.json
 const offers = createOffers({ cfg, source: () => (adminStore.offers !== null ? adminStore.offers : cfg.offers) });
-const mail = createMail({ cfg, playfab, file: dataDir + '/mail.json' });
+// new mail is announced on the chat poll at once (the game fetches the mail when it hears it)
+const mail = createMail({ cfg, playfab, file: dataDir + '/mail.json', notify: pfs => { for (const pf of (pfs || chat.onlinePlayers())) chat.pushEvent(pf, { type: 'mail' }); } });
 const events = createEvents({ cfg, playfab, mail, packs: () => adminStore.packs, nameOf: async pf => (await chat.who(pf)).name, source: () => (adminStore.events !== null ? adminStore.events : cfg.events), file: dataDir + '/events.json' });
 const codes = createCodes({ store: adminStore, mail, packs: () => adminStore.packs });
 const recovery = createRecovery({ store: adminStore, playfab });

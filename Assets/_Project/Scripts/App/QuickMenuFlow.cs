@@ -46,6 +46,13 @@ namespace MafiaNight.App
             refetchAt = Time.unscaledTime + Settle;
         }
 
+        private void OnEnable() { chatService = MafiaNight.Services.Chat.ChatService.Ensure(); chatService.OnServerEvent += OnServerEvent; }
+        private void OnDisable() { if (chatService != null) chatService.OnServerEvent -= OnServerEvent; }
+
+        // the server announces new mail on the chat poll the moment the office sends it: read the mail now instead of at the next two-minute check
+        private MafiaNight.Services.Chat.ChatService chatService;
+        private void OnServerEvent(MafiaNight.Services.Chat.ServerEvent e) { if (e != null && e.Type == "mail") mailAt = 0f; }
+
         private void OnDestroy()
         {
             BlockedOffers.Changed -= OnBlockedChanged;

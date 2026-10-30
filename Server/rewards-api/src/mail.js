@@ -11,7 +11,8 @@ const { ChatError } = require('./chat');
 
 const MAX_INBOX = 100, KEEP_SENT = 100, SHOW_CLAIMED_MS = 7 * 86400000;
 
-function createMail({ cfg = {}, playfab = null, now = () => Date.now(), log = console, file = null }) {
+/** notify(pfs): tells the game at once that mail arrived (pfs = the recipients, or null for a broadcast to everybody). */
+function createMail({ cfg = {}, playfab = null, now = () => Date.now(), log = console, file = null, notify = null }) {
   const gemsCode = cfg.gemsCode || 'GM';
   let state = { nextId: 1, inbox: {}, broadcasts: [], claims: {}, sent: [] };
   try { if (file) state = Object.assign(state, JSON.parse(fs.readFileSync(file, 'utf8'))); } catch { /* first run */ }
@@ -54,6 +55,7 @@ function createMail({ cfg = {}, playfab = null, now = () => Date.now(), log = co
     state.sent.push({ id: 'b' + id, ts: t, title: base.title, audience, count, pack: base.pack, label });
     if (state.sent.length > KEEP_SENT) state.sent.splice(0, state.sent.length - KEEP_SENT);
     save();
+    if (notify) { try { notify(audience === 'all' ? null : recipients.slice()); } catch (e) { log.error('mail notify failed', e.message); } }
     return { id: 'b' + id, count };
   }
 
