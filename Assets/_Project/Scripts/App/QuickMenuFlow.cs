@@ -92,13 +92,30 @@ namespace MafiaNight.App
         }
 
         // ---------------------------------------------------------------- the mail
+        // the number on the icon is checked every two minutes; while the mail is open, every 20 seconds, so a new telegram shows up in the list
+        private const float MailEvery = 120f, MailOpenEvery = 20f;
+
         private IEnumerator RefreshMail()
         {
+            string before = MailSignature();
             yield return MailService.Fetch(m => mailData = m ?? mailData);
-            mailAt = Time.unscaledTime + 120f;
+            mailAt = Time.unscaledTime + (mailBoard != null ? MailOpenEvery : MailEvery);
             mailLoading = false;
             if (menu != null) menu.SetMail(mailData != null ? mailData.Unread : 0);
+            if (mailBoard != null && !mailClaiming && MailSignature() != before) mailBoard.Refresh(MailCards());
         }
+
+        /// <summary>What the list shows (ids and collected marks): the open board is rebuilt only when this changes.</summary>
+        private string MailSignature()
+        {
+            if (mailData == null || mailData.Items == null) return "";
+            var sb = new System.Text.StringBuilder();
+            foreach (var m in mailData.Items) sb.Append(m.Id).Append(m.Claimed > 0 ? '+' : '-');
+            return sb.ToString();
+        }
+
+        // back from another app: the mail, the coins and the name may have changed meanwhile (the admin board, a gift)
+        private void OnApplicationFocus(bool focus) { if (focus) mailAt = 0f; }
 
         private IEnumerator OpenMail()
         {
@@ -116,6 +133,7 @@ namespace MafiaNight.App
             mailBoard.OnRedeem += code => StartCoroutine(RedeemCode(code));
             mailBoard.OnClosed += () => { mailBoard = null; mailAt = 0f; };      // the number on the icon is refreshed right after
             mailBoard.Show(MailCards());
+            mailAt = Time.unscaledTime + MailOpenEvery;
             if (menu != null) menu.SetMail(mailData.Unread);
         }
 

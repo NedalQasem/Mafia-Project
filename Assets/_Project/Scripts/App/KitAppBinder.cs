@@ -104,7 +104,25 @@ namespace MafiaNight.App
             if (header != null) { header.OnBack += GoHome; header.SetCoins(currency.Coins); }
 
             Refresh();
+            if (SceneManager.GetActiveScene().name == AppScenes.Home) ReloadAccount();      // back on the home screen
         }
+
+        // coins, gems and the name can change outside the game (the admin board takes coins or renames the player), so they are asked again
+        // when the player comes back to the home screen or to the game, at most once a minute; the first home screen comes right after loading
+        private const float ReloadEvery = 60f;
+        private static float reloadedAt = -1f;
+
+        private void ReloadAccount()
+        {
+            float t = Time.realtimeSinceStartup;
+            if (reloadedAt < 0f) { reloadedAt = t; return; }
+            if (t - reloadedAt < ReloadEvery) return;
+            reloadedAt = t;
+            currency.FetchCurrencies();
+            profile.RefreshProfile();
+        }
+
+        private void OnApplicationFocus(bool focus) { if (focus && currency != null) ReloadAccount(); }
 
         private void OnDestroy()
         {
