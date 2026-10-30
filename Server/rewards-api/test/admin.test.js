@@ -27,7 +27,7 @@ async function boot(opts = {}) {
   const leaderboard = createLeaderboard({ chat, cfg });
   const events = createEvents({ cfg, playfab, source: () => (adminStore.events !== null ? adminStore.events : cfg.events) });
   const offers = createOffers({ cfg, source: () => (adminStore.offers !== null ? adminStore.offers : cfg.offers) });
-  const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, reportsFile, adminCfg: opts.noPassword ? {} : { passwordHash: hashPassword(PASSWORD), path: '/office' } });
+  const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, reportsFile, playfab: opts.adminPlayfab || null, adminCfg: opts.noPassword ? {} : { passwordHash: hashPassword(PASSWORD), path: '/office' } });
   const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, offers, events, admin });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const url = 'http://127.0.0.1:' + server.address().port;
@@ -200,5 +200,16 @@ test('overview counts every paid match once and keeps a log of what the admin di
     assert.equal(o.matchesToday, 2); assert.equal(o.days.length, 7); assert.equal(o.days[6].matches, 2); assert.equal(o.players, 1);
     assert.deepEqual(o.activity.map(a => a.action).slice(0, 2), ['word_add', 'login']);
     assert.equal((await b.call('/api/nothing')).status, 404);
+  } finally { b.close(); }
+});
+
+test('players: a name that looks like an id is not opened as a player PlayFab does not know', async () => {
+  const known = 'A1B2C3D4E5F60718';
+  const adminPlayfab = { async getDisplayName(pf) { if (pf !== known) { const e = new Error('Invalid input parameters'); e.code = 'InvalidParams'; throw e; } return 'أبو فارس'; } };
+  const b = await boot({ adminPlayfab });
+  try {
+    await b.login();
+    assert.deepEqual((await b.call('/api/players?q=Player6009')).json.players, []);
+    assert.equal((await b.call('/api/players?q=' + known)).json.players[0].pf, known);
   } finally { b.close(); }
 });

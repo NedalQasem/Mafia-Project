@@ -239,14 +239,23 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
     throw new AdminError('unknown_player', 404);
   }
 
+  /** True unless PlayFab says there is no such account (when PlayFab cannot be asked, the id is trusted). */
+  async function isAccount(pf) {
+    if (!playfab || !playfab.getDisplayName) return true;
+    try { await playfab.getDisplayName(pf); return true; } catch (e) { return !/AccountNotFound|InvalidParams|NotFound/i.test(String(e && (e.code || e.message))); }
+  }
+
   async function findPlayers(q) {
     q = String(q || '').trim();
     if (!q) return [];
     const f = friends ? friends._state() : null;
     let ids = [];
     if (/^\d{6}$/.test(q) && f && f.byNum[q]) ids = [f.byNum[q]];
-    else if (PF_ID.test(q) && !/^\d+$/.test(q)) ids = [q];
-    else ids = chat.searchPeople(q).map(x => x.pf);
+    else {
+      // a name first: "Player6009" looks like an id too, and used to open a card of a player who does not exist
+      ids = chat.searchPeople(q).map(x => x.pf);
+      if (!ids.length && PF_ID.test(q) && !/^\d+$/.test(q) && await isAccount(q)) ids = [q];
+    }
     const out = [];
     for (const pf of ids.slice(0, 5)) out.push(await playerCard(pf));
     return out;
