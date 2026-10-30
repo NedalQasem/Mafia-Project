@@ -52,8 +52,9 @@ function newId(prefix) { return prefix + '-' + Date.now().toString(36) + crypto.
 function cleanEvent(b, id, packs = []) {
   if (!b || typeof b !== 'object') throw new AdminError('bad_event');
   if (!KINDS.includes(b.kind)) throw new AdminError('bad_kind');
-  const e = { id, kind: b.kind, kicker: text(b.kicker, 24), title: text(b.title, 60), body: text(b.body, 160), enabled: b.enabled !== false };
-  if (!e.title) throw new AdminError('title_required');
+  const e = { id, kind: b.kind, kicker: text(b.kicker, 24), title: text(b.title, 60), body: text(b.body, 160), kickerEn: text(b.kickerEn, 24), titleEn: text(b.titleEn, 60), bodyEn: text(b.bodyEn, 160), enabled: b.enabled !== false };
+  if (!e.title && !e.titleEn) throw new AdminError('title_required');
+  if (!e.title) e.title = e.titleEn;       // the Arabic title is the fallback of the game: never empty
   e.from = isoOrEmpty(b.from, 'from'); e.until = isoOrEmpty(b.until, 'until');
   if (e.from && e.until && Date.parse(e.until) <= Date.parse(e.from)) throw new AdminError('until_before_from');
   if (e.kind === 'bonus') {
@@ -85,7 +86,7 @@ function cleanEvent(b, id, packs = []) {
 
 function cleanOffer(b, id) {
   if (!b || typeof b !== 'object') throw new AdminError('bad_offer');
-  const o = { id, enabled: b.enabled !== false, mast: text(b.mast, 40), headline: text(b.headline, 80), body: text(b.body, 140), stamp: text(b.stamp, 12) };
+  const o = { id, enabled: b.enabled !== false, mast: text(b.mast, 40), headline: text(b.headline, 80), body: text(b.body, 140), stamp: text(b.stamp, 12), mastEn: text(b.mastEn, 40), headlineEn: text(b.headlineEn, 80), bodyEn: text(b.bodyEn, 140), stampEn: text(b.stampEn, 12) };
   const adId = text(b.adId, 64), itemId = text(b.itemId, 64);
   if (adId && !REF_RE.test(adId)) throw new AdminError('bad_adId');
   if (itemId && !REF_RE.test(itemId)) throw new AdminError('bad_itemId');
@@ -220,7 +221,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
     const against = readReports().filter(r => r.target === pf).length;
     let balances = null;
     if (playfab && playfab.getBalances) { try { const b = await playfab.getBalances(pf); balances = { coins: b[cfg.currencyCode] || 0, gems: b[cfg.gemsCode || 'GM'] || 0 }; } catch { /* PlayFab down: no balances */ } }
-    return { pf, name: p.name, rank: p.rank, level: p.level, num: f && f.nums[pf] ? f.nums[pf] : null, stats, reportsAgainst: against, mutedUntil: chat.muteUntil(pf) || 0, balances, pendingMail: mail ? mail.pendingFor(pf) : 0 };
+    return { pf, name: p.name, rank: p.rank, level: p.level, num: f && f.nums[pf] ? f.nums[pf] : null, stats, reportsAgainst: against, mutedUntil: chat.muteUntil(pf) || 0, balances, pendingMail: mail ? mail.pendingFor(pf) : 0, ban: store.bans()[pf] || null, log: store.auditFor(pf, 12) };
   }
 
   function resolveTarget(t) {
@@ -427,7 +428,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
     if (rest === '/api/players/mute' && method === 'POST') {
       const b = await readJson(req);
       const until = chat.adminMute(String(b.pf), Number(b.minutes) || 0);
-      store.audit(until ? 'player_mute' : 'player_unmute', String(b.pf) + (until ? ' ' + b.minutes + 'm' : ''));
+      store.audit(until ? 'player_mute' : 'player_unmute', String(b.pf) + (until ? ' ' + b.minutes + 'm' : ''), String(b.pf));
       return send(res, 200, { ok: true, mutedUntil: until });
     }
     // ---- packages
@@ -474,8 +475,43 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       } else throw new AdminError('bad_audience');
       if (audience === 'players' && !recipients.length) throw new AdminError('no_recipients');
       const r = mail.send({ audience, recipients, title, body, pack, expiresInDays: days, label });
-      store.audit('mail_send', (title.ar || title.en) + ' -> ' + who + (label ? ' · ' + label : ''));
+      store.audit('mail_send', (title.ar || title.en) + ' -> ' + who + (label ? ' · ' + label : ''), recipients.length === 1 ? recipients[0] : '');
       return send(res, 200, { ok: true, id: r.id, count: r.count });
+    }
+
+    // ---- support: rename, ban, unban
+    if (rest === '/api/players/rename' && method === 'POST') {
+      if (!playfab || !playfab.setDisplayName) throw new AdminError('no_playfab', 404);
+      const b = await readJson(req); const pf = String(b.pf || '');
+      if (!PF_ID.test(pf)) throw new AdminError('bad_player');
+      const name = text(b.name, 25);
+      if (name.length < 3) throw new AdminError('bad_name');
+      const before = (await chat.who(pf)).name;
+      try { await playfab.setDisplayName(pf, name); } catch (e) { throw new AdminError(/NameNotAvailable|already/i.test(String(e && (e.code || e.message))) ? 'name_taken' : 'playfab_failed', 409); }
+      chat.forgetPerson(pf);
+      store.audit('rename', before + ' -> ' + name, pf);
+      return send(res, 200, { ok: true, name });
+    }
+    if (rest === '/api/players/ban' && method === 'POST') {
+      if (!playfab || !playfab.banUser) throw new AdminError('no_playfab', 404);
+      const b = await readJson(req); const pf = String(b.pf || '');
+      if (!PF_ID.test(pf)) throw new AdminError('bad_player');
+      const reason = text(b.reason, 140);
+      if (reason.length < 3) throw new AdminError('reason_required');
+      const hours = Math.floor(Number(b.hours) || 0);
+      if (!(hours >= 0 && hours <= 24 * 365)) throw new AdminError('bad_hours');
+      try { await playfab.banUser(pf, reason, hours); } catch { throw new AdminError('playfab_failed', 409); }
+      store.setBan(pf, { at: now(), reason, until: hours ? now() + hours * 3600000 : 0 });
+      store.audit('ban', (hours ? hours + 'h' : 'forever') + ' · ' + reason, pf);
+      return send(res, 200, { ok: true });
+    }
+    if (rest === '/api/players/unban' && method === 'POST') {
+      if (!playfab || !playfab.unbanUser) throw new AdminError('no_playfab', 404);
+      const b = await readJson(req); const pf = String(b.pf || '');
+      if (!PF_ID.test(pf)) throw new AdminError('bad_player');
+      try { await playfab.unbanUser(pf); } catch { throw new AdminError('playfab_failed', 409); }
+      store.setBan(pf, null); store.audit('unban', '', pf);
+      return send(res, 200, { ok: true });
     }
 
     // ---- balance of a player (add or take coins / gems), always with a reason
@@ -493,7 +529,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       if (b.op !== 'add' && b.op !== 'remove') throw new AdminError('bad_op');
       try { if (b.op === 'add') await playfab.addCurrency(pf, code, amount); else await playfab.subtractCurrency(pf, code, amount); }
       catch (e) { throw new AdminError(b.op === 'remove' ? 'insufficient_or_failed' : 'playfab_failed', 409); }
-      store.audit('balance_' + b.op, pf + ' ' + (b.op === 'add' ? '+' : '-') + amount + ' ' + b.currency + ' · ' + reason);
+      store.audit('balance_' + b.op, pf + ' ' + (b.op === 'add' ? '+' : '-') + amount + ' ' + b.currency + ' · ' + reason, pf);
       return send(res, 200, { ok: true });
     }
     return send(res, 404, { ok: false, error: 'not_found' });

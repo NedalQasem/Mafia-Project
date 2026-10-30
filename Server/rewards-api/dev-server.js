@@ -34,6 +34,8 @@ const playfab = {
   async addCurrency(pf, code, n) { this.bal[pf + code] = (this.bal[pf + code] || 0) + n; },
   async subtractCurrency(pf, code, n) { if ((this.bal[pf + code] || 0) < n) throw new Error('insufficient'); this.bal[pf + code] -= n; },
   async grantItems() {},
+  async setDisplayName(pf, n) { names[pf] = n; },
+  async banUser() {}, async unbanUser() {},
   async getBalances(pf) { return { CO: this.bal[pf + 'CO'] || 0, GM: this.bal[pf + 'GM'] || 0 }; },
 };
 

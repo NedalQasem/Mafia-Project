@@ -25,6 +25,7 @@ function createOffers({ cfg = {}, source = null, now = () => Date.now() }) {
       out.push({
         adId, itemId,
         mast: text(o.mast, 40), headline: text(o.headline, 80), body: text(o.body, 140), stamp: text(o.stamp, 12),
+        mastEn: text(o.mastEn, 40), headlineEn: text(o.headlineEn, 80), bodyEn: text(o.bodyEn, 140), stampEn: text(o.stampEn, 12),
         endsInSec: until ? Math.max(0, Math.floor((until - t) / 1000)) : 0,
       });
       if (out.length === MAX) break;

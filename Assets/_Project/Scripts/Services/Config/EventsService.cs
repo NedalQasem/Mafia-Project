@@ -48,7 +48,7 @@ namespace MafiaNight.Services.Config
 
     [Serializable] internal sealed class EventDto
     {
-        public string id, kind, kicker, title, body, metric;
+        public string id, kind, kicker, title, body, metric, kickerEn, titleEn, bodyEn;
         public int multiplier, goal, progress, rewardCoins, endsInSec, startsInSec;
         public bool claimed, claimable, secret;
         public RankingDto ranking;
@@ -113,7 +113,7 @@ namespace MafiaNight.Services.Config
             foreach (var e in from)
                 into.Add(new GameEvent
                 {
-                    Id = e.id, Kicker = e.kicker, Title = e.title, Body = e.body,
+                    Id = e.id, Kicker = Localized.Pick(e.kicker, e.kickerEn), Title = Localized.Pick(e.title, e.titleEn), Body = Localized.Pick(e.body, e.bodyEn),
                     Kind = e.kind == "bonus" ? GameEventKind.Bonus : e.kind == "challenge" ? GameEventKind.Challenge : GameEventKind.Info,
                     Multiplier = e.multiplier, Goal = e.goal, Progress = e.progress, CountsGames = e.metric == "games", RewardCoins = e.rewardCoins,
                     Claimed = e.claimed, Claimable = e.claimable, Secret = e.secret, EndsInSeconds = e.endsInSec, StartsInSeconds = e.startsInSec,

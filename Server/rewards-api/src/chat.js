@@ -361,6 +361,8 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     save();
     return state.mutes[pf] || 0;
   }
+  /** Forgets the cached name of a player (after the admin renamed him). */
+  function forgetPerson(pf) { people.delete(pf); }
   function muteUntil(pf) { const u = state.mutes[pf] || 0; return u > now() ? u : 0; }
   /** Players seen since the service started whose name contains the text (the names are not stored anywhere else). */
   function searchPeople(text) {
@@ -371,7 +373,7 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     return out.slice(0, 20);
   }
 
-  return { who, pushEvent, isOnline, onlineCount, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, adminMute, muteUntil, searchPeople, ChatError, _state: () => state };
+  return { who, pushEvent, isOnline, onlineCount, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, adminMute, muteUntil, searchPeople, forgetPerson, ChatError, _state: () => state };
 }
 
 module.exports = { createChat, ChatError, normalize, rankIndex, dmChannel, PUBLIC };

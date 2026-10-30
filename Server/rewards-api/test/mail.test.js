@@ -17,10 +17,13 @@ const PASSWORD = 'correct horse battery';
 const T0 = Date.UTC(2026, 10, 2, 12);
 
 function fakePlayfab() {
-  const log = []; const bal = {};
+  const log = []; const bal = {}; const names = {};
   return {
-    log, bal, failNext: null,
-    authenticate: async t => t, getDisplayName: async pf => 'اسم ' + pf, getProgress: async () => ({ rankPoints: 100, level: 3 }),
+    log, bal, names, failNext: null,
+    authenticate: async t => t, getDisplayName: async pf => names[pf] || 'اسم ' + pf,
+    async setDisplayName(pf, n) { if (n === 'TAKEN') throw Object.assign(new Error('NameNotAvailable'), { code: 'NameNotAvailable' }); names[pf] = n; },
+    async banUser(pf, reason, hours) { log.push(['ban', pf, reason, hours]); },
+    async unbanUser(pf) { log.push(['unban', pf]); }, getProgress: async () => ({ rankPoints: 100, level: 3 }),
     async addCurrency(pf, code, n) { if (this.failNext === 'coins' && code === 'CO') { this.failNext = null; throw new Error('down'); } log.push(['add', pf, code, n]); bal[pf + code] = (bal[pf + code] || 0) + n; },
     async subtractCurrency(pf, code, n) { if ((bal[pf + code] || 0) < n) throw new Error('insufficient'); log.push(['sub', pf, code, n]); bal[pf + code] -= n; },
     async grantItems(pf, ids) { log.push(['items', pf, ids]); },
@@ -265,4 +268,48 @@ test('codes through the admin and the player routes: create, redeem once, wrong 
     assert.equal((await adm('/api/codes/delete', { code: 'MAFIA2026' })).status, 200);
     assert.equal((await adm('/api/codes/delete', { code: 'MAFIA2026' })).status, 404);
   } finally { server.close(); }
+});
+
+test('events and offers keep the English texts next to the Arabic ones, and the players get both', async () => {
+  const { createEvents } = require('../src/events');
+  const { createOffers } = require('../src/offers');
+  const b = await boot();
+  try {
+    const ev = (await b.adm('/api/events/save', { kind: 'info', title: 'ليلة', titleEn: 'Night', kicker: 'بطولة', kickerEn: 'Tournament', bodyEn: 'A big night.' })).json;
+    assert.equal(ev.ok, true);
+    const e = (await b.adm('/api/events')).json.events[0];
+    assert.deepEqual([e.title, e.titleEn, e.kickerEn, e.bodyEn], ['ليلة', 'Night', 'Tournament', 'A big night.']);
+    const onlyEn = (await b.adm('/api/events/save', { kind: 'info', titleEn: 'Only English' })).json;
+    assert.equal((await b.adm('/api/events')).json.events.find(x => x.id === onlyEn.id).title, 'Only English');         // the Arabic title is never empty
+    assert.equal((await b.adm('/api/events/save', { kind: 'info' })).json.error, 'title_required');
+    const board = createEvents({ cfg: {}, source: () => (b.adminStore.events), now: () => Date.now() }).board('p').live.find(x => x.id === ev.id);
+    assert.deepEqual([board.title, board.titleEn, board.kickerEn, board.bodyEn], ['ليلة', 'Night', 'Tournament', 'A big night.']);
+    await b.adm('/api/offers/save', { adId: 'ad_ember', headline: 'إطار الجمر', headlineEn: 'Ember frame', stamp: 'جديد', stampEn: 'NEW', mastEn: 'Tonight only', bodyEn: 'A glowing ring.' });
+    const o = createOffers({ cfg: {}, source: () => b.adminStore.offers, now: () => Date.now() }).active()[0];
+    assert.deepEqual([o.headline, o.headlineEn, o.stampEn, o.mastEn, o.bodyEn], ['إطار الجمر', 'Ember frame', 'NEW', 'Tonight only', 'A glowing ring.']);
+  } finally { b.close(); }
+});
+
+test('support: rename (3 to 25 characters, taken names refused), ban and unban, all in the player log', async () => {
+  const b = await boot();
+  try {
+    const pf = 'PLAYER0007';
+    assert.equal((await b.adm('/api/players/rename', { pf, name: 'ab' })).json.error, 'bad_name');
+    assert.equal((await b.adm('/api/players/rename', { pf, name: 'TAKEN' })).json.error, 'name_taken');
+    assert.equal((await b.adm('/api/players/rename', { pf, name: 'أبو فارس الجديد' })).status, 200);
+    assert.equal(b.playfab.names[pf], 'أبو فارس الجديد');
+    assert.equal((await b.adm('/api/players?q=' + pf)).json.players[0].name, 'أبو فارس الجديد');             // the cached old name is gone
+
+    assert.equal((await b.adm('/api/players/ban', { pf, reason: 'x', hours: 0 })).json.error, 'reason_required');
+    assert.equal((await b.adm('/api/players/ban', { pf, reason: 'غش بالمباريات', hours: 99999 })).json.error, 'bad_hours');
+    assert.equal((await b.adm('/api/players/ban', { pf, reason: 'غش بالمباريات', hours: 48 })).status, 200);
+    let card = (await b.adm('/api/players?q=' + pf)).json.players[0];
+    assert.equal(card.ban.reason, 'غش بالمباريات'); assert.ok(card.ban.until > Date.now());
+    assert.deepEqual(b.playfab.log.find(l => l[0] === 'ban'), ['ban', pf, 'غش بالمباريات', 48]);
+    assert.equal((await b.adm('/api/players/unban', { pf })).status, 200);
+    card = (await b.adm('/api/players?q=' + pf)).json.players[0];
+    assert.equal(card.ban, null);
+    assert.deepEqual(card.log.map(l => l.action), ['unban', 'ban', 'rename']);                                 // newest first, only this player
+    assert.equal((await b.adm('/api/players/rename', { pf: 'x', name: 'valid name' })).json.error, 'bad_player');
+  } finally { b.close(); }
 });

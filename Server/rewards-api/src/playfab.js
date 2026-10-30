@@ -62,6 +62,19 @@ function createPlayFab({ titleId, secretKey, baseUrl, fetchImpl }) {
     async grantItems(playFabId, itemIds) {
       await call('/Server/GrantItemsToUser', { PlayFabId: playFabId, ItemIds: itemIds });
     },
+    /** Changes the display name of a player (3 to 25 characters). */
+    async setDisplayName(playFabId, name) {
+      await call('/Admin/UpdateUserTitleDisplayName', { PlayFabId: playFabId, DisplayName: name });
+    },
+    /** Bans a player from the game: PlayFab refuses his login. hours 0 = for ever. */
+    async banUser(playFabId, reason, hours = 0) {
+      const ban = { PlayFabId: playFabId, Reason: String(reason).slice(0, 140) };
+      if (hours > 0) ban.DurationInHours = hours;
+      await call('/Server/BanUsers', { Bans: [ban] });
+    },
+    async unbanUser(playFabId) {
+      await call('/Server/RevokeAllBansForUser', { PlayFabId: playFabId });
+    },
     /** { CO: coins, GM: gems, ... } */
     async getBalances(playFabId) {
       const d = await call('/Server/GetUserInventory', { PlayFabId: playFabId });

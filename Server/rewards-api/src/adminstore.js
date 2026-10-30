@@ -9,7 +9,7 @@ const path = require('node:path');
 const KEEP_AUDIT = 200, KEEP_DAYS = 14, KEEP_COUNTED_MS = 3 * 24 * 3600 * 1000;
 
 function createAdminStore({ file = null, now = () => Date.now(), log = console } = {}) {
-  let data = { events: null, offers: null, packs: [], codes: [], words: { exact: [], contains: [] }, handled: {}, audit: [], days: {}, counted: {} };
+  let data = { events: null, offers: null, packs: [], codes: [], bans: {}, words: { exact: [], contains: [] }, handled: {}, audit: [], days: {}, counted: {} };
   try { if (file) data = Object.assign(data, JSON.parse(fs.readFileSync(file, 'utf8'))); } catch { /* first run */ }
   data.words = Object.assign({ exact: [], contains: [] }, data.words);
   let timer = null;
@@ -35,12 +35,16 @@ function createAdminStore({ file = null, now = () => Date.now(), log = console }
     handled: id => data.handled[id] || null,
     markHandled(id, action) { data.handled[id] = { at: now(), action }; save(); },
     unhandledSince: () => data.handled,
-    audit(action, detail = '') {
-      data.audit.push({ ts: now(), action, detail: String(detail).slice(0, 160) });
+    audit(action, detail = '', pf = '') {
+      data.audit.push({ ts: now(), action, detail: String(detail).slice(0, 160), pf: String(pf || '') });
       if (data.audit.length > KEEP_AUDIT) data.audit.splice(0, data.audit.length - KEEP_AUDIT);
       save();
     },
     recentAudit: n => data.audit.slice(-n).reverse(),
+    /** What the admin did to one player, newest first. */
+    auditFor: (pf, n) => data.audit.filter(a => a.pf === pf).slice(-n).reverse(),
+    bans: () => data.bans,
+    setBan(pf, info) { if (info) data.bans[pf] = info; else delete data.bans[pf]; save(); },
     /** One paid match (called for every player paid; only the first call of a match counts). */
     noteMatch(matchId, day) {
       if (data.counted[matchId]) return;

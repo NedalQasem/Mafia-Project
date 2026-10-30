@@ -16,7 +16,7 @@ namespace MafiaNight.Services.Config
         public int EndsInSeconds;
     }
 
-    [Serializable] internal sealed class OfferDto { public string adId, itemId, mast, headline, body, stamp; public int endsInSec; }
+    [Serializable] internal sealed class OfferDto { public string adId, itemId, mast, headline, body, stamp, mastEn, headlineEn, bodyEn, stampEn; public int endsInSec; }
     [Serializable] internal sealed class OffersDto { public bool ok; public List<OfferDto> offers; }
 
     /// <summary>
@@ -45,7 +45,7 @@ namespace MafiaNight.Services.Config
                 var list = new List<ServerOffer>();
                 if (d.offers != null)
                     foreach (var o in d.offers)
-                        list.Add(new ServerOffer { AdId = o.adId, ItemId = o.itemId, Mast = o.mast, Headline = o.headline, Body = o.body, Stamp = o.stamp, EndsInSeconds = o.endsInSec });
+                        list.Add(new ServerOffer { AdId = o.adId, ItemId = o.itemId, Mast = Localized.Pick(o.mast, o.mastEn), Headline = Localized.Pick(o.headline, o.headlineEn), Body = Localized.Pick(o.body, o.bodyEn), Stamp = Localized.Pick(o.stamp, o.stampEn), EndsInSeconds = o.endsInSec });
                 done?.Invoke(list);
             }
         }

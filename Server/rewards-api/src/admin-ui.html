@@ -349,13 +349,16 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
   <div class="paper edit">
     <div class="form">
       <h2><span id="edTitle">حدث جديد</span><button class="x" id="edX" type="button" aria-label="إغلاق">×</button></h2>
+      <div class="lang" id="langs"><button type="button" class="on" data-l="ar">العربية</button><button type="button" data-l="en">English</button><span class="hintl">اللعبة بتعرض لغة جهاز اللاعب، والعربي احتياط لو الإنجليزي فاضي</span></div>
 
       <form id="formEvent" autocomplete="off">
         <div class="kinds" id="kinds">
           <button type="button" class="on" data-k="bonus">مضاعفة ذهب</button><button type="button" data-k="challenge">تحدّي</button><button type="button" data-k="info">إعلان</button>
         </div>
-        <div class="row2"><div class="f"><label for="eTitle">العنوان</label><input id="eTitle" maxlength="60" required></div><div class="f"><label for="eKick">العنوان الصغير</label><input id="eKick" maxlength="24"></div></div>
-        <div class="f"><label for="eBody">الوصف</label><textarea id="eBody" maxlength="160"></textarea></div>
+        <div class="row2" data-lang="ar"><div class="f"><label for="eTitle">العنوان</label><input id="eTitle" maxlength="60"></div><div class="f"><label for="eKick">العنوان الصغير</label><input id="eKick" maxlength="24"></div></div>
+        <div class="row2 hide" data-lang="en"><div class="f"><label for="eTitleEn">Title</label><input id="eTitleEn" class="ltr" dir="ltr" maxlength="60"></div><div class="f"><label for="eKickEn">Small heading</label><input id="eKickEn" class="ltr" dir="ltr" maxlength="24"></div></div>
+        <div class="f" data-lang="ar"><label for="eBody">الوصف</label><textarea id="eBody" maxlength="160"></textarea></div>
+        <div class="f hide" data-lang="en"><label for="eBodyEn">Description</label><textarea id="eBodyEn" class="ltr" dir="ltr" maxlength="160"></textarea></div>
         <div class="row2"><div class="f"><label for="eFrom">يبدأ</label><input id="eFrom" type="datetime-local"><small>فاضي = من هلأ</small></div><div class="f"><label for="eUntil">ينتهي</label><input id="eUntil" type="datetime-local"><small>فاضي = بلا نهاية</small></div></div>
         <div class="row2" id="gBonus"><div class="f"><label for="eMul">مضاعف الذهب</label><input id="eMul" type="number" min="1" max="5" step="0.5" value="2"><small>أقصى ٥ مرات. بينطبّق على الكوينز بس، مش الخبرة ولا الرتبة</small></div><div></div></div>
         <div class="row2 hide" id="gChal"><div class="f"><label for="eGoal">الهدف (عدد المباريات)</label><input id="eGoal" type="number" min="1" max="1000" value="10"></div><div class="f"><label for="eMetric">بتنعدّ</label><select id="eMetric"><option value="wins">الانتصارات</option><option value="games">المباريات الملعوبة</option></select></div><div class="f"><label for="eRw">المكافأة (كوينز)</label><input id="eRw" type="number" min="0" max="10000" value="500"></div></div>
@@ -378,9 +381,12 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
           <button type="button" class="on" data-r="adId">إعلان من المتجر (adId)</button><button type="button" data-r="itemId">عنصر من المتجر (itemId)</button>
         </div>
         <div class="f"><label for="oRefVal" id="oRefLbl">معرّف الإعلان</label><input id="oRefVal" maxlength="64" placeholder="مثال: ad_ember" required><small>لازم يكون موجود باللعبة وبمتجر PlayFab. السيرفر بس بيختار شو يُروَّج</small></div>
-        <div class="row2"><div class="f"><label for="oMast">العنوان الصغير (اختياري)</label><input id="oMast" maxlength="40" placeholder="عرض الليلة فقط"></div><div class="f"><label for="oStamp">الختم (اختياري)</label><input id="oStamp" maxlength="12" placeholder="−٣٠٪"></div></div>
-        <div class="f"><label for="oHead">العنوان (اختياري، سطر جديد = سطر ثاني)</label><textarea id="oHead" maxlength="80"></textarea></div>
-        <div class="f"><label for="oBody">الوصف (اختياري)</label><textarea id="oBody" maxlength="140"></textarea></div>
+        <div class="row2" data-lang="ar"><div class="f"><label for="oMast">العنوان الصغير (اختياري)</label><input id="oMast" maxlength="40" placeholder="عرض الليلة فقط"></div><div class="f"><label for="oStamp">الختم (اختياري)</label><input id="oStamp" maxlength="12" placeholder="−٣٠٪"></div></div>
+        <div class="row2 hide" data-lang="en"><div class="f"><label for="oMastEn">Small heading (optional)</label><input id="oMastEn" class="ltr" dir="ltr" maxlength="40" placeholder="Tonight only"></div><div class="f"><label for="oStampEn">Stamp (optional)</label><input id="oStampEn" class="ltr" dir="ltr" maxlength="12" placeholder="-30%"></div></div>
+        <div class="f" data-lang="ar"><label for="oHead">العنوان (اختياري، سطر جديد = سطر ثاني)</label><textarea id="oHead" maxlength="80"></textarea></div>
+        <div class="f hide" data-lang="en"><label for="oHeadEn">Headline (optional, new line = second line)</label><textarea id="oHeadEn" class="ltr" dir="ltr" maxlength="80"></textarea></div>
+        <div class="f" data-lang="ar"><label for="oBody">الوصف (اختياري)</label><textarea id="oBody" maxlength="140"></textarea></div>
+        <div class="f hide" data-lang="en"><label for="oBodyEn">Description (optional)</label><textarea id="oBodyEn" class="ltr" dir="ltr" maxlength="140"></textarea></div>
         <div class="row2"><div class="f"><label for="oFrom">يبدأ</label><input id="oFrom" type="datetime-local"></div><div class="f"><label for="oUntil">ينتهي</label><input id="oUntil" type="datetime-local"><small>العدّاد باللعبة بيعدّ لهالوقت</small></div></div>
         <div class="err" id="oErr" role="alert"></div>
         <div class="foot-act"><button class="btn red" type="submit">احفظ وطبّق</button><button class="btn ghost" type="button" data-cancel>إلغاء</button></div>
@@ -477,6 +483,7 @@ const setBadge = (el, n) => { el.textContent = ar(n); el.classList.toggle('hide'
 // ------------------------------------------------------------------ home
 const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 const ACT = { login: 'دخول إلى اللوحة', login_failed: 'محاولة دخول فاشلة', event_save: 'حفظ حدث', event_delete: 'حذف حدث', event_toggle: 'تفعيل/تعطيل حدث', offer_save: 'حفظ عرض', offer_delete: 'حذف عرض', offer_toggle: 'تفعيل/تعطيل عرض', word_add: 'إضافة كلمة ممنوعة', word_remove: 'حذف كلمة ممنوعة', report_mute: 'كتم بسبب بلاغ', report_ignore: 'تجاهل بلاغ', player_mute: 'كتم لاعب', player_unmute: 'فك كتم لاعب' };
+Object.assign(ACT, { rename: 'تغيير اسم', ban: 'حظر', unban: 'فك حظر', balance_add: 'إضافة رصيد', balance_remove: 'سحب رصيد', mail_send: 'إرسال بريد', pack_save: 'حفظ حزمة', pack_delete: 'حذف حزمة', code_save: 'حفظ كود', code_toggle: 'تفعيل/تعطيل كود', code_delete: 'حذف كود', ranking_distribute: 'توزيع جوائز تصنيف' });
 const bad = a => a === 'login_failed';
 function ago(ts) { const s = Math.max(0, (Date.now() - ts) / 1000); return s < 60 ? 'قبل لحظات' : s < 3600 ? 'قبل ' + ar(Math.floor(s / 60)) + ' د' : s < 86400 ? 'قبل ' + ar(Math.floor(s / 3600)) + ' س' : 'قبل ' + ar(Math.floor(s / 86400)) + ' يوم'; }
 async function loadHome() {
@@ -518,13 +525,13 @@ const METRIC_SHORT = { wins: 'الانتصارات', games: 'المباريات'
 
 let edit = { type: 'event', id: null, kind: 'bonus', ref: 'adId' };
 function openDrawer(type, id) {
-  edit = { type, id: id || null, kind: 'bonus', ref: 'adId' };
+  edit = { type, id: id || null, kind: 'bonus', ref: 'adId', lang: 'ar' }; setLang('ar');
   $('#formEvent').classList.toggle('hide', type !== 'event'); $('#formOffer').classList.toggle('hide', type !== 'offer');
   $('#eErr').textContent = ''; $('#oErr').textContent = '';
   if (type === 'event') {
     const e = EVENTS.find(x => x.id === id) || { kind: 'bonus', title: '', kicker: '', body: '', coinsMultiplier: 2, goal: 10, rewardCoins: 500, metric: 'wins' };
     $('#edTitle').textContent = id ? 'تعديل الحدث' : 'حدث جديد';
-    $('#eTitle').value = e.title; $('#eKick').value = e.kicker || ''; $('#eBody').value = e.body || ''; $('#eFrom').value = toLocal(e.from); $('#eUntil').value = toLocal(e.until);
+    $('#eTitle').value = e.title; $('#eKick').value = e.kicker || ''; $('#eBody').value = e.body || ''; $('#eTitleEn').value = e.titleEn || ''; $('#eKickEn').value = e.kickerEn || ''; $('#eBodyEn').value = e.bodyEn || ''; $('#eFrom').value = toLocal(e.from); $('#eUntil').value = toLocal(e.until);
     $('#eMul').value = e.coinsMultiplier || 2; $('#eGoal').value = e.goal || 10; $('#eRw').value = e.rewardCoins == null ? 500 : e.rewardCoins; $('#eMetric').value = e.metric || 'wins';
     setSwitch($('#eSecret'), e.secret === true);
     fillRanking(e);
@@ -533,7 +540,7 @@ function openDrawer(type, id) {
     const o = OFFERS.find(x => x.id === id) || { adId: '', mast: '', headline: '', body: '', stamp: '' };
     $('#edTitle').textContent = id ? 'تعديل العرض' : 'عرض جديد';
     edit.ref = o.itemId ? 'itemId' : 'adId'; setRef(edit.ref);
-    $('#oRefVal').value = o.adId || o.itemId || ''; $('#oMast').value = o.mast || ''; $('#oStamp').value = o.stamp || ''; $('#oHead').value = o.headline || ''; $('#oBody').value = o.body || '';
+    $('#oRefVal').value = o.adId || o.itemId || ''; $('#oMast').value = o.mast || ''; $('#oStamp').value = o.stamp || ''; $('#oHead').value = o.headline || ''; $('#oBody').value = o.body || ''; $('#oMastEn').value = o.mastEn || ''; $('#oStampEn').value = o.stampEn || ''; $('#oHeadEn').value = o.headlineEn || ''; $('#oBodyEn').value = o.bodyEn || '';
     $('#oFrom').value = toLocal(o.from); $('#oUntil').value = toLocal(o.until);
     preview();
   }
@@ -554,17 +561,23 @@ function setRef(r) {
   $('#oRefLbl').textContent = r === 'adId' ? 'معرّف الإعلان' : 'معرّف العنصر';
   $('#oRefVal').placeholder = r === 'adId' ? 'مثال: ad_ember' : 'مثال: chat_port';
 }
+const pick = (arSel, enSel) => (edit.lang === 'en' && $(enSel).value ? $(enSel).value : $(arSel).value);
+function setLang(l) {
+  edit.lang = l; $$('#langs button').forEach(b => b.classList.toggle('on', b.dataset.l === l));
+  $$('#drawer [data-lang]').forEach(el => el.classList.toggle('hide', el.dataset.lang !== l));
+}
+$$('#langs button').forEach(b => b.onclick = () => { setLang(b.dataset.l); preview(); });
 function preview() {
   const live = edit.type === 'event';
   $('#pNote').textContent = live ? 'المعاينة بتتحدّث وأنت عم تكتب' : 'هيك تقريباً بيظهر نص العرض بالجريدة (الصورة والسعر من المتجر)';
   if (live) {
     $('#pSt').textContent = 'شغّال'; $('#pCd').classList.remove('hide');
-    $('#pK').textContent = $('#eKick').value; $('#pT').textContent = $('#eTitle').value || 'عنوان الحدث'; $('#pB').textContent = $('#eBody').value;
+    $('#pK').textContent = pick('#eKick', '#eKickEn'); $('#pT').textContent = pick('#eTitle', '#eTitleEn') || 'عنوان الحدث'; $('#pB').textContent = pick('#eBody', '#eBodyEn');
     const k = edit.kind;
     $('#pR').innerHTML = k === 'bonus' ? '×' + ar($('#eMul').value || 1) + ' <span class="coin"></span> على كل ربح' : k === 'challenge' ? ar($('#eRw').value || 0) + ' <span class="coin"></span> مكافأة · الهدف ' + ar($('#eGoal').value || 0) : ($('#eSecret').classList.contains('on') ? 'الجائزة: <span class="red-bar"></span>' : '');
   } else {
-    $('#pSt').textContent = $('#oStamp').value || 'عرض'; $('#pCd').classList.toggle('hide', !$('#oUntil').value);
-    $('#pK').textContent = $('#oMast').value || 'عرض الليلة فقط'; $('#pT').textContent = ($('#oHead').value || 'عنوان العرض').replace(/\n/g, ' '); $('#pB').textContent = $('#oBody').value; $('#pR').innerHTML = '';
+    $('#pSt').textContent = pick('#oStamp', '#oStampEn') || 'عرض'; $('#pCd').classList.toggle('hide', !$('#oUntil').value);
+    $('#pK').textContent = pick('#oMast', '#oMastEn') || 'عرض الليلة فقط'; $('#pT').textContent = (pick('#oHead', '#oHeadEn') || 'عنوان العرض').replace(/\n/g, ' '); $('#pB').textContent = pick('#oBody', '#oBodyEn'); $('#pR').innerHTML = '';
   }
 }
 $$('#drawer input,#drawer textarea,#drawer select').forEach(i => i.addEventListener('input', preview));
@@ -578,7 +591,7 @@ $('#newEvent').onclick = () => openDrawer('event'); $('#newOffer').onclick = () 
 
 $('#formEvent').onsubmit = async e => {
   e.preventDefault(); $('#eErr').textContent = '';
-  const body = { id: edit.id || undefined, kind: edit.kind, title: $('#eTitle').value, kicker: $('#eKick').value, body: $('#eBody').value, from: toIso($('#eFrom').value), until: toIso($('#eUntil').value) };
+  const body = { id: edit.id || undefined, kind: edit.kind, title: $('#eTitle').value, kicker: $('#eKick').value, body: $('#eBody').value, titleEn: $('#eTitleEn').value, kickerEn: $('#eKickEn').value, bodyEn: $('#eBodyEn').value, from: toIso($('#eFrom').value), until: toIso($('#eUntil').value) };
   if (edit.kind === 'bonus') body.coinsMultiplier = Number($('#eMul').value);
   if (edit.kind === 'challenge') { body.goal = Number($('#eGoal').value); body.rewardCoins = Number($('#eRw').value); body.metric = $('#eMetric').value; }
   if (edit.kind === 'info') body.secret = $('#eSecret').classList.contains('on');
@@ -599,7 +612,7 @@ async function loadOffers() {
 }
 $('#formOffer').onsubmit = async e => {
   e.preventDefault(); $('#oErr').textContent = '';
-  const body = { id: edit.id || undefined, mast: $('#oMast').value, stamp: $('#oStamp').value, headline: $('#oHead').value, body: $('#oBody').value, from: toIso($('#oFrom').value), until: toIso($('#oUntil').value) };
+  const body = { id: edit.id || undefined, mast: $('#oMast').value, stamp: $('#oStamp').value, headline: $('#oHead').value, body: $('#oBody').value, mastEn: $('#oMastEn').value, stampEn: $('#oStampEn').value, headlineEn: $('#oHeadEn').value, bodyEn: $('#oBodyEn').value, from: toIso($('#oFrom').value), until: toIso($('#oUntil').value) };
   body[edit.ref] = $('#oRefVal').value.trim();
   const old = OFFERS.find(x => x.id === edit.id); if (old) body.enabled = old.enabled !== false;
   try { await api('/offers/save', body); closeDrawer(); toast('انحفظ وطُبّق عند اللاعبين فوراً'); loadOffers(); } catch (x) { $('#oErr').textContent = errText(x.code); }
@@ -658,6 +671,7 @@ document.addEventListener('click', async e => {
 // ------------------------------------------------------------------ players
 async function searchPlayers() {
   const q = $('#pq').value.trim(); if (!q) return;
+  try { PACKS = (await api('/packs')).packs; } catch {}          // the player card offers the packages
   try { const r = (await api('/players?q=' + encodeURIComponent(q))).players; $('#pResult').innerHTML = r.length ? r.map(playerCard).join('') : '<div class="paper card empty">ما لقينا لاعب بهالبحث.</div>'; } catch (x) { toast(errText(x.code)); }
 }
 $('#pForm').onsubmit = e => { e.preventDefault(); searchPlayers(); };
@@ -669,6 +683,7 @@ document.addEventListener('click', async e => {
 // ------------------------------------------------------------------ live ops: packs, mail, balance
 ERR.name_required = 'الاسم مطلوب'; ERR.empty_pack = 'الحزمة فاضية: حط كوينز أو جواهر أو عنصر'; ERR.bad_coins = 'الكوينز بين ٠ ومليون'; ERR.bad_gems = 'الجواهر بين ٠ و١٠٠٠٠'; ERR.bad_items = 'معرّفات العناصر غير صحيحة';
 ERR.unknown_player = 'ما في لاعب بهالرقم أو المعرّف'; ERR.no_recipients = 'ما في مستلمين'; ERR.bad_targets = 'اكتب من لاعب لـ٢٠٠ لاعب'; ERR.confirm_required = 'لازم تأكد الإرسال'; ERR.pack_not_found = 'الحزمة ما انوجدت';
+ERR.bad_name = 'الاسم من ٣ لـ٢٥ حرف'; ERR.name_taken = 'الاسم مستخدم'; ERR.bad_hours = 'المدة غير صحيحة';
 ERR.reason_required = 'اكتب سبب (٣ أحرف على الأقل)'; ERR.bad_amount = 'الكمية بين ١ ومليون'; ERR.insufficient_or_failed = 'فشل: يمكن الرصيد أقل من المطلوب'; ERR.playfab_failed = 'فشل عند PlayFab، جرّب بعد شوي'; ERR.no_playfab = 'PlayFab غير متصل';
 const pills = p => (p.coins ? `<span class="pill"><span class="coin"></span>${ar(p.coins.toLocaleString('en'))}</span>` : '') + (p.gems ? `<span class="pill"><span class="gem"></span>${ar(p.gems)}</span>` : '') + (p.items || []).map(i => `<span class="pill">${esc(i)}</span>`).join('');
 let PACKS = [];
@@ -746,11 +761,12 @@ function playerCard(p) {
   const s = p.stats || {}, muted = p.mutedUntil > Date.now(), b = p.balances;
   const pf = esc(p.pf);
   return `<div class="paper card" style="margin-bottom:16px"><div class="player"><div class="av"></div>
-    <div><div style="font-family:Lalezar;font-size:1.6rem;line-height:1.1">${esc(p.name)} ${muted ? '<span class="stamp" style="font-size:.8rem">مكتوم</span>' : ''}</div>
+    <div><div style="font-family:Lalezar;font-size:1.6rem;line-height:1.1">${esc(p.name)} ${muted ? '<span class="stamp" style="font-size:.8rem">مكتوم</span>' : ''} ${p.ban ? '<span class="stamp" style="font-size:.8rem">محظور</span>' : ''}</div>
     <div class="m" style="font-weight:700;font-size:.8rem;margin:2px 0 10px">${p.num ? 'رقم اللاعب ' + ar(p.num) + ' · ' : ''}المستوى ${ar(p.level)} · <span class="mono">${pf}</span></div>
     <div class="kv"><div><span>الكوينز</span><br><b>${b ? ar(b.coins.toLocaleString('en')) : '—'}</b></div><div><span>الجواهر</span><br><b>${b ? ar(b.gems) : '—'}</b></div><div><span>مباريات</span><br><b>${ar(s.games || 0)}</b></div><div><span>انتصارات</span><br><b>${ar(s.wins || 0)}</b></div><div><span>بلاغات ضده</span><br><b>${ar(p.reportsAgainst)}</b></div><div><span>برقيات بانتظاره</span><br><b>${ar(p.pendingMail || 0)}</b></div></div></div>
     <div style="display:grid;gap:8px">${muted ? `<button class="btn greenb sm" data-pm="0" data-pf="${pf}">فك الكتم</button>` : `<button class="btn red sm" data-pm="120" data-pf="${pf}">كتم ساعتين</button><button class="btn ghost sm" data-pm="1440" data-pf="${pf}">كتم يوم</button>`}</div></div>
     <div class="sect"><h5>إجراءات الدعم</h5><div class="sgrid">
+      <div class="tile"><h6>تغيير الاسم</h6><div class="rowin"><input data-rn="name" value="${esc(p.name)}" maxlength="25" aria-label="الاسم الجديد"><button class="btn red sm" data-rn-go="${pf}">احفظ</button></div><small class="hint">بيطبّق فوراً. من ٣ لـ٢٥ حرف، وما بيتكرر اسم موجود.</small></div>
       <div class="tile"><h6>تعديل الرصيد</h6>
         <div class="rowin"><select data-bal="op"><option value="add">إضافة</option><option value="remove">سحب</option></select><select data-bal="currency"><option value="coins">كوينز</option><option value="gems">جواهر</option></select><input data-bal="amount" type="number" min="1" value="500" style="max-width:90px"></div>
         <div class="rowin"><input data-bal="reason" placeholder="السبب (إجباري، بيتسجّل)"></div>
@@ -760,9 +776,17 @@ function playerCard(p) {
         <div class="rowin"><select data-mail="pack">${PACKS.map(k => `<option value="${esc(k.id)}">${esc(k.name.ar || k.name.en)}</option>`).join('') || '<option value="">ما في حزم: ضيف من صفحة الحزم</option>'}</select></div>
         <div class="rowin"><input data-mail="title" placeholder="عنوان البرقية"></div>
         <button class="btn greenb sm" data-mail-go="${pf}">ابعت لهاللاعب</button></div>
-    </div></div></div>`;
+      <div class="tile"><h6>حظر من اللعبة</h6>${p.ban ? `<div class="warn">محظور: ${esc(p.ban.reason)} · ${p.ban.until ? 'لحد ' + new Date(p.ban.until).toLocaleDateString('ar') : 'للأبد'}</div><button class="btn greenb sm" data-unban-go="${pf}">فك الحظر</button>` : `<div class="rowin"><select data-ban="hours"><option value="24">٢٤ ساعة</option><option value="168">أسبوع</option><option value="720">٣٠ يوم</option><option value="0">للأبد</option></select></div><div class="rowin"><input data-ban="reason" placeholder="السبب (إجباري، بيتسجّل)" maxlength="140"></div><button class="btn red sm" data-ban-go="${pf}">احظر</button><div class="warn" style="margin-top:8px">PlayFab بيرفض دخوله. فكّ الحظر من هون.</div>`}</div>
+    </div></div>
+    <div class="sect"><h5>سجلّ العمليات على هاللاعب</h5>${(p.log || []).length ? `<table class="tbl"><tr><th>الوقت</th><th>العملية</th><th>التفاصيل</th></tr>${p.log.map(l => `<tr><td>${ago(l.ts)}</td><td>${esc(ACT[l.action] || l.action)}</td><td>${esc(l.detail)}</td></tr>`).join('')}</table>` : '<p class="hint">ما في عمليات مسجّلة على هاللاعب.</p>'}</div></div>`;
 }
 document.addEventListener('click', async e => {
+  const rn = e.target.closest('[data-rn-go]');
+  if (rn) { const name = rn.closest('.tile').querySelector('[data-rn=name]').value.trim(); try { await api('/players/rename', { pf: rn.dataset.rnGo, name }); toast('انتغيّر الاسم'); searchPlayers(); } catch (x) { toast(errText(x.code)); } return; }
+  const bn = e.target.closest('[data-ban-go]');
+  if (bn) { const t = bn.closest('.tile'); if (!confirm('تأكيد الحظر؟ اللاعب ما رح يقدر يدخل اللعبة.')) return; try { await api('/players/ban', { pf: bn.dataset.banGo, reason: t.querySelector('[data-ban=reason]').value, hours: Number(t.querySelector('[data-ban=hours]').value) }); toast('انحظر'); searchPlayers(); } catch (x) { toast(errText(x.code)); } return; }
+  const ub = e.target.closest('[data-unban-go]');
+  if (ub) { try { await api('/players/unban', { pf: ub.dataset.unbanGo }); toast('انفك الحظر'); searchPlayers(); } catch (x) { toast(errText(x.code)); } return; }
   const g = e.target.closest('[data-bal-go]');
   if (g) {
     const tile = g.closest('.tile'), v = k => tile.querySelector(`[data-bal=${k}]`).value;
