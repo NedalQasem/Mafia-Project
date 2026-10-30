@@ -188,7 +188,8 @@ namespace MafiaNight.Services.Auth
 
             if (initializeResult == Result.AlreadyConfigured)
             {
-                Log.Warning("Platform already configured - continuing with existing configuration", Tag);
+                // expected from the second play-mode run on in the Editor: the SDK is initialized once per process
+                Log.Info("Platform already configured - continuing with existing configuration", Tag);
             }
             else if (initializeResult != Result.Success)
             {
@@ -206,6 +207,8 @@ namespace MafiaNight.Services.Auth
                 if (message.Contains("DeviceId access credentials already exist")) { Log.Info(message, Tag); return; }
                 // The RTC control channel drops (1006) when a lobby with a voice room is left, closed, or play mode stops: a warning, not a failure
                 if (message.Contains("LogEOSRTC") && message.Contains("Control channel closed")) { Log.Warning(message, Tag); return; }
+                // On shutdown (quit or leaving play mode) the voice threads are still winding down when the SDK stops: noise, not a failure
+                if (message.Contains("The WebRTC thread is still alive")) { Log.Warning(message, Tag); return; }
                 if (logMessage.Level <= LogLevel.Error) Log.Error(message, Tag);
                 else if (logMessage.Level == LogLevel.Warning) Log.Warning(message, Tag);
                 else Log.Info(message, Tag);
