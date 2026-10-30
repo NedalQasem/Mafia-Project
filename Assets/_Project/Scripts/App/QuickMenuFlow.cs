@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using MafiaNight.Core;
+using MafiaNight.Data.Store;
 using MafiaNight.Services.Config;
 using MafiaNight.Services.Economy;
 using MafiaNight.Services.Rooms;
@@ -26,7 +28,11 @@ namespace MafiaNight.App
         private KitQuickMenu menu;
         private List<StoreAdCarousel.Ad> all = new List<StoreAdCarousel.Ad>();
         private KitEventsBoard board;
+        private KitMailBoard mailBoard;
         private EventsBoard events;
+        private MailBoxData mailData;
+        private float mailAt;
+        private bool mailLoading, mailClaiming;
         private float refetchAt;
         private bool loading, claiming;
 
@@ -43,11 +49,13 @@ namespace MafiaNight.App
             BlockedOffers.Changed -= OnBlockedChanged;
             if (menu != null) Destroy(menu.gameObject);
             if (board != null) Destroy(board.gameObject);
+            if (mailBoard != null) Destroy(mailBoard.gameObject);
         }
 
         private void Update()
         {
             if (menu != null) menu.SetSuppressed(rooms != null && rooms.InRoom);
+            if (menu != null && !mailLoading && Time.unscaledTime >= mailAt) { mailLoading = true; StartCoroutine(RefreshMail()); }
             if (loading || Time.unscaledTime < refetchAt) return;
             loading = true;
             StartCoroutine(Load());
@@ -78,8 +86,104 @@ namespace MafiaNight.App
             menu.OnBuyOffer += id => { KitStoreScreen.PendingAdId = id; Open(AppScenes.Store); };
             menu.OnOpenPaper += () => LaunchBannerFlow.ShowNow(BlockedOffers.Filter(all));
             menu.OnOpenEvents += () => { if (board == null) StartCoroutine(OpenEvents()); };
+            menu.OnOpenMail += () => { if (mailBoard == null) StartCoroutine(OpenMail()); };
             BlockedOffers.Changed += OnBlockedChanged;
             return true;
+        }
+
+        // ---------------------------------------------------------------- the mail
+        private IEnumerator RefreshMail()
+        {
+            yield return MailService.Fetch(m => mailData = m ?? mailData);
+            mailAt = Time.unscaledTime + 120f;
+            mailLoading = false;
+            if (menu != null) menu.SetMail(mailData != null ? mailData.Unread : 0);
+        }
+
+        private IEnumerator OpenMail()
+        {
+            var th = KitTheme.Current;
+            var canvas = InviteFlow.FindCanvas();
+            if (th == null || th.mailBoardPrefab == null || canvas == null) yield break;
+            yield return MailService.Fetch(m => mailData = m ?? mailData);
+            if (mailBoard != null) yield break;
+            if (mailData == null) mailData = new MailBoxData();
+            var go = Instantiate(th.mailBoardPrefab, canvas, false);
+            go.transform.SetAsLastSibling();
+            mailBoard = go.GetComponent<KitMailBoard>();
+            mailBoard.OnClaim += c => { if (!mailClaiming) StartCoroutine(ClaimMail(c)); };
+            mailBoard.OnClaimAll += () => { if (!mailClaiming) StartCoroutine(ClaimAllMail()); };
+            mailBoard.OnClosed += () => { mailBoard = null; mailAt = 0f; };      // the number on the icon is refreshed right after
+            mailBoard.Show(MailCards());
+            if (menu != null) menu.SetMail(mailData.Unread);
+        }
+
+        private List<KitMailBoard.Card> MailCards()
+        {
+            var list = new List<KitMailBoard.Card>();
+            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var catalog = StoreData.Catalog;
+            foreach (var m in mailData.Items)
+            {
+                var names = new string[m.Items.Length];
+                for (int i = 0; i < names.Length; i++) { var def = catalog != null ? catalog.GetItem(m.Items[i]) : null; names[i] = def != null && !string.IsNullOrEmpty(def.nameAr) ? def.nameAr : m.Items[i]; }
+                list.Add(new KitMailBoard.Card
+                {
+                    id = m.Id, title = m.Title, body = m.Body, coins = m.Coins, gems = m.Gems, items = names, claimed = m.Claimed > 0,
+                    when = Ago(now - m.Ts), expiry = m.Exp > 0 && m.Claimed == 0 ? "تنتهي بعد " + Span(m.Exp - now) : "",
+                });
+            }
+            return list;
+        }
+
+        private static string Ago(long ms)
+        {
+            long s = Math.Max(0, ms / 1000);
+            if (s < 60) return "قبل لحظات";
+            if (s < 3600) return "قبل " + CoinPill.Format((int)(s / 60)) + " د";
+            if (s < 86400) return "قبل " + CoinPill.Format((int)(s / 3600)) + " س";
+            return "قبل " + CoinPill.Format((int)(s / 86400)) + " يوم";
+        }
+
+        private static string Span(long ms)
+        {
+            long s = Math.Max(0, ms / 1000);
+            if (s < 3600) return CoinPill.Format((int)Math.Max(1, s / 60)) + " دقيقة";
+            if (s < 86400) return CoinPill.Format((int)(s / 3600)) + " ساعة";
+            return CoinPill.Format((int)(s / 86400)) + " يوم";
+        }
+
+        private IEnumerator ClaimMail(KitMailBoard.Card c)
+        {
+            mailClaiming = true;
+            MailClaimResult r = null;
+            yield return MailService.Claim(c.id, x => r = x);
+            mailClaiming = false;
+            bool ok = r != null && r.Ok;
+            if (ok)
+            {
+                foreach (var m in mailData.Items) if (m.Id == c.id) m.Claimed = 1;
+                mailData.Unread = Math.Max(0, mailData.Unread - 1);
+                if ((r.Coins > 0 || r.Gems > 0) && ServiceLocator.TryGet(out ICurrencyService wallet)) wallet.FetchCurrencies();
+            }
+            if (mailBoard != null) mailBoard.ClaimDone(c.id, ok, ok ? (r.Coins > 0 || r.Gems > 0 || r.Items.Length > 0 ? "انضاف الرصيد لحسابك" : "تمام") : "ما زبطت، جرّب بعد شوي");
+            if (menu != null) menu.SetMail(mailData.Unread);
+        }
+
+        private IEnumerator ClaimAllMail()
+        {
+            mailClaiming = true;
+            MailClaimResult r = null;
+            yield return MailService.ClaimAll(x => r = x);
+            mailClaiming = false;
+            yield return MailService.Fetch(m => mailData = m ?? mailData);
+            if (r != null && r.Ok && (r.Coins > 0 || r.Gems > 0) && ServiceLocator.TryGet(out ICurrencyService wallet)) wallet.FetchCurrencies();
+            if (mailBoard != null)
+            {
+                mailBoard.Refresh(MailCards());
+                mailBoard.Toast(r != null && r.Ok ? (r.Claimed > 0 ? "استلمت " + CoinPill.Format(r.Claimed) + " برقيات" : "ما في شي للاستلام") : "ما زبطت، جرّب بعد شوي");
+            }
+            if (menu != null) menu.SetMail(mailData != null ? mailData.Unread : 0);
         }
 
         // ---------------------------------------------------------------- the events board

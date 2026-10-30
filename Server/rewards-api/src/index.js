@@ -12,6 +12,7 @@ const { createFriends } = require('./friends');
 const { createLeaderboard } = require('./leaderboard');
 const { createOffers } = require('./offers');
 const { createEvents } = require('./events');
+const { createMail } = require('./mail');
 const { createAdminStore } = require('./adminstore');
 const { createAdmin } = require('./admin');
 
@@ -32,16 +33,17 @@ const leaderboard = createLeaderboard({ chat, cfg, file: dataDir + '/leaderboard
 // events and offers: the admin board's own list once it saved one, otherwise the ones of config.json
 const offers = createOffers({ cfg, source: () => (adminStore.offers !== null ? adminStore.offers : cfg.offers) });
 const events = createEvents({ cfg, playfab, source: () => (adminStore.events !== null ? adminStore.events : cfg.events), file: dataDir + '/events.json' });
+const mail = createMail({ cfg, playfab, file: dataDir + '/mail.json' });
 // the admin board: needs ADMIN_PASSWORD_HASH (made by set-admin.sh); without it the board does not exist
 const admin = createAdmin({
-  cfg, store: adminStore, chat, friends, leaderboard, reportsFile: dataDir + '/chat-reports.jsonl',
+  cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, reportsFile: dataDir + '/chat-reports.jsonl',
   adminCfg: Object.assign({}, cfg.admin, process.env.ADMIN_PASSWORD_HASH ? { passwordHash: process.env.ADMIN_PASSWORD_HASH } : {}, process.env.ADMIN_PATH ? { path: process.env.ADMIN_PATH } : {}),
 });
-const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, admin });
+const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, admin });
 if (admin.enabled) console.log('admin board on ' + admin.base); else console.log('admin board is off (no ADMIN_PASSWORD_HASH)');
 
-setInterval(() => { chat.purge(); friends.purge(); leaderboard.purge(); events.purge(); }, 3600 * 1000).unref();
+setInterval(() => { chat.purge(); friends.purge(); leaderboard.purge(); events.purge(); mail.purge(); }, 3600 * 1000).unref();
 setInterval(() => store.purge(Date.now(), 48 * 3600 * 1000, new Date().toISOString().slice(0, 10)), 3600 * 1000).unref();
-for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); adminStore.flushNow(); } finally { process.exit(0); } });
+for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); mail.flushNow(); adminStore.flushNow(); } finally { process.exit(0); } });
 
 server.listen(cfg.port, cfg.host, () => console.log(`rewards api on ${cfg.host}:${cfg.port} (title ${cfg.titleId})`));

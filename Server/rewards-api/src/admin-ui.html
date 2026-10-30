@@ -169,6 +169,33 @@ section.view{display:none}section.view.on{display:block}
 .paper .m{color:var(--soft)}
 .nav .n.hide{display:none}
 
+/* live ops pages */
+.lang{display:flex;gap:6px;margin-bottom:10px}
+.lang button{padding:3px 14px;border-radius:6px;font-weight:800;font-size:.8rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.lang button.on{background:var(--ink);color:#f5e2a8}
+.lang .hintl{margin-inline-start:auto;font-size:.7rem;font-weight:700;color:var(--soft);align-self:center}
+input.ltr,textarea.ltr{direction:ltr;text-align:left}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:1px 9px;border-radius:6px;background:#0b0807;color:#ffd98a;font-family:Lalezar;font-size:.8rem;box-shadow:0 0 0 1px #6e5224;margin-inline-end:4px}
+.coin{width:12px;height:12px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000}
+.gem{width:11px;height:11px;display:inline-block;rotate:45deg;background:linear-gradient(135deg,#9be8d0,#2c8f74);box-shadow:0 0 0 1px #000;border-radius:2px}
+.cols2{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+@media(max-width:1100px){.cols2{grid-template-columns:1fr}}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.seg button{padding:6px 14px;border-radius:7px;font-weight:800;font-size:.82rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.seg button.on{background:var(--ink);color:#f5e2a8}
+.warn{margin:8px 0;padding:8px 12px;border-radius:6px;background:#8a1c2422;box-shadow:inset 0 0 0 1px #8a1c2488;font-weight:800;font-size:.78rem;color:var(--crimd)}
+.sect{margin-top:16px;padding-top:12px;border-top:2px dashed #1c170f55}
+.sect h5{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1.15rem}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.tile{padding:12px 14px;border-radius:6px;background:#1c170f0d;box-shadow:inset 0 0 0 1px #1c170f33}
+.tile h6{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1rem}
+.rowin{display:flex;gap:8px;margin-bottom:8px}
+.rowin input,.rowin select{flex:1;min-width:0;padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+.mono{font-family:Consolas,monospace;direction:ltr;display:inline-block;font-weight:800;letter-spacing:1px}
+.ok{color:var(--green);font-weight:800;font-size:.82rem}
+
+/* the narrow table of the sent list */
+.cols2 .tbl{min-width:0}
 /* narrow screens: the collapsed sidebar keeps only a tiny name */
 @media(max-width:1100px){aside .brand b{font-size:.58rem;letter-spacing:.5px;overflow:hidden}aside{padding:14px 8px}}
 /* phones */
@@ -210,6 +237,9 @@ section.view{display:none}section.view.on{display:block}
     <button class="nav on" data-v="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg><span>الواجهة</span></button>
     <button class="nav" data-v="events"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><span>الأحداث</span><i class="n hide" id="nEvents"></i></button>
     <button class="nav" data-v="offers"><svg viewBox="0 0 24 24"><path d="M3 12l9-9h8v8l-9 9-8-8zM15 8h.01"/></svg><span>العروض</span></button>
+
+    <button class="nav" data-v="packs"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8zM3 8l9 5 9-5M12 13v8"/></svg><span>الحزم</span></button>
+    <button class="nav" data-v="mail"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/></svg><span>البريد</span></button>
     <button class="nav" data-v="words"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span>الكلمات الممنوعة</span></button>
     <button class="nav" data-v="reports"><svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg><span>البلاغات</span><i class="n hide" id="nReports"></i></button>
     <button class="nav" data-v="players"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-4 3.2-6 6.5-6s5.9 2 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .6 3.3 2.5 3.5 6"/></svg><span>اللاعبون</span></button>
@@ -241,6 +271,34 @@ section.view{display:none}section.view.on{display:block}
       <div class="top"><h1>العروض<small>لافتة «جريدة الليل» عند فتح اللعبة · أقصى ٣ عروض فعّالة</small></h1><button class="btn red sp" id="newOffer">+ عرض جديد</button></div>
       <div class="srcnote hide" id="ofSrc">هاي العروض جاية من ملف الإعدادات. أول تعديل أو إضافة هون بينقلها للوحة.</div>
       <div class="paper card"><div class="empty hide" id="ofEmpty">ما في عروض من السيرفر، فاللعبة بتعرض إعلانات متجرها.</div><table class="tbl" id="ofTable"></table></div>
+    </section>
+
+
+    <section class="view" id="v-packs">
+      <div class="top"><h1>الحزم<small>قوالب جاهزة (كوينز، جواهر، عناصر) بتستخدمها بالبريد وجوائز الأحداث</small></h1><button class="btn red sp" id="newPack">+ حزمة جديدة</button></div>
+      <div class="paper card"><div class="empty hide" id="pkEmpty">ما في حزم. اضغط «حزمة جديدة».</div><table class="tbl" id="pkTable"></table></div>
+    </section>
+
+    <section class="view" id="v-mail">
+      <div class="top"><h1>البريد<small>ابعت بكج أو رسالة للاعب، أو للكل، وبتوصل على بريد اللعبة</small></h1></div>
+      <div class="cols2">
+        <div class="paper card"><h3>برقية جديدة</h3>
+          <form id="mailForm" autocomplete="off">
+            <div class="seg" id="mAud"><button type="button" class="on" data-a="one">لاعب واحد</button><button type="button" data-a="list">قائمة أرقام</button><button type="button" data-a="active7">اللي لعبوا آخر ٧ أيام</button><button type="button" data-a="all">كل اللاعبين</button></div>
+            <div class="f" id="mTargetsBox"><label for="mTargets" id="mTargetsLbl">اللاعب (رقمه أو معرّفه)</label><input id="mTargets" class="ltr" dir="ltr" placeholder="48291735"><small id="mTargetsHint"></small></div>
+            <div class="row2"><div class="f"><label for="mTitleAr">العنوان</label><input id="mTitleAr" maxlength="80"></div><div class="f"><label for="mTitleEn">Title (English)</label><input id="mTitleEn" class="ltr" dir="ltr" maxlength="80"></div></div>
+            <div class="row2"><div class="f"><label for="mBodyAr">الرسالة</label><textarea id="mBodyAr" maxlength="200"></textarea></div><div class="f"><label for="mBodyEn">Message (English)</label><textarea id="mBodyEn" class="ltr" dir="ltr" maxlength="200"></textarea></div></div>
+            <small class="hint" style="margin:-6px 0 10px">اللعبة بتعرض لغة جهاز اللاعب. إذا الإنجليزي فاضي بتعرض العربي.</small>
+            <div class="row2"><div class="f"><label for="mPack">الحزمة</label><select id="mPack"></select></div><div class="f"><label for="mDays">تنتهي بعد</label><select id="mDays"><option value="7">٧ أيام</option><option value="30">٣٠ يوم</option><option value="3">٣ أيام</option><option value="0">بدون نهاية</option></select></div></div>
+            <div class="row2 hide" id="mCustom"><div class="f"><label for="mCoins">كوينز</label><input id="mCoins" type="number" min="0" value="0"></div><div class="f"><label for="mGems">جواهر</label><input id="mGems" type="number" min="0" value="0"></div></div>
+            <div class="warn hide" id="mWarn">الإرسال لمجموعة كبيرة بيطلب تأكيد، وما بيتراجع عنه.</div>
+            <div class="err" id="mErr" role="alert"></div>
+            <div class="foot-act"><button class="btn red" type="submit">ابعت</button></div>
+          </form>
+        </div>
+        <div class="paper card"><h3>آخر المُرسل<small>المستلم / المُرسل</small></h3>
+          <div class="empty hide" id="mlEmpty">ما بعتّ شي بعد.</div><table class="tbl" id="mlTable"></table></div>
+      </div>
     </section>
 
     <section class="view" id="v-words">
@@ -314,6 +372,17 @@ section.view{display:none}section.view.on{display:block}
     </div>
   </div>
 </div>
+
+<div class="drawer" id="d-pack"><div class="paper edit" style="grid-template-columns:1fr"><div class="form">
+  <h2><span id="pkTitle">حزمة جديدة</span><button class="x" data-close aria-label="إغلاق" type="button">×</button></h2>
+  <form id="packForm" autocomplete="off">
+    <div class="row2"><div class="f"><label for="pkAr">الاسم</label><input id="pkAr" maxlength="40" required></div><div class="f"><label for="pkEn">Name (English)</label><input id="pkEn" class="ltr" dir="ltr" maxlength="40"></div></div>
+    <div class="row2"><div class="f"><label for="pkCoins">كوينز</label><input id="pkCoins" type="number" min="0" max="1000000" value="0"></div><div class="f"><label for="pkGems">جواهر</label><input id="pkGems" type="number" min="0" max="10000" value="0"></div></div>
+    <div class="f"><label for="pkItems">عناصر من المتجر (اختياري)</label><input id="pkItems" class="ltr" dir="ltr" placeholder="frame_ember, chat_port"><small>معرّفات العناصر بالكتالوج، مفصولة بفاصلة. لازم تكون موجودة بمتجر PlayFab.</small></div>
+    <div class="err" id="pkErr" role="alert"></div>
+    <div class="foot-act"><button class="btn red" type="submit">احفظ</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
+  </form>
+</div></div></div>
 <div class="toast" id="toast" role="status"></div>
 <script>
 'use strict';
@@ -540,14 +609,6 @@ document.addEventListener('click', async e => {
 });
 
 // ------------------------------------------------------------------ players
-function playerCard(p) {
-  const s = p.stats || {}, muted = p.mutedUntil > Date.now();
-  return `<div class="paper card" style="margin-bottom:16px"><div class="player"><div class="av"></div>
-    <div><div style="font-family:Lalezar;font-size:1.6rem;line-height:1.1">${esc(p.name)} ${muted ? '<span class="stamp" style="font-size:.8rem">مكتوم</span>' : ''}</div>
-    <div class="m" style="font-weight:700;font-size:.8rem;margin:2px 0 10px">${p.num ? 'رقم اللاعب ' + ar(p.num) + ' · ' : ''}المستوى ${ar(p.level)} · <span dir="ltr">${esc(p.pf)}</span></div>
-    <div class="kv"><div><span>مباريات</span><br><b>${ar(s.games || 0)}</b></div><div><span>انتصارات</span><br><b>${ar(s.wins || 0)}</b></div><div><span>أفضل سلسلة</span><br><b>${ar(s.bestStreak || 0)}</b></div><div><span>بلاغات ضده</span><br><b>${ar(p.reportsAgainst)}</b></div></div></div>
-    <div style="display:grid;gap:8px">${muted ? `<button class="btn greenb sm" data-pm="0" data-pf="${esc(p.pf)}">فك الكتم</button>` : `<button class="btn red sm" data-pm="120" data-pf="${esc(p.pf)}">كتم ساعتين</button><button class="btn ghost sm" data-pm="1440" data-pf="${esc(p.pf)}">كتم يوم</button>`}</div></div></div>`;
-}
 async function searchPlayers() {
   const q = $('#pq').value.trim(); if (!q) return;
   try { const r = (await api('/players?q=' + encodeURIComponent(q))).players; $('#pResult').innerHTML = r.length ? r.map(playerCard).join('') : '<div class="paper card empty">ما لقينا لاعب بهالبحث.</div>'; } catch (x) { toast(errText(x.code)); }
@@ -557,6 +618,119 @@ document.addEventListener('click', async e => {
   const b = e.target.closest('[data-pm]'); if (!b) return;
   try { await api('/players/mute', { pf: b.dataset.pf, minutes: Number(b.dataset.pm) }); toast(b.dataset.pm === '0' ? 'انفك الكتم' : 'انكتم'); searchPlayers(); } catch (x) { toast(errText(x.code)); }
 });
+
+// ------------------------------------------------------------------ live ops: packs, mail, balance
+ERR.name_required = 'الاسم مطلوب'; ERR.empty_pack = 'الحزمة فاضية: حط كوينز أو جواهر أو عنصر'; ERR.bad_coins = 'الكوينز بين ٠ ومليون'; ERR.bad_gems = 'الجواهر بين ٠ و١٠٠٠٠'; ERR.bad_items = 'معرّفات العناصر غير صحيحة';
+ERR.unknown_player = 'ما في لاعب بهالرقم أو المعرّف'; ERR.no_recipients = 'ما في مستلمين'; ERR.bad_targets = 'اكتب من لاعب لـ٢٠٠ لاعب'; ERR.confirm_required = 'لازم تأكد الإرسال'; ERR.pack_not_found = 'الحزمة ما انوجدت';
+ERR.reason_required = 'اكتب سبب (٣ أحرف على الأقل)'; ERR.bad_amount = 'الكمية بين ١ ومليون'; ERR.insufficient_or_failed = 'فشل: يمكن الرصيد أقل من المطلوب'; ERR.playfab_failed = 'فشل عند PlayFab، جرّب بعد شوي'; ERR.no_playfab = 'PlayFab غير متصل';
+const pills = p => (p.coins ? `<span class="pill"><span class="coin"></span>${ar(p.coins.toLocaleString('en'))}</span>` : '') + (p.gems ? `<span class="pill"><span class="gem"></span>${ar(p.gems)}</span>` : '') + (p.items || []).map(i => `<span class="pill">${esc(i)}</span>`).join('');
+let PACKS = [];
+async function loadPacks() {
+  PACKS = (await api('/packs')).packs;
+  $('#pkEmpty').classList.toggle('hide', PACKS.length > 0);
+  $('#pkTable').innerHTML = PACKS.length ? '<tr><th>الحزمة</th><th>المحتوى</th><th></th></tr>' + PACKS.map(p =>
+    `<tr><td><div class="t">${esc(p.name.ar || p.name.en)}</div><div class="m">${esc(p.name.en)}</div></td><td>${pills(p)}</td><td><div class="act"><button class="btn ghost sm" data-pk-edit="${esc(p.id)}">عدّل</button><button class="btn ghost sm del" data-pk-del="${esc(p.id)}">احذف</button></div></td></tr>`).join('') : '';
+}
+let pkEditing = null;
+function openPack(id) {
+  pkEditing = id || null;
+  const p = PACKS.find(x => x.id === id) || { name: { ar: '', en: '' }, coins: 0, gems: 0, items: [] };
+  $('#pkTitle').textContent = id ? 'تعديل الحزمة' : 'حزمة جديدة'; $('#pkErr').textContent = '';
+  $('#pkAr').value = p.name.ar; $('#pkEn').value = p.name.en; $('#pkCoins').value = p.coins; $('#pkGems').value = p.gems; $('#pkItems').value = (p.items || []).join(', ');
+  $('#d-pack').classList.add('on'); setTimeout(() => $('#pkAr').focus(), 30);
+}
+$('#newPack').onclick = () => openPack();
+$('#packForm').onsubmit = async e => {
+  e.preventDefault(); $('#pkErr').textContent = '';
+  const body = { id: pkEditing || undefined, name: { ar: $('#pkAr').value, en: $('#pkEn').value }, coins: Number($('#pkCoins').value), gems: Number($('#pkGems').value), items: $('#pkItems').value.split(',').map(s => s.trim()).filter(Boolean) };
+  try { await api('/packs/save', body); $('#d-pack').classList.remove('on'); toast('انحفظت الحزمة'); loadPacks(); } catch (x) { $('#pkErr').textContent = errText(x.code); }
+};
+document.addEventListener('click', async e => {
+  if (e.target.closest('[data-close]')) { const d = e.target.closest('.drawer'); if (d) d.classList.remove('on'); }
+  if (e.target === $('#d-pack')) $('#d-pack').classList.remove('on');
+  const ed = e.target.closest('[data-pk-edit]'); if (ed) { openPack(ed.dataset.pkEdit); return; }
+  const del = e.target.closest('[data-pk-del]');
+  if (del) { if (!confirm('تأكيد حذف الحزمة؟')) return; try { await api('/packs/delete', { id: del.dataset.pkDel }); toast('انحذفت'); loadPacks(); } catch (x) { toast(errText(x.code)); } }
+});
+
+// mail composer
+let mAud = 'one';
+const AUD = {
+  one: ['اللاعب (رقمه أو معرّفه)', '48291735', 'رقم اللاعب ٦ خانات أو معرّف PlayFab', false],
+  list: ['قائمة لاعبين (كل واحد بسطر أو مفصولين بفاصلة)', '48291735, 19302211', 'لحد ٢٠٠ لاعب', false],
+  active7: ['', '', 'بتنبعت لكل اللي خلّصوا مباراة بآخر ٧ أيام (لحد ٥٠٠٠)', true],
+  all: ['', '', 'كل اللاعبين، حتى اللي بيسجّلوا بعدين طول فترة الصلاحية', true],
+};
+function setAud(a) {
+  mAud = a; $$('#mAud button').forEach(b => b.classList.toggle('on', b.dataset.a === a));
+  const [lbl, ph, hint, big] = AUD[a];
+  $('#mTargetsBox').classList.toggle('hide', big); $('#mTargetsLbl').textContent = lbl; $('#mTargets').placeholder = ph; $('#mTargetsHint').textContent = hint;
+  $('#mWarn').classList.toggle('hide', !big); $('#mWarn').textContent = hint + '. الإرسال بيطلب تأكيد وما بيتراجع عنه.';
+}
+$$('#mAud button').forEach(b => b.onclick = () => setAud(b.dataset.a));
+function fillPackSelect() {
+  $('#mPack').innerHTML = '<option value="">بدون حزمة (رسالة بس)</option>' + PACKS.map(p => `<option value="${esc(p.id)}">${esc(p.name.ar || p.name.en)}</option>`).join('') + '<option value="__custom">مخصّصة…</option>';
+}
+$('#mPack').onchange = () => $('#mCustom').classList.toggle('hide', $('#mPack').value !== '__custom');
+async function loadMail() {
+  PACKS = (await api('/packs')).packs; fillPackSelect(); setAud(mAud);
+  const s = (await api('/mail/sent')).sent;
+  $('#mlEmpty').classList.toggle('hide', s.length > 0);
+  $('#mlTable').innerHTML = s.length ? '<tr><th>البرقية</th><th>لمين</th><th>استلموا</th></tr>' + s.map(x => {
+    const who = x.audience === 'all' ? 'كل اللاعبين' : ar(x.count) + ' لاعب';
+    const got = x.audience === 'all' ? `<b>${ar(x.claimed)}</b> <span class="m">استلموا</span>` : (x.claimed >= x.count ? '<span class="stamp green" style="font-size:.7rem">استلموا</span>' : `<b>${ar(x.claimed)}</b> <span class="m">/ ${ar(x.count)}</span>`);
+    return `<tr><td><div class="t">${esc(x.title.ar || x.title.en)}</div><div class="m">${ago(x.ts)}${x.label ? ' · ' + esc(x.label) : ''}</div></td><td>${who}</td><td>${got}</td></tr>`;
+  }).join('') : '';
+}
+$('#mailForm').onsubmit = async e => {
+  e.preventDefault(); $('#mErr').textContent = '';
+  const big = AUD[mAud][3];
+  if (big && !confirm('تأكيد الإرسال؟ ' + AUD[mAud][2] + '. ما بيتراجع عنه.')) return;
+  const body = { audience: mAud, confirm: big ? true : undefined, title: { ar: $('#mTitleAr').value, en: $('#mTitleEn').value }, body: { ar: $('#mBodyAr').value, en: $('#mBodyEn').value }, expiresInDays: Number($('#mDays').value) };
+  if (!big) body.targets = $('#mTargets').value.split(/[\s,،]+/).filter(Boolean);
+  const pk = $('#mPack').value;
+  if (pk === '__custom') body.pack = { coins: Number($('#mCoins').value), gems: Number($('#mGems').value) }; else if (pk) body.packId = pk;
+  try { const r = await api('/mail/send', body); toast('انبعتت' + (r.count ? ' لـ' + ar(r.count) + ' لاعب' : ' للكل')); $('#mTitleAr').value = $('#mTitleEn').value = $('#mBodyAr').value = $('#mBodyEn').value = ''; loadMail(); } catch (x) { $('#mErr').textContent = errText(x.code); }
+};
+loaders.packs = loadPacks; loaders.mail = loadMail;
+
+// the player card: balances, mail, and the support tiles
+function playerCard(p) {
+  const s = p.stats || {}, muted = p.mutedUntil > Date.now(), b = p.balances;
+  const pf = esc(p.pf);
+  return `<div class="paper card" style="margin-bottom:16px"><div class="player"><div class="av"></div>
+    <div><div style="font-family:Lalezar;font-size:1.6rem;line-height:1.1">${esc(p.name)} ${muted ? '<span class="stamp" style="font-size:.8rem">مكتوم</span>' : ''}</div>
+    <div class="m" style="font-weight:700;font-size:.8rem;margin:2px 0 10px">${p.num ? 'رقم اللاعب ' + ar(p.num) + ' · ' : ''}المستوى ${ar(p.level)} · <span class="mono">${pf}</span></div>
+    <div class="kv"><div><span>الكوينز</span><br><b>${b ? ar(b.coins.toLocaleString('en')) : '—'}</b></div><div><span>الجواهر</span><br><b>${b ? ar(b.gems) : '—'}</b></div><div><span>مباريات</span><br><b>${ar(s.games || 0)}</b></div><div><span>انتصارات</span><br><b>${ar(s.wins || 0)}</b></div><div><span>بلاغات ضده</span><br><b>${ar(p.reportsAgainst)}</b></div><div><span>برقيات بانتظاره</span><br><b>${ar(p.pendingMail || 0)}</b></div></div></div>
+    <div style="display:grid;gap:8px">${muted ? `<button class="btn greenb sm" data-pm="0" data-pf="${pf}">فك الكتم</button>` : `<button class="btn red sm" data-pm="120" data-pf="${pf}">كتم ساعتين</button><button class="btn ghost sm" data-pm="1440" data-pf="${pf}">كتم يوم</button>`}</div></div>
+    <div class="sect"><h5>إجراءات الدعم</h5><div class="sgrid">
+      <div class="tile"><h6>تعديل الرصيد</h6>
+        <div class="rowin"><select data-bal="op"><option value="add">إضافة</option><option value="remove">سحب</option></select><select data-bal="currency"><option value="coins">كوينز</option><option value="gems">جواهر</option></select><input data-bal="amount" type="number" min="1" value="500" style="max-width:90px"></div>
+        <div class="rowin"><input data-bal="reason" placeholder="السبب (إجباري، بيتسجّل)"></div>
+        <button class="btn red sm" data-bal-go="${pf}">نفّذ</button>
+        <div class="warn" style="margin-top:8px">السحب بيتنفّذ فوراً وما بيتراجع عنه. الرصيد ما بينزل تحت الصفر.</div></div>
+      <div class="tile"><h6>بكج بالبريد</h6>
+        <div class="rowin"><select data-mail="pack">${PACKS.map(k => `<option value="${esc(k.id)}">${esc(k.name.ar || k.name.en)}</option>`).join('') || '<option value="">ما في حزم: ضيف من صفحة الحزم</option>'}</select></div>
+        <div class="rowin"><input data-mail="title" placeholder="عنوان البرقية"></div>
+        <button class="btn greenb sm" data-mail-go="${pf}">ابعت لهاللاعب</button></div>
+    </div></div></div>`;
+}
+document.addEventListener('click', async e => {
+  const g = e.target.closest('[data-bal-go]');
+  if (g) {
+    const tile = g.closest('.tile'), v = k => tile.querySelector(`[data-bal=${k}]`).value;
+    if (v('op') === 'remove' && !confirm('تأكيد السحب؟ ما بيتراجع عنه.')) return;
+    try { await api('/players/balance', { pf: g.dataset.balGo, op: v('op'), currency: v('currency'), amount: Number(v('amount')), reason: v('reason') }); toast('انتنفّذ'); searchPlayers(); } catch (x) { toast(errText(x.code)); }
+    return;
+  }
+  const m = e.target.closest('[data-mail-go]');
+  if (m) {
+    const tile = m.closest('.tile'), pack = tile.querySelector('[data-mail=pack]').value, title = tile.querySelector('[data-mail=title]').value.trim();
+    if (!title) { toast('اكتب عنوان البرقية'); return; }
+    try { await api('/mail/send', { audience: 'one', targets: [m.dataset.mailGo], title: { ar: title }, packId: pack || undefined, expiresInDays: 7 }); toast('انبعتت البرقية'); searchPlayers(); } catch (x) { toast(errText(x.code)); }
+  }
+});
+api('/packs').then(r => { PACKS = r.packs; }).catch(() => {});
 
 // ------------------------------------------------------------------ start: a valid cookie goes straight in
 api('/overview').then(() => showApp()).catch(() => showLogin());

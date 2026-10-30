@@ -20,12 +20,12 @@ namespace MafiaNight.UI.Kit
         private const float DefaultTop = 653f;                    // 236 px of the HTML
         private const string SidePref = "mafia.quick.side", YPref = "mafia.quick.y", HintPref = "mafia.quick.hint";
 
-        [SerializeField] private RectTransform menu, tabRt, dropBg, dropItems, chevron, sumDot, offersRt, eventsRt, offDot, evDot, offTime, offLabel, evLabel, bubble, panel, rowsRoot, toast;
+        [SerializeField] private RectTransform menu, tabRt, dropBg, dropItems, chevron, sumDot, offersRt, eventsRt, mailRt, offDot, evDot, mailDot, offTime, offLabel, evLabel, mailLabel, bubble, panel, rowsRoot, toast;
         [SerializeField] private Image tabImage, ringImage, edgeL, edgeR;
         [SerializeField] private Sprite tabSprite, pillSprite;
-        [SerializeField] private ArabicText sumText, offDotText, evDotText, offTimeText, toastText;
-        [SerializeField] private Button tabButton, offersButton, eventsButton, scrimButton, openPaperButton, undoButton, catcher;
-        [SerializeField] private CanvasGroup menuGroup, dropItemsGroup, edgesGroup, hintGroup, offLabelGroup, evLabelGroup, bubbleGroup, panelGroup, scrimGroup, toastGroup;
+        [SerializeField] private ArabicText sumText, offDotText, evDotText, mailDotText, offTimeText, toastText;
+        [SerializeField] private Button tabButton, offersButton, eventsButton, mailButton, scrimButton, openPaperButton, undoButton, catcher;
+        [SerializeField] private CanvasGroup menuGroup, dropItemsGroup, edgesGroup, hintGroup, offLabelGroup, evLabelGroup, mailLabelGroup, bubbleGroup, panelGroup, scrimGroup, toastGroup;
         [SerializeField] private GameObject rowPrefab, emptyState, openPaperGo;
 
         /// <summary>An offer's block button was pressed (the app decides: it hides the offer and calls <see cref="SetOffers"/> again).</summary>
@@ -38,13 +38,15 @@ namespace MafiaNight.UI.Kit
         public event Action OnOpenPaper;
         /// <summary>The events icon was pressed (the events sheet is the app's to show).</summary>
         public event Action OnOpenEvents;
+        /// <summary>The mail icon was pressed (the mail board is the app's to show).</summary>
+        public event Action OnOpenMail;
 
         private sealed class Row { public StoreAdCarousel.Ad ad; public ArabicText sub; public string subPrefix; }
 
         private readonly List<StoreAdCarousel.Ad> ads = new List<StoreAdCarousel.Ad>();
         private readonly List<Row> rows = new List<Row>();
         private float adsAt;
-        private int events;
+        private int events, mail;
         private bool right = true, open, panelOpen, dragging, suppressed, placed, nearLeft;
         private float topPx = -1f, topFrac = -1f, openT, hintLeft, snapX = -1f, lastW, lastH, tick, toastLeft;
         private Vector2 grab;
@@ -59,6 +61,7 @@ namespace MafiaNight.UI.Kit
             tabButton.onClick.AddListener(() => SetOpen(!open));
             offersButton.onClick.AddListener(OpenPanel);
             eventsButton.onClick.AddListener(() => { SetOpen(false); OnOpenEvents?.Invoke(); });
+            mailButton.onClick.AddListener(() => { SetOpen(false); OnOpenMail?.Invoke(); });
             scrimButton.onClick.AddListener(ClosePanel);
             catcher.onClick.AddListener(() => SetOpen(false));
             openPaperButton.onClick.AddListener(() => { ClosePanel(); OnOpenPaper?.Invoke(); });
@@ -66,7 +69,7 @@ namespace MafiaNight.UI.Kit
             var relay = tabRt.gameObject.GetComponent<KitQuickTab>(); relay.owner = this;
             panelGroup.alpha = 0f; panelGroup.blocksRaycasts = false; scrimGroup.alpha = 0f; scrimGroup.blocksRaycasts = false;
             toastGroup.alpha = 0f; toastGroup.blocksRaycasts = false; edgesGroup.alpha = 0f; hintGroup.alpha = 0f; bubbleGroup.alpha = 0f;
-            offLabelGroup.alpha = 0f; evLabelGroup.alpha = 0f; dropItemsGroup.alpha = 0f; dropItemsGroup.blocksRaycasts = false;
+            offLabelGroup.alpha = 0f; evLabelGroup.alpha = 0f; mailLabelGroup.alpha = 0f; dropItemsGroup.alpha = 0f; dropItemsGroup.blocksRaycasts = false;
             catcher.gameObject.SetActive(false); dropBg.gameObject.SetActive(false);
             menuGroup.alpha = 0f; menuGroup.blocksRaycasts = false;
             ApplySide();
@@ -85,6 +88,9 @@ namespace MafiaNight.UI.Kit
         /// <summary>How many events are on (0 hides the events icon).</summary>
         public void SetEvents(int count) { events = Mathf.Max(0, count); Refresh(); }
 
+        /// <summary>How many telegrams wait in the mail (the red number on the mail icon).</summary>
+        public void SetMail(int count) { mail = Mathf.Max(0, count); Refresh(); }
+
         /// <summary>Hides the whole menu (while the player is in a room or a match).</summary>
         public void SetSuppressed(bool on)
         {
@@ -100,7 +106,7 @@ namespace MafiaNight.UI.Kit
             undoId = adId; toastText.Text = text; toastLeft = 4.2f; toastGroup.blocksRaycasts = true;
         }
 
-        private int Total => ads.Count + events;
+        private int Total => ads.Count + events + mail;
         private bool Visible => !suppressed;
 
         private void BuildRows()
@@ -168,6 +174,8 @@ namespace MafiaNight.UI.Kit
             sumDot.gameObject.SetActive(Total > 0);
             offDotText.Text = CoinPill.Format(ads.Count); offDot.gameObject.SetActive(ads.Count > 0);
             evDotText.Text = CoinPill.Format(events); evDot.gameObject.SetActive(events > 0);
+            mailDotText.Text = CoinPill.Format(mail); mailDot.gameObject.SetActive(mail > 0);
+            mailRt.gameObject.SetActive(true);
             bool offersIcon = ads.Count > 0 || panelOpen;
             offersRt.gameObject.SetActive(offersIcon); eventsRt.gameObject.SetActive(true);       // the events icon is always there, it says so when there are none
             var evText = evLabel.GetComponentInChildren<ArabicText>(true);
@@ -191,6 +199,7 @@ namespace MafiaNight.UI.Kit
             }
             Put(offersRt, offersRt.gameObject.activeSelf, offTime.gameObject.activeSelf ? TimeRoom : 0f);
             Put(eventsRt, eventsRt.gameObject.activeSelf, 0f);
+            Put(mailRt, mailRt.gameObject.activeSelf, 0f);
             dropH = n == 0 ? 0f : y - Gap + DropPad;
             dropItems.sizeDelta = new Vector2(TabW, dropH);
         }
@@ -373,7 +382,7 @@ namespace MafiaNight.UI.Kit
             hintLeft -= dt;
             float la = open && hintLeft > 0f && openT > 0.8f ? 1f : 0f;
             float evLa = open && openT > 0.8f && (hintLeft > 0f || events == 0) ? 1f : 0f;   // "no events" stays written while the menu is open
-            offLabelGroup.alpha = Mathf.MoveTowards(offLabelGroup.alpha, la, dt * 5f); evLabelGroup.alpha = Mathf.MoveTowards(evLabelGroup.alpha, evLa, dt * 5f);
+            offLabelGroup.alpha = Mathf.MoveTowards(offLabelGroup.alpha, la, dt * 5f); mailLabelGroup.alpha = Mathf.MoveTowards(mailLabelGroup.alpha, la, dt * 5f); evLabelGroup.alpha = Mathf.MoveTowards(evLabelGroup.alpha, evLa, dt * 5f);
 
             // the ring that pulses while something is new
             if (Total > 0 && !open && !dragging)

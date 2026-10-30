@@ -54,6 +54,19 @@ function createPlayFab({ titleId, secretKey, baseUrl, fetchImpl }) {
     async addCurrency(playFabId, code, amount) {
       await call('/Server/AddUserVirtualCurrency', { PlayFabId: playFabId, VirtualCurrency: code, Amount: amount });
     },
+    /** Takes currency from a player; PlayFab refuses to go below zero. */
+    async subtractCurrency(playFabId, code, amount) {
+      await call('/Server/SubtractUserVirtualCurrency', { PlayFabId: playFabId, VirtualCurrency: code, Amount: amount });
+    },
+    /** Puts items of the store catalog into the player's inventory. */
+    async grantItems(playFabId, itemIds) {
+      await call('/Server/GrantItemsToUser', { PlayFabId: playFabId, ItemIds: itemIds });
+    },
+    /** { CO: coins, GM: gems, ... } */
+    async getBalances(playFabId) {
+      const d = await call('/Server/GetUserInventory', { PlayFabId: playFabId });
+      return (d && d.VirtualCurrency) || {};
+    },
   };
 }
 

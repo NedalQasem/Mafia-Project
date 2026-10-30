@@ -11,6 +11,7 @@ const { createStore } = require('./src/store');
 const { createFriends } = require('./src/friends');
 const { createLeaderboard } = require('./src/leaderboard');
 const { createOffers } = require('./src/offers');
+const { createMail } = require('./src/mail');
 const { createEvents } = require('./src/events');
 const { createAdminStore } = require('./src/adminstore');
 const { createAdmin, hashPassword } = require('./src/admin');
@@ -26,7 +27,13 @@ const playfab = {
   async getDisplayName(pf) { return names[pf] || (pf.startsWith('ED') ? 'أبو سالم' : 'لاعب'); },
   async getProgress(pf) { return progress[pf] || null; },
   async getProgressKey() { return null; },
-  async setProgress() {}, async addCurrency() {},
+  async setProgress() {},
+  // balances live in memory so the admin board's balance tile and the mail claims can be tried
+  bal: {},
+  async addCurrency(pf, code, n) { this.bal[pf + code] = (this.bal[pf + code] || 0) + n; },
+  async subtractCurrency(pf, code, n) { if ((this.bal[pf + code] || 0) < n) throw new Error('insufficient'); this.bal[pf + code] -= n; },
+  async grantItems() {},
+  async getBalances(pf) { return { CO: this.bal[pf + 'CO'] || 0, GM: this.bal[pf + 'GM'] || 0 }; },
 };
 
 const cfg = {
@@ -66,7 +73,8 @@ fs.writeFileSync(reportsFile, [
   { ts: iso(-1), type: 'player', reporter: 'OTHER0003', target: 'OTHER0002', reason: 'cheat', note: '' },
   { ts: iso(-5), type: 'player', reporter: 'OTHER0004', target: 'OTHER0001', reason: 'spam', note: '' },
 ].map(r => JSON.stringify(r)).join('\n') + '\n');
-const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, reportsFile, adminCfg: { passwordHash: hashPassword('dev-password-123'), path: '/admin' } });
+const mail = createMail({ cfg, playfab });
+const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, reportsFile, adminCfg: { passwordHash: hashPassword('dev-password-123'), path: '/admin' } });
 for (let i = 0; i < 40; i++) adminStore.noteMatch('dev-m' + i, leaderboard.dayKey(Date.now() - (i % 7) * 86400000));
-const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, events, offers, admin });
+const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, events, offers, mail, admin });
 server.listen(8788, '127.0.0.1', () => console.log('dev server on http://127.0.0.1:8788 (pretend PlayFab; players OTHER0001..OTHER0004 exist) · admin board: http://127.0.0.1:8788/admin password dev-password-123'));

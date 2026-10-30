@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAFIA ADMIN BOARD</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--soft:#4a3c24;--crim:#c0323a;--crimd:#8a1c24;--brass:#b99048;--green:#1d4a3c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;background:#070504;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif;font-size:15px}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{border:0;cursor:pointer;background:none}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.leather{background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal}
+.red{background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal}
+.greenb{background:var(--grain),linear-gradient(180deg,#2c6a55,#1d4a3c 55%,#102c24);background-blend-mode:multiply,normal}
+.paper{position:relative;background:var(--paper);color:var(--ink);border-radius:3px;box-shadow:inset 0 0 40px #8a7a5a88,0 10px 20px #000c}
+.paper::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.1;mix-blend-mode:multiply;pointer-events:none;border-radius:inherit}
+.paper>*{position:relative}
+.btn{padding:8px 20px;border-radius:9px;font-family:Lalezar;font-size:1.05rem;color:#f0dcd8;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000;transition:transform .12s}
+.btn:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #ffffff22,0 0 0 #000}
+.btn.sm{padding:4px 14px;font-size:.9rem;border-radius:7px}
+.btn.ghost{background:#0b080888;box-shadow:inset 0 0 0 1px #6e5224;color:#e6d9bd}
+.stamp{display:inline-block;padding:0 10px;font-family:Lalezar;font-size:.95rem;line-height:1.35;color:var(--crim);border:2.5px solid var(--crim);border-radius:4px;rotate:-6deg;mix-blend-mode:multiply}
+.stamp.green{color:var(--green);border-color:var(--green)}.stamp.brown{color:#6e4b1c;border-color:#6e4b1c}.stamp.grey{color:#6a6458;border-color:#6a6458}
+
+/* ---------- login ---------- */
+#login{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:radial-gradient(ellipse 70% 50% at 50% 0,#e8c27a24,transparent 70%),#070504}
+#login.off{display:none}
+.lamp{position:absolute;top:0;left:50%;translate:-50% 0;width:520px;height:720px;clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);background:linear-gradient(180deg,#ffe9a02e,transparent 85%);pointer-events:none}
+.lbox{width:min(400px,92vw);padding:26px 28px 24px;text-align:center;rotate:-.6deg}
+.lbox .plaque{display:inline-block;padding:3px 18px;margin-bottom:6px;font-family:Lalezar;font-size:1.6rem;letter-spacing:2px;white-space:nowrap;border-block:3px double var(--ink)}
+.lbox small{display:block;font-weight:800;color:var(--crimd);font-size:.8rem;margin-bottom:14px}
+.lbox label{display:block;text-align:right;font-weight:800;font-size:.85rem;color:var(--soft);margin-bottom:4px}
+.lbox input{width:100%;padding:10px 14px;border-radius:6px;border:2px solid #1c170f88;background:#f0e8d2;color:var(--ink);font-size:1.1rem;letter-spacing:2px;text-align:center}
+.lbox .btn{width:100%;margin-top:14px;padding:11px}
+.lbox p{margin:12px 0 0;font-size:.75rem;font-weight:700;color:var(--soft)}
+.lbox .stamp{position:absolute;top:-14px;left:-18px;font-size:1.1rem;background:#d9cfb4cc}
+
+/* ---------- shell ---------- */
+#app{display:grid;grid-template-columns:240px 1fr;height:100vh}
+#app.off{display:none}
+aside{padding:18px 14px;display:flex;flex-direction:column;gap:6px;box-shadow:inset -1px 0 0 #000,inset -3px 0 0 #6e5224;position:relative}
+aside .brand{text-align:center;margin-bottom:14px}
+aside .brand b{display:block;font-family:Lalezar;font-weight:400;font-size:1.45rem;letter-spacing:2px;color:#f5e2a8;line-height:1.1}
+aside .brand small{font-weight:700;font-size:.7rem;color:#8d744a}
+.nav{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-weight:800;color:#b9a98a;text-align:right;position:relative;transition:background .15s}
+.nav svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.nav:hover{background:#ffffff0a}
+.nav.on{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 14px #8a7a5a88,0 0 0 1px #000}
+.nav .n{margin-inline-start:auto;min-width:22px;height:22px;border-radius:11px;padding:0 6px;background:radial-gradient(circle at 35% 30%,#e0525a,#8a1c24);color:#fff;font-size:.75rem;line-height:22px;text-align:center;box-shadow:0 0 0 1.5px #000}
+aside .out{margin-top:auto}
+main{overflow:auto;padding:22px 30px 40px;background:radial-gradient(ellipse 80% 30% at 50% 0,#e8c27a14,transparent 70%),#0d0907}
+.top{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.top h1{margin:0;font-family:Lalezar;font-weight:400;font-size:2rem;line-height:1.1}
+.top h1 small{display:block;font-family:Cairo;font-weight:700;font-size:.8rem;color:#8d744a;margin-top:2px}
+.top .sp{margin-inline-start:auto}
+.live{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:7px;background:#0b080899;box-shadow:inset 0 0 0 1px #6e5224;font-weight:800;font-size:.8rem}
+.live i{width:8px;height:8px;border-radius:50%;background:#4fd49b;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.3}}
+section.view{display:none}section.view.on{display:block}
+
+/* cards and tables */
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g2{grid-template-columns:1.4fr 1fr}
+@media(max-width:1100px){.g2{grid-template-columns:1fr}#app{grid-template-columns:76px 1fr}aside .brand small,.nav span,aside .out span{display:none}.nav{justify-content:center}}
+.stat{padding:16px 18px 14px;rotate:-.4deg}
+.stat:nth-child(even){rotate:.4deg}
+.stat b{display:block;font-family:Lalezar;font-weight:400;font-size:2.4rem;line-height:1}
+.stat span{font-weight:800;font-size:.85rem;color:var(--soft)}
+.stat em{position:absolute;top:12px;left:14px;font-style:normal;font-weight:800;font-size:.72rem;color:var(--green)}
+.stat em.dn{color:var(--crimd)}
+.card{padding:16px 18px}
+.card h3{margin:0 0 10px;font-family:Lalezar;font-weight:400;font-size:1.3rem;border-bottom:3px double var(--ink);padding-bottom:2px;display:flex;align-items:baseline;gap:8px}
+.card h3 small{font-family:Cairo;font-weight:700;font-size:.72rem;color:var(--crimd);margin-inline-start:auto}
+.bars{display:flex;align-items:flex-end;gap:12px;height:170px;padding-top:10px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;font-weight:800;font-size:.72rem}
+.bars i{display:block;width:100%;border-radius:3px 3px 0 0;background:linear-gradient(90deg,#1c170f,#3a2e1c,#1c170f);box-shadow:inset 0 2px 0 #ffffff22}
+.bars div.today i{background:linear-gradient(90deg,#8a1c24,#c0323a,#8a1c24)}
+.feed{list-style:none;margin:0;padding:0}
+.feed li{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed #1c170f55;font-weight:700;font-size:.85rem}
+.feed li:last-child{border:0}
+.feed time{margin-inline-start:auto;font-size:.72rem;color:var(--soft);font-weight:800}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--crim)}.dot.g{background:var(--green)}.dot.b{background:#b99048}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-family:Lalezar;font-weight:400;font-size:1rem;text-align:right;padding:6px 10px;border-bottom:2px solid var(--ink)}
+.tbl td{padding:10px;border-bottom:1px dashed #1c170f55;font-weight:700;vertical-align:middle}
+.tbl tr:last-child td{border:0}
+.tbl .act{display:flex;gap:6px;justify-content:flex-end}
+.tbl .t{font-family:Lalezar;font-weight:400;font-size:1.05rem}
+.tbl .m{font-size:.75rem;color:var(--soft)}
+.kind{display:inline-block;padding:1px 10px;border-radius:5px;font-weight:800;font-size:.72rem;color:#f0dcd8;background:var(--crimd)}
+.kind.c{background:var(--green)}.kind.i{background:#6e4b1c}
+.paper .btn.ghost{background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal}
+.tog{display:inline-block;vertical-align:middle;width:44px;height:24px;border-radius:12px;background:#1c170f44;box-shadow:inset 0 0 0 1px #1c170f66;position:relative;transition:background .2s;flex:none}
+.tog::after{content:"";position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#f0e8d2;box-shadow:0 1px 3px #0008;transition:translate .2s}
+.tog.on{background:var(--green)}.tog.on::after{translate:-20px 0}
+.bar-actions{display:flex;gap:10px;margin-bottom:14px;align-items:center}
+
+/* editor (drawer + live preview) */
+.drawer{position:fixed;inset:0;z-index:30;background:#050302cc;display:none;place-items:center;padding:20px}
+.drawer.on{display:grid}
+.edit{width:min(1020px,100%);max-height:92vh;overflow:auto;display:grid;grid-template-columns:1fr 330px;gap:0;padding:0}
+.edit .form{padding:20px 24px}
+.edit .prev{padding:20px 16px;background:var(--grain),linear-gradient(180deg,#2b1f18,#140d0a);background-blend-mode:multiply,normal;box-shadow:inset 1px 0 0 #000,inset 3px 0 0 #6e5224;display:flex;flex-direction:column;align-items:center;gap:14px;border-radius:0 3px 3px 0}
+.edit h2{margin:0 0 12px;font-family:Lalezar;font-weight:400;font-size:1.6rem;border-bottom:3px double var(--ink);display:flex;align-items:center}
+.edit h2 .x{margin-inline-start:auto;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1.5px #000,0 2px 0 #000;color:#2a1a08;font-size:1rem;font-family:Cairo;font-weight:800}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f{margin-bottom:12px}
+.f label{display:block;font-weight:800;font-size:.8rem;color:var(--soft);margin-bottom:3px}
+.f input,.f select,.f textarea{width:100%;padding:8px 12px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+.f textarea{min-height:62px;resize:vertical}
+.f small{display:block;font-size:.68rem;font-weight:700;color:var(--soft);margin-top:2px}
+.kinds{display:flex;gap:8px;margin-bottom:12px}
+.kinds button{flex:1;padding:7px;border-radius:7px;font-family:Lalezar;font-size:.95rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.kinds button.on{background:var(--ink);color:#f5e2a8}
+.hide{display:none!important}
+.foot-act{display:flex;gap:10px;margin-top:6px}
+.prev h4{margin:0;font-family:Lalezar;font-weight:400;color:#e6d9bd;font-size:1rem}
+.prev small{color:#8d744a;font-weight:700;font-size:.7rem;text-align:center}
+.clip{width:100%;padding:12px 14px 22px;position:relative;rotate:.6deg;filter:drop-shadow(0 7px 5px #000c)}
+.clip .pg{position:absolute;inset:0;background:var(--paper);box-shadow:inset 0 0 30px #8a7a5a88;clip-path:polygon(0 0,100% 0,100% 94%,96% 97%,91% 94%,86% 98%,80% 95%,74% 99%,68% 95%,62% 98%,55% 94%,49% 98%,42% 95%,36% 99%,30% 95%,23% 98%,17% 94%,11% 98%,6% 95%,0 98%)}
+.clip>*:not(.pg){position:relative;color:var(--ink)}
+.clip .tape{position:absolute;top:-10px;left:50%;translate:-50% 0;width:60px;height:19px;background:#d8c88a99;rotate:-2deg}
+.clip .kick{display:flex;justify-content:space-between;font-weight:800;font-size:.62rem;color:var(--crim);border-bottom:1.5px solid var(--ink);margin-bottom:6px}
+.clip .kick span:last-child{color:var(--soft)}
+.clip h5{margin:0;font-family:Lalezar;font-weight:400;font-size:1.25rem;line-height:1.1;padding-inline-end:70px}
+.clip p{margin:3px 0 8px;font-size:.72rem;font-weight:700;line-height:1.55;color:var(--soft)}
+.clip .st{position:absolute;top:44px;left:8px;font-size:.85rem;background:#d9cfb4cc}
+.clip .cd{font-weight:800;font-size:.66rem;color:var(--crim)}
+.clip .cd b{padding:1px 8px;border-radius:4px;background:#0b0807;color:#ffd98a;font-family:Lalezar;font-weight:400;font-size:.8rem;box-shadow:0 0 0 1px #6e5224}
+.clip .rw{font-family:Lalezar;font-size:.9rem;margin-top:6px;display:flex;align-items:center;gap:5px}
+.coin{width:14px;height:14px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000}
+.red-bar{display:inline-block;height:.9em;width:70px;border-radius:2px;background:#15100d;vertical-align:-1px}
+
+/* words and chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 6px 3px 12px;border-radius:6px;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;font-weight:800}
+.chip button{width:20px;height:20px;border-radius:50%;background:#8a1c2433;color:var(--crimd);font-weight:800;line-height:20px}
+.addrow{display:flex;gap:8px}
+.addrow input{flex:1;padding:8px 12px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+.player{display:grid;grid-template-columns:90px 1fr auto;gap:18px;align-items:center}
+.av{width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);box-shadow:0 0 0 4px var(--brass),0 6px 10px #000a}
+.kv{display:grid;grid-template-columns:repeat(4,auto);gap:4px 26px}
+.kv span{font-size:.72rem;font-weight:800;color:var(--soft)}
+.kv b{font-family:Lalezar;font-weight:400;font-size:1.3rem}
+
+.toast{position:fixed;z-index:60;left:50%;bottom:28px;translate:-50% 30px;opacity:0;pointer-events:none;transition:.3s;padding:10px 20px;border-radius:9px;font-weight:800;background:#0a0807f2;box-shadow:0 0 0 1px #b99048,0 8px 16px #000;color:#f5e2a8}
+.toast.on{opacity:1;translate:-50% 0}
+.note{margin-top:22px;max-width:860px;font-size:.78rem;line-height:1.8;color:#8d8576}
+.note b{color:#e6d9bd}
+
+.lang{display:flex;gap:6px;margin-bottom:10px}
+.lang button{padding:3px 14px;border-radius:6px;font-weight:800;font-size:.8rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.lang button.on{background:var(--ink);color:#f5e2a8}
+.lang .hintl{margin-inline-start:auto;font-size:.7rem;font-weight:700;color:var(--soft);align-self:center}
+[dir=ltr].f input,[dir=ltr].f textarea,input.ltr,textarea.ltr{direction:ltr;text-align:left}
+.rankbox{margin:6px 0 12px;padding:12px 14px;border-radius:6px;background:#1c170f0d;box-shadow:inset 0 0 0 1px #1c170f33}
+.rankbox h6{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1.05rem;display:flex;align-items:center;gap:10px}
+.prizes{display:grid;gap:6px;margin-top:8px}
+.prizes .pz{display:grid;grid-template-columns:70px 1fr 28px;gap:8px;align-items:center}
+.prizes .pz b{font-family:Lalezar;font-weight:400;font-size:.95rem}
+.prizes select{padding:6px 10px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:1px 9px;border-radius:6px;background:#0b0807;color:#ffd98a;font-family:Lalezar;font-size:.8rem;box-shadow:0 0 0 1px #6e5224;margin-inline-end:4px}
+.coin{width:12px;height:12px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000}
+.gem{width:11px;height:11px;display:inline-block;rotate:45deg;background:linear-gradient(135deg,#9be8d0,#2c8f74);box-shadow:0 0 0 1px #000;border-radius:2px}
+.cols2{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+@media(max-width:1100px){.cols2{grid-template-columns:1fr}}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.seg button{padding:6px 14px;border-radius:7px;font-weight:800;font-size:.82rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.seg button.on{background:var(--ink);color:#f5e2a8}
+.steps{display:flex;gap:10px;margin-bottom:12px}
+.steps span{flex:1;text-align:center;padding:4px;border-radius:6px;font-weight:800;font-size:.74rem;background:#1c170f14;color:var(--soft)}
+.steps span.on{background:var(--crimd);color:#f0dcd8}
+.warn{margin:8px 0;padding:8px 12px;border-radius:6px;background:#8a1c2422;box-shadow:inset 0 0 0 1px #8a1c2488;font-weight:800;font-size:.78rem;color:var(--crimd)}
+.sect{margin-top:16px;padding-top:12px;border-top:2px dashed #1c170f55}
+.sect h5{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1.15rem}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.tile{padding:12px 14px;border-radius:6px;background:#1c170f0d;box-shadow:inset 0 0 0 1px #1c170f33}
+.tile h6{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1rem}
+.rowin{display:flex;gap:8px;margin-bottom:8px}
+.rowin input,.rowin select{flex:1;min-width:0;padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+.big{font-family:Lalezar;font-size:1.5rem;line-height:1}
+.mono{font-family:Consolas,monospace;direction:ltr;display:inline-block;font-weight:800;letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<!-- ============ login ============ -->
+<div id="login">
+  <div class="lamp"></div>
+  <div class="lbox paper">
+    <span class="stamp">سرّي</span>
+    <span class="plaque">MAFIA ADMIN BOARD</span>
+    <small>مكتب الريّس · للإدارة فقط</small>
+    <label for="pw">كلمة السر</label>
+    <input id="pw" type="password" value="password" autocomplete="current-password">
+    <button class="btn red" id="enter">ادخل المكتب</button>
+    <p>٥ محاولات خاطئة وبينقفل الباب ١٥ دقيقة</p>
+  </div>
+</div>
+
+<!-- ============ app ============ -->
+<div id="app" class="off">
+  <aside class="leather">
+    <div class="brand"><b>MAFIA<br>ADMIN BOARD</b><small>مكتب الريّس</small></div>
+    <button class="nav on" data-v="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg><span>الواجهة</span></button>
+    <button class="nav" data-v="events"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><span>الأحداث</span><i class="n">٢</i></button>
+    <button class="nav" data-v="offers"><svg viewBox="0 0 24 24"><path d="M3 12l9-9h8v8l-9 9-8-8zM15 8h.01"/></svg><span>العروض</span></button>
+    <button class="nav" data-v="packs"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8zM3 8l9 5 9-5M12 13v8"/></svg><span>الحزم</span></button>
+    <button class="nav" data-v="mail"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/></svg><span>البريد</span></button>
+    <button class="nav" data-v="codes"><svg viewBox="0 0 24 24"><path d="M4 8h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4V8zM10 8v10" stroke-dasharray="2 2"/></svg><span>الأكواد</span></button>
+    <button class="nav" data-v="words"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span>الكلمات الممنوعة</span></button>
+    <button class="nav" data-v="reports"><svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg><span>البلاغات</span><i class="n">٣</i></button>
+    <button class="nav" data-v="players"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-4 3.2-6 6.5-6s5.9 2 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .6 3.3 2.5 3.5 6"/></svg><span>اللاعبون / الدعم</span></button>
+    <button class="nav" data-v="audit"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span>سجلّ العمليات</span></button>
+    <button class="nav out" id="out"><svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg><span>اخرج</span></button>
+  </aside>
+
+  <main>
+    <!-- ---------- home ---------- -->
+    <section class="view on" id="v-home">
+      <div class="top"><h1>الواجهة<small>شو عم يصير بالحارة الليلة</small></h1><span class="sp live"><i></i>السيرفر شغّال · آخر تحديث قبل ٥ ث</span></div>
+      <div class="grid g4">
+        <div class="paper stat"><em>▲ ١٢٪</em><b>٤٧</b><span>لاعبين متصلين الآن</span></div>
+        <div class="paper stat"><em>▲ ٨٪</em><b>٣١٢</b><span>مباريات اليوم</span></div>
+        <div class="paper stat"><em>▲ ٤١</em><b>٨٬٤٢٠</b><span>لاعبين مسجّلين</span></div>
+        <div class="paper stat"><em class="dn">٣ جديدة</em><b>٧</b><span>بلاغات مفتوحة</span></div>
+      </div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="paper card"><h3>المباريات بآخر ٧ أيام<small>الأحمر = اليوم</small></h3>
+          <div class="bars"><div>٢٨٠<i style="height:70%"></i>السبت</div><div>٣٤٠<i style="height:85%"></i>الأحد</div><div>٢٩٠<i style="height:72%"></i>الاثنين</div><div>٢٥٠<i style="height:62%"></i>الثلاثاء</div><div>٣٩٠<i style="height:97%"></i>الأربعاء</div><div>٣٦٠<i style="height:90%"></i>الخميس</div><div class="today">٣١٢<i style="height:78%"></i>الجمعة</div></div></div>
+        <div class="paper card"><h3>آخر النشاط</h3>
+          <ul class="feed">
+            <li><span class="dot"></span>بلاغ جديد ضد «أبو خليل» (إساءة)<time>قبل ٣ د</time></li>
+            <li><span class="dot g"></span>حدث «عطلة الذهب المضاعف» بدأ<time>قبل ساعة</time></li>
+            <li><span class="dot b"></span>٣ لاعبين استلموا مكافأة التحدّي<time>قبل ٣ ساعات</time></li>
+            <li><span class="dot"></span>كُتم «نور» ساعتين (٣ بلاغات)<time>أمس</time></li>
+          </ul></div>
+      </div>
+    </section>
+
+    <!-- ---------- events ---------- -->
+    <section class="view" id="v-events">
+      <div class="top"><h1>الأحداث<small>اللي بتظهر للاعبين بـ «أخبار الحارة»</small></h1><button class="btn red sp" data-new="event">+ حدث جديد</button></div>
+      <div class="paper card">
+        <table class="tbl" id="evTable"></table>
+      </div>
+    </section>
+
+    <!-- ---------- offers ---------- -->
+    <section class="view" id="v-offers">
+      <div class="top"><h1>العروض<small>لافتة «جريدة الليل» عند فتح اللعبة · أقصى ٣ عروض</small></h1><button class="btn red sp" data-new="offer">+ عرض جديد</button></div>
+      <div class="paper card"><table class="tbl" id="ofTable"></table></div>
+    </section>
+
+    <!-- ---------- words ---------- -->
+    <section class="view" id="v-words">
+      <div class="top"><h1>الكلمات الممنوعة<small>بتتفلتر من الدردشة قبل ما توصل</small></h1></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="paper card"><h3>كلمة كاملة<small>بتنمنع لما تكون كلمة لحالها</small></h3>
+          <div class="addrow"><input placeholder="اكتب كلمة…"><button class="btn red sm" data-add>أضف</button></div>
+          <div class="chips" id="w1"></div></div>
+        <div class="paper card"><h3>داخل الكلمة<small>بتنمنع حتى لو جوّا كلمة ثانية</small></h3>
+          <div class="addrow"><input placeholder="اكتب كلمة…"><button class="btn red sm" data-add>أضف</button></div>
+          <div class="chips" id="w2"></div></div>
+      </div>
+    </section>
+
+    <!-- ---------- reports ---------- -->
+    <section class="view" id="v-reports">
+      <div class="top"><h1>البلاغات<small>اللي بعتها اللاعبين عن بعض</small></h1></div>
+      <div class="paper card"><table class="tbl" id="rpTable"></table></div>
+    </section>
+
+    <!-- ---------- players ---------- -->
+    <section class="view" id="v-players">
+      <div class="top"><h1>اللاعبون / الدعم<small>دوّر برقم اللاعب أو معرّفه أو اسمه، وتحكّم بحسابه</small></h1></div>
+      <div class="paper card" style="margin-bottom:16px"><div class="addrow"><input value="أبو خليل" aria-label="بحث"><button class="btn red sm">ابحث</button></div></div>
+      <div class="paper card"><div class="player">
+        <div class="av"></div>
+        <div><div class="t" style="font-family:Lalezar;font-size:1.6rem;line-height:1.1">أبو خليل <span class="stamp" style="font-size:.8rem">مكتوم</span></div>
+          <div style="font-weight:700;font-size:.8rem;color:var(--soft);margin:2px 0 10px">رقم اللاعب ٤٨٢٩١٧٣٥ · الرتبة: الريّس · مسجّل من ١٢ يوم · <span class="mono">8F3A1C27D9B04E65</span></div>
+          <div class="kv"><div><span>الكوينز</span><br><b>١٢٬٤٨٠</b></div><div><span>الجواهر</span><br><b>٣٢</b></div><div><span>مباريات</span><br><b>٢١٤</b></div><div><span>بلاغات ضده</span><br><b>٤</b></div></div></div>
+        <div style="display:grid;gap:8px"><button class="btn greenb sm">فك الكتم</button><button class="btn red sm">حظر من اللعبة</button></div>
+      </div>
+      <div class="sect"><h5>إجراءات الدعم</h5>
+        <div class="sgrid">
+          <div class="tile"><h6>تغيير الاسم</h6><div class="rowin"><input value="أبو خليل"><button class="btn red sm">احفظ</button></div><small class="hint">بيطبّق فوراً، ومرتين بالشهر كحد أقصى للاعب نفسه</small></div>
+          <div class="tile"><h6>تعديل الرصيد</h6>
+            <div class="rowin"><select><option>إضافة</option><option>سحب</option></select><select><option>كوينز</option><option>جواهر</option></select><input type="number" value="500" style="max-width:90px"></div>
+            <div class="rowin"><input placeholder="السبب (إجباري، بيتسجّل)" value="تعويض عن عطل"></div>
+            <button class="btn red sm">نفّذ</button><div class="warn" style="margin-top:8px">السحب بيتنفّذ فوراً وما بيتراجع عنه. الرصيد ما بينزل تحت الصفر.</div></div>
+          <div class="tile"><h6>بكج بالبريد</h6><div class="rowin"><select><option>حزمة: تعويض بسيط (٥٠٠ كوينز)</option><option>حزمة: عيد (١٠٠٠ كوينز + ٥ جواهر)</option></select></div><button class="btn greenb sm" data-v-go="mail">جهّز الإرسال</button></div>
+        </div>
+      </div>
+      <div class="sect"><h5>حساب استرجاع <small style="font-family:Cairo;font-weight:700;font-size:.72rem;color:var(--soft)">لو اللاعب غيّر جهازه: بيسجّل دخول باسم وكلمة سر وبيرجع لحسابه</small></h5>
+        <div class="sgrid">
+          <div class="tile"><h6>اسم المستخدم وكلمة السر</h6><div class="rowin"><input class="ltr" dir="ltr" value="abu.khalil"><input class="ltr" dir="ltr" value="Kx7-mQ2p-9TeR"><button class="btn ghost sm">ولّد</button></div><button class="btn red sm">أنشئ / بدّل</button><small class="hint">كلمة السر بتنعرض لك هلأ مرة وحدة لتعطيها للاعب، وبتتخزّن مشفّرة</small></div>
+          <div class="tile"><h6>الحالة</h6><div style="font-weight:800;font-size:.85rem;line-height:2">حساب استرجاع: <span class="stamp green" style="font-size:.75rem">موجود</span><br>آخر دخول بيه: قبل ٣ أيام<br>أجهزة مربوطة: ٢</div><button class="btn ghost sm">ألغِ الحساب</button></div>
+        </div>
+      </div>
+      <div class="sect"><h5>سجلّ العمليات على هاللاعب</h5>
+        <table class="tbl"><tr><th>الوقت</th><th>العملية</th><th>التفاصيل</th><th>بواسطة</th></tr>
+          <tr><td>قبل ٣ س</td><td>إضافة رصيد</td><td>+٥٠٠ كوينز · تعويض عن عطل</td><td>الأدمن</td></tr>
+          <tr><td>أمس</td><td>كتم</td><td>ساعتين · ٣ بلاغات</td><td>تلقائي</td></tr>
+          <tr><td>قبل ٥ أيام</td><td>تغيير اسم</td><td>أبو خليل ٢ ← أبو خليل</td><td>الأدمن</td></tr></table></div>
+      </div>
+    </section>
+
+
+    <!-- ---------- packs ---------- -->
+    <section class="view" id="v-packs">
+      <div class="top"><h1>الحزم<small>قوالب جاهزة (كوينز، جواهر، عناصر) بتستخدمها بالبريد والأكواد وجوائز الأحداث</small></h1><button class="btn red sp" data-open="d-pack">+ حزمة جديدة</button></div>
+      <div class="paper card"><table class="tbl">
+        <tr><th>الحزمة</th><th>المحتوى</th><th>مستخدمة في</th><th></th></tr>
+        <tr><td><div class="t">هدية العيد</div><div class="m">Eid gift</div></td><td><span class="pill"><span class="coin"></span>١٬٠٠٠</span><span class="pill"><span class="gem"></span>٥</span></td><td>كود EID26 · بريد</td><td><div class="act"><button class="btn ghost sm" data-open="d-pack">عدّل</button><button class="btn ghost sm del">احذف</button></div></td></tr>
+        <tr><td><div class="t">جائزة ذهبية</div><div class="m">Gold prize</div></td><td><span class="pill"><span class="coin"></span>٥٬٠٠٠</span><span class="pill">إطار الجمر</span></td><td>حدث: سباق الانتصارات (المركز ١)</td><td><div class="act"><button class="btn ghost sm" data-open="d-pack">عدّل</button><button class="btn ghost sm del">احذف</button></div></td></tr>
+        <tr><td><div class="t">تعويض بسيط</div><div class="m">Small compensation</div></td><td><span class="pill"><span class="coin"></span>٥٠٠</span></td><td>—</td><td><div class="act"><button class="btn ghost sm" data-open="d-pack">عدّل</button><button class="btn ghost sm del">احذف</button></div></td></tr>
+      </table></div>
+    </section>
+
+    <!-- ---------- mail ---------- -->
+    <section class="view" id="v-mail">
+      <div class="top"><h1>البريد<small>ابعت بكج أو رسالة للاعب، أو للكل، وبتوصل على بريد اللعبة</small></h1></div>
+      <div class="cols2">
+        <div class="paper card"><h3>برقية جديدة</h3>
+          <div class="steps"><span class="on">١ لمين</span><span class="on">٢ شو</span><span>٣ راجع وابعت</span></div>
+          <div class="seg"><button class="on">لاعب واحد</button><button>كل اللاعبين</button><button>اللي لعبوا آخر ٧ أيام</button><button>قائمة أرقام</button></div>
+          <div class="f"><label>اللاعب (رقمه أو معرّفه)</label><input value="48291735" class="ltr" dir="ltr"><small>أبو خليل · الريّس</small></div>
+          <div class="lang"><button type="button" class="on">العربية</button><button type="button">English</button></div>
+          <div class="f"><label>العنوان</label><input value="تعويض عن عطل السيرفر"></div>
+          <div class="f"><label>الرسالة</label><textarea>آسفين على الانقطاع. هاد تعويض بسيط.</textarea></div>
+          <div class="row2"><div class="f"><label>الحزمة</label><select><option>حزمة: تعويض بسيط (٥٠٠ كوينز)</option><option>حزمة: هدية العيد</option><option>مخصّصة…</option></select></div><div class="f"><label>تنتهي بعد</label><select><option>٧ أيام</option><option>٣٠ يوم</option><option>بدون نهاية</option></select></div></div>
+          <div class="warn">الإرسال لكل اللاعبين بيطلب تأكيد، وما بيتراجع عنه.</div>
+          <div class="foot-act"><button class="btn red" data-toast="انبعتت البرقية">ابعت</button><button class="btn ghost">معاينة</button></div>
+        </div>
+        <div class="paper card"><h3>آخر المُرسل<small>المستلم / المُرسل</small></h3>
+          <table class="tbl"><tr><th>البرقية</th><th>لمين</th><th>استلموا</th></tr>
+            <tr><td><div class="t">هدية العيد</div><div class="m">قبل ساعة</div></td><td>كل اللاعبين</td><td><b>٦٢٪</b> <span class="m">٥٬٢٣٠ / ٨٬٤٢٠</span></td></tr>
+            <tr><td><div class="t">جائزة المركز ٣</div><div class="m">قبل ٣ س</div></td><td>الحج حسن</td><td><span class="stamp" style="font-size:.7rem">بانتظار</span></td></tr>
+            <tr><td><div class="t">تعويض عن عطل</div><div class="m">أمس</div></td><td>أبو خليل</td><td><span class="stamp green" style="font-size:.7rem">استلم</span></td></tr></table></div>
+      </div>
+    </section>
+
+    <!-- ---------- promo codes ---------- -->
+    <section class="view" id="v-codes">
+      <div class="top"><h1>أكواد الترويج<small>عروض برا اللعبة: انشر الكود (انستغرام، واتساب…) واللاعب بيكتبه بالبريد</small></h1><button class="btn red sp" data-open="d-code">+ كود جديد</button></div>
+      <div class="paper card"><table class="tbl">
+        <tr><th>الكود</th><th>الحزمة</th><th>الاستخدام</th><th>ينتهي</th><th>الحالة</th><th>فعّال</th><th></th></tr>
+        <tr><td><span class="mono">MAFIA2026</span></td><td>هدية العيد</td><td>٣١٢ / ١٬٠٠٠</td><td>١٥ نوفمبر</td><td><span class="stamp" style="font-size:.78rem">شغّال</span></td><td><span class="tog on"></span></td><td><div class="act"><button class="btn ghost sm" data-open="d-code">عدّل</button><button class="btn ghost sm del">احذف</button></div></td></tr>
+        <tr><td><span class="mono">INSTA50</span></td><td>تعويض بسيط</td><td>٤٨ / ∞</td><td>بدون نهاية</td><td><span class="stamp" style="font-size:.78rem">شغّال</span></td><td><span class="tog on"></span></td><td><div class="act"><button class="btn ghost sm" data-open="d-code">عدّل</button><button class="btn ghost sm del">احذف</button></div></td></tr>
+        <tr><td><span class="mono">RAMADAN25</span></td><td>جائزة ذهبية</td><td>٥٠٠ / ٥٠٠</td><td>٣٠ مارس</td><td><span class="stamp grey" style="font-size:.78rem">انتهى</span></td><td><span class="tog"></span></td><td><div class="act"><button class="btn ghost sm del">احذف</button></div></td></tr>
+      </table>
+      <p class="hint">كل لاعب بيستخدم الكود مرة وحدة. اللعبة بتحدّ المحاولات الغلط لمنع التخمين.</p></div>
+    </section>
+
+    <!-- ---------- audit ---------- -->
+    <section class="view" id="v-audit">
+      <div class="top"><h1>سجلّ العمليات<small>كل شي عملته من اللوحة، من الأحدث، ما بينمسح</small></h1></div>
+      <div class="paper card"><table class="tbl">
+        <tr><th>الوقت</th><th>العملية</th><th>التفاصيل</th></tr>
+        <tr><td>قبل ٣ س</td><td>إضافة رصيد</td><td>أبو خليل · +٥٠٠ كوينز · تعويض عن عطل</td></tr>
+        <tr><td>قبل ٥ س</td><td>إرسال بريد</td><td>هدية العيد · لكل اللاعبين · ٨٬٤٢٠</td></tr>
+        <tr><td>أمس</td><td>توزيع جوائز</td><td>تحدّي الأسبوع الماضي · ٥ لاعبين</td></tr>
+        <tr><td>أمس</td><td>إنشاء كود</td><td>MAFIA2026 · هدية العيد · ١٬٠٠٠ استخدام</td></tr>
+        <tr><td>قبل ٣ أيام</td><td>حساب استرجاع</td><td>أبو خليل · إنشاء</td></tr></table></div>
+    </section>
+
+    <p class="note"><b>ملاحظة:</b> أي تعديل بيتحفظ على السيرفر وبيطبّق فوراً بدون إعادة تشغيل ولا نسخة جديدة من اللعبة. كل إجراء (حفظ، كتم، حذف) بيتسجّل بسجلّ بالتاريخ.</p>
+  </main>
+</div>
+
+<!-- ============ editor ============ -->
+<div class="drawer" id="drawer">
+  <div class="paper edit">
+    <div class="form">
+      <h2><span id="edTitle">حدث جديد</span><button class="x" id="edX" aria-label="إغلاق">×</button></h2>
+      <div class="lang" id="langs"><button type="button" class="on" data-l="ar">العربية</button><button type="button" data-l="en">English</button><span class="hintl">اللعبة بتعرض لغة جهاز اللاعب، والعربي هو الاحتياط إذا الإنجليزي فاضي</span></div>
+      <div class="kinds" id="kinds">
+        <button class="on" data-k="bonus">مضاعفة ذهب</button><button data-k="challenge">تحدّي</button><button data-k="info">إعلان</button>
+      </div>
+      <div class="row2" data-lang="ar"><div class="f"><label>العنوان</label><input id="fTitle" value="عطلة الذهب المضاعف"></div><div class="f"><label>العنوان الصغير</label><input id="fKick" value="عرض الأسبوع"></div></div>
+      <div class="row2 hide" data-lang="en"><div class="f"><label>Title</label><input class="ltr" id="fTitleEn" value="Double Gold Holiday" dir="ltr"></div><div class="f"><label>Small heading</label><input class="ltr" id="fKickEn" value="Weekly special" dir="ltr"></div></div>
+      <div class="f" data-lang="ar"><label>الوصف</label><textarea id="fBody">كل ربح من المباريات يتضاعف طول العطلة. العب أكثر واجمع أكثر.</textarea></div>
+      <div class="f hide" data-lang="en"><label>Description</label><textarea class="ltr" id="fBodyEn" dir="ltr">Every match win pays double for the whole holiday. Play more, earn more.</textarea></div>
+      <div class="row2"><div class="f"><label>يبدأ</label><input type="datetime-local" value="2026-11-01T00:00"></div><div class="f"><label>ينتهي</label><input type="datetime-local" value="2026-11-04T00:00"></div></div>
+      <div class="row2" id="gBonus"><div class="f"><label>مضاعف الذهب</label><input id="fMul" type="number" min="1" max="5" value="2"><small>أقصى ٥ مرات</small></div><div></div></div>
+      <div class="row2 hide" id="gChal"><div class="f"><label>الهدف (عدد المباريات)</label><input id="fGoal" type="number" value="10"></div><div class="f"><label>تُعدّ</label><select><option>الانتصارات</option><option>المباريات الملعوبة</option></select></div><div class="f"><label>المكافأة (كوينز)</label><input id="fRw" type="number" value="500"></div></div>
+      <div class="f hide" id="gSecret"><label style="display:flex;align-items:center;gap:10px"><span class="tog" id="secTog"></span> أخفِ الجائزة لحد ما يبدأ الحدث</label></div>
+      <div class="rankbox"><h6><span class="tog" id="rkTog" role="switch" aria-checked="false" tabindex="0"></span> تصنيف لهذا الحدث <small style="font-family:Cairo;font-weight:700;font-size:.7rem;color:var(--soft)">لاعبين بيتنافسوا ضمن الحدث ومراكزهم بتظهر باللعبة</small></h6>
+        <div id="rkFields" class="hide">
+          <div class="row2"><div class="f"><label>بيتصنّفوا حسب</label><select><option>الانتصارات خلال الحدث</option><option>المباريات الملعوبة</option><option>نقاط الرتبة المكسوبة</option><option>الدقائق الملعوبة</option></select></div><div class="f"><label>عدد المراكز اللي بتاخد جوائز</label><input type="number" value="5" min="1" max="20"></div></div>
+          <div class="prizes">
+            <div class="pz"><b>المركز ١</b><select><option>حزمة: جائزة ذهبية (٥٠٠٠ كوينز + إطار)</option></select><span></span></div>
+            <div class="pz"><b>المركز ٢</b><select><option>حزمة: جائزة فضية (٣٠٠٠ كوينز)</option></select><span></span></div>
+            <div class="pz"><b>المركز ٣</b><select><option>حزمة: جائزة برونزية (٢٠٠٠ كوينز)</option></select><span></span></div>
+            <div class="pz"><b>٤ – ٥</b><select><option>حزمة: تشجيعية (١٠٠٠ كوينز)</option></select><span></span></div>
+          </div>
+          <div class="f" style="margin-top:10px"><label>توزيع الجوائز</label><select><option>تلقائي عند نهاية الحدث (بيوصلوا على البريد)</option><option>يدوي: أنا بضغط «وزّع الجوائز»</option></select></div>
+        </div></div>
+      <div class="foot-act"><button class="btn red" id="save">احفظ وطبّق</button><button class="btn ghost" id="cancel">إلغاء</button></div>
+    </div>
+    <div class="prev">
+      <h4>هيك رح يظهر باللعبة</h4>
+      <div class="clip"><div class="pg"></div><span class="tape"></span><span class="stamp st">شغّال</span>
+        <div class="kick"><span id="pK">عرض الأسبوع</span><span>الحدث ١</span></div>
+        <h5 id="pT">عطلة الذهب المضاعف</h5><p id="pB">كل ربح من المباريات يتضاعف طول العطلة.</p>
+        <div class="cd">ينتهي خلال <b>٠٣:١٢:٤٠</b></div><div class="rw" id="pR">×٢ <span class="coin"></span></div></div>
+      <small>المعاينة بتتحدّث وأنت عم تكتب</small>
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="d-rank"><div class="paper edit" style="grid-template-columns:1fr"><div class="form">
+  <h2><span>تصنيف: سباق الانتصارات</span><button class="x" data-close aria-label="إغلاق">×</button></h2>
+  <div class="steps"><span class="on">شغّال · ينتهي بعد ٤ س ١٢ د</span><span>بيتصنّفوا حسب: الانتصارات</span><span>الجوائز: تلقائية عند النهاية</span></div>
+  <table class="tbl"><tr><th>#</th><th>اللاعب</th><th>الانتصارات</th><th>الجائزة</th><th></th></tr>
+    <tr><td class="big">١</td><td><div class="t">أبو فارس</div><div class="m">٤٨٢٩١٧٣٥</div></td><td class="big">٥١</td><td><span class="pill"><span class="coin"></span>٥٬٠٠٠</span><span class="pill">إطار الجمر</span></td><td><button class="btn ghost sm">اللاعب</button></td></tr>
+    <tr><td class="big">٢</td><td><div class="t">ريما</div><div class="m">١٩٣٠٢٢١١</div></td><td class="big">٤٨</td><td><span class="pill"><span class="coin"></span>٣٬٠٠٠</span></td><td><button class="btn ghost sm">اللاعب</button></td></tr>
+    <tr><td class="big">٣</td><td><div class="t">الحج حسن</div><div class="m">٧٧٠١٩٩٤٢</div></td><td class="big">٤٤</td><td><span class="pill"><span class="coin"></span>٢٬٠٠٠</span></td><td><button class="btn ghost sm">اللاعب</button></td></tr>
+    <tr><td class="big">٤</td><td><div class="t">مازن</div><div class="m">٥٥٢١٠٨٣٣</div></td><td class="big">٤١</td><td><span class="pill"><span class="coin"></span>١٬٠٠٠</span></td><td><button class="btn ghost sm">اللاعب</button></td></tr>
+    <tr><td class="big">٥</td><td><div class="t">سارة</div><div class="m">٣٣٠٩٢٢٧٦</div></td><td class="big">٣٩</td><td><span class="pill"><span class="coin"></span>١٬٠٠٠</span></td><td><button class="btn ghost sm">اللاعب</button></td></tr></table>
+  <div class="warn">الجوائز لسا ما انوزّعت. بتنوزّع تلقائياً بنهاية الحدث، أو اضغط الزر وبتروح لبريد اللاعبين الخمسة. مرة وحدة بس.</div>
+  <div class="foot-act"><button class="btn greenb" data-toast="انوزّعت الجوائز على ٥ لاعبين">وزّع الجوائز الآن</button><button class="btn ghost" data-close>إغلاق</button></div>
+</div></div></div>
+
+<div class="drawer" id="d-pack"><div class="paper edit" style="grid-template-columns:1fr"><div class="form">
+  <h2><span>حزمة جديدة</span><button class="x" data-close aria-label="إغلاق">×</button></h2>
+  <div class="lang"><button type="button" class="on">العربية</button><button type="button">English</button></div>
+  <div class="row2"><div class="f"><label>الاسم</label><input value="هدية العيد"></div><div class="f"><label>Name</label><input class="ltr" dir="ltr" value="Eid gift"></div></div>
+  <div class="row2"><div class="f"><label>كوينز</label><input type="number" value="1000"></div><div class="f"><label>جواهر</label><input type="number" value="5"></div></div>
+  <div class="f"><label>عناصر من المتجر (اختياري)</label><div class="chips"><span class="chip">إطار الجمر<button type="button">×</button></span><button class="btn ghost sm" type="button">+ عنصر</button></div></div>
+  <div class="foot-act"><button class="btn red" data-close data-toast="انحفظت الحزمة">احفظ</button><button class="btn ghost" data-close>إلغاء</button></div>
+</div></div></div>
+
+<div class="drawer" id="d-code"><div class="paper edit" style="grid-template-columns:1fr"><div class="form">
+  <h2><span>كود ترويج جديد</span><button class="x" data-close aria-label="إغلاق">×</button></h2>
+  <div class="row2"><div class="f"><label>الكود</label><input class="ltr" dir="ltr" value="MAFIA2026" maxlength="20"><small>حروف إنجليزي وأرقام. ما بيفرّق كبير وصغير</small></div><div class="f"><label>&nbsp;</label><button class="btn ghost sm" type="button">ولّد كود عشوائي</button></div></div>
+  <div class="f"><label>الحزمة</label><select><option>هدية العيد (١٠٠٠ كوينز + ٥ جواهر)</option><option>تعويض بسيط</option></select></div>
+  <div class="row2"><div class="f"><label>أقصى عدد استخدامات</label><input type="number" value="1000"><small>فاضي = بلا حد</small></div><div class="f"><label>ينتهي</label><input type="datetime-local"></div></div>
+  <div class="foot-act"><button class="btn red" data-close data-toast="انحفظ الكود">احفظ وفعّل</button><button class="btn ghost" data-close>إلغاء</button></div>
+</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)};
+$('#enter').onclick=()=>{$('#login').classList.add('off');$('#app').classList.remove('off')};
+$('#pw').onkeydown=e=>{if(e.key==='Enter')$('#enter').click()};
+$('#out').onclick=()=>{$('#app').classList.add('off');$('#login').classList.remove('off')};
+$$('.nav[data-v]').forEach(b=>b.onclick=()=>{$$('.nav').forEach(x=>x.classList.toggle('on',x===b));$$('section.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v))});
+
+const tog=on=>`<span class="tog ${on?'on':''}" role="switch" aria-checked="${on}" tabindex="0"></span>`;
+const events=[
+ ['سباق الانتصارات','سباق الأسبوع','bonus','شغّال','٢٧ أكتوبر ← ٣ نوفمبر','تصنيف الانتصارات · ٥ جوائز',1,1],
+ ['عطلة الذهب المضاعف','عرض الأسبوع','bonus','شغّال','١ نوفمبر ← ٤ نوفمبر','×٢ كوينز',1],
+ ['تحدّي ١٠ انتصارات','مهمّة','challenge','شغّال','١ نوفمبر ← ٨ نوفمبر','اربح ١٠ · ٥٠٠ كوينز',1],
+ ['ليلة العصابة الكبرى','بطولة','info','قريباً','١٠ نوفمبر · ٦ م','الجائزة مخفية',1,0],
+ ['أسبوع الرصاصة الذهبية','أرشيف','info','انتهى','٢٠ ← ٢٥ أكتوبر','—',0]];
+const kindName={bonus:['مضاعفة','kind'],challenge:['تحدّي','kind c'],info:['إعلان','kind i']};
+const stampOf=s=>`<span class="stamp ${s==='شغّال'?'':s==='قريباً'?'brown':'grey'}" style="font-size:.8rem">${s}</span>`;
+$('#evTable').innerHTML='<tr><th>الحدث</th><th>النوع</th><th>الحالة</th><th>الموعد</th><th>التفاصيل · تصنيف</th><th>فعّال</th><th></th></tr>'+events.map(e=>`<tr><td><div class="t">${e[0]}</div><div class="m">${e[1]}</div></td><td><span class="${kindName[e[2]][1]}">${kindName[e[2]][0]}</span></td><td>${stampOf(e[3])}</td><td>${e[4]}</td><td>${e[5]}</td><td>${tog(e[6])}</td><td><div class="act">${e[7]?'<button class="btn greenb sm" data-open="d-rank">التصنيف</button>':''}<button class="btn ghost sm" data-edit>عدّل</button><button class="btn ghost sm" style="color:#e0525a">احذف</button></div></td></tr>`).join('');
+const offers=[
+ ['إطار الجمر بنصف الثمن','ad_ember','−٣٠٪','ينتهي بعد ٢ س','١'],['خلفية الميناء','item_chat_port','جديد','بلا عدّاد','١'],['صندوق كوينز','item_pack_chest','+٣٠٪','بلا عدّاد','١']];
+$('#ofTable').innerHTML='<tr><th>العرض</th><th>يشير إلى</th><th>الختم</th><th>العدّاد</th><th>فعّال</th><th></th></tr>'+offers.map(o=>`<tr><td><div class="t">${o[0]}</div></td><td><code>${o[1]}</code></td><td><span class="stamp" style="font-size:.8rem">${o[2]}</span></td><td>${o[3]}</td><td>${tog(1)}</td><td><div class="act"><button class="btn ghost sm" data-edit-o>عدّل</button><button class="btn ghost sm" style="color:#e0525a">احذف</button></div></td></tr>`).join('');
+const w1=['شتيمة١','شتيمة٢','شتيمة٣','كلمة٤','كلمة٥'],w2=['xxx','فلان','بذيء'];
+const chips=(el,l)=>{$(el).innerHTML=l.map((w,i)=>`<span class="chip">${w}<button aria-label="احذف ${w}" data-del="${el}:${i}">×</button></span>`).join('')};
+chips('#w1',w1);chips('#w2',w2);
+$$('[data-add]').forEach(b=>b.onclick=()=>{const i=b.previousElementSibling,v=i.value.trim();if(!v)return;const t=b.closest('.card').querySelector('.chips');t.insertAdjacentHTML('beforeend',`<span class="chip">${v}<button>×</button></span>`);i.value='';toast('انضافت وبتطبّق فوراً')});
+document.addEventListener('click',e=>{const d=e.target.closest('.chip button');if(d){d.parentElement.remove();toast('انحذفت')}const t=e.target.closest('.tog');if(t){t.classList.toggle('on');toast(t.classList.contains('on')?'تفعّل':'اتعطّل')}});
+const reps=[['أم سعيد','أبو خليل','إساءة','قبل ٣ د','جديد'],['مازن','نور','سبام','قبل ساعة','جديد'],['ريما','أبو خليل','إساءة','قبل ٣ س','جديد'],['لينا','فلان','غش','أمس','عولج']];
+$('#rpTable').innerHTML='<tr><th>اللي بلّغ</th><th>المُبلَّغ عنه</th><th>السبب</th><th>الوقت</th><th>الحالة</th><th></th></tr>'+reps.map(r=>`<tr><td class="t">${r[0]}</td><td class="t">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]==='جديد'?'<span class="stamp" style="font-size:.8rem">جديد</span>':'<span class="stamp green" style="font-size:.8rem">عولج</span>'}</td><td><div class="act">${r[4]==='جديد'?'<button class="btn red sm">كتم ساعتين</button><button class="btn ghost sm">تجاهل</button>':''}</div></td></tr>`).join('');
+
+// editor
+let kind='bonus';
+const prev=()=>{ $('#pT').textContent=$('#fTitle').value; $('#pK').textContent=$('#fKick').value; $('#pB').textContent=$('#fBody').value;
+  const A=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+  $('#pR').innerHTML=kind==='bonus'?'×'+A($('#fMul').value)+' <span class="coin"></span> على كل ربح':kind==='challenge'?A($('#fRw').value)+' <span class="coin"></span> مكافأة · الهدف '+A($('#fGoal').value):($('#secTog').classList.contains('on')?'الجائزة: <span class="red-bar"></span>':'');};
+const setKind=k=>{kind=k;$$('#kinds button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));$('#gBonus').classList.toggle('hide',k!=='bonus');$('#gChal').classList.toggle('hide',k!=='challenge');$('#gSecret').classList.toggle('hide',k!=='info');prev()};
+$$('#kinds button').forEach(b=>b.onclick=()=>setKind(b.dataset.k));
+$$('#drawer input,#drawer textarea,#drawer select').forEach(i=>i.oninput=prev);
+$('#secTog').onclick=()=>setTimeout(prev,0);
+const open=(t,k)=>{$('#edTitle').textContent=t;$('#drawer').classList.add('on');setKind(k||'bonus')};
+$$('[data-new]').forEach(b=>b.onclick=()=>open(b.dataset.new==='event'?'حدث جديد':'عرض جديد'));
+document.addEventListener('click',e=>{if(e.target.closest('[data-edit]'))open('تعديل الحدث');if(e.target.closest('[data-edit-o]'))open('تعديل العرض')});
+const close=()=>$('#drawer').classList.remove('on');
+$('#edX').onclick=close;$('#cancel').onclick=close;$('#drawer').onclick=e=>{if(e.target===$('#drawer'))close()};
+$('#save').onclick=()=>{close();toast('انحفظ وطُبّق عند اللاعبين فوراً')};
+prev();
+// live-ops additions: generic drawers, language tabs, the ranking block, toasts
+$$('[data-open]').forEach(b=>b.addEventListener('click',()=>$('#'+b.dataset.open).classList.add('on')));
+document.addEventListener('click',e=>{const o=e.target.closest('[data-open]');if(o)$('#'+o.dataset.open).classList.add('on');
+  if(e.target.closest('[data-close]'))e.target.closest('.drawer').classList.remove('on');
+  const t=e.target.closest('[data-toast]');if(t)toast(t.dataset.toast);
+  const g=e.target.closest('[data-v-go]');if(g)$('.nav[data-v='+g.dataset.vGo+']').click();
+  if(e.target===$('#d-rank')||e.target===$('#d-pack')||e.target===$('#d-code'))e.target.classList.remove('on')});
+$$('#langs button').forEach(b=>b.onclick=()=>{$$('#langs button').forEach(x=>x.classList.toggle('on',x===b));$$('#drawer [data-lang]').forEach(f=>f.classList.toggle('hide',f.dataset.lang!==b.dataset.l));
+  const en=b.dataset.l==='en';$('#pT').textContent=$(en?'#fTitleEn':'#fTitle').value;$('#pK').textContent=$(en?'#fKickEn':'#fKick').value;$('#pB').textContent=$(en?'#fBodyEn':'#fBody').value});
+$('#rkTog').onclick=()=>{$('#rkTog').classList.toggle('on');$('#rkFields').classList.toggle('hide',!$('#rkTog').classList.contains('on'))};
+$$('.lang button').forEach(b=>{if(!b.closest('#langs'))b.onclick=()=>{b.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))}});
+$$('.seg button').forEach(b=>b.onclick=()=>{b.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))});
+// deep links for review: admin-board.html#events, #offers, #words, #reports, #players, #editor
+{const h=location.hash.slice(1);if(h&&h!=='login'){$('#enter').click();if(h==='editor'){$('.nav[data-v=events]').click();open('حدث جديد')}else{const n=$('.nav[data-v='+h+']');if(n)n.click()}}}
+</script>
+</body>
+</html>

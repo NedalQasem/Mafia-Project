@@ -14,7 +14,7 @@ namespace MafiaNight.UI.Kit.Editor
     /// </summary>
     public static partial class KitBuilder
     {
-        private static readonly string[] QmNames = { "qm_tab", "qm_pill", "qm_ring", "qm_drop", "qm_btn", "qm_badge", "qm_ic_offers", "qm_ic_events", "qm_ic_block", "qm_ic_chev" };
+        private static readonly string[] QmNames = { "qm_tab", "qm_pill", "qm_ring", "qm_drop", "qm_btn", "qm_badge", "qm_ic_offers", "qm_ic_events", "qm_ic_block", "qm_ic_chev", "qm_ic_mail" };
 
         [MenuItem("Mafia Night/UI Kit/Build Quick Menu")]
         public static void BuildQuickMenuMenu()
@@ -134,6 +134,9 @@ namespace MafiaNight.UI.Kit.Editor
                 QmSeg(x, y, 36, 62, 46, 72) < 4f || QmSeg(x, y, 46, 72, 62, 52) < 4f));
             Make("qm_ic_block", 96, 96, (x, y) => White(
                 Mathf.Abs(Vector2.Distance(new Vector2(x, y), new Vector2(48f, 48f)) - 36f) < 4f || QmSeg(x, y, 23, 23, 73, 73) < 4f));
+            // an envelope
+            Make("qm_ic_mail", 96, 96, (x, y) => White(
+                Mathf.Abs(RoundRectSdf(x, y, 48f, 50f, 34f, 24f, 7f)) < 4f || QmSeg(x, y, 16, 32, 48, 56) < 4f || QmSeg(x, y, 48, 56, 80, 32) < 4f));
             Make("qm_ic_chev", 96, 96, (x, y) => White(QmSeg(x, y, 24, 36, 48, 60) < 5.5f || QmSeg(x, y, 48, 60, 72, 36) < 5.5f));
         }
 
@@ -146,7 +149,7 @@ namespace MafiaNight.UI.Kit.Editor
             var soft = new Color32(0x4A, 0x3C, 0x24, 255);
             var cream = new Color32(0xE6, 0xD9, 0xBD, 255);
             var tabS = Spr("qm_tab"); var pillS = Spr("qm_pill"); var ringS = Spr("qm_ring"); var dropS = Spr("qm_drop"); var btnS = Spr("qm_btn"); var badgeS = Spr("qm_badge");
-            var icOffers = Spr("qm_ic_offers"); var icEvents = Spr("qm_ic_events"); var icBlock = Spr("qm_ic_block"); var icChev = Spr("qm_ic_chev");
+            var icMail = Spr("qm_ic_mail"); var icOffers = Spr("qm_ic_offers"); var icEvents = Spr("qm_ic_events"); var icBlock = Spr("qm_ic_block"); var icChev = Spr("qm_ic_chev");
 
             GameObject Pic(string n, Transform parent, Sprite s, float w, float h, Color tint)
             {
@@ -250,6 +253,7 @@ namespace MafiaNight.UI.Kit.Editor
             }
             var offers = QuickButton("Offers", icOffers, "العروض", "٣", out var offDot, out var offDotText, out var offLabel, out var offLabelCg, out var offersBtn);
             var events = QuickButton("Events", icEvents, "الأحداث", "١", out var evDot, out var evDotText, out var evLabel, out var evLabelCg, out var eventsBtn);
+            var mailBtnGo = QuickButton("Mail", icMail, "البريد", "٢", out var mailDot, out var mailDotText, out var mailLabel, out var mailLabelCg, out var mailBtn);
             // the countdown pill under the offers icon
             var time = Go("Time", offers.transform); var tmr = Rt(time); tmr.anchorMin = tmr.anchorMax = new Vector2(.5f, 0); tmr.pivot = new Vector2(.5f, .5f); tmr.anchoredPosition = new Vector2(0, -7); tmr.sizeDelta = new Vector2(80, 34);
             Img(time, th.slotDark, true, 2.6f).raycastTarget = false;
@@ -299,7 +303,7 @@ namespace MafiaNight.UI.Kit.Editor
             var toastText = Txt(toast.transform, "Text", "ما رح يظهر لك هالعرض بعد هلأ", cairo, 34, th.ivory); toastText.fontStyle = FontStyles.Bold; NoWrap(toastText);
 
             QmSetRefs(qm,
-                ("menu", mr), ("tabRt", tr), ("dropBg", dbr), ("dropItems", dir), ("chevron", Rt(chev)), ("sumDot", Rt(sumDot)), ("offersRt", Rt(offers)), ("eventsRt", Rt(events)),
+                ("menu", mr), ("tabRt", tr), ("dropBg", dbr), ("dropItems", dir), ("chevron", Rt(chev)), ("sumDot", Rt(sumDot)), ("offersRt", Rt(offers)), ("eventsRt", Rt(events)), ("mailRt", Rt(mailBtnGo)), ("mailDot", Rt(mailDot)), ("mailLabel", mailLabel), ("mailDotText", mailDotText), ("mailButton", mailBtn), ("mailLabelGroup", mailLabelCg),
                 ("offDot", Rt(offDot)), ("evDot", Rt(evDot)), ("offTime", tmr), ("offLabel", offLabel), ("evLabel", evLabel), ("bubble", bur), ("panel", pr0), ("rowsRoot", Rt(rowsGo)), ("toast", tor),
                 ("tabImage", faceImg), ("ringImage", ringImg), ("edgeL", edgeLi), ("edgeR", edgeRi), ("tabSprite", tabS), ("pillSprite", pillS),
                 ("sumText", sumText), ("offDotText", offDotText), ("evDotText", evDotText), ("offTimeText", timeText.GetComponent<ArabicText>()), ("toastText", toastText.GetComponent<ArabicText>()),

@@ -147,7 +147,13 @@ function createLeaderboard({ chat, cfg = {}, now = () => Date.now(), log = conso
   /** All-time numbers of one player (null when he never finished a paid match) and how many players have any. */
   function playerStats(pf) { return state.all[pf] ? Object.assign({}, state.all[pf]) : null; }
   function playerCount() { return Object.keys(state.all).length; }
-  return { record, board, wall, purge, flushNow, playerStats, playerCount, secondsToReset, dayKey, weekKey, CATS, _state: () => state };
+  /** Players who finished a paid match in the last N days (by the day tables). */
+  function activePlayers(days) {
+    const out = new Set();
+    for (let i = 0; i < days; i++) { const t = state.days[dayKey(now() - i * DAY_MS)]; if (t) for (const pf of Object.keys(t)) out.add(pf); }
+    return [...out];
+  }
+  return { record, board, wall, purge, flushNow, playerStats, playerCount, activePlayers, secondsToReset, dayKey, weekKey, CATS, _state: () => state };
 }
 
 module.exports = { createLeaderboard, CATS };
