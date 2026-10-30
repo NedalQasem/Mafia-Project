@@ -21,6 +21,7 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     const pf = await playfab.authenticate(ticket);
     tickets.set(ticket, { pf, until: t + 5 * 60 * 1000 });
     if (tickets.size > 5000) for (const [k, v] of tickets) if (v.until < t) tickets.delete(k);
+    if (chat) chat.who(pf).catch(() => {});      // learns the name of every player who opens the game, so the admin can find him by it
     return pf;
   }
 

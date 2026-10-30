@@ -213,3 +213,14 @@ test('players: a name that looks like an id is not opened as a player PlayFab do
     assert.equal((await b.call('/api/players?q=' + known)).json.players[0].pf, known);
   } finally { b.close(); }
 });
+
+test('players: a player who only opened the game (no chat, no friends) is found by his name', async () => {
+  const b = await boot();
+  try {
+    await b.login();
+    await fetch(b.url + '/v1/chat/inbox', { headers: { 'x-authorization': 'PLAYER6009' } });
+    await new Promise(r => setTimeout(r, 30));
+    const r = (await b.call('/api/players?q=' + encodeURIComponent('اسم PLAYER6009'))).json.players;
+    assert.equal(r.length, 1); assert.equal(r[0].pf, 'PLAYER6009');
+  } finally { b.close(); }
+});
