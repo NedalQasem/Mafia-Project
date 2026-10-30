@@ -772,8 +772,9 @@ function playerCard(p) {
       <div class="tile"><h6>تغيير الاسم</h6><div class="rowin"><input data-rn="name" value="${esc(p.name)}" maxlength="25" aria-label="الاسم الجديد"><button class="btn red sm" data-rn-go="${pf}">احفظ</button></div><small class="hint">بيطبّق فوراً. من ٣ لـ٢٥ حرف، وما بيتكرر اسم موجود.</small></div>
       <div class="tile"><h6>تعديل الرصيد</h6>
         <div class="rowin"><select data-bal="op"><option value="add">إضافة</option><option value="remove">سحب</option></select><select data-bal="currency"><option value="coins">كوينز</option><option value="gems">جواهر</option></select><input data-bal="amount" type="number" min="1" value="500" style="max-width:90px"></div>
-        <div class="rowin"><input data-bal="reason" placeholder="السبب (إجباري، بيتسجّل)"></div>
+        <div class="rowin"><input data-bal="reason" placeholder="السبب (إجباري، بيتسجّل وما بيشوفه اللاعب)"></div>
         <button class="btn red sm" data-bal-go="${pf}">نفّذ</button>
+        <small class="hint">الإضافة بتوصله هدية بالبريد، وبتنزل برصيده لما يضغط «استلام».</small>
         <div class="warn" style="margin-top:8px">السحب بيتنفّذ فوراً وما بيتراجع عنه. الرصيد ما بينزل تحت الصفر.</div></div>
       <div class="tile"><h6>بكج بالبريد</h6>
         <div class="rowin"><select data-mail="pack">${PACKS.map(k => `<option value="${esc(k.id)}">${esc(k.name.ar || k.name.en)}</option>`).join('') || '<option value="">ما في حزم: ضيف من صفحة الحزم</option>'}</select></div>
@@ -800,7 +801,7 @@ document.addEventListener('click', async e => {
   if (g) {
     const tile = g.closest('.tile'), v = k => tile.querySelector(`[data-bal=${k}]`).value;
     if (v('op') === 'remove' && !confirm('تأكيد السحب؟ ما بيتراجع عنه.')) return;
-    try { await api('/players/balance', { pf: g.dataset.balGo, op: v('op'), currency: v('currency'), amount: Number(v('amount')), reason: v('reason') }); toast('انتنفّذ'); searchPlayers(); } catch (x) { toast(errText(x.code)); }
+    try { await api('/players/balance', { pf: g.dataset.balGo, op: v('op'), currency: v('currency'), amount: Number(v('amount')), reason: v('reason') }); toast(v('op') === 'add' ? 'انبعتت هدية بالبريد' : 'انسحب من رصيده'); searchPlayers(); } catch (x) { toast(errText(x.code)); }
     return;
   }
   const m = e.target.closest('[data-mail-go]');

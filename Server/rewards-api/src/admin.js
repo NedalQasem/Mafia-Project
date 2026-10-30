@@ -560,10 +560,20 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       const code = b.currency === 'gems' ? (cfg.gemsCode || 'GM') : b.currency === 'coins' ? cfg.currencyCode : null;
       if (!code) throw new AdminError('bad_currency');
       if (b.op !== 'add' && b.op !== 'remove') throw new AdminError('bad_op');
-      try { if (b.op === 'add') await playfab.addCurrency(pf, code, amount); else await playfab.subtractCurrency(pf, code, amount); }
-      catch (e) { throw pfFail(e, b.op === 'remove' ? 'insufficient_or_failed' : 'playfab_failed'); }
-      store.audit('balance_' + b.op, pf + ' ' + (b.op === 'add' ? '+' : '-') + amount + ' ' + b.currency + ' · ' + reason, pf);
-      return send(res, 200, { ok: true });
+      // a gift reaches the player as a telegram he collects (the game updates his balance on collecting); taking is done at once
+      if (b.op === 'add') {
+        if (!mail) throw new AdminError('no_mail', 404);
+        mail.send({
+          audience: 'players', recipients: [pf], expiresInDays: 30, label: 'balance',
+          title: { ar: 'هدية من إدارة الحارة', en: 'A gift from the office' },
+          body: { ar: 'وصلتك هدية. اضغط «استلام» وبتنزل برصيدك.', en: 'You got a gift. Tap "Collect" to add it to your balance.' },
+          pack: b.currency === 'gems' ? { gems: amount } : { coins: amount },
+        });
+      } else {
+        try { await playfab.subtractCurrency(pf, code, amount); } catch (e) { throw pfFail(e, 'insufficient_or_failed'); }
+      }
+      store.audit('balance_' + b.op, pf + ' ' + (b.op === 'add' ? '+' : '-') + amount + ' ' + b.currency + (b.op === 'add' ? ' (بالبريد)' : '') + ' · ' + reason, pf);
+      return send(res, 200, { ok: true, viaMail: b.op === 'add' });
     }
     return send(res, 404, { ok: false, error: 'not_found' });
   }

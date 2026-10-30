@@ -157,18 +157,23 @@ test('packages: saved, used by id when sending, and checked', async () => {
   } finally { b.close(); }
 });
 
-test('balance: add and take coins or gems with a reason, never below zero, and it shows on the player card', async () => {
+test('balance: an added amount arrives as a gift in the mail, taking is at once, never below zero, and it shows on the player card', async () => {
   const b = await boot();
   try {
     const adj = body => b.adm('/api/players/balance', Object.assign({ pf: 'PLAYER0006', currency: 'coins', amount: 300, reason: 'تعويض' }, body));
-    assert.equal((await adj({ op: 'add' })).status, 200);
+    const collectAll = async () => { for (const m of (await b.player('PLAYER0006', '/v1/mail')).json.items) if (!m.claimed) await b.player('PLAYER0006', '/v1/mail/claim', { id: m.id }); };
+    assert.equal((await adj({ op: 'add' })).json.viaMail, true);
+    assert.deepEqual((await b.adm('/api/players?q=PLAYER0006')).json.players[0].balances, { coins: 0, gems: 0 });   // nothing until he collects
+    const gift = (await b.player('PLAYER0006', '/v1/mail')).json.items[0];
+    assert.equal(gift.title.ar, 'هدية من إدارة الحارة'); assert.equal(gift.pack.coins, 300); assert.ok(!JSON.stringify(gift).includes('تعويض'));   // the reason stays in the office
+    await collectAll();
     assert.equal((await adj({ op: 'add', reason: 'x' })).json.error, 'reason_required');
     assert.equal((await adj({ op: 'add', amount: 0 })).json.error, 'bad_amount');
     assert.equal((await adj({ op: 'add', currency: 'gold' })).json.error, 'bad_currency');
     assert.equal((await adj({ op: 'steal' })).json.error, 'bad_op');
     assert.equal((await adj({ op: 'remove', amount: 1000 })).json.error, 'insufficient_or_failed');
     assert.equal((await adj({ op: 'remove', amount: 100 })).status, 200);
-    await adj({ op: 'add', currency: 'gems', amount: 4 });
+    await adj({ op: 'add', currency: 'gems', amount: 4 }); await collectAll();
     const card = (await b.adm('/api/players?q=PLAYER0006')).json.players[0];
     assert.deepEqual(card.balances, { coins: 200, gems: 4 });
     const log = (await b.adm('/api/overview')).json.activity.map(a => a.action);
