@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>الشريط السفلي: ثلاث أفكار</title>
+<title>الشريط السفلي: خمس أفكار</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
 <style>
 :root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--brass:#b99048;--crim:#d6313b}
@@ -100,6 +100,49 @@ body.wide .phone{height:470px;border-radius:22px}
 .C .nd{top:-1px;left:calc(50% + 14px);box-shadow:0 0 0 2px #0a0808}
 .C .live{top:-20px;left:50%;translate:-50% 0;padding:1px 7px;border-radius:8px;background:#0a0808;color:#e6b3b6;box-shadow:0 0 0 1px #8a1c24}
 
+/* ========== D: poker chips on the card table ========== */
+.D{height:calc(84px + 16px);background:radial-gradient(ellipse 70% 120% at 50% 100%,#1f4a36,#0f2a1e 60%,#08170f);box-shadow:0 -12px 24px #000c}
+.D::before{content:"";position:absolute;left:0;right:0;top:0;height:9px;background:var(--grain),linear-gradient(180deg,#5a3a22,#2e1c10);background-blend-mode:multiply,normal;box-shadow:0 1px 0 #000,0 2px 6px #000a,inset 0 1px 0 #ffffff26}
+.D::after{content:"";position:absolute;inset:9px 0 0;background:var(--grain);opacity:.5;mix-blend-mode:multiply;pointer-events:none}
+.D .slots{position:relative;z-index:1;height:84px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:16px 4px 0}
+.D .s{position:relative;display:grid;justify-items:center;align-content:start;gap:4px;color:#a7b8a6}
+.D .key{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#d9d0bd;
+  background:radial-gradient(circle,#1b1715 0 52%,transparent 53%),repeating-conic-gradient(from 11.25deg,#d9d0bd 0 22.5deg,#26201c 0 45deg);
+  box-shadow:0 0 0 2px #0d0b0a,inset 0 0 0 3px #26201c,0 3px 0 #0d0b0a,0 5px 8px #000c;transition:transform .3s cubic-bezier(.3,1.5,.5,1),box-shadow .3s}
+.D .key::before{content:"";position:absolute;inset:11px;border-radius:50%;border:1.5px dashed #d9d0bd55}
+.D .key .ico{position:relative;width:20px;height:20px}
+.D .s .lb{font-size:.64rem}
+.D .s.main .key{background:radial-gradient(circle,#4a0e13 0 52%,transparent 53%),repeating-conic-gradient(from 11.25deg,#f0e6cf 0 22.5deg,#8a1c24 0 45deg);box-shadow:0 0 0 2px #0d0b0a,inset 0 0 0 3px #8a1c24,0 3px 0 #0d0b0a,0 5px 8px #000c}
+.D .s.on{color:#f3dfa6}
+.D .s.on .key{transform:translateY(-10px);background:radial-gradient(circle,#1b1715 0 52%,transparent 53%),repeating-conic-gradient(from 11.25deg,#f5e2a8 0 22.5deg,#6a4c1c 0 45deg);box-shadow:0 0 0 2px #0d0b0a,inset 0 0 0 3px #6a4c1c,0 3px 0 #0d0b0a,0 6px 0 #6a4c1c,0 9px 0 #0d0b0a,0 16px 14px #000d}
+.D .s.on .key{color:#f3dfa6}
+.D .s.main.on .key{background:radial-gradient(circle,#4a0e13 0 52%,transparent 53%),repeating-conic-gradient(from 11.25deg,#f5e2a8 0 22.5deg,#8a1c24 0 45deg);box-shadow:0 0 0 2px #0d0b0a,inset 0 0 0 3px #8a1c24,0 3px 0 #0d0b0a,0 6px 0 #8a1c24,0 9px 0 #0d0b0a,0 16px 14px #000d}
+.D .s.on .lb{translate:0 -6px}
+.D .s:active .key{transform:translateY(-3px) scale(.95)}
+.D .cnt{top:-5px;left:calc(50% + 9px);box-shadow:0 0 0 2px #0f2a1e}
+.D .nd{top:-2px;left:calc(50% + 13px);box-shadow:0 0 0 2px #0f2a1e}
+.D .live{top:-30px;left:50%;translate:-50% 0;padding:1px 8px;border-radius:9px;background:#08170f;color:#cfe3cf;box-shadow:0 0 0 1px #3c6a50}
+
+/* ========== E: the Don's wax seal ========== */
+.E{height:calc(76px + 16px);background:var(--grain),linear-gradient(180deg,#2a1d15,#140c08);background-blend-mode:multiply,normal;box-shadow:0 -12px 24px #000c,inset 0 1px 0 #ffffff1a}
+.E::before{content:"";position:absolute;left:10px;right:10px;top:6px;border-top:1.5px dashed #a98f62;opacity:.35}
+.E .slots{position:relative;height:76px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:12px 4px 0}
+.E .s{position:relative;display:grid;justify-items:center;align-content:start;gap:3px;color:#7e705f}
+.E .key{position:relative;width:44px;height:40px;display:grid;place-items:center;transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.E .key .ico{position:relative;z-index:1;width:24px;height:24px;filter:drop-shadow(0 1px 0 #ffffff14) drop-shadow(0 -1px 0 #000)}
+.E .s .lb{font-size:.64rem}
+.E .s.on{color:#f0dca0}
+.E .s.on .key::before{content:"";position:absolute;inset:-4px -3px -4px;border-radius:47% 53% 44% 56% / 55% 45% 55% 45%;
+  background:radial-gradient(circle at 34% 26%,#b8434a 0,#861a22 34%,#560b11 70%,#33050a 100%);
+  box-shadow:inset 0 0 0 3px #43070c,inset 0 0 0 4.5px #c2454b44,inset 0 0 0 9px #6e1218,inset 0 0 0 10px #22020566,inset 0 -3px 6px #22020599,0 2px 4px #000c;animation:stamp .35s cubic-bezier(.2,1.6,.4,1)}
+.E .s.on .key::after{content:"";position:absolute;width:10px;height:8px;right:-5px;bottom:-5px;border-radius:50% 60% 50% 40%;background:radial-gradient(circle at 40% 35%,#9c2a31,#4a080d);box-shadow:0 2px 3px #000a}
+.E .s.on .key .ico{width:20px;height:20px;color:#2a0306;stroke-width:2.2;filter:drop-shadow(0 1px 0 #d9666e66)}
+.E .s.on .lb{font-family:'Aref Ruqaa',Cairo;font-weight:700;font-size:.82rem;translate:0 2px}
+@keyframes stamp{0%{transform:scale(1.6);opacity:0}60%{transform:scale(.92);opacity:1}100%{transform:scale(1)}}
+.E .cnt{top:-6px;left:calc(50% + 8px);box-shadow:0 0 0 2px #1f150f}
+.E .nd{top:-2px;left:calc(50% + 12px);box-shadow:0 0 0 2px #1f150f}
+.E .live{top:-30px;left:50%;translate:-50% 0;padding:1px 8px;border-radius:9px;background:#140c08;color:#e8cc8c;box-shadow:0 0 0 1px #6e5224}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
 </style>
 </head>
@@ -112,7 +155,7 @@ body.wide .phone{height:470px;border-radius:22px}
   <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8l1.7 2.3 2.8-.7.5 2.8 2.5 1.4-1.1 2.7 1.1 2.7-2.5 1.4-.5 2.8-2.8-.7L12 21.2l-1.7-2.3-2.8.7-.5-2.8-2.5-1.4 1.1-2.7-1.1-2.7 2.5-1.4.5-2.8 2.8.7z"/></symbol>
 </defs></svg>
 
-<h1>الشريط السفلي: ثلاث أفكار</h1>
+<h1>الشريط السفلي: خمس أفكار</h1>
 <p class="sub">نفس التبويبات الخمسة ونفس الأيقونات بخط واحد بكل الأفكار (بدل الأيقونات المختلطة اليوم). اضغط على أي تبويب لتجرّب. الأرقام: ٣ على العائلة، نقطة على الرتب، وعدد المتصلين على الغرف.</p>
 <div class="ctl">
   <button data-lang="ar" class="on">عربي</button><button data-lang="en">English</button>
@@ -134,10 +177,12 @@ const IDEAS = [
   { c: 'A', name: 'أ · لوح النحاس', cap: 'شريط خشب غامق بحافة نحاس فوق. التبويب المختار بيصير مخمل قرمزي بإطار نحاسي وسهم صغير. كل التبويبات بنفس الحجم، بدون زر طالع لبرّا.' },
   { c: 'B', name: 'ب · ملف القضية', cap: 'كل تبويب لسان ملف. المختار بيطلع لفوق كورقة عاجية بخط الرقعة وخط أحمر، كأنك فاتح ملف من أرشيف العيلة.' },
   { c: 'C', name: 'ج · مفاتيح الآلة الكاتبة', cap: 'لوح أسود مع مفاتيح دائرية بحلقة معدن. المختار بينضغط لتحت وبيضوي نحاسي. «الغرف» مفتاح أحمر أكبر لأنه الزر الأساسي، بس جوّا الشريط.' },
+  { c: 'D', name: 'د · فيش الطاولة', cap: 'الشريط حافة طاولة لعب: جوخ أخضر وإطار خشب. كل تبويب فيشة، والمختارة بتنرفع فوق رزمة فيش ذهبية. «الغرف» فيشة حمرا.' },
+  { c: 'E', name: 'هـ · ختم الدون', cap: 'جلد غامق والأيقونات محفورة فيه. لما تختار تبويب بينطبع عليه ختم شمع أحمر بنقطة شمع سايلة، والاسم بخط الرقعة، كأنه الدون وقّع.' },
 ];
 const ar = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 let lang = 'ar';
-const state = { A: 'rooms', B: 'rooms', C: 'rooms' };
+const state = { A: 'rooms', B: 'rooms', C: 'rooms', D: 'rooms', E: 'rooms' };
 
 function tabHtml(c, t) {
   const on = state[c] === t.k ? ' on' : '', main = t.main ? ' main' : '';
@@ -145,7 +190,7 @@ function tabHtml(c, t) {
   const icon = `<svg class="ico"><use href="#i-${t.k}"/></svg>`;
   const live = t.main ? `<span class="live"><i></i>${lang === 'ar' ? num('1,234').replace(',', '٬') + ' متصل' : '1,234 online'}</span>` : '';
   const badge = (t.cnt ? `<span class="cnt">${num(t.cnt)}</span>` : '') + (t.dot ? '<span class="nd"></span>' : '');
-  const inner = c === 'C' ? `<span class="key">${icon}${badge}</span>` : icon + badge;
+  const inner = 'CDE'.includes(c) ? `<span class="key">${icon}${badge}</span>` : icon + badge;
   return `<button class="s${on}${main}" data-c="${c}" data-k="${t.k}">${live}${inner}<span class="lb">${t[lang]}</span></button>`;
 }
 function draw() {

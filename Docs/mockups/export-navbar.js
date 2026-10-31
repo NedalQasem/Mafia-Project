@@ -22,7 +22,7 @@
     const r = el.getBoundingClientRect(), W = Math.ceil(r.width), H = Math.ceil(r.height);
     const cl = el.cloneNode(true); cl.style.width = W + 'px'; cl.style.height = H + 'px'; cl.style.margin = '0';   // body.* size rules don't reach the copy
     const html = new XMLSerializer().serializeToString(cl);
-    const doc = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" class="${document.body.className}" dir="${document.documentElement.dir}" style="position:relative;width:${W}px;height:${H}px;background:#050404;color:#d9d0bd;font-family:Cairo,Tahoma,sans-serif;padding:0"><style>${fonts}${css.replace(/body\{[^}]*\}/, '')}</style>${defs}${html}</div></foreignObject></svg>`;
+    const doc = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" class="${document.body.className}" dir="${document.documentElement.dir}" style="position:relative;width:${W}px;height:${H}px;background:#050404;color:#d9d0bd;font-family:Cairo,Tahoma,sans-serif;padding:0"><style>${fonts}${css.replace(/body\{[^}]*\}/, '')}*,*::before,*::after{animation:none!important}</style>${defs}${html}</div></foreignObject></svg>`;
     const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(doc); await img.decode();
     const [cx, cy, cw, ch] = crop || [0, 0, W, H];
     const c = document.createElement('canvas'); c.width = cw * scale; c.height = ch * scale;
@@ -31,8 +31,8 @@
   }
   const save = (name, c) => fetch('/save?dir=shots&name=' + encodeURIComponent(name + '.png'), { method: 'POST', body: c.toDataURL('image/png') });
   window.shotRow = async name => { const c = await render(document.getElementById('row'), 2); await save(name, c); return c.width + 'x' + c.height; };
-  window.shotBars = async name => {
-    const phones = [...document.querySelectorAll('.phone')], scale = 3, h = 150, gap = 16;
+  window.shotBars = async (name, only) => {   // only = bar letters, e.g. 'DE'
+    const phones = [...document.querySelectorAll('.phone')].filter(p => !only || only.includes(p.querySelector('.bar').classList[1])), scale = 3, h = 150, gap = 16;
     const parts = [];
     for (const p of phones) { const r = p.getBoundingClientRect(); parts.push(await render(p, scale, [0, r.height - h, r.width, h])); }
     const out = document.createElement('canvas'); out.width = parts.reduce((s, c) => s + c.width, 0) + gap * scale * (parts.length - 1); out.height = h * scale;
