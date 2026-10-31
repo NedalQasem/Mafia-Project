@@ -170,10 +170,12 @@ namespace MafiaNight.UI.Kit.Editor
                 At(sb.gameObject, new Vector2(1f, 0f), new Vector2(-140, 22), new Vector2(430, 50), new Vector2(1f, 0f));
                 var act = MakeButton("Action", keys[i] == "office" ? th.leatherDark : th.leatherRed, th.ivory, keys[i] == "office" ? "استرجاع" : "ربط", lalezar, 42); act.transform.SetParent(row.transform, false);
                 At(act, new Vector2(0f, .5f), new Vector2(40, 0), new Vector2(230, 100), new Vector2(0f, .5f));
-                var ok = Txt(row.transform, "Linked", "✓ مربوط", cairo, 34, new Color32(0x8F, 0xE0, 0xBD, 255), TextAlignmentOptions.Center); ok.fontStyle = FontStyles.Bold; At(ok.gameObject, new Vector2(0f, .5f), new Vector2(155, 0), new Vector2(230, 60)); ok.gameObject.SetActive(false);
+                var ok = Txt(row.transform, "Linked", "مربوط", cairo, 34, new Color32(0x8F, 0xE0, 0xBD, 255), TextAlignmentOptions.Center); ok.fontStyle = FontStyles.Bold; At(ok.gameObject, new Vector2(0f, .5f), new Vector2(155, 0), new Vector2(230, 60)); ok.gameObject.SetActive(false);
                 var soon = Txt(row.transform, "Soon", "قريباً", cairo, 32, new Color32(0xB9, 0xA9, 0x8A, 255), TextAlignmentOptions.Center); soon.fontStyle = FontStyles.Bold; At(soon.gameObject, new Vector2(0f, .5f), new Vector2(155, 0), new Vector2(230, 60)); soon.gameObject.SetActive(false);
                 rowData[i] = (act.GetComponent<Button>(), ok.gameObject, soon.gameObject, sb.GetComponent<ArabicText>());
             }
+
+            var help = Txt(brd.transform, "Help", "للمساعدة: " + MafiaNight.Core.GameConstants.SUPPORT_EMAIL, cairo, 30, new Color32(0xB9, 0xA9, 0x8A, 255), TextAlignmentOptions.Center); help.fontStyle = FontStyles.Bold; At(help.gameObject, new Vector2(.5f, 1f), new Vector2(0, -1262), new Vector2(900, 50), new Vector2(.5f, 1f));
 
             var close = Go("Close", brd.transform); At(close, new Vector2(0f, 1f), new Vector2(60, -60), new Vector2(94, 94), new Vector2(0f, 1f));
             var cli = Img(close, th.coin, false, 1f, true); cli.preserveAspect = true;

@@ -19,6 +19,9 @@ namespace MafiaNight.Core
         }
         #endregion
 
+        /// <summary>The only address players see inside the game (the owner's other mailbox is for the developer consoles).</summary>
+        public const string SUPPORT_EMAIL = "supportmafia@mena-gaming.com";
+
         #region PlayerPrefs Keys
         public const string PREF_PLAYER_CUSTOM_NAME = "PlayerCustomName";
         /// <summary>The language the player chose in the settings: "ar" or "en". Not set = Arabic.</summary>

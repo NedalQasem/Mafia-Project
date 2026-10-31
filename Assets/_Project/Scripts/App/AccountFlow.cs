@@ -1,4 +1,6 @@
 using System.Collections;
+using MafiaNight.Core;
+using TMPro;
 using MafiaNight.Services.Config;
 using MafiaNight.UI.Kit;
 using UnityEngine;
@@ -15,8 +17,11 @@ namespace MafiaNight.App
         private const string RowName = "Link_ربط الحساب (حفظ تقدمك)";
         private bool loading;
 
+        private const string SupportRow = "Link_تواصل مع الدعم";
+
         private void Start()
         {
+            SetupSupportRow();
             Transform row = null;
             foreach (var t in FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None)) if (t.name == RowName) { row = t; break; }
             if (row == null) { enabled = false; return; }
@@ -24,6 +29,33 @@ namespace MafiaNight.App
             var btn = row.GetComponent<Button>(); if (btn == null) btn = row.gameObject.AddComponent<Button>();
             if (img != null) btn.targetGraphic = img;
             btn.onClick.AddListener(() => { if (!loading) StartCoroutine(Open()); });
+        }
+
+        // the help row shows the support address (the only one players see) and copies it when tapped
+        private void SetupSupportRow()
+        {
+            Transform row = null;
+            foreach (var t in FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None)) if (t.name == SupportRow) { row = t; break; }
+            var title = row != null ? row.Find("T") : null;
+            if (title == null) return;
+            var e = row.Find("E");
+            if (e == null)
+            {
+                var clone = Instantiate(title.gameObject, row); clone.name = "E"; e = clone.transform;
+                var r = (RectTransform)e; r.anchorMin = r.anchorMax = new Vector2(0f, 0.5f); r.pivot = new Vector2(0f, 0.5f); r.anchoredPosition = new Vector2(96f, 0f); r.sizeDelta = new Vector2(480f, 60f);
+                var tm = clone.GetComponent<TMP_Text>(); tm.alignment = TextAlignmentOptions.MidlineLeft; tm.fontSize = 24f; tm.color = new Color32(0xB9, 0xA9, 0x8A, 255);
+            }
+            var label = e.GetComponent<ArabicText>(); label.Text = GameConstants.SUPPORT_EMAIL;
+            var img = row.GetComponent<Image>(); if (img != null) img.raycastTarget = true;
+            var btn = row.GetComponent<Button>(); if (btn == null) btn = row.gameObject.AddComponent<Button>();
+            if (img != null) btn.targetGraphic = img;
+            btn.onClick.AddListener(() => { GUIUtility.systemCopyBuffer = GameConstants.SUPPORT_EMAIL; label.Text = "اننسخ العنوان"; StartCoroutine(RestoreLabel(label)); });
+        }
+
+        private IEnumerator RestoreLabel(ArabicText label)
+        {
+            yield return new WaitForSecondsRealtime(1.6f);
+            if (label != null) label.Text = GameConstants.SUPPORT_EMAIL;
         }
 
         private IEnumerator Open()

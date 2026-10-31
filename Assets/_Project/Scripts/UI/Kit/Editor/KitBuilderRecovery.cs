@@ -89,6 +89,7 @@ namespace MafiaNight.UI.Kit.Editor
             var pass = RecoveryField(th, sheet.transform, "Password", -420, "كلمة السر", true);
             var msg = Txt(sheet.transform, "Msg", "", th.fontBody, 32, new Color32(0xE6, 0x7A, 0x80, 255), TextAlignmentOptions.Center, true); Place(Rt(msg.gameObject), new Vector2(0.5f, 1f), new Vector2(0, -545), new Vector2(900, 90));
             var note = Txt(sheet.transform, "Note", "حسابك الحالي على هالجهاز بيتبدّل بالحساب القديم.", th.fontBody, 26, th.ivoryDim, TextAlignmentOptions.Center); Place(Rt(note.gameObject), new Vector2(0.5f, 1f), new Vector2(0, -630), new Vector2(900, 44));
+            var help = Txt(sheet.transform, "Help", "نسيت بياناتك؟ راسل الدعم: " + MafiaNight.Core.GameConstants.SUPPORT_EMAIL, th.fontBody, 28, th.ivory, TextAlignmentOptions.Center); Place(Rt(help.gameObject), new Vector2(0.5f, 1f), new Vector2(0, -705), new Vector2(940, 48));
             var go = InstChild("KitButton_Primary", sheet.transform, "Submit");
             var jr = Rt(go); jr.anchorMin = jr.anchorMax = new Vector2(0.5f, 0f); jr.pivot = new Vector2(0.5f, 0.5f); jr.anchoredPosition = new Vector2(120, 130); jr.sizeDelta = new Vector2(540, 160);
             var goLbl = go.GetComponentInChildren<ArabicText>(); goLbl.Text = "استرجع";
