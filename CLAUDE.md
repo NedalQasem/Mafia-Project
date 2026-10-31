@@ -7,6 +7,8 @@
 - New screens: an HTML mockup in `Docs/mockups/` first, the owner's approval, then Unity built to match it.
 - Never commit the Unity files that change by themselves (font `*SDF.asset`, URP/ProjectSettings assets, gradle `.backup` files).
 
+- **No dead code or old screens (owner's rule):** anything old or unused (a replaced screen, scene, script, art, prefab, a flow that nothing starts) is **deleted** from the project, not left behind: it only adds size and tempts a fix in the wrong place. Before deleting, check that nothing references it (GUID search in scenes/prefabs/assets, `grep` in scripts); git keeps the history. The living code is only the UIKit scenes (`UIKit*`) + `Bootstrap`.
+
 ## Design standards (set by the owner, apply to every screen)
 
 1. **Content size must never break the look.** Text of any length (a one-word title, a 600-character body, Arabic or English) keeps the same shape and beauty: heights come from the real text (TMP preferred size, never a guess by letter count), long single lines shrink (auto-size) or are cut with "…", long bodies scroll or the whole panel scales down. Test each new screen with a very short and a very long text.

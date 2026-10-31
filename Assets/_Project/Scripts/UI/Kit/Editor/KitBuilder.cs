@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace MafiaNight.UI.Kit.Editor
 {
     /// <summary>
-    /// Builds the KitTheme asset, the reusable UI prefabs and the UIKitTest scene.
+    /// Builds the KitTheme asset and the reusable UI prefabs, and the rooms scene.
     /// Re-runnable: it overwrites what it created. Menu: Mafia Night / UI Kit / Build Kit + Test Scene.
     /// </summary>
     public static partial class KitBuilder
@@ -18,9 +18,7 @@ namespace MafiaNight.UI.Kit.Editor
         private const string Art = "Assets/_Project/Art/UI/Kit/";
         private const string ThemePath = "Assets/_Project/Resources/Kit/KitTheme.asset";
         private const string PrefabDir = "Assets/_Project/Prefabs/UIKit/";
-        private const string ScenePath = "Assets/_Project/Scenes/UIKitTest.unity";
         private const string RoomsScenePath = "Assets/_Project/Scenes/UIKitRooms.unity";
-        private const string ShellScenePath = "Assets/_Project/Scenes/UIKitShell.unity";
 
         [MenuItem("Mafia Night/UI Kit/Build Kit + Test Scene")]
         public static void BuildAll()
@@ -47,8 +45,6 @@ namespace MafiaNight.UI.Kit.Editor
             BuildChat(theme);
             BuildSettings(theme);
             BuildLoading(theme);
-            BuildScene(theme);
-            BuildShellScene(theme);
             BuildRoomsScene(theme);
             AssetDatabase.SaveAssets();
             Debug.Log("[UIKit] built theme, prefabs and test scene");
@@ -502,50 +498,6 @@ namespace MafiaNight.UI.Kit.Editor
             Save(root, "KitProfileCard");
         }
 
-        private static void BuildShellScene(KitTheme th)
-        {
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            var camGo = new GameObject("Main Camera"); camGo.tag = "MainCamera";
-            var cam = camGo.AddComponent<Camera>(); cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.04f, 0.03f, 0.03f); cam.orthographic = true;
-
-            var canvasGo = new GameObject("Canvas", typeof(RectTransform));
-            var canvas = canvasGo.AddComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = cam; canvas.planeDistance = 10f;
-            var scaler = canvasGo.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1080, 2400); scaler.matchWidthOrHeight = 0f;
-            canvasGo.AddComponent<GraphicRaycaster>();
-
-            var es = new GameObject("EventSystem"); es.AddComponent<EventSystem>();
-            var ism = System.Type.GetType("UnityEngine.InputSystem.UI.InputSystemUIInputModule, Unity.InputSystem");
-            if (ism != null) es.AddComponent(ism); else es.AddComponent<StandaloneInputModule>();
-
-            var bg = Go("Background", canvasGo.transform); Stretch(Rt(bg));
-            var bgi = bg.AddComponent<Image>(); bgi.color = new Color(0.075f, 0.055f, 0.045f); bgi.raycastTarget = false;
-
-            var ph = Txt(canvasGo.transform, "Placeholder", "الغرف", th.fontCalligraphy, 130, th.brassLight);
-            Place(Rt(ph.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, 80), new Vector2(900, 200));
-            var sub = Txt(canvasGo.transform, "PlaceholderSub", "هنا تبنى الشاشة. اضغط على الشريط العلوي لتفتح البطاقة", th.fontBody, 38, th.ivoryDim, TextAlignmentOptions.Center, true);
-            Place(Rt(sub.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -60), new Vector2(800, 120));
-
-            var top = (GameObject)PrefabUtility.InstantiatePrefab(LoadPrefab("KitTopBar"), canvasGo.transform);
-            var tr = Rt(top); tr.anchorMin = new Vector2(0, 1); tr.anchorMax = new Vector2(1, 1); tr.pivot = new Vector2(0.5f, 1); tr.anchoredPosition = Vector2.zero; tr.sizeDelta = new Vector2(0, 270);
-
-            var nav = (GameObject)PrefabUtility.InstantiatePrefab(LoadPrefab("KitNavBar"), canvasGo.transform);
-            var nr = Rt(nav); nr.anchorMin = new Vector2(0, 0); nr.anchorMax = new Vector2(1, 0); nr.pivot = new Vector2(0.5f, 0); nr.anchoredPosition = Vector2.zero; nr.sizeDelta = new Vector2(0, 330);
-
-            var card = (GameObject)PrefabUtility.InstantiatePrefab(LoadPrefab("KitProfileCard"), canvasGo.transform);
-            Stretch(Rt(card));
-            card.SetActive(false);   // opens from the top bar
-
-            var demo = canvasGo.AddComponent<KitShellDemo>();
-            SetRef(demo, "topBar", top.GetComponent<KitTopBar>());
-            SetRef(demo, "navBar", nav.GetComponent<KitNavBar>());
-            SetRef(demo, "card", card.GetComponent<KitProfileCard>());
-            SetRef(demo, "placeholder", ph.GetComponent<ArabicText>());
-
-            EditorSceneManager.SaveScene(scene, ShellScenePath);
-        }
-
-
         // ------------------------------------------------------------------ rooms list + voice room
         private static GameObject InstChild(string prefab, Transform parent, string name)
         {
@@ -807,79 +759,5 @@ namespace MafiaNight.UI.Kit.Editor
             EditorSceneManager.SaveScene(scene, RoomsScenePath);
         }
 
-        // ------------------------------------------------------------------ test scene
-        private static void BuildScene(KitTheme th)
-        {
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            var camGo = new GameObject("Main Camera"); camGo.tag = "MainCamera";
-            var cam = camGo.AddComponent<Camera>(); cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.04f, 0.03f, 0.03f);
-            cam.orthographic = true;
-
-            var canvasGo = new GameObject("Canvas", typeof(RectTransform));
-            var canvas = canvasGo.AddComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = cam; canvas.planeDistance = 10f;
-            var scaler = canvasGo.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1080, 2400); scaler.matchWidthOrHeight = 1f;
-            canvasGo.AddComponent<GraphicRaycaster>();
-
-            var es = new GameObject("EventSystem"); es.AddComponent<EventSystem>();
-            var ism = System.Type.GetType("UnityEngine.InputSystem.UI.InputSystemUIInputModule, Unity.InputSystem");
-            if (ism != null) es.AddComponent(ism); else es.AddComponent<StandaloneInputModule>();
-
-            var bg = Go("Background", canvasGo.transform); Stretch(Rt(bg));
-            var bgi = bg.AddComponent<Image>(); bgi.color = new Color(0.075f, 0.055f, 0.045f); bgi.raycastTarget = false;
-
-            var root = Rt(Go("Content", canvasGo.transform)); Stretch(root);
-            var titleT = Txt(root, "Title", "مكتبة الواجهة", th.fontCalligraphy, 92, th.brassLight);
-            Place(Rt(titleT.gameObject), new Vector2(0.5f, 1f), new Vector2(0, -150), new Vector2(900, 130));
-
-            GameObject Inst(string prefab, Vector2 pos, string name = null)
-            {
-                var p = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabDir + prefab + ".prefab");
-                var o = (GameObject)PrefabUtility.InstantiatePrefab(p, root);
-                var r = Rt(o); r.anchorMin = r.anchorMax = new Vector2(0.5f, 1f); r.anchoredPosition = pos;
-                if (name != null) o.name = name;
-                return o;
-            }
-            void Cap(string text, float y)
-            {
-                var c = Txt(root, "Cap", text, th.fontBody, 34, th.ivoryDim, TextAlignmentOptions.Right);
-                Place(Rt(c.gameObject), new Vector2(0.5f, 1f), new Vector2(0, y), new Vector2(960, 50));
-            }
-
-            Cap("الأزرار", -270);
-            Inst("KitButton_Primary", new Vector2(-270, -390));
-            Inst("KitButton_Secondary", new Vector2(270, -390));
-            Inst("KitButton_Brass", new Vector2(0, -590));
-
-            Cap("لوحات الأسماء والكوينز", -700);
-            Inst("NameLabel_Leather", new Vector2(330, -790));
-            Inst("NameLabel_Brass", new Vector2(0, -790));
-            Inst("NameLabel_Paper", new Vector2(-330, -790));
-            Inst("CoinPill", new Vector2(0, -920));
-
-            Cap("الرتب والصور", -950);
-            for (int i = 0; i < 4; i++)
-            {
-                var m = Inst("RankMedal", new Vector2(345 - i * 230, -1190));
-                m.GetComponent<RankMedalView>().Set(i, i % 3 + 1);
-            }
-            for (int i = 0; i < 4; i++)
-            {
-                var m = Inst("RankMedal", new Vector2(345 - i * 230, -1560));
-                m.GetComponent<RankMedalView>().Set(i + 4, (i + 1) % 4);
-            }
-            for (int i = 0; i < 3; i++)
-            {
-                var a = Inst("AvatarFrame", new Vector2(300 - i * 300, -1830)); a.transform.localScale = Vector3.one * 0.8f;
-                a.GetComponent<AvatarFrame>().Set(i * 3, null, i != 1);
-            }
-            var pl = Inst("KitPlaque", new Vector2(0, -2025)); pl.transform.localScale = Vector3.one * 0.44f;
-
-            var nav = Inst("KitNavBar", Vector2.zero);
-            var nr = Rt(nav); nr.anchorMin = new Vector2(0f, 0f); nr.anchorMax = new Vector2(1f, 0f); nr.pivot = new Vector2(0.5f, 0f); nr.anchoredPosition = Vector2.zero; nr.sizeDelta = new Vector2(0f, 330f);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
-            EditorSceneManager.SaveScene(scene, ScenePath);
-        }
     }
 }
