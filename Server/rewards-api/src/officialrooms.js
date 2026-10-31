@@ -198,6 +198,8 @@ function createOfficialRooms({ file = null, now = () => Date.now(), chat = null,
     });
     return { ok: true, rooms, botAlive: [...beats.values()].some(b => now() - b.at < FRESH_MS) };
   }
+  /** The stage the bot last reported for a room (seats and head by EOS id), or null when the bot is silent. */
+  const stageOf = id => { const b = beats.get(String(id)); return b && now() - b.at < FRESH_MS ? b.stage : null; };
   const logOf = (id, n = 100) => state.log.filter(l => String(l.room) === String(id)).slice(-n).reverse();
 
   function stats(id) {
@@ -206,7 +208,7 @@ function createOfficialRooms({ file = null, now = () => Date.now(), chat = null,
     return { joinsToday: l.filter(x => x.kind === 'join').length, chatToday: chat ? chat.countSince('room:' + id, day) : 0 };
   }
 
-  return { create, update, remove, setAdmin, room, isStaff, list, enter, ping, leave, inside, canRead, chatOpen, slowMs, beat, command, adminView, logOf, stats, flushNow, isOpen, members, RoomError, note };
+  return { create, update, remove, setAdmin, room, isStaff, list, enter, ping, leave, inside, canRead, chatOpen, slowMs, beat, command, adminView, logOf, stats, flushNow, isOpen, members, stageOf, RoomError, note };
 }
 
 module.exports = { createOfficialRooms, RoomError };

@@ -10,7 +10,7 @@ const { createLegal } = require('./legal');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, accounts = null, identity = null, admin = null, officialRooms = null, botFarm = null, botKey = '', now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, accounts = null, identity = null, admin = null, officialRooms = null, botFarm = null, botKey = '', voice = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -179,7 +179,9 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     '/v1/rooms/official/ping': async pf => officialRooms.ping(pf),
     '/v1/rooms/official/leave': async pf => officialRooms.leave(pf),
   } : {};
-  const posts = Object.assign({}, chat ? chatPost : {}, roomsPost, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
+  // voice tokens for the LiveKit rooms (the voice where many listen and a few speak)
+  const voicePost = voice && voice.enabled ? { '/v1/voice/token': async (pf, b) => voice.token(pf, chat ? (await chat.who(pf)).name : '', String(b.room || '')) } : {};
+  const posts = Object.assign({}, chat ? chatPost : {}, roomsPost, voicePost, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
   const legal = createLegal();
 
   const server = http.createServer((req, res) => {

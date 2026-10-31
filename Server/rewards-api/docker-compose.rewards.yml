@@ -18,6 +18,9 @@ services:
     tmpfs: [/tmp]
     security_opt: ["no-new-privileges:true"]
     cap_drop: [ALL]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }     # the logs never fill the disk
     networks: [site]
 
 volumes:

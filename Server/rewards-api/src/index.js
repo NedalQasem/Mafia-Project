@@ -23,6 +23,7 @@ const GOOGLE_WEB_CLIENT_ID = '1007236526273-19121cletqstpgahntdot10rvhmv5n48.app
 const { createAdminStore } = require('./adminstore');
 const { createOfficialRooms } = require('./officialrooms');
 const { createBotFarm } = require('./botfarm');
+const { createVoice } = require('./voice');
 const { createAdmin } = require('./admin');
 
 const cfgPath = process.env.CONFIG || path.join(__dirname, '..', 'config.json');
@@ -61,12 +62,14 @@ const officialRooms = createOfficialRooms({ file: dataDir + '/officialrooms.json
 chat.setRooms(officialRooms);
 const botFarm = createBotFarm({ file: dataDir + '/bots.json' });
 const botKey = process.env.BOT_KEY || '';
+// the voice of the LiveKit rooms: LIVEKIT_API_KEY / LIVEKIT_API_SECRET / LIVEKIT_URL come from /etc/mafia-rewards.env (set-livekit.sh); without them there is no such voice
+const voice = createVoice({ apiKey: process.env.LIVEKIT_API_KEY || '', apiSecret: process.env.LIVEKIT_API_SECRET || '', url: process.env.LIVEKIT_URL || '', officialRooms });
 // the admin board: needs ADMIN_PASSWORD_HASH (made by set-admin.sh); without it the board does not exist
 const admin = createAdmin({ lbPrizes, officialRooms, botFarm,
   cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, images, accounts, reportsFile: dataDir + '/chat-reports.jsonl',
   adminCfg: Object.assign({}, cfg.admin, process.env.ADMIN_PASSWORD_HASH ? { passwordHash: process.env.ADMIN_PASSWORD_HASH } : {}, process.env.ADMIN_PATH ? { path: process.env.ADMIN_PATH } : {}),
 });
-const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, images, accounts, identity, admin, officialRooms, botFarm, botKey });
+const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, images, accounts, identity, admin, officialRooms, botFarm, botKey, voice });
 if (admin.enabled) console.log('admin board on ' + admin.base); else console.log('admin board is off (no ADMIN_PASSWORD_HASH)');
 
 setInterval(() => { accounts.sweep().then(r => { if (r.warned || r.deleted || r.failed) console.log('guests', JSON.stringify(r)); }).catch(() => {}); }, 6 * 3600 * 1000).unref();     // warns and (only when config guests.purge is true) deletes abandoned guests
