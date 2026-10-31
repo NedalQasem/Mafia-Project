@@ -74,6 +74,7 @@ section.view{display:none}section.view.on{display:block}
 .stat span{font-weight:800;font-size:.85rem;color:var(--soft)}
 .stat em{position:absolute;top:12px;left:14px;font-style:normal;font-weight:800;font-size:.72rem;color:var(--green)}
 .stat em.dn{color:var(--crimd)}
+#sGuestsCard em{position:static;display:block;margin-top:4px}
 .card{padding:16px 18px}
 .card h3{margin:0 0 10px;font-family:Lalezar;font-weight:400;font-size:1.3rem;border-bottom:3px double var(--ink);padding-bottom:2px;display:flex;align-items:baseline;gap:8px}
 .card h3 small{font-family:Cairo;font-weight:700;font-size:.72rem;color:var(--crimd);margin-inline-start:auto}
@@ -271,6 +272,7 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
         <div class="paper stat"><b id="sMatches">–</b><span>مباريات اليوم</span></div>
         <div class="paper stat"><b id="sPlayers">–</b><span>لاعبين لعبوا مباراة</span></div>
         <div class="paper stat"><b id="sReports">–</b><span>بلاغات مفتوحة</span></div>
+        <div class="paper stat" id="sGuestsCard" title="الضيف = لاعب ما ربط Google ولا Facebook ولا حساب بمكتب المافيا"><b id="sGuests">–</b><span id="sGuestsTxt">ضيوف بدون حساب مربوط</span><em id="sGuestsNote"></em></div>
       </div>
       <div class="grid g2" style="margin-top:16px">
         <div class="paper card"><h3>المباريات بآخر ٧ أيام<small>الأحمر = اليوم</small></h3><div class="bars" id="bars"></div></div>
@@ -527,11 +529,23 @@ function ago(ts) { const s = Math.max(0, (Date.now() - ts) / 1000); return s < 6
 async function loadHome() {
   const o = await api('/overview');
   $('#sOnline').textContent = ar(o.online); $('#sMatches').textContent = ar(o.matchesToday); $('#sPlayers').textContent = ar(o.players.toLocaleString('en')); $('#sReports').textContent = ar(o.openReports);
+  showGuests(o.guests);
   const max = Math.max(1, ...o.days.map(d => d.matches));
   $('#bars').innerHTML = o.days.map((d, i) => `<div class="${i === o.days.length - 1 ? 'today' : ''}">${ar(d.matches)}<i style="height:${Math.max(4, Math.round(d.matches / max * 100))}%"></i>${DAYS[new Date(d.day + 'T12:00:00Z').getUTCDay()]}</div>`).join('');
   $('#feed').innerHTML = o.activity.length ? o.activity.map(a => `<li><span class="dot ${bad(a.action) ? '' : 'g'}"></span>${esc(ACT[a.action] || a.action)}${a.detail ? ' · ' + esc(a.detail) : ''}<time>${ago(a.ts)}</time></li>`).join('') : '<li>ما في نشاط بعد</li>';
   $('#liveTxt').textContent = 'السيرفر شغّال · آخر تحديث ' + new Date().toLocaleTimeString('ar');
   setBadge($('#nReports'), o.openReports); setBadge($('#nEvents'), o.liveEvents);
+}
+// guests = players with no Google/Facebook/office account linked; they are deleted after `days` away only when guests.purge is on in config.json
+function showGuests(g) {
+  $('#sGuestsCard').classList.toggle('hide', !g);
+  if (!g) return;
+  $('#sGuests').textContent = ar(g.guests.toLocaleString('en'));
+  $('#sGuestsTxt').textContent = 'ضيوف من أصل ' + ar(g.total.toLocaleString('en'));
+  const note = $('#sGuestsNote');
+  note.classList.toggle('dn', !!(g.purge && g.atRisk));
+  note.textContent = !g.purge ? 'الحذف مطفي' : g.atRisk ? ar(g.atRisk.toLocaleString('en')) + ' قريب من الحذف' : 'الحذف بعد ' + ar(g.days) + ' يوم';
+  note.title = g.purge ? 'الضيف اللي بيغيب ' + ar(g.days) + ' يوم بينحذف (بيوصله تحذير بالبريد قبلها)' : 'لتفعيله: "guests": {"purge": true} بـ config.json على السيرفر';
 }
 function refreshBadges() { api('/overview').then(o => { setBadge($('#nReports'), o.openReports); setBadge($('#nEvents'), o.liveEvents); }).catch(() => {}); }
 setInterval(() => { if (!$('#app').classList.contains('off') && $('#v-home').classList.contains('on')) loadHome().catch(() => {}); }, 20000);
