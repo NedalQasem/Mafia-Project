@@ -44,6 +44,9 @@ namespace MafiaNight.MatchRules.Net
     {
         // any member -> every other member (room text chat, no host needed)
         public const string Chat = "chat";          // text
+        // the mic seats of the room (RoomStage): a member asks the host, the host sends the whole stage to everybody
+        public const string StageAct = "sact";      // member -> host: kind (sit, stand, hand, bring, down, lock, cfg), two arguments
+        public const string Stage = "stage";        // host -> members: RoomStage.Export()
         // player -> host
         public const string Act = "act";            // kind, target   (kinds: mafia, save, check, skip, vote, ready)
         // host -> players
