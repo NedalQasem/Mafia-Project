@@ -320,7 +320,7 @@ namespace MafiaNight.App
             foreach (var e in list)
                 cards.Add(new KitEventsBoard.Card
                 {
-                    id = e.Id, kicker = e.Kicker, title = e.Title, body = e.Body, kind = (int)e.Kind == 1 ? 1 : (int)e.Kind == 2 ? 2 : 0, state = state,
+                    id = e.Id, image = e.Image, kicker = e.Kicker, title = e.Title, body = e.Body, kind = (int)e.Kind == 1 ? 1 : (int)e.Kind == 2 ? 2 : 0, state = state,
                     multiplier = e.Multiplier, goal = e.Goal, progress = e.Progress, reward = e.RewardCoins, countsGames = e.CountsGames,
                     claimed = e.Claimed, claimable = e.Claimable, secret = e.Secret, seconds = state == 1 ? e.StartsInSeconds : e.EndsInSeconds,
                     hasRank = e.HasRanking, rankDistributed = e.RankDistributed, rankMetric = e.RankMetric, rankMine = e.RankMine, rankValue = e.RankValue,

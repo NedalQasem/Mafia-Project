@@ -25,7 +25,7 @@ namespace MafiaNight.UI.Kit
         public event Action<Ad> OnBlock;
 
         [Serializable]
-        public class Ad { public string id, mast, headline, body, stamp, price, was; public StoreItem item; public bool countdown; public int countdownSeconds; }
+        public class Ad { public string id, mast, headline, body, stamp, price, was, imageId; public StoreItem item; public bool countdown; public int countdownSeconds; }
 
         public int Current => current;
         public int Count => pages.Count;
@@ -64,6 +64,7 @@ namespace MafiaNight.UI.Kit
                 if (stamp.gameObject.activeSelf) KitText.Fit(stamp.GetComponentInChildren<ArabicText>(), ad.stamp, 14, 22f);
                 var art = (RectTransform)go.transform.Find("Art");
                 StoreArt.Create(ad.item, art, th);
+                if (!string.IsNullOrEmpty(ad.imageId)) AddPoster(art, ad.item, ad.imageId);        // a picture from the admin board takes the place of the item's drawing
                 var cd = go.transform.Find("Countdown");
                 cd.gameObject.SetActive(ad.countdown);
                 if (ad.countdown) { countdowns.Add(cd.Find("Value").GetComponent<ArabicText>()); secondsLeft = ad.countdownSeconds; }
@@ -93,6 +94,29 @@ namespace MafiaNight.UI.Kit
                 dots.Add(d);
             }
             current = 0; timer = 0; Paint();
+        }
+
+        /// <summary>The offer's own picture, pinned over the item's drawing like a photo in the newspaper (launch-banner.html ".poster"). The drawing stays under it, and shows again if the picture cannot be had.</summary>
+        private void AddPoster(RectTransform art, StoreItem item, string imageId)
+        {
+            const float k = 1080f / 390f;
+            var page = art.parent;
+            var frame = new GameObject("PosterFrame", typeof(RectTransform), typeof(Image), typeof(LayoutElement), typeof(KitFollowRect));
+            var fr = (RectTransform)frame.transform; fr.SetParent(page, false);
+            frame.GetComponent<LayoutElement>().ignoreLayout = true;
+            fr.anchorMin = fr.anchorMax = art.anchorMin; fr.pivot = art.pivot;          // the page puts the art slot at the top left; the follower keeps this rect in its middle
+            var follow = frame.GetComponent<KitFollowRect>(); follow.target = art; follow.margin = 6f * k;
+            fr.SetSiblingIndex(art.GetSiblingIndex() + 1);
+            fr.localRotation = Quaternion.Euler(0f, 0f, 0.6f);
+            var bg = frame.GetComponent<Image>(); bg.color = new Color32(0xEF, 0xE6, 0xCF, 255); bg.raycastTarget = false;     // the paper border of the photo
+            var shadow = frame.AddComponent<Shadow>(); shadow.effectColor = new Color(0f, 0f, 0f, 0.35f); shadow.effectDistance = new Vector2(0f, -6f);
+            var photo = new GameObject("Photo", typeof(RectTransform)); var pr = (RectTransform)photo.transform; pr.SetParent(fr, false);
+            pr.anchorMin = Vector2.zero; pr.anchorMax = Vector2.one; pr.offsetMin = new Vector2(3f * k, 3f * k); pr.offsetMax = new Vector2(-3f * k, -3f * k);
+            var tape = new GameObject("Tape", typeof(RectTransform), typeof(Image)); var tr = (RectTransform)tape.transform; tr.SetParent(fr, false);
+            tr.anchorMin = tr.anchorMax = new Vector2(0.5f, 1f); tr.pivot = new Vector2(0.5f, 0.5f); tr.sizeDelta = new Vector2(62f * k, 16f * k); tr.anchoredPosition = new Vector2(0f, 1f * k); tr.localRotation = Quaternion.Euler(0f, 0f, -2f);
+            var ti = tape.GetComponent<Image>(); ti.color = new Color32(0xD9, 0xC9, 0xA2, 0xCC); ti.raycastTarget = false;
+            var stamp = page.Find("Stamp"); if (stamp != null) stamp.SetAsLastSibling();      // the stamp ("-30%") sits on top of the photo, as on the page
+            KitPoster.Show(this, pr, imageId, ok => { if (!ok && frame != null) frame.SetActive(false); });
         }
 
         private void Paint() { for (int i = 0; i < dots.Count; i++) { dots[i].color = i == current ? new Color(0.88f, 0.32f, 0.35f) : new Color(0.3f, 0.26f, 0.2f); dots[i].transform.localScale = Vector3.one * (i == current ? 1.3f : 1f); } }

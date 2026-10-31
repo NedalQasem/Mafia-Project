@@ -107,7 +107,7 @@ function createEvents({ cfg = {}, source = null, playfab = null, mail = null, pa
       const s = span(e), g = goalOf(e), mine = (state[e.id] && state[e.id][pf]) || { p: 0, c: false };
       const claimable = g > 0 && mine.p >= g && !mine.c && rewardOf(e) > 0;
       const out = {
-        id: e.id, kind: e.kind, kicker: text(e.kicker, 24), title: text(e.title, 60), body: text(e.body, 160), kickerEn: text(e.kickerEn, 24), titleEn: text(e.titleEn, 60), bodyEn: text(e.bodyEn, 160), metric: e.metric === 'games' ? 'games' : 'wins',
+        id: e.id, image: /^[a-f0-9]{24}$/.test(e.image || '') ? e.image : '', kind: e.kind, kicker: text(e.kicker, 24), title: text(e.title, 60), body: text(e.body, 160), kickerEn: text(e.kickerEn, 24), titleEn: text(e.titleEn, 60), bodyEn: text(e.bodyEn, 160), metric: e.metric === 'games' ? 'games' : 'wins',
         multiplier: e.kind === 'bonus' ? Math.min(MAX_MULTIPLIER, Number(e.coinsMultiplier) || 1) : 0, goal: g, progress: Math.min(g, mine.p), rewardCoins: rewardOf(e),
         claimed: !!mine.c, claimable: false, secret: false, endsInSec: 0, startsInSec: 0, ranking: null,
       };

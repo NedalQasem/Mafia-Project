@@ -121,6 +121,30 @@ section.view{display:none}section.view.on{display:block}
 .kinds button.on{background:var(--ink);color:#f5e2a8}
 .hide{display:none!important}
 .foot-act{display:flex;gap:10px;margin-top:6px}
+/* the picture of an offer or an event */
+.pic{display:grid;gap:8px;margin:2px 0 12px}
+.pic .head{display:flex;align-items:baseline;gap:8px}
+.pic .head b{font-weight:800}
+.pic .head small{color:var(--soft);font-weight:700;font-size:.72rem}
+.zone{position:relative;display:grid;place-items:center;gap:4px;text-align:center;padding:18px 12px;border-radius:6px;border:2.5px dashed #6e5224;background:#1c170f0d;color:var(--soft);cursor:pointer}
+.zone svg{width:30px;height:30px;stroke:#8a1c24;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.zone b{color:var(--ink);font-size:.9rem}
+.zone span{font-size:.72rem;font-weight:700}
+.zone.over{border-color:#8a1c24;background:#8a1c2412}
+.zone input,.pic input[type=file]{display:none}
+.shot{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:start}
+.frame{position:relative;aspect-ratio:13/8;border-radius:4px;background:#222 center/cover no-repeat;box-shadow:0 0 0 2px #1c170f,0 6px 12px #0006;overflow:hidden}
+.frame .safe{position:absolute;inset:15% 6%;border:1.5px dashed #ffffffcc;border-radius:2px;box-shadow:0 0 0 999px #00000045}
+.frame.ev{aspect-ratio:2/1}.frame.ev .safe{inset:12% 6%}
+.shot .meta{display:grid;gap:5px;align-content:start}
+.shot .meta .ok{display:flex;align-items:center;gap:6px;font-weight:800;font-size:.78rem;color:#1d6a4a}
+.shot .meta .ok svg{width:16px;height:16px;stroke:#1d6a4a;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.shot .meta .m{font-size:.72rem;font-weight:700;color:var(--soft)}
+.shot .acts{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.pic .note{font-size:.7rem;font-weight:700;color:var(--soft);line-height:1.6;margin:0}
+.pic .err2{padding:8px 10px;border-radius:5px;background:#8a1c2414;box-shadow:inset 0 0 0 1.5px #8a1c24;color:#8a1c24;font-weight:800;font-size:.78rem}
+.clip .photo{height:96px;margin:-2px -4px 8px;background:#222 center/cover no-repeat;box-shadow:0 0 0 2px #efe6cf,0 0 0 3px #1c170f55,0 4px 8px #0007;rotate:-.6deg}
+.clip .photo.ev{height:78px}
 .prev h4{margin:0;font-family:Lalezar;font-weight:400;color:#e6d9bd;font-size:1rem}
 .prev small{color:#8d744a;font-weight:700;font-size:.7rem;text-align:center}
 .clip{width:100%;padding:12px 14px 22px;position:relative;rotate:.6deg;filter:drop-shadow(0 7px 5px #000c)}
@@ -410,6 +434,7 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
             <button class="btn ghost sm" type="button" id="rkAdd" style="margin-top:8px">+ جائزة</button>
             <div class="f" style="margin-top:10px"><label for="rkDist">توزيع الجوائز</label><select id="rkDist"><option value="auto">تلقائي عند نهاية الحدث (بيوصلوا على البريد)</option><option value="manual">يدوي: أنا بضغط «وزّع الجوائز»</option></select></div>
           </div></div>
+        <div class="pic" id="ePic"></div>
         <div class="err" id="eErr" role="alert"></div>
         <div class="foot-act"><button class="btn red" type="submit">احفظ وطبّق</button><button class="btn ghost" type="button" data-cancel>إلغاء</button></div>
       </form>
@@ -426,6 +451,7 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
         <div class="f" data-lang="ar"><label for="oBody">الوصف (اختياري)</label><textarea id="oBody" maxlength="140"></textarea></div>
         <div class="f hide" data-lang="en"><label for="oBodyEn">Description (optional)</label><textarea id="oBodyEn" class="ltr" dir="ltr" maxlength="140"></textarea></div>
         <div class="row2"><div class="f"><label for="oFrom">يبدأ</label><input id="oFrom" type="datetime-local"></div><div class="f"><label for="oUntil">ينتهي</label><input id="oUntil" type="datetime-local"><small>العدّاد باللعبة بيعدّ لهالوقت</small></div></div>
+        <div class="pic" id="oPic"></div>
         <div class="err" id="oErr" role="alert"></div>
         <div class="foot-act"><button class="btn red" type="submit">احفظ وطبّق</button><button class="btn ghost" type="button" data-cancel>إلغاء</button></div>
       </form>
@@ -434,6 +460,7 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
       <h4>هيك رح يظهر باللعبة</h4>
       <div class="clip"><div class="pg"></div><span class="tape"></span><span class="stamp st" id="pSt">شغّال</span>
         <div class="kick"><span id="pK"></span><span>الحدث ١</span></div>
+        <div class="photo hide" id="pPhoto"></div>
         <h5 id="pT"></h5><p id="pB"></p>
         <div class="cd" id="pCd">ينتهي خلال <b>٠٣:١٢:٤٠</b></div><div class="rw" id="pR"></div></div>
       <small id="pNote">المعاينة بتتحدّث وأنت عم تكتب</small>
@@ -587,6 +614,7 @@ function openDrawer(type, id) {
     $('#eMul').value = e.coinsMultiplier || 2; $('#eGoal').value = e.goal || 10; $('#eRw').value = e.rewardCoins == null ? 500 : e.rewardCoins; $('#eMetric').value = e.metric || 'wins';
     setSwitch($('#eSecret'), e.secret === true);
     fillRanking(e);
+    PICS.e = { id: e.image || '' }; picRender('e');
     setKind(e.kind);
   } else {
     const o = OFFERS.find(x => x.id === id) || { adId: '', mast: '', headline: '', body: '', stamp: '' };
@@ -594,6 +622,7 @@ function openDrawer(type, id) {
     edit.ref = o.itemId ? 'itemId' : 'adId'; setRef(edit.ref);
     $('#oRefVal').value = o.adId || o.itemId || ''; $('#oMast').value = o.mast || ''; $('#oStamp').value = o.stamp || ''; $('#oHead').value = o.headline || ''; $('#oBody').value = o.body || ''; $('#oMastEn').value = o.mastEn || ''; $('#oStampEn').value = o.stampEn || ''; $('#oHeadEn').value = o.headlineEn || ''; $('#oBodyEn').value = o.bodyEn || '';
     $('#oFrom').value = toLocal(o.from); $('#oUntil').value = toLocal(o.until);
+    PICS.o = { id: o.image || '' }; picRender('o');
     preview();
   }
   $('#drawer').classList.add('on');
@@ -621,7 +650,9 @@ function setLang(l) {
 $$('#langs button').forEach(b => b.onclick = () => { setLang(b.dataset.l); preview(); });
 function preview() {
   const live = edit.type === 'event';
-  $('#pNote').textContent = live ? 'المعاينة بتتحدّث وأنت عم تكتب' : 'هيك تقريباً بيظهر نص العرض بالجريدة (الصورة والسعر من المتجر)';
+  const pk = live ? 'e' : 'o', pu = picSrc(pk), ph = $('#pPhoto');
+  ph.classList.toggle('hide', !pu); ph.classList.toggle('ev', live); ph.style.backgroundImage = pu ? "url('" + pu + "')" : '';
+  $('#pNote').textContent = live ? 'المعاينة بتتحدّث وأنت عم تكتب' : pu ? 'الصورة بتطلع بمكان رسمة العنصر، والسعر من المتجر' : 'هيك تقريباً بيظهر نص العرض بالجريدة (الصورة والسعر من المتجر)';
   if (live) {
     $('#pSt').textContent = 'شغّال'; $('#pCd').classList.remove('hide');
     $('#pK').textContent = pick('#eKick', '#eKickEn'); $('#pT').textContent = pick('#eTitle', '#eTitleEn') || 'عنوان الحدث'; $('#pB').textContent = pick('#eBody', '#eBodyEn');
@@ -649,8 +680,52 @@ $('#formEvent').onsubmit = async e => {
   if (edit.kind === 'info') body.secret = $('#eSecret').classList.contains('on');
   const old = EVENTS.find(x => x.id === edit.id); if (old) body.enabled = old.enabled !== false;
   body.ranking = readRanking();
-  try { await api('/events/save', body); closeDrawer(); toast('انحفظ وطُبّق عند اللاعبين فوراً'); loadEvents(); } catch (x) { $('#eErr').textContent = errText(x.code); }
+  try { body.image = await picSave('e'); await api('/events/save', body); closeDrawer(); toast('انحفظ وطُبّق عند اللاعبين فوراً'); loadEvents(); } catch (x) { $('#eErr').textContent = errText(x.code); }
 };
+
+// ------------------------------------------------------------------ pictures of offers and events
+// One optional picture each, uploaded here and shown by the game (the offer's page, the event's card). The page shrinks it first: at most
+// "w" px wide, JPEG, under ~900 KB (the server refuses more than 1 MB). It is uploaded when the offer / event is saved; the server keeps only its id.
+const PIC = { o: { w: 1300, min: 800, label: 'صورة العرض', ev: false, hint: 'بدون صورة بتظهر رسمة العنصر', ideal: '١٣٠٠ × ٨٠٠' }, e: { w: 1200, min: 720, label: 'صورة الحدث', ev: true, hint: 'بدون صورة بيطلع الحدث متل هلّق', ideal: '١٢٠٠ × ٦٠٠' } };
+const PICS = { o: {}, e: {} };
+const picSrc = k => PICS[k].data || (PICS[k].id ? location.origin + '/v1/img/' + PICS[k].id : '');
+const OKSVG = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>', UPSVG = '<svg viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 19h14"/></svg>';
+function picRender(k) {
+  const c = PIC[k], s = PICS[k], box = $('#' + k + 'Pic'), src = picSrc(k);
+  const zone = `<label class="zone" data-pic-zone="${k}">${UPSVG}<b>اسحب الصورة لهون أو اضغط لتختار</b><span>JPG أو PNG · المقاس المثالي ${c.ideal} · أقصى حجم ١ ميغا</span><input type="file" accept="image/jpeg,image/png" data-pic-file="${k}"></label>`;
+  const meta = s.w ? `<span class="ok">${OKSVG}المقاس مناسب · ${ar(s.w)} × ${ar(s.h)}</span><span class="m">${esc(s.name)} · ${ar(Math.round(s.bytes / 1024))} كيلو</span>` : '<span class="m">الصورة محفوظة على السيرفر</span>';
+  box.innerHTML = `<div class="head"><b>${c.label}</b><small>اختيارية${src ? '' : ' · ' + c.hint}</small></div>` +
+    (src ? `<div class="shot"><div class="frame${c.ev ? ' ev' : ''}" style="background-image:url('${src}')"><i class="safe"></i></div><div class="meta">${meta}<span class="m">المربع المنقّط = الجزء اللي بيطلع دايماً على كل الشاشات</span><div class="acts"><label class="btn ghost sm">غيّر الصورة<input type="file" accept="image/jpeg,image/png" data-pic-file="${k}"></label><button class="btn ghost sm del" type="button" data-pic-del="${k}">احذف الصورة</button></div></div></div>` : zone) +
+    (s.err ? `<div class="err2" role="alert">${esc(s.err)}</div>` : '') +
+    (src ? '' : '<p class="note">الصورة بتتقصّ تلقائياً على قد المكان. خلّي الشي المهم (وجه، اسم) بالنص. لا تحط فيها أسعار أو تواريخ لأنها بتتغيّر بالنص.</p>');
+}
+const picImg = file => new Promise((ok, no) => { const fr = new FileReader(); fr.onerror = no; fr.onload = () => { const im = new Image(); im.onerror = no; im.onload = () => ok(im); im.src = fr.result; }; fr.readAsDataURL(file); });
+async function picLoad(k, file) {
+  const s = PICS[k], c = PIC[k]; s.err = '';
+  try {
+    if (!/^image\/(jpeg|png)$/.test(file.type)) throw 'نوع الملف مش مدعوم. استعمل JPG أو PNG.';
+    const im = await picImg(file);
+    if (im.width < c.min) throw 'الصورة صغيرة كتير (' + ar(im.width) + ' × ' + ar(im.height) + '). لازم تكون ' + ar(c.min) + ' عرض على الأقل لتطلع حادّة على الموبايلات الكبيرة.';
+    const f = Math.min(1, c.w / im.width), cv = document.createElement('canvas'); cv.width = Math.round(im.width * f); cv.height = Math.round(im.height * f);
+    cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+    let data = '', q = 0.88;
+    for (; q > 0.45; q -= 0.08) { data = cv.toDataURL('image/jpeg', q); if (data.length * 0.75 < 900 * 1024) break; }
+    if (data.length * 0.75 >= 900 * 1024) throw 'الصورة ثقيلة حتى بعد الضغط، جرّب صورة أبسط.';
+    Object.assign(s, { data, w: cv.width, h: cv.height, bytes: Math.round(data.length * 0.75), name: file.name });
+  } catch (x) { s.err = typeof x === 'string' ? x : 'تعذّر قراءة الصورة.'; }
+  picRender(k); preview();
+}
+/** Uploads a picture chosen in this drawer and returns the id to save ('' = none). */
+async function picSave(k) {
+  const s = PICS[k];
+  if (s.data) { s.id = (await api('/upload-image', { data: s.data.split(',')[1] })).id; s.data = null; }
+  return s.id || '';
+}
+document.addEventListener('change', e => { const f = e.target.closest('[data-pic-file]'); if (f && f.files[0]) { picLoad(f.dataset.picFile, f.files[0]); f.value = ''; } });
+document.addEventListener('click', e => { const d = e.target.closest('[data-pic-del]'); if (d) { PICS[d.dataset.picDel] = {}; picRender(d.dataset.picDel); preview(); } });
+document.addEventListener('dragover', e => { const z = e.target.closest('[data-pic-zone]'); if (z) { e.preventDefault(); z.classList.add('over'); } });
+document.addEventListener('dragleave', e => { const z = e.target.closest('[data-pic-zone]'); if (z) z.classList.remove('over'); });
+document.addEventListener('drop', e => { const z = e.target.closest('[data-pic-zone]'); if (z) { e.preventDefault(); z.classList.remove('over'); if (e.dataTransfer.files[0]) picLoad(z.dataset.picZone, e.dataTransfer.files[0]); } });
 
 // ------------------------------------------------------------------ offers
 let OFFERS = [];
@@ -667,7 +742,7 @@ $('#formOffer').onsubmit = async e => {
   const body = { id: edit.id || undefined, mast: $('#oMast').value, stamp: $('#oStamp').value, headline: $('#oHead').value, body: $('#oBody').value, mastEn: $('#oMastEn').value, stampEn: $('#oStampEn').value, headlineEn: $('#oHeadEn').value, bodyEn: $('#oBodyEn').value, from: toIso($('#oFrom').value), until: toIso($('#oUntil').value) };
   body[edit.ref] = $('#oRefVal').value.trim();
   const old = OFFERS.find(x => x.id === edit.id); if (old) body.enabled = old.enabled !== false;
-  try { await api('/offers/save', body); closeDrawer(); toast('انحفظ وطُبّق عند اللاعبين فوراً'); loadOffers(); } catch (x) { $('#oErr').textContent = errText(x.code); }
+  try { body.image = await picSave('o'); await api('/offers/save', body); closeDrawer(); toast('انحفظ وطُبّق عند اللاعبين فوراً'); loadOffers(); } catch (x) { $('#oErr').textContent = errText(x.code); }
 };
 
 // switches and the edit/delete buttons of both tables

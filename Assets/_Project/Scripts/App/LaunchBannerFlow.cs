@@ -117,7 +117,7 @@ namespace MafiaNight.App
             int seconds = over != null && over.EndsInSeconds > 0 ? over.EndsInSeconds : (over == null && def != null ? def.countdownSeconds : 0);
             return new StoreAdCarousel.Ad
             {
-                id = def != null ? def.id : "item_" + itemId, price = price, was = was, item = item, countdown = seconds > 0, countdownSeconds = seconds,
+                id = def != null ? def.id : "item_" + itemId, imageId = over != null ? over.Image : null, price = price, was = was, item = item, countdown = seconds > 0, countdownSeconds = seconds,
                 mast = Pick(over?.Mast, def != null ? def.mast : ""), headline = Pick(over?.Headline, def != null ? def.headline : item.name), body = Pick(over?.Body, def != null ? def.body : item.desc), stamp = Pick(over?.Stamp, def != null ? def.stamp : ""),
             };
         }

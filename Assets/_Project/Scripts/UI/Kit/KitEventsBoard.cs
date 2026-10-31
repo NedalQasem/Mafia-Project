@@ -16,7 +16,7 @@ namespace MafiaNight.UI.Kit
         /// <summary>One event as the board shows it (the app maps its data onto this).</summary>
         public sealed class Card
         {
-            public string id, kicker, title, body;
+            public string id, kicker, title, body, image;       // image = a picture from the admin board ("" = none)
             public int kind;                              // 0 announcement, 1 coins bonus, 2 challenge
             public int state;                             // 0 running, 1 soon, 2 finished
             public int multiplier, goal, progress, reward;

@@ -53,6 +53,7 @@ namespace MafiaNight.App
         {
             // the prototype wirings of the kit scenes (mock rooms, mock seats) step aside while the real services run
             KitLiveMode.Active = ServiceLocator.IsRegistered<IPlayerProfileService>() && ServiceLocator.IsRegistered<ICurrencyService>();
+            KitImages.Loader = MafiaNight.Services.Config.ServerImages.Load;      // the pictures of messages, offers and events
         }
 
         private static bool testServerWarned;

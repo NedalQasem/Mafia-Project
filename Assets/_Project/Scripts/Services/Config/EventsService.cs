@@ -14,7 +14,7 @@ namespace MafiaNight.Services.Config
     /// <summary>One event of the events board, already shaped for this player (his progress, whether he may claim).</summary>
     public sealed class GameEvent
     {
-        public string Id, Kicker, Title, Body;
+        public string Id, Kicker, Title, Body, Image;          // Image = the id of a picture uploaded on the admin board ("" = none)
         public GameEventKind Kind;
         public int Multiplier;            // bonus: what the coins of a match are multiplied by
         public int Goal, Progress;        // challenge
@@ -48,7 +48,7 @@ namespace MafiaNight.Services.Config
 
     [Serializable] internal sealed class EventDto
     {
-        public string id, kind, kicker, title, body, metric, kickerEn, titleEn, bodyEn;
+        public string id, kind, kicker, title, body, metric, kickerEn, titleEn, bodyEn, image;
         public int multiplier, goal, progress, rewardCoins, endsInSec, startsInSec;
         public bool claimed, claimable, secret;
         public RankingDto ranking;
@@ -113,7 +113,7 @@ namespace MafiaNight.Services.Config
             foreach (var e in from)
                 into.Add(new GameEvent
                 {
-                    Id = e.id, Kicker = Localized.Pick(e.kicker, e.kickerEn), Title = Localized.Pick(e.title, e.titleEn), Body = Localized.Pick(e.body, e.bodyEn),
+                    Id = e.id, Image = e.image, Kicker = Localized.Pick(e.kicker, e.kickerEn), Title = Localized.Pick(e.title, e.titleEn), Body = Localized.Pick(e.body, e.bodyEn),
                     Kind = e.kind == "bonus" ? GameEventKind.Bonus : e.kind == "challenge" ? GameEventKind.Challenge : GameEventKind.Info,
                     Multiplier = e.multiplier, Goal = e.goal, Progress = e.progress, CountsGames = e.metric == "games", RewardCoins = e.rewardCoins,
                     Claimed = e.claimed, Claimable = e.claimable, Secret = e.secret, EndsInSeconds = e.endsInSec, StartsInSeconds = e.startsInSec,

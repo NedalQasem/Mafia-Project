@@ -12,6 +12,7 @@ const { normalize: normCode, CODE_RE } = require('./codes');
 const PF_ID = /^[A-Za-z0-9]{6,32}$/;
 const ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
 const REF_RE = /^[A-Za-z0-9_-]{1,64}$/;
+const IMG_RE = /^[a-f0-9]{24}$/;      // the id of an uploaded picture (images.js)
 const KINDS = ['bonus', 'challenge', 'info'];
 const MAX_WORDS = 500;
 const METRICS = ['wins', 'games', 'points', 'secs'];
@@ -173,6 +174,14 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
 
   // ------------------------------------------------------------------ events and offers (the admin's own list, or config.json's until the first edit)
 
+  /** The picture of an offer or an event: empty, or the id of a picture the board uploaded (it must still exist). */
+  const pic = v => {
+    v = String(v || '').trim();
+    if (!v) return '';
+    if (!IMG_RE.test(v)) throw new AdminError('bad_image');
+    if (!(images && images.exists(v))) throw new AdminError('image_not_found', 404);
+    return v;
+  };
   const eventList = () => (store.events !== null ? store.events : (Array.isArray(cfg.events) ? cfg.events : []));
   const offerList = () => (store.offers !== null ? store.offers : (Array.isArray(cfg.offers) ? cfg.offers : []).map((o, i) => Object.assign({ id: 'cfg-' + i }, o)));
   const ensureOwnEvents = () => { if (store.events === null) store.events = eventList().filter(e => e && e.id).map(e => Object.assign({}, e)); return store.events; };
@@ -324,6 +333,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       const idx = b.id ? list.findIndex(e => e.id === b.id) : -1;
       if (b.id && !ID_RE.test(String(b.id))) throw new AdminError('bad_id');
       const e = cleanEvent(b, idx >= 0 ? list[idx].id : (b.id && ID_RE.test(b.id) ? b.id : newId('ev')), store.packs);
+      const img = pic(b.image); if (img) e.image = img;
       if (idx < 0 && list.some(x => x.id === e.id)) throw new AdminError('id_taken', 409);
       if (idx >= 0) list[idx] = e; else list.push(e);
       store.events = list;
@@ -395,6 +405,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       if (b.id && !ID_RE.test(String(b.id))) throw new AdminError('bad_id');
       const idx = b.id ? list.findIndex(o => o.id === b.id) : -1;
       const o = cleanOffer(b, idx >= 0 ? list[idx].id : newId('of'));
+      const img = pic(b.image); if (img) o.image = img;
       if (idx >= 0) list[idx] = o; else list.push(o);
       store.offers = list;
       store.audit('offer_save', o.id + ' ' + (o.adId || o.itemId));

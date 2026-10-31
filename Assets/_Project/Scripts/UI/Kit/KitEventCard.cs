@@ -31,6 +31,9 @@ namespace MafiaNight.UI.Kit
         private Button action, rankButton;
         private CanvasGroup actionGroup;
         private float left;
+        private RectTransform pic;               // the picture of the event (from the admin board), edge to edge at the top of the clipping
+        private int baseTop = -1;
+        private const float PicHeight = 410f;      // events.html: 150px of the 328px card, in canvas units
         private int shown = -1;
         private bool found;
 
@@ -64,6 +67,7 @@ namespace MafiaNight.UI.Kit
         {
             Find();
             card = c;
+            ShowPicture(c);
             bool live = c.state == 0, soon = c.state == 1, done = c.state == 2;
             bool challenge = c.kind == 2, bonus = c.kind == 1;
             transform.localRotation = Quaternion.Euler(0f, 0f, index % 2 == 0 ? 0.7f : -0.6f);
@@ -121,6 +125,28 @@ namespace MafiaNight.UI.Kit
                     else { actionFace.sprite = greenFace; actionLabel.Text = c.claimed ? "تم الاستلام" : "استلم"; SetEnabled(c.claimable && !c.claimed); }
                 }
             }
+        }
+
+        private void ShowPicture(KitEventsBoard.Card c)
+        {
+            var v = GetComponent<VerticalLayoutGroup>();
+            if (baseTop < 0) baseTop = v.padding.top;
+            bool has = !string.IsNullOrEmpty(c.image);
+            if (pic == null)
+            {
+                var g = new GameObject("Pic", typeof(RectTransform), typeof(LayoutElement)); pic = (RectTransform)g.transform; pic.SetParent(transform, false);
+                g.GetComponent<LayoutElement>().ignoreLayout = true;
+                pic.anchorMin = new Vector2(0f, 1f); pic.anchorMax = new Vector2(1f, 1f); pic.pivot = new Vector2(0.5f, 1f);
+                pic.offsetMin = new Vector2(14f, -PicHeight); pic.offsetMax = new Vector2(-14f, -14f);
+                pic.SetAsFirstSibling();                       // under the stamp, tape and clip
+            }
+            pic.gameObject.SetActive(has);
+            v.padding.top = baseTop + (has ? (int)PicHeight - 14 : 0);
+            if (!has) { var old = pic.GetComponentInChildren<KitPoster>(true); if (old != null) Destroy(old.gameObject); return; }
+            KitPoster.Show(this, pic, c.image, ok =>
+            {   // the picture could not be had: the clipping goes back to how it was
+                if (!ok && card == c && pic != null) { pic.gameObject.SetActive(false); v.padding.top = baseTop; }
+            });
         }
 
         // a disabled button turns grey like the mockup's, instead of fading into the paper

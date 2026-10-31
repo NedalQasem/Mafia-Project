@@ -104,24 +104,8 @@ namespace MafiaNight.Services.Config
 
         public static string ImageUrl(string imageId) => string.IsNullOrEmpty(imageId) ? null : Base + "/v1/img/" + imageId;
 
-        private static readonly Dictionary<string, Texture2D> images = new Dictionary<string, Texture2D>();
-
-        /// <summary>Loads the picture of a message once per run (the picture name is random and never changes). The callback gets null when it fails.</summary>
-        public static IEnumerator LoadImage(string imageId, Action<Texture2D> done)
-        {
-            string url = ImageUrl(imageId);
-            if (url == null) { done?.Invoke(null); yield break; }
-            if (images.TryGetValue(imageId, out var cached) && cached != null) { done?.Invoke(cached); yield break; }
-            using (var req = UnityWebRequestTexture.GetTexture(url))
-            {
-                req.timeout = 15;
-                yield return req.SendWebRequest();
-                if (req.result != UnityWebRequest.Result.Success) { done?.Invoke(null); yield break; }
-                var tex = DownloadHandlerTexture.GetContent(req);
-                images[imageId] = tex;
-                done?.Invoke(tex);
-            }
-        }
+        /// <summary>Loads the picture of a message (kept in memory and on the device by <see cref="ServerImages"/>). The callback gets null when it fails.</summary>
+        public static IEnumerator LoadImage(string imageId, Action<Texture2D> done) => ServerImages.Load(imageId, done);
 
         public static IEnumerator ClaimAll(Action<MailClaimResult> done)
         {

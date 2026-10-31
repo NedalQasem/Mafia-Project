@@ -12,11 +12,11 @@ namespace MafiaNight.Services.Config
     /// <summary>One offer the server wants the launch banner to promote. It points at something the game already knows (an ad of the store catalog or a store item).</summary>
     public sealed class ServerOffer
     {
-        public string AdId, ItemId, Mast, Headline, Body, Stamp;
+        public string AdId, ItemId, Mast, Headline, Body, Stamp, Image;      // Image = the id of a picture uploaded on the admin board ("" = none)
         public int EndsInSeconds;
     }
 
-    [Serializable] internal sealed class OfferDto { public string adId, itemId, mast, headline, body, stamp, mastEn, headlineEn, bodyEn, stampEn; public int endsInSec; }
+    [Serializable] internal sealed class OfferDto { public string adId, itemId, image, mast, headline, body, stamp, mastEn, headlineEn, bodyEn, stampEn; public int endsInSec; }
     [Serializable] internal sealed class OffersDto { public bool ok; public List<OfferDto> offers; }
 
     /// <summary>
@@ -45,7 +45,7 @@ namespace MafiaNight.Services.Config
                 var list = new List<ServerOffer>();
                 if (d.offers != null)
                     foreach (var o in d.offers)
-                        list.Add(new ServerOffer { AdId = o.adId, ItemId = o.itemId, Mast = Localized.Pick(o.mast, o.mastEn), Headline = Localized.Pick(o.headline, o.headlineEn), Body = Localized.Pick(o.body, o.bodyEn), Stamp = Localized.Pick(o.stamp, o.stampEn), EndsInSeconds = o.endsInSec });
+                        list.Add(new ServerOffer { AdId = o.adId, ItemId = o.itemId, Image = o.image, Mast = Localized.Pick(o.mast, o.mastEn), Headline = Localized.Pick(o.headline, o.headlineEn), Body = Localized.Pick(o.body, o.bodyEn), Stamp = Localized.Pick(o.stamp, o.stampEn), EndsInSeconds = o.endsInSec });
                 done?.Invoke(list);
             }
         }
