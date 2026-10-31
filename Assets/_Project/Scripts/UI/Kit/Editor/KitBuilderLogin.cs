@@ -18,10 +18,34 @@ namespace MafiaNight.UI.Kit.Editor
             headFont = th.fontHeading;
             EnsureEventSprites();
             th.recoverySheetPrefab = LoadPrefab("RecoverySheet");          // the office login reuses the settings sheet
+            EnsureBrandSprites();
             BuildLoginChoice(th);
             BuildAccountSheet(th);
             AssetDatabase.SaveAssets();
             Debug.Log("[UIKit] built the login screens");
+        }
+
+        // the round logos of the three companies, made from Tools/brand-icons (their own marks, not letters in a circle)
+        private static readonly string[] BrandNames = { "brand_google", "brand_facebook", "brand_apple" };
+
+        internal static void EnsureBrandSprites()
+        {
+            foreach (var n in BrandNames)
+            {
+                var imp = AssetImporter.GetAtPath(Art + n + ".png") as TextureImporter;
+                if (imp == null) continue;
+                imp.textureType = TextureImporterType.Sprite; imp.spriteImportMode = SpriteImportMode.Single;
+                imp.alphaIsTransparency = true; imp.mipmapEnabled = false; imp.filterMode = FilterMode.Bilinear; imp.spritePixelsPerUnit = 100;
+                imp.wrapMode = TextureWrapMode.Clamp; imp.textureCompression = TextureImporterCompression.Uncompressed;
+                imp.SaveAndReimport();
+            }
+        }
+
+        private static GameObject Logo(Transform parent, string name, Sprite logo, float size)
+        {
+            var g = Go(name, parent); Rt(g).sizeDelta = new Vector2(size, size);
+            var i = g.AddComponent<Image>(); i.sprite = logo; i.preserveAspect = true; i.raycastTarget = false;
+            return g;
         }
 
         private static GameObject Circle(Transform parent, string name, Sprite dot, Color fill, string letter, Color letterColor, TMP_FontAsset font, float size, float letterSize)
@@ -40,12 +64,12 @@ namespace MafiaNight.UI.Kit.Editor
             var dot = th.dotWhite;
 
             void At(GameObject g, Vector2 anchor, Vector2 pos, Vector2 size, Vector2? pivot = null) { var r = Rt(g); r.anchorMin = r.anchorMax = anchor; r.pivot = pivot ?? new Vector2(.5f, .5f); r.anchoredPosition = pos; r.sizeDelta = size; }
-            GameObject Plate(Transform parent, string name, Sprite face, Color text, string label, Color ic, string letter, Color letterColor, float y, float h)
+            GameObject Plate(Transform parent, string name, Sprite face, Color text, string label, Sprite logo, Color ic, string letter, Color letterColor, float y, float h)
             {
                 var b = MakeButton(name, face, text, label, lalezar, 54); b.transform.SetParent(parent, false);
                 At(b, new Vector2(.5f, 1f), new Vector2(0, y), new Vector2(900, h), new Vector2(.5f, 1f));
                 var lbl = b.transform.Find("Face/Label"); Rt(lbl.gameObject).offsetMax = new Vector2(-150, Rt(lbl.gameObject).offsetMax.y); Rt(lbl.gameObject).offsetMin = new Vector2(60, Rt(lbl.gameObject).offsetMin.y);
-                var c = Circle(b.transform, "Icon", dot, ic, letter, letterColor, th.fontHeading, 84, 52); At(c, new Vector2(1f, .5f), new Vector2(-84, 6), new Vector2(84, 84));
+                var c = logo != null ? Logo(b.transform, "Icon", logo, 92) : Circle(b.transform, "Icon", dot, ic, letter, letterColor, th.fontHeading, 84, 52); At(c, new Vector2(1f, .5f), new Vector2(-84, 6), new Vector2(logo != null ? 92 : 84, logo != null ? 92 : 84));
                 return b;
             }
             GameObject Soon(Transform parent)
@@ -70,9 +94,9 @@ namespace MafiaNight.UI.Kit.Editor
             var tag = Txt(content.transform, "Tag", "الليلة لا ترحم", cairo, 44, brass, TextAlignmentOptions.Center); tag.fontStyle = FontStyles.Bold; tag.overflowMode = TextOverflowModes.Overflow; tag.textWrappingMode = TextWrappingModes.NoWrap;
             At(tag.gameObject, new Vector2(.5f, 1f), new Vector2(0, -540), new Vector2(900, 70), new Vector2(.5f, 1f));
 
-            var google = Plate(content.transform, "Google", th.leatherRed, th.ivory, "الدخول بحساب Google", new Color32(0xF4, 0xEF, 0xE3, 255), "G", new Color32(0xD1, 0x48, 0x36, 255), -820, 160);
-            var facebook = Plate(content.transform, "Facebook", th.leatherDark, th.ivory, "الدخول بحساب Facebook", new Color32(0x18, 0x77, 0xF2, 255), "f", Color.white, -1000, 160);
-            var apple = Plate(content.transform, "Apple", th.leatherDark, th.ivory, "الدخول بحساب Apple", new Color32(0x11, 0x11, 0x11, 255), "A", Color.white, -1180, 160);
+            var google = Plate(content.transform, "Google", th.leatherRed, th.ivory, "الدخول بحساب Google", Spr("brand_google"), new Color32(0xF4, 0xEF, 0xE3, 255), "G", new Color32(0xD1, 0x48, 0x36, 255), -820, 160);
+            var facebook = Plate(content.transform, "Facebook", th.leatherDark, th.ivory, "الدخول بحساب Facebook", Spr("brand_facebook"), new Color32(0x18, 0x77, 0xF2, 255), "f", Color.white, -1000, 160);
+            var apple = Plate(content.transform, "Apple", th.leatherDark, th.ivory, "الدخول بحساب Apple", Spr("brand_apple"), new Color32(0x11, 0x11, 0x11, 255), "A", Color.white, -1180, 160);
             var googleSoon = Soon(google.transform); var facebookSoon = Soon(facebook.transform); var appleSoon = Soon(apple.transform);
             googleSoon.SetActive(false); facebookSoon.SetActive(false); appleSoon.SetActive(true);
 
@@ -80,7 +104,7 @@ namespace MafiaNight.UI.Kit.Editor
             { var l1 = Bar(content.transform, "OrL", new Color32(0x3A, 0x32, 0x2A, 255), 340, 3); At(l1.gameObject, new Vector2(.5f, 1f), new Vector2(-300, -1425), new Vector2(340, 3), new Vector2(.5f, 1f));
               var l2 = Bar(content.transform, "OrR", new Color32(0x3A, 0x32, 0x2A, 255), 340, 3); At(l2.gameObject, new Vector2(.5f, 1f), new Vector2(300, -1425), new Vector2(340, 3), new Vector2(.5f, 1f)); }
 
-            var guest = Plate(content.transform, "Guest", th.btnGold, ink, "ادخل ضيف", new Color32(0xF4, 0xEF, 0xE3, 255), "ض", ink, -1480, 150);
+            var guest = Plate(content.transform, "Guest", th.btnGold, ink, "ادخل ضيف", null, new Color32(0xF4, 0xEF, 0xE3, 255), "ض", ink, -1480, 150);
             var office = Go("Office", content.transform); At(office, new Vector2(.5f, 1f), new Vector2(0, -1700), new Vector2(900, 90), new Vector2(.5f, 1f));
             var oi = office.AddComponent<Image>(); oi.color = new Color(0, 0, 0, 0); oi.raycastTarget = true;
             var ob = office.AddComponent<Button>(); ob.targetGraphic = oi; ob.transition = Selectable.Transition.None;
@@ -131,6 +155,7 @@ namespace MafiaNight.UI.Kit.Editor
             string[] names = { "Google", "Facebook", "Apple", "مكتب المافيا" };
             string[] subs = { "بدّل جهازك بدون ما تخسر شي", "بدّل جهازك بدون ما تخسر شي", "الدخول بحساب Apple", "اسم وكلمة سر من الدعم" };
             string[] letters = { "G", "f", "A", "م" };
+            Sprite[] logos = { Spr("brand_google"), Spr("brand_facebook"), Spr("brand_apple"), null };
             Color[] fills = { new Color32(0xF4, 0xEF, 0xE3, 255), new Color32(0x18, 0x77, 0xF2, 255), new Color32(0x11, 0x11, 0x11, 255), th.crimson };
             Color[] letterCols = { new Color32(0xD1, 0x48, 0x36, 255), Color.white, Color.white, new Color32(0xF6, 0xD6, 0xD8, 255) };
             var rowData = new (Button action, GameObject linked, GameObject soon, ArabicText sub)[4];
@@ -138,7 +163,7 @@ namespace MafiaNight.UI.Kit.Editor
             {
                 var row = Go("Row_" + keys[i], brd.transform); At(row, new Vector2(.5f, 1f), new Vector2(0, -490 - i * 190), new Vector2(880, 170), new Vector2(.5f, 1f));
                 Img(row, th.leatherDark, true, 2.2f);
-                var c = Circle(row.transform, "Icon", dot, fills[i], letters[i], letterCols[i], th.fontHeading, 92, 56); At(c, new Vector2(1f, .5f), new Vector2(-72, 0), new Vector2(92, 92));
+                var c = logos[i] != null ? Logo(row.transform, "Icon", logos[i], 96) : Circle(row.transform, "Icon", dot, fills[i], letters[i], letterCols[i], th.fontHeading, 92, 56); At(c, new Vector2(1f, .5f), new Vector2(-72, 0), new Vector2(92, 92));
                 var nm = Txt(row.transform, "Name", names[i], lalezar, 50, th.ivory, TextAlignmentOptions.MidlineRight); nm.overflowMode = TextOverflowModes.Overflow; nm.textWrappingMode = TextWrappingModes.NoWrap;
                 At(nm.gameObject, new Vector2(1f, 1f), new Vector2(-140, -22), new Vector2(430, 66), new Vector2(1f, 1f));
                 var sb = Txt(row.transform, "Sub", subs[i], cairo, 28, dim, TextAlignmentOptions.MidlineRight); sb.fontStyle = FontStyles.Bold; sb.overflowMode = TextOverflowModes.Overflow; sb.textWrappingMode = TextWrappingModes.NoWrap;
