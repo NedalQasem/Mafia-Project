@@ -148,6 +148,68 @@ h2{font-family:Lalezar;font-weight:400;font-size:1.3rem;color:#a98f62;margin:0 0
 .snd svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transform:scaleX(-1)}
 .sheet .acts.four{grid-template-columns:1fr 1fr}
 
+
+/* ---- room screen like voice-room apps: seats on top, chat below ---- */
+.phone.rm{height:820px;min-height:820px;display:flex;flex-direction:column;padding:12px 12px 12px}
+.rh{display:flex;align-items:center;gap:10px;margin:2px 0 8px}
+.rt{flex:1;min-width:0}
+.rt b{display:block;font-family:Lalezar;font-weight:400;font-size:1.3rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rt small{display:flex;align-items:center;gap:7px;color:#8d744a;font-size:.72rem;font-weight:800}
+.rt .off{font-family:Lalezar;font-size:.62rem;padding:0 7px;border-radius:3px;background:linear-gradient(180deg,#e8cc8c,#9a7632);color:#2a1a08;font-weight:400}
+.cntp{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:16px;background:#0009;box-shadow:inset 0 0 0 1.5px #6b5a3f;font-family:Lalezar;font-size:1.05rem;color:#f5e2a8}
+.cntp svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.seats{padding:10px 6px 8px;border-radius:14px;background:radial-gradient(ellipse at 50% 0,#e8c27a24,transparent 70%),#120d0a;box-shadow:inset 0 0 0 1px #2a2018}
+.adminrow{display:flex;justify-content:center;margin-bottom:8px}
+.grid8{display:grid;grid-template-columns:repeat(4,1fr);gap:8px 4px}
+.seat{display:grid;justify-items:center;gap:3px;position:relative}
+.seat .sv{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);display:grid;place-items:center;color:#9a8e78;box-shadow:0 0 0 2px #000,0 0 0 3px #6b5a3f;position:relative}
+.seat .sv>svg{width:40px;height:40px}
+.seat small{font-size:.68rem;font-weight:800;color:#cfc6b2;max-width:76px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat em{font-style:normal;font-family:Lalezar;font-size:.66rem;padding:0 8px;border-radius:3px;background:linear-gradient(180deg,#e8cc8c,#9a7632);color:#2a1a08}
+.seat.big .sv{width:76px;height:76px;box-shadow:0 0 0 2px #000,0 0 0 4px var(--brass);color:#d9c48a}
+.seat.big .sv>svg{width:54px;height:54px}
+.crown{position:absolute;top:-16px;left:50%;translate:-50% 0;font-size:1.05rem;filter:drop-shadow(0 1px 2px #000)}
+.seat.adm .sv{box-shadow:0 0 0 2px #000,0 0 0 3px var(--brass);color:#d9c48a}
+.seat.live .sv{box-shadow:0 0 0 2px #000,0 0 0 3px var(--teal),0 0 14px 2px #4fa58b99;animation:pulse 1.4s ease-in-out infinite}
+.seat.me .sv{box-shadow:0 0 0 2px #000,0 0 0 3px #e0525a,0 0 14px 2px #e0525a77}
+.seat.empty .sv{background:#0b0807;box-shadow:inset 0 0 0 1.5px #3a2f24;border:1.5px dashed #5a4a36;color:#6f604a}
+.seat.empty .sv .ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.seat.empty small{color:#6f675a}
+.tg2{position:absolute;top:-6px;right:-6px;font-family:Lalezar;font-size:.58rem;padding:0 6px 1px;border-radius:3px;background:linear-gradient(180deg,#e8cc8c,#9a7632);color:#2a1a08;z-index:2}
+.seat.me .tg2{background:linear-gradient(180deg,#e0525a,#8a1c24);color:#fff}
+.mk{position:absolute;bottom:-3px;left:-3px;width:20px;height:20px;border-radius:50%;background:#26201e;box-shadow:0 0 0 1.5px #000;display:grid;place-items:center;color:#e6b3b6}
+.mk svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round}
+.phone.rm .strip{margin-top:8px}
+.phone.rm .chat{flex:1;height:auto;margin-top:8px;min-height:0}
+.bb{display:flex;align-items:center;gap:7px;margin-top:8px;padding:8px;border-radius:14px;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 1px #000}
+.bb .inp{flex:1;min-width:0}
+.ib{width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:1.15rem;background:#0009;box-shadow:inset 0 0 0 1.5px #6b5a3f;color:#cfc6b2;position:relative}
+.ib svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib.hand{background:linear-gradient(180deg,#f0d78f,#c99a3c 55%,#7d5a1c);box-shadow:0 2px 0 #000;color:#2a1a08}
+.ib.mic{background:linear-gradient(180deg,#8fe0c6,#2c8d73 55%,#14463a);box-shadow:0 2px 0 #000,0 0 14px 1px #4fa58b88;color:#06231a}
+.ib.mic svg{stroke:#06231a}
+.ib.off2{background:linear-gradient(180deg,#a2262f,#561016);color:#f0dcd8;box-shadow:0 2px 0 #000}
+.ib.gm i{position:absolute;top:-7px;left:50%;translate:-50% 0;font-style:normal;font-family:Lalezar;font-size:.5rem;padding:0 5px;border-radius:3px;background:#2c8d73;color:#06231a;white-space:nowrap}
+.sheet.tall{padding-bottom:14px}
+.srch{margin:10px 0 6px;padding:8px 12px;border-radius:8px;background:#f0e8d2;box-shadow:inset 0 0 0 2px #1c170f44;color:#7d7058;font-weight:700;font-size:.82rem}
+.mrs{max-height:270px;overflow:hidden}
+.mr{display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px dashed #1c170f44;font-size:.85rem}
+.mr .c2{width:32px;height:32px;border-radius:50%;background:#2a2623;color:#bfb49c;display:grid;place-items:center;flex:none;box-shadow:0 0 0 1.5px #1c170f66}
+.mr .c2 svg{width:24px;height:24px}
+.mr b{font-weight:800}.mr small{margin-inline-start:auto;font-weight:800;color:#4a3c24;font-size:.7rem}
+.qq{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px dashed #1c170f44;font-size:.85rem}
+.qq .n{font-family:Lalezar;font-size:1rem;width:22px;height:22px;border-radius:50%;background:#1c170f;color:#e8c27a;display:grid;place-items:center;flex:none}
+.qq b{font-weight:800}.qq small{margin-inline-start:auto;color:#4a3c24;font-weight:800;font-size:.7rem}
+.qq .btn{padding:3px 12px;border-radius:6px;font-family:Lalezar;font-size:.85rem;color:#06231a;background:linear-gradient(180deg,#6fd4b3,#2c8d73);box-shadow:0 2px 0 #000;border:0}
+.tabs.light{margin:2px 0 8px}
+.tabs.light span{background:#cfc4a8;color:#4a3c24;box-shadow:none}
+.tabs.light span.on{background:#1c170f;color:#e8c27a}
+.emo{font-size:1.5rem;line-height:1.9;text-align:center;letter-spacing:2px;padding:6px;border-radius:8px;background:#f0e8d2;box-shadow:inset 0 0 0 2px #1c170f33}
+.gmrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.gm2{position:relative;padding:10px 8px;border-radius:9px;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;color:#e6d9bd;text-align:center;opacity:.8}
+.gm2 b{display:block;font-family:Lalezar;font-weight:400;font-size:.95rem}.gm2 small{font-size:.62rem;font-weight:700;color:#a79d88}
+.gm2 span{position:absolute;top:-7px;right:8px;font-family:Lalezar;font-size:.6rem;padding:0 7px;border-radius:3px;background:#2c8d73;color:#06231a}
+
 /* ---- the admin board page ---- */
 .board{border-radius:12px;overflow:hidden;box-shadow:0 0 0 2px #000,0 0 0 4px #2a2018;display:grid;grid-template-columns:200px 1fr;min-height:760px;background:#0d0907}
 .board aside{padding:16px 12px;display:flex;flex-direction:column;gap:5px;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset -1px 0 0 #000,inset -3px 0 0 #6e5224}
@@ -220,6 +282,12 @@ h2{font-family:Lalezar;font-weight:400;font-size:1.3rem;color:#a98f62;margin:0 0
 <symbol id="arrow" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
 <symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></symbol>
 <symbol id="out" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></symbol>
+<symbol id="micoff" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3M4 4l16 16"/></symbol>
+<symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-5.5 6-5.5s6 2 6 5.5M16 5.2a3 3 0 010 5.6M18 14.8c1.8.7 3 2.3 3 5.2"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="9" rx="2"/><path d="M8.5 11V8a3.5 3.5 0 017 0v3"/></symbol>
+<symbol id="vol" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></symbol>
+<symbol id="grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></symbol>
 </defs></svg>
 
 <h1>غرفة مكتب المافيا</h1>
@@ -237,7 +305,7 @@ h2{font-family:Lalezar;font-weight:400;font-size:1.3rem;color:#a98f62;margin:0 0
  <div class="office first">
   <div class="pin"><svg><use href="#pinI"/></svg>مثبّتة</div><div class="seal">رسمية</div>
   <div class="o1"><div class="avatar"><svg><use href="#fed"/></svg></div>
-   <div class="nm"><b>غرفة مكتب المافيا</b><small>للاعبين الجدد · اسأل وتعلّم اللعبة</small></div>
+   <div class="nm"><b>غرفة مكتب المافيا</b><small>ID ١٠٠١ · للاعبين الجدد · اسأل وتعلّم اللعبة</small></div>
    <div class="cnt">٢٣<small>من ٦٤</small></div></div>
   <div class="bar"><i style="width:36%"></i></div>
   <div class="o3"><span class="chip adm"><i></i>٢ أدمن حاضرين</span><span class="chip">صوت فقط</span><button class="go">ادخل</button></div>
@@ -277,106 +345,171 @@ h2{font-family:Lalezar;font-weight:400;font-size:1.3rem;color:#a98f62;margin:0 0
 </section>
 
 <section>
-<h2>٢ · جوّا الغرفة: دردشة كتابية + صوت (اللاعب مكتوم والأدمن بيعطيه المايك)</h2>
+<h2>٢ · جوّا الغرفة: مقاعد المايك فوق، والباقي كله دردشة</h2>
 <div class="phones">
 
-<div><div class="cap">لاعب جديد · مكتوم ورافع إيده · تبويب الدردشة</div>
-<div class="phone">
- <div class="ph-top"><div class="back"><svg><use href="#arrow"/></svg></div><div class="nm" style="flex:1"><b style="font-family:Lalezar;font-weight:400;font-size:1.3rem;background:none;color:var(--ivory);filter:none;-webkit-background-clip:initial">غرفة مكتب المافيا</b><small style="color:#8d744a">رسمية · ٢٣ من ٦٤</small></div></div>
- <div class="stage sm3">
-  <div class="sp adm live"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>أبو سامر</b><small>عم يحكي</small></div>
-  <div class="sp adm"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>ريما</b><small>مكتومة</small></div>
-  <div class="sp"><div class="av" style="box-shadow:0 0 0 2px #000,0 0 0 3px #3a3128;opacity:.5"><svg><use href="#fed"/></svg></div><b style="color:#7d756a">المنصة فاضية</b><small>للضيف</small></div>
- </div>
- <div class="strip"><span>✋</span><b>٣ أيدي مرفوعة</b><small>دورك رقم ٢</small></div>
- <div class="tabs"><span class="on">الدردشة</span><span>الحضور <i>٢٣</i></span></div>
+<div><div class="cap">١ · لاعب جديد · عم يسمع ويكتب</div>
+<div class="phone rm">
+ <div class="rh"><div class="back"><svg><use href="#arrow"/></svg></div>
+  <div class="rt"><b>غرفة مكتب المافيا</b><small>ID ١٠٠١ <span class="off">رسمية</span></small></div>
+  <div class="cntp"><svg><use href="#users"/></svg>٢٣</div></div>
+ <div class="seats">
+  <div class="adminrow"><div class="seat big adm live"><div class="sv"><span class="crown">👑</span><svg><use href="#fed"/></svg></div><small>أبو سامر</small><em>الأدمن</em></div></div>
+  <div class="grid8">
+   <div class="seat adm"><div class="sv"><span class="tg2">أدمن</span><svg><use href="#fed"/></svg><b class="mk"><svg><use href="#micoff"/></svg></b></div><small>ريما</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>نور</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>أحمد</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty lock"><div class="sv"><svg class="ic"><use href="#lock"/></svg></div><small>مقفل</small></div>
+  </div></div>
+ <div class="strip"><span>✋</span><b>٣ ينتظروا المايك</b><small>دورك رقم ٢</small></div>
  <div class="chat">
-  <div class="msg pinned"><div class="who"><b>ريما</b><span class="tg">أدمن</span><span class="pn">📌 مثبّتة</span></div><p>أهلاً فيك بمكتب المافيا! اسأل أي سؤال عن اللعبة بالكتابة، وارفع إيدك ✋ إذا بدك تحكي بالصوت.</p></div>
-  <div class="sys">نور دخلت الغرفة</div>
+  <div class="msg pinned"><div class="who"><b>ريما</b><span class="tg">أدمن</span><span class="pn">📌 مثبّتة</span></div><p>أهلاً فيك بمكتب المافيا! اسأل أي سؤال بالكتابة، أو اضغط ✋ لتطلع على المايك وتحكي مع الأدمن.</p></div>
+  <div class="sys">نور طلعت على المايك</div>
   <div class="msg"><div class="who"><b>يزن</b><span class="tg n">جديد</span><time>٢:٢٨</time></div><p>كيف بعرف دوري بالمباراة؟</p></div>
   <div class="msg adm"><div class="who"><b>أبو سامر</b><span class="tg">أدمن</span><time>٢:٢٩</time></div><p>بتشوف بطاقة دورك أول الليلة، ما حدا غيرك بيشوفها.</p></div>
   <div class="msg me"><div class="who"><b>أنت</b><time>٢:٣٠</time></div><p>شكراً! وكيف بجيب كوينز؟</p></div>
  </div>
- <div style="height:112px"></div>
- <div class="dock two"><div class="inprow"><div class="inp">اكتب سؤالك…</div><div class="snd"><svg><use href="#arrow"/></svg></div></div><div class="sm off"><svg><use href="#mic"/></svg></div><button class="big hand">✋ ارفع إيدك</button><div class="sm"><svg><use href="#out"/></svg></div></div>
+ <div class="bb"><div class="inp">اكتب رسالتك…</div><div class="ib">😊</div><div class="ib hand">✋</div><div class="ib"><svg><use href="#vol"/></svg></div><div class="ib gm"><svg><use href="#grid"/></svg><i>قريباً</i></div></div>
 </div></div>
 
-<div><div class="cap">لاعب أخد المايك (دوره) · دردشة + صوت</div>
-<div class="phone">
- <div class="ph-top"><div class="back"><svg><use href="#arrow"/></svg></div><div class="nm" style="flex:1"><b style="font-family:Lalezar;font-weight:400;font-size:1.3rem;background:none;color:var(--ivory);filter:none;-webkit-background-clip:initial">غرفة مكتب المافيا</b><small style="color:#8d744a">رسمية · ٢٣ من ٦٤</small></div></div>
- <div class="stage sm3">
-  <div class="sp adm"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>أبو سامر</b><small>يسمع</small></div>
-  <div class="sp live"><div class="av"><svg><use href="#fed"/></svg><span class="tag g">دورك</span></div><b>أنت</b><small>٠:٤٢ باقي</small></div>
-  <div class="sp adm"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>ريما</b><small>يسمع</small></div>
- </div>
- <div class="status g" style="margin-top:8px"><span>🎙️</span><span>الميك معك <b>دقيقة وحدة</b>. اسأل سؤالك والأدمن بيجاوبك. بعدها بيرجع مكتوم لحاله.</span></div>
- <div class="tabs"><span class="on">الدردشة</span><span>الحضور <i>٢٣</i></span></div>
- <div class="chat" style="height:200px">
-  <div class="msg"><div class="who"><b>سامر</b><time>٢:٣٣</time></div><p>وإذا انطردت من اللعبة؟</p></div>
-  <div class="msg adm"><div class="who"><b>ريما</b><span class="tg">أدمن</span><time>٢:٣٣</time></div><p>بترجع لنفس الغرفة من «عندك مباراة شغّالة» فوق.</p></div>
-  <div class="msg"><div class="who"><b>هديل</b><span class="tg n">جديدة</span><time>٢:٣٤</time></div><p>شكراً ريما 🙏</p></div>
- </div>
- <div style="height:112px"></div>
- <div class="dock two"><div class="inprow"><div class="inp">اكتب رسالة…</div><div class="snd"><svg><use href="#arrow"/></svg></div></div><div class="sm"><svg><use href="#mic"/></svg></div><button class="big mic">🎙️ عم تحكي · خلّصت</button><div class="sm"><svg><use href="#out"/></svg></div></div>
+<div><div class="cap">٢ · اللاعب طلع على المايك (مقعد ٢)</div>
+<div class="phone rm">
+ <div class="rh"><div class="back"><svg><use href="#arrow"/></svg></div>
+  <div class="rt"><b>غرفة مكتب المافيا</b><small>ID ١٠٠١ <span class="off">رسمية</span></small></div>
+  <div class="cntp"><svg><use href="#users"/></svg>٢٣</div></div>
+ <div class="seats">
+  <div class="adminrow"><div class="seat big adm live"><div class="sv"><span class="crown">👑</span><svg><use href="#fed"/></svg></div><small>أبو سامر</small><em>الأدمن</em></div></div>
+  <div class="grid8">
+   <div class="seat adm"><div class="sv"><span class="tg2">أدمن</span><svg><use href="#fed"/></svg><b class="mk"><svg><use href="#micoff"/></svg></b></div><small>ريما</small></div>
+   <div class="seat live me"><div class="sv"><span class="tg2">أنت</span><svg><use href="#fed"/></svg></div><small>أنت</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>أحمد</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty lock"><div class="sv"><svg class="ic"><use href="#lock"/></svg></div><small>مقفل</small></div>
+  </div></div>
+ <div class="status g" style="margin-top:8px"><span>🎙️</span><span>إنت على المايك. اسأل والأدمن بيجاوبك، ولما تخلّص اضغط ⏏ لتنزل.</span></div>
+ <div class="chat"><div class="msg adm"><div class="who"><b>ريما</b><span class="tg">أدمن</span><time>٢:٣٣</time></div><p>اتفضل نور، سؤالك؟</p></div><div class="sys">أحمد طلع على المايك</div><div class="msg"><div class="who"><b>هديل</b><span class="tg n">جديدة</span><time>٢:٣٤</time></div><p>شكراً ريما 🙏</p></div></div>
+ <div class="bb"><div class="inp">اكتب رسالتك…</div><div class="ib">😊</div><div class="ib mic">🎙️</div><div class="ib off2">⏏</div><div class="ib"><svg><use href="#vol"/></svg></div><div class="ib gm"><svg><use href="#grid"/></svg><i>قريباً</i></div></div>
 </div></div>
 
-<div><div class="cap">أدمن · الدردشة مع أدوات الإشراف (ضغطة على رسالة)</div>
-<div class="phone">
- <div class="ph-top"><div class="back"><svg><use href="#arrow"/></svg></div><div class="nm" style="flex:1"><b style="font-family:Lalezar;font-weight:400;font-size:1.3rem;background:none;color:var(--ivory);filter:none;-webkit-background-clip:initial">غرفة مكتب المافيا</b><small style="color:#8d744a">رسمية · أنت أدمن · ٢٣ من ٦٤</small></div></div>
- <div class="stage sm3">
-  <div class="sp adm live"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أنت</span></div><b>أبو سامر</b><small>عم يحكي</small></div>
-  <div class="sp adm"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>ريما</b><small>يسمع</small></div>
-  <div class="sp"><div class="av" style="box-shadow:0 0 0 2px #000,0 0 0 3px #3a3128;opacity:.5"><svg><use href="#fed"/></svg></div><b style="color:#7d756a">المنصة فاضية</b><small>أعطِ الميك لحدا</small></div>
+<div><div class="cap">٣ · أدمن · ضغطة على لاعب بمقعد</div>
+<div class="phone rm">
+ <div class="rh"><div class="back"><svg><use href="#arrow"/></svg></div>
+  <div class="rt"><b>غرفة مكتب المافيا</b><small>ID ١٠٠١ <span class="off">رسمية</span></small></div>
+  <div class="cntp"><svg><use href="#users"/></svg>٢٣</div></div>
+ <div class="seats">
+  <div class="adminrow"><div class="seat big adm live"><div class="sv"><span class="crown">👑</span><svg><use href="#fed"/></svg></div><small>أبو سامر</small><em>الأدمن</em></div></div>
+  <div class="grid8">
+   <div class="seat adm"><div class="sv"><span class="tg2">أدمن</span><svg><use href="#fed"/></svg><b class="mk"><svg><use href="#micoff"/></svg></b></div><small>ريما</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>نور</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>أحمد</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty lock"><div class="sv"><svg class="ic"><use href="#lock"/></svg></div><small>مقفل</small></div>
+  </div></div>
+ <div class="strip"><span>✋</span><b>٣ ينتظروا المايك</b><small>اضغط مقعد فاضي لتطلّعهم</small></div>
+ <div class="chat"><div class="msg"><div class="who"><b>نور</b><span class="tg n">جديدة</span><time>٢:٣٧</time></div><p>ممكن أسأل عن الكوينز؟</p></div></div>
+ <div class="bb"><div class="inp">اكتب رسالتك…</div><div class="ib">😊</div><div class="ib mic"><svg><use href="#mic"/></svg></div><div class="ib"><svg><use href="#vol"/></svg></div><div class="ib gm"><svg><use href="#grid"/></svg><i>قريباً</i></div></div>
+ <div class="sheet" style="bottom:0">
+  <h4>نور <small>م٢ · لاعبة جديدة · على المايك ٠:٤٠</small></h4>
+  <div class="acts four"><button class="g">نزّلها من المايك</button><button>اكتمها</button><button>اكتمها بالدردشة</button><button class="r">اطردها</button></div>
  </div>
- <div class="strip"><span>✋</span><b>٣ أيدي مرفوعة</b><small>الأول: نور · قبل دقيقة</small></div>
- <div class="tabs"><span class="on">الدردشة</span><span>الحضور <i>٢٣</i></span></div>
- <div class="chat" style="height:170px">
-  <div class="msg"><div class="who"><b>مزعج٩</b><time>٢:٣٦</time></div><p>كلام فيه إزعاج وتكرار…</p></div>
-  <div class="msg" style="outline:2px solid #e0525a"><div class="who"><b>نور</b><span class="tg n">جديدة</span><time>٢:٣٧</time></div><p>ممكن أحكي بالصوت؟</p></div>
- </div>
- <div style="height:290px"></div>
- <div class="sheet" style="bottom:112px">
-  <h4>نور <small>م٢ · لاعبة جديدة · دخلت قبل ٤ د</small></h4>
-  <div class="acts four"><button class="g">أعطِ الميك</button><button>احذف الرسالة</button><button>اكتمها بالدردشة</button><button class="r">اطردها</button></div>
- </div>
- <div class="dock two"><div class="inprow"><div class="inp">اكتب كأدمن…</div><div class="snd"><svg><use href="#arrow"/></svg></div></div><div class="sm"><svg><use href="#mic"/></svg></div><button class="big mic" style="font-size:.95rem">أعطِ الميك للأول بالدور</button><div class="sm" style="font-size:.55rem">اكتم<br>الكل</div></div>
 </div></div>
 
-<div><div class="cap">تبويب «الحضور» (للجميع، والأدمن بيضغط على لاعب)</div>
-<div class="phone">
- <div class="ph-top"><div class="back"><svg><use href="#arrow"/></svg></div><div class="nm" style="flex:1"><b style="font-family:Lalezar;font-weight:400;font-size:1.3rem;background:none;color:var(--ivory);filter:none;-webkit-background-clip:initial">غرفة مكتب المافيا</b><small style="color:#8d744a">رسمية · ٢٣ من ٦٤</small></div></div>
- <div class="stage sm3">
-  <div class="sp adm live"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>أبو سامر</b><small>عم يحكي</small></div>
-  <div class="sp adm"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>ريما</b><small>مكتومة</small></div>
-  <div class="sp"><div class="av" style="box-shadow:0 0 0 2px #000,0 0 0 3px #3a3128;opacity:.5"><svg><use href="#fed"/></svg></div><b style="color:#7d756a">المنصة فاضية</b><small>للضيف</small></div>
+<div><div class="cap">٤ · أدمن · ضغطة على مقعد فاضي: طابور الأيدي</div>
+<div class="phone rm">
+ <div class="rh"><div class="back"><svg><use href="#arrow"/></svg></div>
+  <div class="rt"><b>غرفة مكتب المافيا</b><small>ID ١٠٠١ <span class="off">رسمية</span></small></div>
+  <div class="cntp"><svg><use href="#users"/></svg>٢٣</div></div>
+ <div class="seats">
+  <div class="adminrow"><div class="seat big adm live"><div class="sv"><span class="crown">👑</span><svg><use href="#fed"/></svg></div><small>أبو سامر</small><em>الأدمن</em></div></div>
+  <div class="grid8">
+   <div class="seat adm"><div class="sv"><span class="tg2">أدمن</span><svg><use href="#fed"/></svg><b class="mk"><svg><use href="#micoff"/></svg></b></div><small>ريما</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>نور</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>أحمد</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty lock"><div class="sv"><svg class="ic"><use href="#lock"/></svg></div><small>مقفل</small></div>
+  </div></div>
+ <div class="strip"><span>✋</span><b>٣ ينتظروا المايك</b><small>الأقدم أول</small></div>
+ <div class="chat"><div class="msg"><div class="who"><b>مزعج٩</b><time>٢:٣٦</time></div><p>كلام فيه إزعاج…</p></div></div>
+ <div class="bb"><div class="inp">اكتب رسالتك…</div><div class="ib">😊</div><div class="ib mic"><svg><use href="#mic"/></svg></div><div class="ib"><svg><use href="#vol"/></svg></div><div class="ib gm"><svg><use href="#grid"/></svg><i>قريباً</i></div></div>
+ <div class="sheet" style="bottom:0">
+  <h4>مين بدك تطلّع؟ <small>مقعد ٤</small></h4>
+  <div class="queue" style="margin-top:10px">
+   <div class="qq"><span class="n">١</span><b>سامر</b><small>م١ · قبل دقيقة</small><button class="btn">أطلعه</button></div>
+   <div class="qq"><span class="n">٢</span><b>يزن</b><span class="tg n">جديد</span><small>قبل ٣ د</small><button class="btn">أطلعه</button></div>
+   <div class="qq"><span class="n">٣</span><b>هديل</b><span class="tg n">جديدة</span><small>قبل ٤ د</small><button class="btn">أطلعها</button></div>
+  </div>
  </div>
- <div class="strip"><span>✋</span><b>٣ أيدي مرفوعة</b><small>دورك رقم ٢</small></div>
- <div class="tabs"><span>الدردشة</span><span class="on">الحضور <i>٢٣</i></span></div>
- <div class="crowd">
-  <div class="c hand"><i><svg><use href="#fed"/></svg></i><small>نور</small></div>
-  <div class="c hand me"><i><svg><use href="#fed"/></svg></i><small>أنت</small></div>
-  <div class="c hand"><i><svg><use href="#fed"/></svg></i><small>سامر</small></div>
-  <div class="c new"><i><svg><use href="#fed"/></svg></i><small>يزن</small></div>
-  <div class="c new"><i><svg><use href="#fed"/></svg></i><small>هديل</small></div>
-  <div class="c"><i><svg><use href="#fed"/></svg></i><small>خالد</small></div>
-  <div class="c"><i><svg><use href="#fed"/></svg></i><small>رنا</small></div>
-  <div class="c"><i><svg><use href="#fed"/></svg></i><small>مازن</small></div>
-  <div class="c"><i><svg><use href="#fed"/></svg></i><small>عادل</small></div>
-  <div class="c"><i><svg><use href="#fed"/></svg></i><small>ريم</small></div>
-  <div class="c new"><i><svg><use href="#fed"/></svg></i><small>لينا</small></div>
-  <div class="c"><i><svg><use href="#fed"/></svg></i><small>جود</small></div>
-  <div class="more">… وحوالي ١١ كمان · بتتمرّر</div>
+</div></div>
+
+<div><div class="cap">٥ · ضغطة على عدّاد الأعضاء: كل الحضور</div>
+<div class="phone rm">
+ <div class="rh"><div class="back"><svg><use href="#arrow"/></svg></div>
+  <div class="rt"><b>غرفة مكتب المافيا</b><small>ID ١٠٠١ <span class="off">رسمية</span></small></div>
+  <div class="cntp"><svg><use href="#users"/></svg>٢٣</div></div>
+ <div class="seats">
+  <div class="adminrow"><div class="seat big adm live"><div class="sv"><span class="crown">👑</span><svg><use href="#fed"/></svg></div><small>أبو سامر</small><em>الأدمن</em></div></div>
+  <div class="grid8">
+   <div class="seat adm"><div class="sv"><span class="tg2">أدمن</span><svg><use href="#fed"/></svg><b class="mk"><svg><use href="#micoff"/></svg></b></div><small>ريما</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>نور</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>أحمد</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty lock"><div class="sv"><svg class="ic"><use href="#lock"/></svg></div><small>مقفل</small></div>
+  </div></div>
+ <div class="strip"><span>✋</span><b>٣ ينتظروا المايك</b><small>دورك رقم ٢</small></div>
+ <div class="chat">
+  <div class="msg pinned"><div class="who"><b>ريما</b><span class="tg">أدمن</span><span class="pn">📌 مثبّتة</span></div><p>أهلاً فيك بمكتب المافيا! اسأل أي سؤال بالكتابة، أو اضغط ✋ لتطلع على المايك وتحكي مع الأدمن.</p></div>
+  <div class="sys">نور طلعت على المايك</div>
+  <div class="msg"><div class="who"><b>يزن</b><span class="tg n">جديد</span><time>٢:٢٨</time></div><p>كيف بعرف دوري بالمباراة؟</p></div>
+  <div class="msg adm"><div class="who"><b>أبو سامر</b><span class="tg">أدمن</span><time>٢:٢٩</time></div><p>بتشوف بطاقة دورك أول الليلة، ما حدا غيرك بيشوفها.</p></div>
+  <div class="msg me"><div class="who"><b>أنت</b><time>٢:٣٠</time></div><p>شكراً! وكيف بجيب كوينز؟</p></div>
  </div>
- <div class="status"><span>🔇</span><span>إنت مكتوم. <b>ارفع إيدك</b> ليعطيك الأدمن المايك.</span></div>
- <div style="height:90px"></div>
- <div class="dock"><div class="sm off"><svg><use href="#mic"/></svg></div><button class="big hand">✋ ارفع إيدك</button><div class="sm"><svg><use href="#out"/></svg></div></div>
+ <div class="bb"><div class="inp">اكتب رسالتك…</div><div class="ib">😊</div><div class="ib hand">✋</div><div class="ib"><svg><use href="#vol"/></svg></div><div class="ib gm"><svg><use href="#grid"/></svg><i>قريباً</i></div></div>
+ <div class="sheet tall" style="bottom:0">
+  <h4>الحضور <small>٢٣ من ٦٤</small></h4>
+  <div class="srch">ابحث عن لاعب…</div>
+  <div class="mrs">
+   <div class="mr"><div class="c2"><svg><use href="#fed"/></svg></div><b>أبو سامر</b><span class="tg">أدمن</span><small>على المايك</small></div><div class="mr"><div class="c2"><svg><use href="#fed"/></svg></div><b>ريما</b><span class="tg">أدمن</span><small>على المايك</small></div><div class="mr"><div class="c2"><svg><use href="#fed"/></svg></div><b>نور</b><span class="tg n">جديدة</span><small>على المايك</small></div><div class="mr"><div class="c2"><svg><use href="#fed"/></svg></div><b>أحمد</b><span class="tg n">جديد</span><small>على المايك</small></div><div class="mr"><div class="c2"><svg><use href="#fed"/></svg></div><b>سامر</b><small>✋ ينتظر</small></div><div class="mr"><div class="c2"><svg><use href="#fed"/></svg></div><b>يزن</b><span class="tg n">جديد</span><small>✋ ينتظر</small></div><div class="mr"><div class="c2"><svg><use href="#fed"/></svg></div><b>هديل</b><span class="tg n">جديدة</span><small>يسمع</small></div><div class="mr"><div class="c2"><svg><use href="#fed"/></svg></div><b>خالد</b><small>يسمع</small></div><div class="mr"><div class="c2"><svg><use href="#fed"/></svg></div><b>رنا</b><small>يسمع</small></div>
+  </div>
+  <p class="note" style="color:#4a3c24;margin:6px 0 0">بتتمرّر. الأدمن بيضغط على أي لاعب لتظهر له أدوات الإشراف.</p>
+ </div>
+</div></div>
+
+<div><div class="cap">٦ · الإيموجي والألعاب السريعة (للمستقبل)</div>
+<div class="phone rm">
+ <div class="rh"><div class="back"><svg><use href="#arrow"/></svg></div>
+  <div class="rt"><b>غرفة مكتب المافيا</b><small>ID ١٠٠١ <span class="off">رسمية</span></small></div>
+  <div class="cntp"><svg><use href="#users"/></svg>٢٣</div></div>
+ <div class="seats">
+  <div class="adminrow"><div class="seat big adm live"><div class="sv"><span class="crown">👑</span><svg><use href="#fed"/></svg></div><small>أبو سامر</small><em>الأدمن</em></div></div>
+  <div class="grid8">
+   <div class="seat adm"><div class="sv"><span class="tg2">أدمن</span><svg><use href="#fed"/></svg><b class="mk"><svg><use href="#micoff"/></svg></b></div><small>ريما</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>نور</small></div>
+   <div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>أحمد</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div>
+   <div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty lock"><div class="sv"><svg class="ic"><use href="#lock"/></svg></div><small>مقفل</small></div>
+  </div></div>
+ <div class="strip"><span>✋</span><b>٣ ينتظروا المايك</b><small>دورك رقم ٢</small></div>
+ <div class="chat">
+  <div class="msg pinned"><div class="who"><b>ريما</b><span class="tg">أدمن</span><span class="pn">📌 مثبّتة</span></div><p>أهلاً فيك بمكتب المافيا! اسأل أي سؤال بالكتابة، أو اضغط ✋ لتطلع على المايك وتحكي مع الأدمن.</p></div>
+  <div class="sys">نور طلعت على المايك</div>
+  <div class="msg"><div class="who"><b>يزن</b><span class="tg n">جديد</span><time>٢:٢٨</time></div><p>كيف بعرف دوري بالمباراة؟</p></div>
+  <div class="msg adm"><div class="who"><b>أبو سامر</b><span class="tg">أدمن</span><time>٢:٢٩</time></div><p>بتشوف بطاقة دورك أول الليلة، ما حدا غيرك بيشوفها.</p></div>
+  <div class="msg me"><div class="who"><b>أنت</b><time>٢:٣٠</time></div><p>شكراً! وكيف بجيب كوينز؟</p></div>
+ </div>
+ <div class="bb"><div class="inp">اكتب رسالتك…</div><div class="ib">😊</div><div class="ib hand">✋</div><div class="ib"><svg><use href="#vol"/></svg></div><div class="ib gm"><svg><use href="#grid"/></svg><i>قريباً</i></div></div>
+ <div class="sheet tall" style="bottom:0">
+  <div class="tabs light"><span class="on">إيموجي</span><span>ملصقات <i>قريباً</i></span><span>ألعاب سريعة <i>قريباً</i></span></div>
+  <div class="emo">😀 😂 🥹 😍 😎 🤔 😴 😡 👍 👎 👏 🙏 💪 🔥 ❤️ 💔 🎩 🕵️ 🔫 ☕ 🍵 🎲 🃏 🌙 ⭐ 💰 🏆 👑 🤝 ✌️</div>
+  <div class="gmrow"><div class="gm2"><b>من المافيا؟</b><small>سؤال سريع للغرفة</small><span>قريباً</span></div><div class="gm2"><b>حظ الليلة</b><small>عجلة حظ بالكوينز</small><span>قريباً</span></div><div class="gm2"><b>تحدّي الأرقام</b><small>أسرع واحد يربح</small><span>قريباً</span></div></div>
+ </div>
 </div></div>
 
 </div>
-<p class="note">• الدردشة الكتابية جوّا الغرفة لكل اللاعبين، والغرف الرسمية بتستعمل <b>دردشة السيرفر</b> مش P2P: فلتر الكلمات، وضع بطيء (٣ ثواني)، آخر ٥٠ رسالة بتظهر للي بيدخل متأخر، وكل شي بينحفظ لتتابعه من اللوحة. الأدمن رسائله بشارة «أدمن» وبتقدر تثبّت رسالة ترحيب بأول الدردشة.<br>
-• اللاعب بيدخل مكتوم دايماً ما يقدر يفتح مايكه لحاله. الأدمنز بيحكوا وبيسمعوا بحرية. «ارفع إيدك» بيحطه بالدور، والأدمن بيعطيه المايك على المنصة بوقت محدّد (دقيقة، بيتغيّر من اللوحة) وبعدها بيرجع مكتوم. اللاعب يقدر يسأل بالكتابة بأي وقت بدون ما ينتظر.<br>
-• اللاعبين الجدد (أول ٧ أيام) بإطار أخضر وشارة «جديد» ليعرف الأدمن مين محتاج مساعدة. الحضور شبكة بتتمرّر لأنه ٦٤ ما بتتسع.<br>
-• ضبط المايك بيتم من اللعبة نفسها (مش من سيرفر الصوت)، فلاعب معدّل ممكن يتحايل عليه، بس الأدمن بيقدر يطرده. مقبول لغرفة أسئلة وأجوبة.</p>
+<p class="note">• الشاشة على نفس فكرة غرف الصوت المعروفة: فوق اسم الغرفة ورقمها (ID) وعدّاد الأعضاء (ضغطة = قائمة كل الحضور)، وتحتهم <b>مقاعد المايك</b>: مقعد كبير للأدمن بالنص و٨ مقاعد حواليه (عددها بيتغيّر من اللوحة). المقعد الفاضي بيطلع عليه الأدمن لاعب من طابور الأيدي، وبيقدر ينزّله وقت ما بدو. أكتر من لاعب ممكن يكونوا على المايك مع بعض، والأدمنز بياخدوا أي مقعد.<br>
+• اللاعب بيدخل <b>يسمع ويكتب</b> بدون مايك. زر ✋ بيحطه بالطابور (أسفل الشاشة)، وأول ما الأدمن يطلّعه بيصير على مقعد وبيفتح مايكه. زر ⏏ بينزّله بنفسه.<br>
+• <b>كل المساحة تحت الدردشة</b> (دردشة السيرفر: فلتر كلمات، وضع بطيء، آخر ٥٠ رسالة للداخل متأخر، سجل باللوحة) وفيها رسالة ترحيب مثبّتة وشارة أدمن وشارة «جديد» (أول ٧ أيام). الشريط السفلي: خانة كتابة، إيموجي، الميك/اليد، الصوت، وزر الألعاب (بيفتح إيموجي + ملصقات + ألعاب سريعة، والألعاب «قريباً»).<br>
+• ضبط المايك والمقاعد بيتم من اللعبة نفسها (مش من سيرفر الصوت)، فلاعب معدّل ممكن يتحايل عليه، بس الأدمن بيقدر يطرده. مقبول لغرفة أسئلة وأجوبة. الصوت نفسه ما بنسمعه ولا بنسجّله.</p>
 </section>
 
 <section>
@@ -443,10 +576,12 @@ h2{font-family:Lalezar;font-weight:400;font-size:1.3rem;color:#a98f62;margin:0 0
       <label>اسم الغرفة (عربي)<input value="غرفة مكتب المافيا"></label>
       <label>الاسم بالإنجليزي<input value="Mafia Office Room"></label>
       <label>السطر الفرعي<input value="للاعبين الجدد · اسأل وتعلّم اللعبة"></label>
+      <label>رقم الغرفة (ID)<input value="١٠٠١"></label>
       <label>السعة<select><option>٦٤ لاعب</option></select></label>
-      <label>مدة المايك للضيف<select><option>دقيقة وحدة</option></select></label>
+      <label>عدد مقاعد المايك (غير مقعد الأدمن)<select><option>٨ مقاعد</option></select></label>
+      <label>مدة الضيف على المايك<select><option>بدون حد (الأدمن بينزّله)</option></select></label>
       <div class="tog on"><i></i>تثبيت أول القائمة</div>
-      <div class="tog on"><i></i>اللاعب يدخل مكتوم</div>
+      <div class="tog on"><i></i>اللاعب يدخل بدون مايك (بيطلب ✋)</div>
       <div class="tog on"><i></i>الدردشة الكتابية مفتوحة للاعبين</div>
       <label>وضع بطيء (ثواني بين الرسائل)<select><option>٣ ثواني</option></select></label>
       <label>رسالة ترحيب مثبّتة بأول الدردشة<textarea rows="2">أهلاً فيك بمكتب المافيا! اسأل أي سؤال عن اللعبة بالكتابة، وارفع إيدك ✋ إذا بدك تحكي بالصوت.</textarea></label>
