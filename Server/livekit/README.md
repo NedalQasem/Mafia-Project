@@ -6,20 +6,7 @@
 1. انسخ المجلد `Server/livekit` لـ`/root/livekit` على السيرفر.
 2. `bash /root/livekit/set-livekit.sh` (بيعمل المفاتيح، بيفتح المنفذين 7881/tcp و7882/udp، وبيشغّل LiveKit وبيعيد تشغيل خدمة الجوائز).
 3. بلوحة Hostinger (جدار الحماية)، افتح نفس المنفذين إذا كان عندك جدار حماية من عندهم: **7881 TCP** و**7882 UDP**.
-4. بـnginx الموقع، جوّا بلوك `server` تبع `api.mena-gaming.com` (443) وقبل `location / {` ضيف:
-```nginx
-    location /lk/ {
-        set $livekit http://mafia-livekit:7880;
-        rewrite ^/lk/(.*)$ /$1 break;
-        proxy_pass $livekit;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_read_timeout 3600s;
-    }
-```
-   ثم `docker exec mena-gaming-nginx-1 nginx -t && docker exec mena-gaming-nginx-1 nginx -s reload` (نفس طريقة النسخة الاحتياطية بـREADME الخدمة).
+4. **nginx الموقع:** `bash /root/livekit/add-nginx-location.sh` (بيضيف `location /lk/` جوّا بلوك 443 تبع api.mena-gaming.com، بنسخة احتياطية وتراجع تلقائي لو فشل فحص nginx).
 5. فحص: `https://api.mena-gaming.com/lk/` لازم يرد `OK` (أو صفحة صغيرة) مش خطأ nginx.
 
 ## اختبار الحمل (بنقيس المعالج والنطاق قبل ما نعتمد عليه)
