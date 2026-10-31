@@ -3,14 +3,13 @@ using UnityEngine;
 
 namespace MafiaNight.UI.Kit
 {
-    /// <summary>Prototype wiring: rooms list -> voice room, with mock data.</summary>
+    /// <summary>Prototype wiring of the rooms scene (the bars and the list with mock data when the real services are not running).</summary>
     public class KitRoomsDemo : MonoBehaviour
     {
         [SerializeField] private KitTopBar topBar;
         [SerializeField] private KitNavBar navBar;
         [SerializeField] private KitProfileCard card;
         [SerializeField] private KitRoomsScreen rooms;
-        [SerializeField] private KitVoiceRoom voiceRoom;
 
         public static List<RoomInfo> MockRooms() => new List<RoomInfo>
         {
@@ -20,18 +19,6 @@ namespace MafiaNight.UI.Kit
             new RoomInfo { name = "ليلة المافيا", owner = "سارة", ownerRank = 2, ownerLevel = 9, count = 10, mafiaMode = true, speakingSeat = 2 },
             new RoomInfo { name = "أول سهرة", owner = "مازن", ownerRank = 2, ownerLevel = 5, count = 1, isNew = true },
             new RoomInfo { name = "ديوانية العيلة", owner = "البيك", ownerRank = 5, ownerLevel = 12, count = 16 },
-        };
-
-        public static List<SeatInfo> MockSeats() => new List<SeatInfo>
-        {
-            new SeatInfo { name = "أبو سالم", rank = 2, host = true, ready = true },
-            new SeatInfo { name = "أم سعيد", rank = 4, ready = true },
-            new SeatInfo { name = "البيك", rank = 5 },
-            new SeatInfo { name = "أبو فارس", rank = 2, ready = true },
-            new SeatInfo { name = "لينا", rank = 3, muted = true },
-            new SeatInfo { name = "الحج حسن", rank = 6, ready = true },
-            new SeatInfo { name = "سارة", rank = 1 },
-            new SeatInfo(), new SeatInfo(), new SeatInfo(),
         };
 
         private void Start()
@@ -49,9 +36,6 @@ namespace MafiaNight.UI.Kit
             topBar.OnProfileClicked += card.Show;
             navBar.SnapToSelected();
             rooms.SetRooms(MockRooms());
-            rooms.OnJoinRoom += r => voiceRoom.Open(r.name, CoinPill.Format(r.count) + " من ١٦" + (r.type == RoomType.Private ? " · " + r.code : ""), MockSeats());
-            rooms.OnQuickJoin += () => voiceRoom.Open("سهرة الشباب", "٩ من ١٦", MockSeats());
-            voiceRoom.OnBack += () => voiceRoom.gameObject.SetActive(false);
         }
     }
 }

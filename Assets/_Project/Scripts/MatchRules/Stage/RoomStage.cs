@@ -46,6 +46,9 @@ namespace MafiaNight.MatchRules.Stage
             Mode = mode;
         }
 
+        /// <summary>The host, or one of the admins of an official room.</summary>
+        public bool IsStaff(string id) => !string.IsNullOrEmpty(id) && isStaff(id);
+
         public string SeatHolder(int index) => index >= 0 && index < SeatCount ? seats[index] : null;
         public bool IsLocked(int index) => index >= 0 && index < SeatCount && locked[index];
 

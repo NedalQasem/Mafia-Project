@@ -604,39 +604,6 @@ namespace MafiaNight.UI.Kit.Editor
                 Save(root, "RoomCard");
             }
 
-            // ---------- seat around the table
-            {
-                var root = new GameObject("Seat", typeof(RectTransform));
-                Rt(root).sizeDelta = new Vector2(210, 260);
-                var chair = Go("Chair", root.transform);
-                Place(Rt(chair), new Vector2(0.5f, 0.5f), new Vector2(0, 28), new Vector2(210, 158));
-                Img(chair, th.chair);
-                var glow = Go("TalkGlow", root.transform);
-                Place(Rt(glow), new Vector2(0.5f, 0.5f), new Vector2(0, 28), new Vector2(230, 230));
-                var gi = Img(glow, th.talkGlow); gi.color = new Color(1, 1, 1, 0);
-                var dash = Go("Empty", root.transform);
-                Place(Rt(dash), new Vector2(0.5f, 0.5f), new Vector2(0, 28), new Vector2(140, 140));
-                var di = Img(dash, th.seatDashed);
-                var av = InstChild("AvatarFrame", root.transform, "Avatar");
-                Place(Rt(av), new Vector2(0.5f, 0.5f), new Vector2(0, 28), new Vector2(136, 136));
-                var plate = Go("NamePlate", root.transform);
-                Place(Rt(plate), new Vector2(0.5f, 0.5f), new Vector2(0, -52), new Vector2(200, 56));
-                Img(plate, th.leatherDark, true, 2.4f);
-                var nmT = Txt(plate.transform, "Name", "أبو سالم", th.fontBody, 28, th.leatherText);
-                Stretch(Rt(nmT.gameObject), 6, 8, 6, 10);
-                var host = Go("HostBadge", root.transform);
-                Place(Rt(host), new Vector2(0.5f, 0.5f), new Vector2(-56, 88), new Vector2(46, 46)); Img(host, th.hostStar);
-                var mute = Go("MutedDot", root.transform);
-                Place(Rt(mute), new Vector2(0.5f, 0.5f), new Vector2(56, 84), new Vector2(46, 46)); Img(mute, th.badgeDot);
-                var ready = Go("ReadyDot", root.transform);
-                Place(Rt(ready), new Vector2(0.5f, 0.5f), new Vector2(56, 84), new Vector2(40, 40));
-                var rdi = Img(ready, th.badgeDot); rdi.color = new Color(0.55f, 1f, 0.8f, 1f);
-                var sv = root.AddComponent<SeatView>();
-                SetRef(sv, "chair", Rt(chair)); SetRef(sv, "avatar", av.GetComponent<AvatarFrame>()); SetRef(sv, "dashed", di);
-                SetRef(sv, "nameLabel", nmT.GetComponent<ArabicText>()); SetRef(sv, "namePlate", plate);
-                SetRef(sv, "hostBadge", host); SetRef(sv, "mutedDot", mute); SetRef(sv, "readyDot", ready); SetRef(sv, "talkGlow", gi);
-                Save(root, "Seat");
-            }
         }
 
         private static void BuildRoomsScene(KitTheme th)
@@ -692,69 +659,11 @@ namespace MafiaNight.UI.Kit.Editor
             var nr = Rt(nav); nr.anchorMin = new Vector2(0, 0); nr.anchorMax = new Vector2(1, 0); nr.pivot = new Vector2(0.5f, 0); nr.anchoredPosition = Vector2.zero; nr.sizeDelta = new Vector2(0, 330);
             var card = InstChild("KitProfileCard", canvasGo.transform, "KitProfileCard"); Stretch(Rt(card)); card.SetActive(false);
 
-            // ---- voice room (full screen, hidden until a room is joined)
-            var vr = Go("VoiceRoom", canvasGo.transform); Stretch(Rt(vr));
-            var vbg = Go("Bg", vr.transform); Stretch(Rt(vbg));
-            var vbgi = vbg.AddComponent<Image>(); vbgi.color = new Color(0.05f, 0.035f, 0.03f);
-            var warm = Go("Warm", vr.transform); Place(Rt(warm), new Vector2(0.5f, 0.5f), new Vector2(0, -30), new Vector2(1500, 1500));
-            var wi = Img(warm, th.navSealGlow); wi.color = new Color(1f, 0.85f, 0.55f, 0.16f); wi.raycastTarget = false;
-            var table = Go("Table", vr.transform); Place(Rt(table), new Vector2(0.5f, 0.5f), new Vector2(0, -30), new Vector2(840, 1215)); Img(table, th.tableTop).raycastTarget = false;
-
-            void Prop(Sprite sp, Vector2 pos, Vector2 size, float rot, string name)
-            {
-                var p = Go(name, vr.transform); Place(Rt(p), new Vector2(0.5f, 0.5f), pos, size);
-                p.transform.localRotation = Quaternion.Euler(0, 0, rot); Img(p, sp).raycastTarget = false;
-            }
-            Prop(th.propDeck, new Vector2(20, -20), new Vector2(112, 148), -10f, "Deck");
-            Prop(th.propDallah, new Vector2(-190, 150), new Vector2(150, 210), 0f, "Dallah");
-            Prop(th.propCup, new Vector2(-95, 70), new Vector2(76, 76), 0f, "Cup1");
-            Prop(th.propCup, new Vector2(-215, 55), new Vector2(76, 76), 0f, "Cup2");
-            Prop(th.propAshtray, new Vector2(185, -90), new Vector2(104, 104), 0f, "Ashtray");
-
-            var seatsRoot = Go("Seats", vr.transform); Place(Rt(seatsRoot), new Vector2(0.5f, 0.5f), new Vector2(0, -30), new Vector2(10, 10));
-
-            // top: back, plaque, invite
-            var back = InstChild("KitButton_Secondary", vr.transform, "Back");
-            var br = Rt(back); br.anchorMin = br.anchorMax = new Vector2(1, 1); br.pivot = new Vector2(1, 1); br.anchoredPosition = new Vector2(-32, -78); br.sizeDelta = new Vector2(260, 130);
-            back.GetComponentInChildren<ArabicText>().Text = "رجوع"; back.GetComponentInChildren<TextMeshProUGUI>().fontSize = 44;
-            var invite = InstChild("KitButton_Secondary", vr.transform, "Invite");
-            var ir = Rt(invite); ir.anchorMin = ir.anchorMax = new Vector2(0, 1); ir.pivot = new Vector2(0, 1); ir.anchoredPosition = new Vector2(32, -78); ir.sizeDelta = new Vector2(260, 130);
-            invite.GetComponentInChildren<ArabicText>().Text = "دعوة"; invite.GetComponentInChildren<TextMeshProUGUI>().fontSize = 44;
-            var plaque = Go("Plaque", vr.transform); Place(Rt(plaque), new Vector2(0.5f, 1f), new Vector2(0, -150), new Vector2(480, 150));
-            Img(plaque, th.leatherDark, true, 1.3f);
-            var rname = Txt(plaque.transform, "Name", "سهرة الشباب", th.fontCalligraphy, 58, th.leatherText);
-            Place(Rt(rname.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, 16), new Vector2(440, 76));
-            var rsub = Txt(plaque.transform, "Sub", "٩ من ١٦", th.fontBody, 28, th.brass);
-            Place(Rt(rsub.gameObject), new Vector2(0.5f, 0.5f), new Vector2(0, -34), new Vector2(440, 40));
-
-            // bottom: speaker line, mic, ready
-            var spk = Txt(vr.transform, "Speaker", "يتكلّم الآن: أم سعيد", th.fontBody, 34, th.ivoryDim);
-            Place(Rt(spk.gameObject), new Vector2(0.5f, 0f), new Vector2(0, 360), new Vector2(800, 54));
-            var mic = Go("Mic", vr.transform); Place(Rt(mic), new Vector2(0.5f, 0f), new Vector2(330, 170), new Vector2(210, 210));
-            var micSeal = Img(mic, th.navSeal, false, 1f, true);
-            var micBtn = mic.AddComponent<Button>(); micBtn.targetGraphic = micSeal; micBtn.transition = Selectable.Transition.None;
-            var micFx = mic.AddComponent<KitButtonFx>(); SetRef(micFx, "face", Rt(mic));
-            var micIcon = Go("Icon", mic.transform); Place(Rt(micIcon), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(112, 112));
-            var micIconImg = Img(micIcon, th.iconMic);
-            var ready = InstChild("KitButton_Primary", vr.transform, "Ready");
-            var rr = Rt(ready); rr.anchorMin = rr.anchorMax = new Vector2(0.5f, 0f); rr.pivot = new Vector2(0.5f, 0.5f); rr.anchoredPosition = new Vector2(-110, 170); rr.sizeDelta = new Vector2(560, 180);
-            ready.GetComponentInChildren<ArabicText>().Text = "جاهز";
-
-            var room = vr.AddComponent<KitVoiceRoom>();
-            SetRef(room, "seatsRoot", Rt(seatsRoot)); SetRef(room, "seatPrefab", LoadPrefab("Seat"));
-            SetRef(room, "roomName", rname.GetComponent<ArabicText>()); SetRef(room, "roomSub", rsub.GetComponent<ArabicText>()); SetRef(room, "speakerLabel", spk.GetComponent<ArabicText>());
-            SetRef(room, "backButton", back.GetComponent<Button>()); SetRef(room, "inviteButton", invite.GetComponent<Button>());            SetRef(room, "micButton", micBtn); SetRef(room, "readyButton", ready.GetComponent<Button>());
-            SetRef(room, "micIcon", micIconImg); SetRef(room, "micSeal", micSeal);
-            var hostDrawer = BuildHostDrawer(vr.transform, th);   // last child: drawn above everything in the room
-            SetRef(room, "hostDrawer", hostDrawer);
-            room.BuildSeatsImmediate(KitRoomsDemo.MockSeats());
-            vr.SetActive(false);
-
             AddRoomsFlowUi(canvasGo, th, screen, rs);
 
             var demo = canvasGo.AddComponent<KitRoomsDemo>();
             SetRef(demo, "topBar", top.GetComponent<KitTopBar>()); SetRef(demo, "navBar", nav.GetComponent<KitNavBar>());
-            SetRef(demo, "card", card.GetComponent<KitProfileCard>()); SetRef(demo, "rooms", rs); SetRef(demo, "voiceRoom", room);
+            SetRef(demo, "card", card.GetComponent<KitProfileCard>()); SetRef(demo, "rooms", rs);
 
             EditorSceneManager.SaveScene(scene, RoomsScenePath);
         }

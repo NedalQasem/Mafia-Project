@@ -1,0 +1,393 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using MafiaNight.Core;
+using MafiaNight.Data.Rooms;
+using MafiaNight.MatchRules.Stage;
+using MafiaNight.Services.Match;
+using MafiaNight.Services.Rooms;
+using MafiaNight.Services.Voice;
+using MafiaNight.UI.Kit;
+using UnityEngine;
+
+namespace MafiaNight.App
+{
+    /// <summary>
+    /// Everything inside a room, on the screen of Docs/mockups/office-room.html (<see cref="KitRoomScreen"/>): the mic seats and the raised hands
+    /// (<see cref="StageSync"/> of the match session; the room's host is the authority), the room chat, the member list, the host's settings,
+    /// the start button of a match room and the voice (only a member who sits on a seat has his mic open). Created by <see cref="RoomsFlow"/>.
+    /// </summary>
+    public sealed class RoomScreenFlow : MonoBehaviour
+    {
+        private const string Tag = "RoomScreen";
+        private const int MatchMinPlayers = 4;
+
+        private IRoomService rooms;
+        private IVoiceService audio;
+        private KitToast toast;
+        private Transform canvas;
+        private KitRoomScreen screen;
+
+        private MatchSession bound;
+        private MatchRunner boundRunner;
+        private readonly HashSet<string> talking = new HashSet<string>();
+        private HashSet<string> known = new HashSet<string>();
+        private bool wasSeated, active;
+
+        /// <summary>The player left the room with the back button.</summary>
+        public event Action Left;
+
+        public bool IsOpen => active && screen != null && screen.IsOpen;
+
+        public void Init(IRoomService rooms, IVoiceService audio, KitToast toast, Transform canvas)
+        {
+            this.rooms = rooms; this.audio = audio; this.toast = toast; this.canvas = canvas;
+            screen = KitRoomScreen.Create(canvas);
+            screen.OnBack += Back;
+            screen.OnMembers += ShowMembers;
+            screen.OnTitle += ShowRoomMenu;
+            screen.OnSeat += OnSeat;
+            screen.OnMic += OnMic;
+            screen.OnLeaveSeat += () => Stage?.Stand();
+            screen.OnSend += Send;
+            screen.OnMessage += OnMessage;
+            screen.OnStart += StartMatch;
+            screen.OnGames += () => Say("الإيموجي والألعاب السريعة قريباً.");
+            if (audio != null) { audio.OnSpeaking += OnSpeaking; audio.OnChanged += Redraw; }
+            rooms.OnRoomChanged += OnRoomChanged;
+            rooms.OnRoomLeft += OnRoomLeft;
+        }
+
+        private void OnDestroy()
+        {
+            if (rooms != null) { rooms.OnRoomChanged -= OnRoomChanged; rooms.OnRoomLeft -= OnRoomLeft; }
+            if (audio != null) { audio.OnSpeaking -= OnSpeaking; audio.OnChanged -= Redraw; }
+            Unbind();
+        }
+
+        private StageSync Stage => bound != null ? bound.Stage : null;
+        private RoomMember Me => rooms.Members.FirstOrDefault(m => m.IsMe);
+        private void Say(string text) { if (toast != null) toast.Show(text); }
+
+        // ------------------------------------------------------------------------------------------ opening
+
+        public void Open()
+        {
+            var room = rooms.CurrentRoom;
+            if (room == null || screen == null) return;
+            active = true;
+            Bind();
+            screen.ClearChat();
+            var runner = MatchRunner.Instance;
+            if (runner != null) foreach (var line in runner.RoomChatHistory) screen.AddChat(ToChat(line));
+            known = new HashSet<string>(rooms.Members.Select(m => m.Puid));
+            Redraw();
+            JoinVoice();
+        }
+
+        private void Bind()
+        {
+            var runner = MatchRunner.Instance;
+            var session = runner != null ? runner.Session : null;
+            if (session == bound && runner == boundRunner) return;
+            Unbind();
+            bound = session; boundRunner = runner;
+            if (bound != null) bound.Stage.Changed += Redraw;
+            if (boundRunner != null) boundRunner.RoomChatReceived += OnChatLine;
+        }
+
+        private void Unbind()
+        {
+            if (bound != null) bound.Stage.Changed -= Redraw;
+            if (boundRunner != null) boundRunner.RoomChatReceived -= OnChatLine;
+            bound = null; boundRunner = null;
+        }
+
+        private void Update()
+        {
+            if (!active) return;
+            var runner = MatchRunner.Instance;
+            // the match session of this room is made a moment after the room opens: draw as soon as it exists
+            if (runner != null && (runner.Session != bound || runner != boundRunner || !screen.IsOpen)) { Bind(); Redraw(); }
+        }
+
+        private void JoinVoice()
+        {
+            if (audio == null || audio.IsConnected) return;
+            audio.Join(false, err =>     // everybody enters as a listener: the mic opens when he sits on a seat
+            {
+                if (this == null) return;
+                if (err == VoiceError.NoPermission) Say("فعّل إذن المايك من إعدادات الجهاز لتحكي.");
+                else if (err == VoiceError.Failed || err == VoiceError.NotReady) Say("تعذّر الاتصال بالصوت.");
+                Redraw();
+            });
+        }
+
+        // ------------------------------------------------------------------------------------------ drawing
+
+        private void OnSpeaking(string puid, bool on) { if (on) talking.Add(puid); else talking.Remove(puid); if (IsOpen) Redraw(); }
+
+        private void OnRoomChanged()
+        {
+            if (!IsOpen || rooms.CurrentRoom == null) return;
+            var now = new HashSet<string>(rooms.Members.Select(m => m.Puid));
+            foreach (var m in rooms.Members)
+                if (!known.Contains(m.Puid) && !m.IsMe) screen.AddChat(new KitRoomScreen.ChatVm { System = true, Text = m.Name + " دخل الغرفة" });
+            known = now;
+            Redraw();
+        }
+
+        private void OnRoomLeft(string reason)
+        {
+            if (IsOpen && !string.IsNullOrEmpty(reason)) { screen.Hide(); active = false; }
+            talking.Clear(); wasSeated = false;
+        }
+
+        private void Redraw()
+        {
+            var room = rooms.CurrentRoom;
+            if (!active || room == null || Stage == null) return;
+            var stage = Stage.Stage;
+            var me = Me;
+            string meId = me != null ? me.Puid : "";
+            bool staff = stage.IsStaff(meId);
+            bool request = stage.Mode == MicMode.Request;
+            bool seated = stage.IsSeated(meId);
+
+            var v = new KitRoomScreen.ViewVm
+            {
+                Name = room.Name, RoomId = ShortId(room.Id), Members = rooms.Members.Count, HeadLabel = "المضيف",
+                Badge = room.Mode == RoomMode.Mafia ? "مباراة مافيا" : room.Kind == RoomKind.Private ? "خاصة" : room.Kind == RoomKind.Vip ? "VIP" : "",
+                CanType = room.ChatEnabled, CanLeaveSeat = seated,
+            };
+            v.Head = SeatOf(stage.HeadHolder, true);
+            for (int i = 0; i < stage.SeatCount; i++)
+            {
+                string who = stage.SeatHolder(i);
+                v.Seats.Add(who != null ? SeatOf(who, false) : new KitRoomScreen.SeatVm { Kind = stage.IsLocked(i) ? KitRoomScreen.SeatKind.Locked : KitRoomScreen.SeatKind.Empty });
+            }
+
+            // the strip under the seats and the hand / mic button
+            int waiting = stage.Queue.Count;
+            if (request && (waiting > 0 || staff))
+            {
+                v.Strip = waiting == 0 ? "ما حدا ينتظر المايك" : waiting + " ينتظروا المايك";
+                int pos = stage.QueuePosition(meId);
+                v.StripSmall = staff ? "اضغط مقعد فاضي لتطلّع واحد" : pos > 0 ? "دورك رقم " + pos : "";
+            }
+            else if (!request && !seated) { v.Strip = "اضغط مقعد فاضي لتقعد وتحكي"; }
+            v.Mic = seated ? KitRoomScreen.MicButton.Mic : request && !staff ? (stage.HandRaised(meId) ? KitRoomScreen.MicButton.HandUp : KitRoomScreen.MicButton.Hand) : KitRoomScreen.MicButton.Sit;
+
+            if (room.Mode == RoomMode.Mafia)
+            {
+                int n = rooms.Members.Count;
+                if (!rooms.IAmHost) { v.StartLabel = "بانتظار المضيف"; v.StartEnabled = false; }
+                else { v.StartEnabled = n >= MatchMinPlayers; v.StartLabel = v.StartEnabled ? "ابدأ المباراة" : "تحتاج " + MatchMinPlayers + " لاعبين"; }
+            }
+
+            screen.Show(v);
+            ApplyMic(seated);
+        }
+
+        private KitRoomScreen.SeatVm SeatOf(string puid, bool head)
+        {
+            var m = puid != null ? rooms.Members.FirstOrDefault(x => x.Puid == puid) : null;
+            if (m == null) return new KitRoomScreen.SeatVm { Kind = KitRoomScreen.SeatKind.Empty };
+            bool silent = audio != null && (m.IsMe ? !audio.MicOn : audio.IsRemoteMicOff(m.Puid) || audio.IsPlayerMuted(m.Puid));
+            return new KitRoomScreen.SeatVm
+            {
+                Kind = KitRoomScreen.SeatKind.Taken, Id = m.Puid, Name = m.Name ?? "", Me = m.IsMe, Staff = Stage.Stage.IsStaff(m.Puid),
+                Talking = talking.Contains(m.Puid) && !silent, Muted = silent,
+            };
+        }
+
+        /// <summary>Only a member on a seat has his mic open; leaving the seat closes it.</summary>
+        private void ApplyMic(bool seated)
+        {
+            if (audio == null) return;
+            if (seated != wasSeated) { wasSeated = seated; audio.SetMic(seated); }
+        }
+
+        /// <summary>A short number for the room (the lobby id is a long code).</summary>
+        private static string ShortId(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return "";
+            unchecked { int h = 17; foreach (char c in id) h = h * 31 + c; return (10000 + (uint)h % 90000u).ToString(); }
+        }
+
+        // ------------------------------------------------------------------------------------------ taps
+
+        private void OnMic()
+        {
+            var stage = Stage; var me = Me; if (stage == null || me == null) return;
+            if (stage.Stage.IsSeated(me.Puid)) { ToggleMyMic(); return; }
+            if (stage.Stage.Mode == MicMode.Request && !stage.Stage.IsStaff(me.Puid)) stage.Hand(!stage.Stage.HandRaised(me.Puid));
+            else
+            {
+                stage.Sit();
+                // the host answers in a moment; if there is no free seat nothing changes
+            }
+        }
+
+        private void ToggleMyMic()
+        {
+            if (audio == null) return;
+            audio.SetMic(!audio.MicOn);
+            Redraw();
+        }
+
+        private void OnSeat(int index)
+        {
+            var stage = Stage; var me = Me; if (stage == null || me == null) return;
+            var st = stage.Stage;
+            bool staff = st.IsStaff(me.Puid);
+            string holder = index < 0 ? st.HeadHolder : st.SeatHolder(index);
+
+            if (holder != null)
+            {
+                if (holder == me.Puid) { ToggleMyMic(); return; }
+                MemberMenu(rooms.Members.FirstOrDefault(m => m.Puid == holder));
+                return;
+            }
+            if (index < 0) { if (staff) stage.Sit(RoomStage.Head); return; }
+            if (st.IsLocked(index)) { if (staff) KitActionSheet.Show(canvas, "مقعد مقفل", new KitActionSheet.Choice("افتح المقعد", () => stage.Lock(index, false)), new KitActionSheet.Choice("إلغاء", null, false, true)); return; }
+            if (staff)
+            {
+                var queue = st.Queue.Select(id => rooms.Members.FirstOrDefault(m => m.Puid == id)).Where(m => m != null).Take(6).ToList();
+                var choices = new List<KitActionSheet.Choice>();
+                foreach (var m in queue) { var who = m; choices.Add(new KitActionSheet.Choice("طلّع " + who.Name, () => stage.Bring(who.Puid, index))); }
+                if (st.Mode == MicMode.Free || queue.Count == 0) choices.Add(new KitActionSheet.Choice("اقعد إنت هون", () => stage.Sit(index)));
+                choices.Add(new KitActionSheet.Choice("اقفل المقعد", () => stage.Lock(index, true), false, true));
+                choices.Add(new KitActionSheet.Choice("إلغاء", null, false, true));
+                KitActionSheet.Show(canvas, queue.Count > 0 ? "مين بدك تطلّع؟" : "مقعد فاضي", choices.ToArray());
+                return;
+            }
+            if (st.Mode == MicMode.Free) stage.Sit(index);
+            else stage.Hand(!st.HandRaised(me.Puid));
+        }
+
+        /// <summary>What a member offers on another member: staff take him down, mute or kick; everybody can stop hearing him.</summary>
+        private void MemberMenu(RoomMember m)
+        {
+            var stage = Stage; var me = Me; if (m == null || stage == null || me == null) return;
+            if (m.IsMe) return;
+            var st = stage.Stage;
+            bool staff = st.IsStaff(me.Puid), target = st.IsStaff(m.Puid);
+            var c = new List<KitActionSheet.Choice>();
+            if (staff && st.IsSeated(m.Puid) && !target) c.Add(new KitActionSheet.Choice("نزّله من المايك", () => stage.Down(m.Puid)));
+            if (staff && !st.IsSeated(m.Puid) && !target) c.Add(new KitActionSheet.Choice("أعطيه المايك", () => stage.Bring(m.Puid)));
+            if (audio != null)
+            {
+                bool muted = audio.IsPlayerMuted(m.Puid);
+                c.Add(new KitActionSheet.Choice(muted ? "رجّع صوته عندك" : "اكتمه عندك", () => { audio.SetPlayerMuted(m.Puid, !muted); Redraw(); }, false, true));
+            }
+            if (rooms.IAmHost && !target) c.Add(new KitActionSheet.Choice("اطرده من الغرفة", () => Kick(m), true));
+            c.Add(new KitActionSheet.Choice("إلغاء", null, false, true));
+            KitActionSheet.Show(canvas, m.Name, c.ToArray());
+        }
+
+        private void Kick(RoomMember m)
+        {
+            bound?.MemberKicked(m.Puid);
+            rooms.Kick(m.Puid, ok => { if (this == null) return; Say(ok ? "طردت " + m.Name + " من الغرفة." : "تعذّر طرد " + m.Name + "."); Redraw(); });
+        }
+
+        private void ShowMembers()
+        {
+            var stage = Stage; if (stage == null) return;
+            var st = stage.Stage;
+            var rows = new List<KitMembersSheet.Row>();
+            foreach (var m in rooms.Members.OrderByDescending(x => st.IsStaff(x.Puid)).ThenByDescending(x => st.IsSeated(x.Puid)))
+            {
+                bool staffM = st.IsStaff(m.Puid);
+                rows.Add(new KitMembersSheet.Row
+                {
+                    Id = m.Puid, Name = m.Name ?? "", Me = m.IsMe, Staff = staffM, Tag = staffM ? (m.IsHost ? "المضيف" : "أدمن") : "",
+                    State = st.IsSeated(m.Puid) ? "على المايك" : st.HandRaised(m.Puid) ? "✋ ينتظر" : "",
+                });
+            }
+            KitMembersSheet.Show(canvas, "الحضور", rooms.Members.Count + " من " + rooms.CurrentRoom.Capacity, rows, r =>
+            {
+                KitMembersSheet.CloseCurrent();
+                MemberMenu(rooms.Members.FirstOrDefault(m => m.Puid == r.Id));
+            });
+        }
+
+        private void OnMessage(KitRoomScreen.ChatVm m)
+        {
+            if (string.IsNullOrEmpty(m.Id) || Me == null || m.Id == Me.Puid) return;
+            MemberMenu(rooms.Members.FirstOrDefault(x => x.Puid == m.Id));
+        }
+
+        // ------------------------------------------------------------------------------------------ room menu (title)
+
+        private void ShowRoomMenu()
+        {
+            var room = rooms.CurrentRoom; var stage = Stage; if (room == null || stage == null) return;
+            var st = stage.Stage;
+            var c = new List<KitActionSheet.Choice>();
+            c.Add(new KitActionSheet.Choice("انسخ دعوة للغرفة", Invite));
+            if (st.IsStaff(Me != null ? Me.Puid : ""))
+            {
+                bool request = st.Mode == MicMode.Request;
+                c.Add(new KitActionSheet.Choice(request ? "المايك: بالطلب ← خلّيه حر" : "المايك: حر ← خلّيه بالطلب", () => stage.Configure(st.SeatCount, request ? MicMode.Free : MicMode.Request)));
+                int next = st.SeatCount >= 8 ? 4 : st.SeatCount + 2;
+                c.Add(new KitActionSheet.Choice("مقاعد المايك: " + st.SeatCount + " ← " + next, () => stage.Configure(next, st.Mode)));
+            }
+            if (rooms.IAmHost)
+            {
+                c.Add(new KitActionSheet.Choice(room.Locked ? "افتح الباب للاعبين الجدد" : "اقفل الباب (ما حدا جديد يدخل)", () => rooms.SetLocked(!room.Locked, ok => Say(ok ? (room.Locked ? "قفلت الغرفة. ما حدا بيقدر يدخل." : "فتحت الغرفة من جديد.") : "تعذّر تغيير حالة الغرفة، حاول مرة ثانية."))));
+                c.Add(new KitActionSheet.Choice(room.ChatEnabled ? "سكّر الدردشة" : "افتح الدردشة", () => rooms.SetChatEnabled(!room.ChatEnabled, ok => { Say(ok ? (room.ChatEnabled ? "فتحت الدردشة." : "سكّرت الدردشة.") : "تعذّر تغيير حالة الدردشة، حاول مرة ثانية."); Redraw(); })));
+            }
+            c.Add(new KitActionSheet.Choice("إلغاء", null, false, true));
+            KitActionSheet.Show(canvas, room.Name, c.ToArray());
+        }
+
+        private void Invite()
+        {
+            var room = rooms.CurrentRoom;
+            if (room == null) return;
+            GUIUtility.systemCopyBuffer = RoomRules.InviteText(room.Kind == RoomKind.Private ? room.Code : "", room.Name);
+            Say("اننسخت الدعوة، الصقها لأصحابك.");
+        }
+
+        // ------------------------------------------------------------------------------------------ chat
+
+        private void Send(string text)
+        {
+            var runner = MatchRunner.Instance; if (runner == null) return;
+            string refused = runner.SendRoomChat(text);
+            if (!string.IsNullOrEmpty(refused)) Say(refused);
+        }
+
+        private void OnChatLine(RoomChatLine line) { if (IsOpen) screen.AddChat(ToChat(line)); }
+
+        private KitRoomScreen.ChatVm ToChat(RoomChatLine l)
+        {
+            bool staff = Stage != null && Stage.Stage.IsStaff(l.Puid);
+            bool host = rooms.Members.Any(m => m.Puid == l.Puid && m.IsHost);
+            return new KitRoomScreen.ChatVm
+            {
+                Id = l.Puid ?? "", Name = l.Mine ? "أنت" : l.Name ?? "", Text = l.Text ?? "", Mine = l.Mine, Staff = staff && !l.Mine,
+                Tag = staff && !l.Mine ? (host ? "المضيف" : "أدمن") : "",
+                Time = DateTimeOffset.FromUnixTimeMilliseconds(l.Ts).ToLocalTime().ToString("h:mm"),
+            };
+        }
+
+        // ------------------------------------------------------------------------------------------ leaving and the match
+
+        private void Back()
+        {
+            screen.Hide(); active = false; wasSeated = false;
+            if (audio != null) audio.Leave();
+            rooms.Leave(() => { Left?.Invoke(); });
+        }
+
+        private void StartMatch()
+        {
+            var session = MatchRunner.Instance != null ? MatchRunner.Instance.Session : null;
+            if (session == null || !rooms.IAmHost) return;
+            if (!session.StartMatch()) Say("ما قدرنا نبدأ: لازم من ٤ إلى ١٦ لاعب.");
+        }
+    }
+}

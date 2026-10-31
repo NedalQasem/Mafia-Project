@@ -25,7 +25,7 @@ namespace MafiaNight.App
         private KitRoomsScreen screen;
         private KitCreateRoomScreen create;
         private KitCodeSheet codeSheet;
-        private KitVoiceRoom voice;
+        private RoomScreenFlow roomFlow;
         private KitToast toast;
 
         private readonly Dictionary<string, RoomListing> byId = new Dictionary<string, RoomListing>();
@@ -41,7 +41,6 @@ namespace MafiaNight.App
             screen = FindAnyObjectByType<KitRoomsScreen>();
             create = FindAnyObjectByType<KitCreateRoomScreen>(FindObjectsInactive.Include);
             codeSheet = FindAnyObjectByType<KitCodeSheet>(FindObjectsInactive.Include);
-            voice = FindAnyObjectByType<KitVoiceRoom>(FindObjectsInactive.Include);
             toast = FindAnyObjectByType<KitToast>(FindObjectsInactive.Include);
             if (screen == null) { Destroy(this); return; }
 
@@ -58,28 +57,12 @@ namespace MafiaNight.App
                 create.OnEnter += _ => { create.Close(); EnterVoice(); };
             }
             if (codeSheet != null) codeSheet.OnSubmit += OnCode;
-            if (voice != null)
-            {
-                voice.OnBack += OnVoiceBack;
-                voice.OnInvite += OnInvite;
-                if (voice.HostDrawer != null)
-                {
-                    voice.HostDrawer.OnLockChanged += OnLock;
-                    voice.HostDrawer.OnChatChanged += OnChat;
-                    voice.HostDrawer.OnKick += OnKick;
-                }
-                voice.OnMicChanged += on => { if (audio != null) audio.SetMic(on); };
-                voice.OnSeatClicked += OnSeat;
-                voice.OnStartClicked += OnStartMatch;
-            }
-            if (audio != null)
-            {
-                audio.OnSpeaking += OnSpeaking;
-                audio.OnChanged += OnRoomChanged;
-            }
-            rooms.OnRoomChanged += OnRoomChanged;
+            var cv = screen.GetComponentInParent<Canvas>();
+            roomFlow = gameObject.AddComponent<RoomScreenFlow>();
+            roomFlow.Init(rooms, audio, toast, cv != null ? cv.rootCanvas.transform : screen.transform);
+            roomFlow.Left += () => nextList = 0f;
             rooms.OnRoomLeft += OnRoomLeft;
-            rooms.OnRoomJoined += _ => { if (voice != null && !voice.gameObject.activeSelf) EnterVoice(); };   // joined from a friend's invitation or from the family screen
+            rooms.OnRoomJoined += _ => { if (!roomFlow.IsOpen) EnterVoice(); };   // joined from a friend's invitation or from the family screen
             rooms.OnHostChanged += Say;
             nextList = 0f;
             if (rooms.InRoom) EnterVoice();   // coming back from a match: the room is still ours
@@ -91,13 +74,11 @@ namespace MafiaNight.App
         private void OnDestroy()
         {
             if (rooms == null) return;
-            rooms.OnRoomChanged -= OnRoomChanged;
             rooms.OnRoomLeft -= OnRoomLeft;
             rooms.OnHostChanged -= Say;
-            if (audio != null) { audio.OnSpeaking -= OnSpeaking; audio.OnChanged -= OnRoomChanged; }
         }
 
-        private bool OverlayOpen => (create != null && create.gameObject.activeSelf) || (voice != null && voice.gameObject.activeSelf);
+        private bool OverlayOpen => (create != null && create.gameObject.activeSelf) || (roomFlow != null && roomFlow.IsOpen);
 
         private void Update()
         {
@@ -226,158 +207,11 @@ namespace MafiaNight.App
 
         // ---------------------------------------------------------------------------- inside a room
 
-        private void EnterVoice()
-        {
-            var room = rooms.CurrentRoom;
-            if (voice == null || room == null) return;
-            voice.Show(room.Name, SubText(room), Seats(), room.Capacity);
-            RefreshDrawer();
-            voice.PushToTalk = VoicePrefs.PushToTalk;
-            voice.SetMicState(audio == null || audio.MicOn);
-            JoinVoice();
-        }
-
-        private void JoinVoice()
-        {
-            if (audio == null || audio.IsConnected) return;
-            // push-to-talk and "mute on join" both start with the microphone closed
-            bool micOpen = !VoicePrefs.PushToTalk && !VoicePrefs.MuteOnJoin;
-            audio.Join(micOpen, err =>
-            {
-                if (this == null) return;
-                if (err == VoiceError.None && voice != null) voice.SetMicState(audio.MicOn);
-                if (err == VoiceError.NoPermission) Say("فعّل إذن المايك من إعدادات الجهاز لتحكي.");
-                else if (err == VoiceError.Failed || err == VoiceError.NotReady) Say("تعذّر الاتصال بالصوت.");
-            });
-        }
-
-        private void OnSpeaking(string puid, bool on)
-        {
-            if (voice == null || !voice.gameObject.activeSelf) return;
-            var list = rooms.Members;
-            for (int i = 0; i < list.Count; i++)
-                if (list[i].Puid == puid) { voice.SetTalking(i, on, list[i].Name); return; }
-        }
-
-        // tap a seat: yourself = mic on/off, another player = stop / resume hearing him
-        private void OnSeat(int index)
-        {
-            var list = rooms.Members;
-            if (audio == null || index < 0 || index >= list.Count) return;
-            var m = list[index];
-            if (m.IsMe) { audio.SetMic(!audio.MicOn); voice.SetMicState(audio.MicOn); return; }
-            bool nowMuted = !audio.IsPlayerMuted(m.Puid);
-            audio.SetPlayerMuted(m.Puid, nowMuted);
-            Say(nowMuted ? "كتمت " + m.Name + " عندك." : "رجعت تسمع " + m.Name + ".");
-        }
-
-        private static string SubText(RoomListing room) =>
-            CoinPill.Format(room.Count) + " من " + CoinPill.Format(room.Capacity) + (room.Kind == RoomKind.Private && !string.IsNullOrEmpty(room.Code) ? " · " + room.Code : "");
-
-        private List<SeatInfo> Seats()
-        {
-            var seats = new List<SeatInfo>();
-            foreach (var m in rooms.Members)
-            {
-                bool silent = audio != null && (m.IsMe ? !audio.MicOn : audio.IsRemoteMicOff(m.Puid) || audio.IsPlayerMuted(m.Puid));
-                seats.Add(new SeatInfo { name = m.Name, rank = m.Rank, host = m.IsHost, muted = silent });
-            }
-            return seats;
-        }
-
-        private void OnRoomChanged()
-        {
-            if (voice == null || !voice.gameObject.activeSelf || rooms.CurrentRoom == null) return;
-            EnterVoice();
-        }
+        private void EnterVoice() { if (roomFlow != null) roomFlow.Open(); }
 
         private void OnRoomLeft(string reason)
         {
-            if (voice != null && voice.gameObject.activeSelf && !string.IsNullOrEmpty(reason)) voice.gameObject.SetActive(false);
             if (!string.IsNullOrEmpty(reason)) { Say(reason); nextList = 0f; }
-        }
-
-        private void OnVoiceBack()
-        {
-            voice.gameObject.SetActive(false);
-            if (audio != null) audio.Leave();
-            rooms.Leave(() => { nextList = 0f; });
-        }
-
-        // ---------------------------------------------------------------------------- host drawer
-
-        private void RefreshDrawer()
-        {
-            var room = rooms.CurrentRoom;
-            if (voice == null || voice.HostDrawer == null || room == null) return;
-            var list = new List<DrawerMember>();
-            foreach (var m in rooms.Members) list.Add(new DrawerMember { puid = m.Puid, name = m.Name, isHost = m.IsHost, isMe = m.IsMe });
-            RefreshStartButton();
-            voice.HostDrawer.Refresh(rooms.IAmHost, room.Locked, room.ChatEnabled, list);
-        }
-
-        // ---------------------------------------------------------------------------- the match
-
-        private void RefreshStartButton()
-        {
-            if (voice == null) return;
-            int n = rooms.Members.Count;
-            if (!rooms.IAmHost) { voice.SetStartButton("بانتظار المضيف", false); return; }
-            bool enough = n >= MatchConfigMin;
-            voice.SetStartButton(enough ? "ابدأ المباراة" : "تحتاج " + MatchConfigMin + " لاعبين", enough);
-        }
-
-        private const int MatchConfigMin = 4;
-
-        private void OnStartMatch()
-        {
-            var session = MafiaNight.Services.Match.MatchRunner.Instance != null ? MafiaNight.Services.Match.MatchRunner.Instance.Session : null;
-            if (session == null || !rooms.IAmHost) return;
-            if (!session.StartMatch()) Say("ما قدرنا نبدأ: لازم من ٤ إلى ١٦ لاعب.");
-        }
-
-        private void OnLock(bool locked)
-        {
-            rooms.SetLocked(locked, ok =>
-            {
-                if (this == null) return;
-                if (!ok) { Say("تعذّر تغيير حالة الغرفة، حاول مرة ثانية."); RefreshDrawer(); return; }
-                Say(locked ? "قفلت الغرفة. ما حدا بيقدر يدخل." : "فتحت الغرفة من جديد.");
-                nextList = 0f;
-            });
-        }
-
-        private void OnChat(bool on)
-        {
-            rooms.SetChatEnabled(on, ok =>
-            {
-                if (this == null) return;
-                if (!ok) { Say("تعذّر تغيير حالة الدردشة، حاول مرة ثانية."); RefreshDrawer(); return; }
-                Say(on ? "فتحت الدردشة." : "سكّرت الدردشة.");
-            });
-        }
-
-        private void OnKick(string puid)
-        {
-            string who = "اللاعب";
-            foreach (var m in rooms.Members) if (m.Puid == puid) { who = m.Name; break; }
-            var session = MafiaNight.Services.Match.MatchRunner.Instance != null ? MafiaNight.Services.Match.MatchRunner.Instance.Session : null;
-            session?.MemberKicked(puid);
-            rooms.Kick(puid, ok =>
-            {
-                if (this == null) return;
-                Say(ok ? "طردت " + who + " من الغرفة." : "تعذّر طرد " + who + ".");
-                RefreshDrawer();
-            });
-        }
-
-        private void OnInvite()
-        {
-            var room = rooms.CurrentRoom;
-            if (room == null) return;
-            string text = RoomRules.InviteText(room.Kind == RoomKind.Private ? room.Code : "", room.Name);
-            GUIUtility.systemCopyBuffer = text;
-            Say("اننسخت الدعوة، الصقها لأصحابك.");
         }
     }
 }
