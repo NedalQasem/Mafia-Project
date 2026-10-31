@@ -187,6 +187,18 @@ namespace MafiaNight.App
             Redraw();
         }
 
+        /// <summary>The family tab's menu in the bottom bar was used while this screen is open: "c1" the chats, "f1" the friends.</summary>
+        public void OpenPlace(string f) => ShowTab(f);
+
+        private KitNavBar[] navBars;
+
+        private void MarkPlace()      // the crimson row in the family tab's menu: chats (0) or friends (1)
+        {
+            if (navBars == null) navBars = FindObjectsByType<KitNavBar>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            int place = frame.StartsWith("c") ? 0 : 1;
+            foreach (var nb in navBars) if (nb != null) nb.SetCurrentPlace(1, place);
+        }
+
         private void Redraw()
         {
             switch (frame)
@@ -201,6 +213,7 @@ namespace MafiaNight.App
                 case "c3": DrawChats(true); break;
                 default: DrawFriends(frame); break;
             }
+            MarkPlace();
         }
 
         private void WireChrome(string f, Chrome c)

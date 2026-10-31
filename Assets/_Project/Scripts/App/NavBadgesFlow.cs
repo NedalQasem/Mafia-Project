@@ -6,7 +6,7 @@ using UnityEngine;
 namespace MafiaNight.App
 {
     /// <summary>
-    /// Fills the bottom bar with what is real: the family tab shows unread chat messages plus friend requests, the pill over the rooms seal
+    /// Fills the bottom bar with what is real: the family tab shows unread chat messages plus friend requests (and each in its menu), the tag over the rooms tab
     /// shows how many players are online, and the ranks tab has nothing to announce (its dot stays hidden).
     /// </summary>
     public sealed class NavBadgesFlow : MonoBehaviour
@@ -51,7 +51,10 @@ namespace MafiaNight.App
             foreach (var nav in FindObjectsByType<KitNavBar>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
                 nav.SetBadge(FamilyTab, family);
+                nav.SetPlaceBadge(FamilyTab, 0, chat.UnreadTotal);          // in the family tab's menu: the chats ...
+                nav.SetPlaceBadge(FamilyTab, 1, friends.Incoming.Count);    // ... and the friend requests
                 nav.SetBadge(RanksTab, 0);
+                nav.SetPlaceBadge(RanksTab, 0, 0);
                 nav.SetOnline(friends.OnlineCount);
             }
         }

@@ -27,7 +27,7 @@ namespace MafiaNight.App
         private IStoreService storeService;
         private ISceneLoader sceneLoader;
         private KitTopBar topBar;
-        private KitNavBar navBar;
+        private KitNavBar[] navBars = new KitNavBar[0];     // the family screens draw one bar per frame
         private KitProfileCard card;
         private KitStoreScreen store;
         private KitScreenHeader header;
@@ -66,7 +66,7 @@ namespace MafiaNight.App
                 Log.Warning("Using the TEST server " + GameConstants.ApiUrl + " (PlayerPrefs MafiaApiUrl). Delete the key to use the real server.", Tag);
             }
             topBar = FindAnyObjectByType<KitTopBar>();
-            navBar = FindAnyObjectByType<KitNavBar>();
+            navBars = FindObjectsByType<KitNavBar>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             if (!ServiceLocator.TryGet(out profile) || !ServiceLocator.TryGet(out currency))
             {
                 KitLiveMode.Active = false;
@@ -82,7 +82,8 @@ namespace MafiaNight.App
             profile.OnProfileLoaded += OnProfile;
             profile.OnProfileUpdated += OnProfile;
             currency.OnCoinsChanged += OnCoins;
-            if (navBar != null) { navBar.OnTabSelected += OnTab; gameObject.AddComponent<NavBadgesFlow>(); }
+            foreach (var nb in navBars) { nb.OnTabSelected += OnTab; nb.OnPlaceSelected += OnPlace; }
+            if (navBars.Length > 0) gameObject.AddComponent<NavBadgesFlow>();
             if (storeService != null) storeService.OnChanged += OnStoreChanged;
             if (store != null) WireStore();
             if (FindAnyObjectByType<KitRoomsScreen>() != null && ServiceLocator.IsRegistered<MafiaNight.Services.Rooms.IRoomService>())
@@ -133,7 +134,7 @@ namespace MafiaNight.App
         {
             if (profile != null) { profile.OnProfileLoaded -= OnProfile; profile.OnProfileUpdated -= OnProfile; }
             if (currency != null) currency.OnCoinsChanged -= OnCoins;
-            if (navBar != null) navBar.OnTabSelected -= OnTab;
+            foreach (var nb in navBars) if (nb != null) { nb.OnTabSelected -= OnTab; nb.OnPlaceSelected -= OnPlace; }
             if (storeService != null) storeService.OnChanged -= OnStoreChanged;
         }
 
@@ -159,6 +160,27 @@ namespace MafiaNight.App
             string target = AppScenes.ByTab[index];
             if (SceneManager.GetActiveScene().name == target) return;
             sceneLoader.LoadScene(target);
+        }
+
+        // the market, family and ranks tabs open a menu of two places; the bag (1 of market) and the rank ladder (1 of ranks) are not built yet,
+        // the bar keeps them closed ("soon")
+        private const int MarketTab = 0, FamilyTab = 1, RanksTab = 3;
+
+        private void OnPlace(int tab, int place)
+        {
+            if (sceneLoader == null) return;
+            string here = SceneManager.GetActiveScene().name;
+            if (tab == FamilyTab)
+            {
+                string frame = place == 0 ? "c1" : "f1";     // the chats, or the friends behind them
+                var family = FindAnyObjectByType<FamilyFlow>();
+                if (here == AppScenes.Family && family != null) { family.OpenPlace(frame); return; }
+                FamilyFlow.StartFrame = frame;
+                sceneLoader.LoadScene(AppScenes.Family);
+                return;
+            }
+            string target = tab == MarketTab && place == 0 ? AppScenes.Store : tab == RanksTab && place == 0 ? AppScenes.Leaderboards : null;
+            if (target != null && here != target) sceneLoader.LoadScene(target);
         }
 
         private void Refresh(bool animateCoins = false)
