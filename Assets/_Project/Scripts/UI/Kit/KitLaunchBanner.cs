@@ -34,6 +34,7 @@ namespace MafiaNight.UI.Kit
 
         private void Awake()
         {
+            KitFitGroup.Wrap((RectTransform)transform, sheet, closeButtonRect, below);       // keeps the page, its close button and the strip below together on short screens
             closeButton.onClick.AddListener(Close);
             scrimButton.onClick.AddListener(Close);
             skipButton.onClick.AddListener(() => { dontShowToday = !dontShowToday; skipTick.SetActive(dontShowToday); });
