@@ -4,6 +4,7 @@ namespace MafiaNight.App
     public static class AppScenes
     {
         public const string Store = "UIKitStore";
+        public const string Bag = "UIKitBag";          // reached from the market tab's menu
         public const string Chat = "UIKitChat";
         public const string Family = "UIKitFamily";
         public const string Rooms = "UIKitRooms";

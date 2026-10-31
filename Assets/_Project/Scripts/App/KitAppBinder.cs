@@ -91,6 +91,7 @@ namespace MafiaNight.App
                 gameObject.AddComponent<RoomsFlow>();
                 MafiaNight.Services.Match.MatchRunner.Ensure();
             }
+            if (FindAnyObjectByType<KitBagScreen>() != null) gameObject.AddComponent<BagFlow>();
             if (FindAnyObjectByType<KitSettingsScreen>() != null) { gameObject.AddComponent<VoiceSettingsFlow>(); gameObject.AddComponent<RecoveryFlow>(); gameObject.AddComponent<AccountIdFlow>(); gameObject.AddComponent<AccountFlow>(); }
             MafiaNight.Services.Chat.ChatService.Ensure();   // listens for messages in every scene (the chat screen reads from it)
             if (FindAnyObjectByType<KitChatScreen>(FindObjectsInactive.Include) != null) gameObject.AddComponent<ChatFlow>();
@@ -162,8 +163,7 @@ namespace MafiaNight.App
             sceneLoader.LoadScene(target);
         }
 
-        // the market, family and ranks tabs open a menu of two places; the bag (1 of market) and the rank ladder (1 of ranks) are not built yet,
-        // the bar keeps them closed ("soon")
+        // the market, family and ranks tabs open a menu of two places; the rank ladder (1 of ranks) is not built yet, the bar keeps it closed ("soon")
         private const int MarketTab = 0, FamilyTab = 1, RanksTab = 3;
 
         private void OnPlace(int tab, int place)
@@ -179,7 +179,7 @@ namespace MafiaNight.App
                 sceneLoader.LoadScene(AppScenes.Family);
                 return;
             }
-            string target = tab == MarketTab && place == 0 ? AppScenes.Store : tab == RanksTab && place == 0 ? AppScenes.Leaderboards : null;
+            string target = tab == MarketTab ? (place == 0 ? AppScenes.Store : AppScenes.Bag) : tab == RanksTab && place == 0 ? AppScenes.Leaderboards : null;
             if (target != null && here != target) sceneLoader.LoadScene(target);
         }
 
