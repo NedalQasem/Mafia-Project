@@ -61,7 +61,7 @@ namespace MafiaNight.UI.Kit
 
             from.Text = (msg ? (warn ? "تحذير · من: " : "رسالة خاصة · من: ") : "من: ") + (c.from ?? "مكتب الريّس"); when.Text = c.when ?? "";
             from.GetComponent<TMPro.TMP_Text>().color = warn ? Crim : StampRed;
-            title.Text = c.title ?? "";
+            title.Text = KitText.Clip(c.title, 64);
             { var tt = title.GetComponent<TMPro.TMP_Text>(); tt.enableAutoSizing = true; tt.fontSizeMin = 34f; tt.fontSizeMax = 54f; }       // a long title gets smaller instead of running off the card
             title.GetComponent<TMPro.TMP_Text>().color = warn ? Crim : Ink;
 

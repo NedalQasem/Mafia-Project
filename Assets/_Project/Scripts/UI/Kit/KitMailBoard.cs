@@ -118,18 +118,22 @@ namespace MafiaNight.UI.Kit
             else toastGroup.alpha = 0f;
         }
 
+        // keeps the board whole on a short screen (tablet, small window)
+        private KitScreenFit FitOf() { var f = board.GetComponent<KitScreenFit>(); if (f == null) f = board.gameObject.AddComponent<KitScreenFit>(); f.Refresh(); return f; }
+
         private IEnumerator Enter()
         {
+            var fit = FitOf(); float fs = fit != null ? fit.Scale : 1f;
             var rest = board.anchoredPosition;
             for (float t = 0f; t < 0.32f; t += Time.unscaledDeltaTime)
             {
                 float k = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / 0.32f), 3f);
                 scrimGroup.alpha = Mathf.Clamp01(t / 0.25f); boardGroup.alpha = Mathf.Clamp01(t / 0.25f);
                 board.anchoredPosition = rest + new Vector2(100f * (1f - k), 0f);
-                board.localScale = Vector3.one * Mathf.Lerp(0.95f, 1f, k);
+                board.localScale = Vector3.one * (Mathf.Lerp(0.95f, 1f, k) * fs);
                 yield return null;
             }
-            scrimGroup.alpha = 1f; boardGroup.alpha = 1f; board.anchoredPosition = rest; board.localScale = Vector3.one;
+            scrimGroup.alpha = 1f; boardGroup.alpha = 1f; board.anchoredPosition = rest; board.localScale = Vector3.one * (fit != null ? fit.Scale : 1f);
         }
 
         public void Close()
@@ -141,13 +145,14 @@ namespace MafiaNight.UI.Kit
 
         private IEnumerator Leave()
         {
+            var fit = FitOf(); float fs = fit != null ? fit.Scale : 1f;
             var rest = board.anchoredPosition;
             for (float t = 0f; t < 0.2f; t += Time.unscaledDeltaTime)
             {
                 float k = t / 0.2f;
                 scrimGroup.alpha = 1f - k; boardGroup.alpha = 1f - k;
                 board.anchoredPosition = rest + new Vector2(60f * k, 0f);
-                board.localScale = Vector3.one * Mathf.Lerp(1f, 0.96f, k);
+                board.localScale = Vector3.one * (Mathf.Lerp(1f, 0.96f, k) * fs);
                 yield return null;
             }
             OnClosed?.Invoke();

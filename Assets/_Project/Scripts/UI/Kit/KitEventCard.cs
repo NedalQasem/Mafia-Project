@@ -69,8 +69,11 @@ namespace MafiaNight.UI.Kit
             transform.localRotation = Quaternion.Euler(0f, 0f, index % 2 == 0 ? 0.7f : -0.6f);
             paper.color = soon ? PaperSoon : done ? PaperDone : Color.white;
 
-            kicker.Text = c.kicker ?? ""; number.Text = "الحدث " + CoinPill.Format(index + 1);
-            title.Text = c.title ?? "";
+            kicker.Text = KitText.Clip(c.kicker, 30); number.Text = "الحدث " + CoinPill.Format(index + 1);
+            title.Text = KitText.Clip(c.title, 30);
+            // one line whatever the length: the title shrinks to fit, keeping clear of the stamp; a long kicker shrinks too
+            { var tt = title.GetComponent<TMPro.TMP_Text>(); tt.enableAutoSizing = true; tt.fontSizeMin = 38f; tt.fontSizeMax = 58f; tt.margin = new Vector4(c.state == 2 ? 0f : 250f, 0, 0, 0); }
+            { var kt = kicker.GetComponent<TMPro.TMP_Text>(); kt.enableAutoSizing = true; kt.fontSizeMin = 20f; kt.fontSizeMax = 26f; kt.margin = new Vector4(0, 0, 0, 0); }
             body.Text = c.body ?? "";
             int lines = Mathf.Max(1, Mathf.CeilToInt((c.body ?? "").Length / 42f));
             body.GetComponent<LayoutElement>().preferredHeight = 14f + lines * 46f;
