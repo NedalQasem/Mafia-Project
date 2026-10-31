@@ -61,6 +61,23 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ivory);out
 .seg button{padding:7px 4px;border-radius:7px;font-weight:800;font-size:.72rem;color:#8f8777;transition:all .25s}
 .seg button.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:inset 0 1px 0 #fff9,0 2px 0 #000}
 .lab{font-size:.74rem;font-weight:800;color:#a98f62;margin-bottom:-4px}
+.hint{font-size:.66rem;line-height:1.55;color:#8f8777;padding:0 2px}
+/* transition preview: the old paper burns away from the bottom right corner (the real one is the full-screen burn) */
+@property --p{syntax:"<percentage>";inherits:false;initial-value:-20%}
+.pv{position:relative;height:74px;border-radius:8px;overflow:hidden;background:#150d0a;box-shadow:inset 0 0 0 1px #3a2a14,inset 0 2px 6px #000}
+.pv .pg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;padding:0 10px;text-align:center;line-height:1.4}
+.pv .new{background:linear-gradient(180deg,#3a0f18,#1c0a0e);color:#e6c97a}
+.pv .old{background:linear-gradient(180deg,#f3e7c8,#d9c79a);color:#2a1a08;--p:-20%;-webkit-mask-image:linear-gradient(to top left,transparent var(--p),#000 calc(var(--p) + 22%));mask-image:linear-gradient(to top left,transparent var(--p),#000 calc(var(--p) + 22%))}
+.pv .old.fire{animation:burn .9s cubic-bezier(.5,0,.4,1) forwards}
+.pv .old.fade{animation:fade .2s linear forwards}
+.pv .old.gone{opacity:0}
+.pv .glow{position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(to top left,transparent calc(var(--p) + 2%),#fff4cc calc(var(--p) + 6%),#ff9a2e calc(var(--p) + 12%),#7a1a0a calc(var(--p) + 18%),transparent calc(var(--p) + 24%));--p:-20%}
+.pv .glow.fire{animation:burn .9s cubic-bezier(.5,0,.4,1) forwards,glowon .9s linear forwards}
+@keyframes burn{to{--p:105%}}
+@keyframes fade{to{opacity:0}}
+@keyframes glowon{0%{opacity:0}8%{opacity:1}88%{opacity:1}100%{opacity:0}}
+.try{align-self:flex-start;padding:7px 14px;border-radius:8px;font-weight:800;font-size:.72rem;color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:inset 0 1px 0 #fff9,0 2px 0 #000}
+
 
 /* radio panel */
 .radio{position:relative;padding:14px 12px 12px;border-radius:12px;background:var(--grain),linear-gradient(180deg,#4a3022,#24160e 70%,#1a100a);background-blend-mode:multiply,normal;box-shadow:inset 0 0 0 2px #14090a,inset 0 0 0 3px #7a5a38,inset 0 2px 8px #000,0 6px 12px #000a}
@@ -184,6 +201,11 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ivory);out
       <div class="body"><div><div class="in">
         <div class="lab">جودة الرسوم</div>
         <div class="seg" data-k="gfx"><button>منخفضة</button><button class="on">متوسطة</button><button>عالية</button></div>
+        <div class="lab">تأثير التنقّل بين الشاشات</div>
+        <div class="seg" data-k="fx"><button class="on" data-fx="fire">ورقة تنحرق</button><button data-fx="fade">تلاشي بسيط</button><button data-fx="off">بدون</button></div>
+        <div class="pv" id="pv"><div class="pg new" id="pvn">الشاشة الجديدة</div><div class="pg old" id="pvo">الشاشة القديمة</div><div class="glow" id="pvg"></div></div>
+        <button class="try" id="pvb">جرّب التأثير</button>
+        <div class="hint" id="fxh"></div>
         <div class="r"><div class="t">توفير البطارية<small>يخفض الحركة وسرعة الرسم</small></div><button class="tg" role="switch" aria-checked="false" aria-label="توفير البطارية"><i></i></button></div>
         <div class="r"><div class="t">تقليل الحركة<small>يوقف التأرجح والومضات</small></div><button class="tg" role="switch" aria-checked="false" aria-label="تقليل الحركة"><i></i></button></div>
         <div class="r"><div class="t">الاهتزاز</div><button class="tg" role="switch" aria-checked="true" aria-label="الاهتزاز"><i></i></button></div>
@@ -233,6 +255,19 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ivory);out
   [].forEach.call(document.querySelectorAll(".tg"),function(t){t.addEventListener("click",function(){var on=t.getAttribute("aria-checked")!=="true";t.setAttribute("aria-checked",on);say(on?"تم التشغيل":"تم الإيقاف");if(navigator.vibrate)navigator.vibrate(8)})});
   /* segmented */
   [].forEach.call(document.querySelectorAll(".seg"),function(sg){[].forEach.call(sg.children,function(b){b.addEventListener("click",function(){[].forEach.call(sg.children,function(x){x.classList.toggle("on",x===b)});say("تم الحفظ")})})});
+  /* transition effect: the choice, a live preview, and the hint (reduce-motion forces the simple fade) */
+  (function(){
+    var seg=document.querySelector('[data-k="fx"]'),old=document.getElementById("pvo"),glow=document.getElementById("pvg"),hint=document.getElementById("fxh"),mode="fire";
+    var rm=document.querySelector('[aria-label="تقليل الحركة"]');
+    var txt={fire:"الشاشة القديمة تحترق من زاوية لزاوية وتظهر الجديدة تحتها، مع شرر ودخان.",fade:"تلاشي سريع للشاشة القديمة. أخف على الجهاز.",off:"تبديل فوري بين الشاشات من غير أي حركة."};
+    function eff(){return rm&&rm.getAttribute("aria-checked")==="true"&&mode==="fire"?"fade":mode}
+    function hintNow(){hint.textContent=(rm&&rm.getAttribute("aria-checked")==="true"&&mode==="fire")?"تقليل الحركة شغّال، فنستعمل التلاشي البسيط بدل الحرق.":txt[mode]}
+    function play(){var e=eff();old.className="pg old";glow.className="glow";void old.offsetWidth;if(e==="fire"){old.classList.add("fire");glow.classList.add("fire")}else if(e==="fade")old.classList.add("fade");else old.classList.add("gone")}
+    [].forEach.call(seg.children,function(b){b.addEventListener("click",function(){mode=b.dataset.fx;hintNow();play()})});
+    document.getElementById("pvb").addEventListener("click",play);
+    if(rm)rm.addEventListener("click",function(){setTimeout(hintNow,0)});
+    hintNow();
+  })();
   /* dials */
   function dial(id,vid){
     var d=document.getElementById(id),face=d.querySelector(".face"),ptr=d.querySelector(".ptr"),val=document.getElementById(vid),v=+d.dataset.v,drag=false;
