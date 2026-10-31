@@ -26,7 +26,7 @@ namespace MafiaNight.UI.Kit
         {
             IsOpen = open;
             if (openLine != null) openLine.SetActive(open);
-            if (chevron != null) chevron.localRotation = Quaternion.Euler(0, 0, open ? 0f : 90f);
+            if (chevron != null) chevron.localRotation = Quaternion.Euler(0, 0, open ? -90f : 0f);
             float to = open ? TargetHeight() : 0f;
             if (!animate || !isActiveAndEnabled) { Apply(to); return; }
             if (anim != null) StopCoroutine(anim);

@@ -88,10 +88,10 @@ namespace MafiaNight.UI.Kit.Editor
                 hd.AddComponent<LayoutElement>().preferredHeight = 54 * NK;
                 var hi = hd.AddComponent<Image>(); hi.color = Color.clear;
                 var hb = hd.AddComponent<Button>(); hb.targetGraphic = hi; hb.transition = Selectable.Transition.None;
-                var ic = Go("Icon", hd.transform); Place(Rt(ic), new Vector2(1, 0.5f), new Vector2(-(14f + 15f) * NK, 0), new Vector2(30 * NK, 30 * NK)); Img(ic, icon);
-                var tt = Txt(hd.transform, "Title", title, th.fontHeading, 46, th.leatherText, TextAlignmentOptions.MidlineRight); Place(Rt(tt.gameObject), new Vector2(1, 0.5f), new Vector2(-(14f + 30f + 10f) * NK - 310f, 8f), new Vector2(620, 60));
+                var ic = Go("Icon", hd.transform); Place(Rt(ic), new Vector2(1, 0.5f), new Vector2(-(14f + 15f) * NK, 0), new Vector2(32 * NK, 32 * NK)); Img(ic, icon);
+                var tt = Txt(hd.transform, "Title", title, FindFont("lalezar") ?? th.fontHeading, 46, th.leatherText, TextAlignmentOptions.MidlineRight); Place(Rt(tt.gameObject), new Vector2(1, 0.5f), new Vector2(-(14f + 30f + 10f) * NK - 310f, 8f), new Vector2(620, 60));
                 var ss = Txt(hd.transform, "Sub", sub, th.fontBody, 26, th.ivoryDim, TextAlignmentOptions.MidlineRight); Place(Rt(ss.gameObject), new Vector2(1, 0.5f), new Vector2(-(14f + 30f + 10f) * NK - 310f, -34f), new Vector2(620, 40));
-                var chev = Go("Chevron", hd.transform); Place(Rt(chev), new Vector2(0, 0.5f), new Vector2((14f + 9f) * NK, 0), new Vector2(18 * NK, 18 * NK)); var ci = Img(chev, arrow); ci.color = th.brass;
+                var chev = Go("Chevron", hd.transform); Place(Rt(chev), new Vector2(0, 0.5f), new Vector2((14f + 9f) * NK, 0), new Vector2(20 * NK, 20 * NK)); var ci = Img(chev, SetSpr("set_cv", 8f));
                 var body = Go("Body", root.transform); Rt(body).sizeDelta = new Vector2(1000, 0);
                 var bl = body.AddComponent<LayoutElement>(); bl.preferredHeight = 0;
                 body.AddComponent<RectMask2D>();
@@ -153,18 +153,21 @@ namespace MafiaNight.UI.Kit.Editor
 
             GameObject LinkRow(RectTransform parent, string title, string extra)
             {
-                var row = Go("Link_" + title, parent); Rt(row).sizeDelta = new Vector2(940, 96);
-                row.AddComponent<LayoutElement>().preferredHeight = 96;
-                var img = row.AddComponent<Image>(); img.color = new Color(1, 1, 1, 0.04f);
+                // settings.html ".lk": 10px above and below the text, a 1px line above unless it is the first of its group, a grey chevron on the left
+                bool first = parent.childCount == 0 || !parent.GetChild(parent.childCount - 1).name.StartsWith("Link_");
+                var row = Go("Link_" + title, parent); Rt(row).sizeDelta = new Vector2(940, 41 * NK);
+                row.AddComponent<LayoutElement>().preferredHeight = 41 * NK;
+                var hit = row.AddComponent<Image>(); hit.color = Color.clear;
+                if (!first) { var ln = Go("Line", row.transform); var lr = Rt(ln); lr.anchorMin = new Vector2(0, 1); lr.anchorMax = new Vector2(1, 1); lr.pivot = new Vector2(0.5f, 1); lr.offsetMin = new Vector2(0, -3); lr.offsetMax = Vector2.zero; var li = ln.AddComponent<Image>(); li.color = new Color(1, 1, 1, 0.063f); li.raycastTarget = false; }
                 var t = Txt(row.transform, "T", title, th.fontBody, 36, th.leatherText, TextAlignmentOptions.MidlineRight); t.fontStyle = FontStyles.Bold; Place(Rt(t.gameObject), new Vector2(1, 0.5f), new Vector2(-320, 0), new Vector2(600, 56));
-                if (extra != null) { var e = Txt(row.transform, "E", extra, th.fontBody, 26, th.ivoryDim, TextAlignmentOptions.MidlineLeft); Place(Rt(e.gameObject), new Vector2(0, 0.5f), new Vector2(190, 0), new Vector2(300, 40)); }
-                var ch = Go("Arrow", row.transform); Place(Rt(ch), new Vector2(0, 0.5f), new Vector2(36, 0), new Vector2(36, 36)); var chi = Img(ch, arrow); chi.color = th.ivoryDim; ch.transform.localRotation = Quaternion.Euler(0, 0, 90f);
+                if (extra != null) { var e = Txt(row.transform, "E", extra, th.fontBody, 31, new Color32(0x8F, 0x87, 0x77, 255), TextAlignmentOptions.MidlineLeft); Place(Rt(e.gameObject), new Vector2(0, 0.5f), new Vector2(25f * NK + 150f, 0), new Vector2(300, 40)); }
+                var ch = Go("Arrow", row.transform); Place(Rt(ch), new Vector2(0, 0.5f), new Vector2(9f * NK, 0), new Vector2(17f * NK, 17f * NK)); var chi = Img(ch, SetSpr("set_lk_cv", 8f));
                 return row;
             }
 
             RectTransform c;
             // ---- voice (radio panel)
-            MakeSection("الصوت", "المايك والسماعة والكتم", th.iconMic, true, out c);
+            MakeSection("الصوت", "المايك والسماعة والكتم", SetSpr("set_k_mic", 6f), true, out c);
             {
                 var panel = Go("RadioPanel", c); Rt(panel).sizeDelta = new Vector2(940, 283 * NK);
                 panel.AddComponent<LayoutElement>().preferredHeight = 283 * NK;
@@ -213,17 +216,17 @@ namespace MafiaNight.UI.Kit.Editor
             var muteJoinTg = ToggleRow(c, "كتم المايك عند الدخول", "تدخل الروم صامتاً", false);
             var narratorTg = ToggleRow(c, "صوت الراوي", "تعليق الليل والنهار", true);
 
-            MakeSection("الإشعارات", "ما يصلك وما لا يصلك", th.iconGift, false, out c);
+            MakeSection("الإشعارات", "ما يصلك وما لا يصلك", SetSpr("set_k_bell", 6f), false, out c);
             ToggleRow(c, "دعوات الغرف", null, true); ToggleRow(c, "طلبات الصداقة", null, true);
             ToggleRow(c, "أصدقائي دخلوا غرفة", "تنبيه عند دخول صديق", false); ToggleRow(c, "هدية أو جائزة تصنيف", null, true); ToggleRow(c, "عروض المتجر", null, false);
 
-            MakeSection("الخصوصية والأمان", "من يقدر يوصلك", th.navIcons[3], false, out c);
+            MakeSection("الخصوصية والأمان", "من يقدر يوصلك", SetSpr("set_k_lock", 6f), false, out c);
             SegRow(c, "من يستطيع دعوتك للغرف", new[] { "الجميع", "الأصدقاء", "لا أحد" }, 0);
             SegRow(c, "من يستطيع مراسلتك", new[] { "الجميع", "الأصدقاء", "لا أحد" }, 1);
             ToggleRow(c, "إخفاء رتبتي وإحصائياتي", "تظهر \"مخفي\" لغير الأصدقاء", false); ToggleRow(c, "أظهر أني متصل", "يراك أصدقاؤك بالقائمة", true);
             LinkRow(c, "اللاعبون المحظورون", "٣"); LinkRow(c, "بلاغاتي", "٢ قيد المراجعة");
 
-            MakeSection("العرض والأداء", "البطارية والحركة", th.navIcons[4], false, out c);
+            MakeSection("العرض والأداء", "البطارية والحركة", SetSpr("set_k_eye", 6f), false, out c);
             SegRow(c, "جودة الرسوم", new[] { "منخفضة", "متوسطة", "عالية" }, 1);
             var fxSeg = SegRow(c, "تأثير التنقّل بين الشاشات", new[] { "ورقة تنحرق", "تلاشي بسيط", "بدون" }, 0);
             // preview strip: the old screen (paper) lies over the new one (dark leather) and burns away when tried
@@ -238,18 +241,21 @@ namespace MafiaNight.UI.Kit.Editor
             var fxHint = Txt(c, "FxHint", "", th.fontBody, 28, th.ivoryDim, TextAlignmentOptions.TopRight, true);
             ToggleRow(c, "توفير البطارية", "يخفض الحركة وسرعة الرسم", false); var reduceTg = ToggleRow(c, "تقليل الحركة", "يوقف التأرجح والومضات", false); ToggleRow(c, "الاهتزاز", null, true);
 
-            MakeSection("الحساب", "الاسم واللغة والربط", th.avatarDefault, false, out c);
+            MakeSection("الحساب", "الاسم واللغة والربط", SetSpr("set_k_user", 6f), false, out c);
             LinkRow(c, "تغيير الاسم", "مرة كل ٣٠ يوماً"); LinkRow(c, "ربط الحساب (حفظ تقدمك)", "غير مربوط");
             var recoveryRow = LinkRow(c, RecoveryRowTitle, null); LinkRow(c, "استعادة المشتريات", null);
             var langSeg = SegRow(c, "اللغة", new[] { "العربية", "English" }, 0);
 
-            MakeSection("المساعدة", "القواعد والدعم", th.levelSeal, false, out c);
+            MakeSection("المساعدة", "القواعد والدعم", SetSpr("set_k_help", 6f), false, out c);
             foreach (var t in new[] { "كيف تُلعب المافيا؟", "قواعد السهرة وآدابها", "تواصل مع الدعم", "الإبلاغ عن مشكلة", "الشروط والخصوصية", "عن اللعبة والفريق" }) LinkRow(c, t, null);
 
             // ---- logout + hold-to-delete + version
-            var logout = InstChild("KitButton_Secondary", content.transform, "Logout");
-            Rt(logout).sizeDelta = new Vector2(900, 150); logout.AddComponent<LayoutElement>().preferredHeight = 150;
-            logout.GetComponentInChildren<ArabicText>().Text = "تسجيل الخروج";
+            var logout = Go("Logout", content.transform); Rt(logout).sizeDelta = new Vector2(1000, 47 * NK);
+            logout.AddComponent<LayoutElement>().preferredHeight = 47 * NK;
+            Backing(logout.transform, "Leather", SetSpr("set_out", 5f, 18, 18, 18, 18), 6f);
+            var logoutHit = logout.AddComponent<Image>(); logoutHit.color = Color.clear;
+            logout.AddComponent<Button>().targetGraphic = logoutHit;
+            var logoutLbl = Txt(logout.transform, "L", "تسجيل الخروج", th.fontBody, 40, new Color32(0xE6, 0xD9, 0xBD, 255)); logoutLbl.fontStyle = FontStyles.Bold; Stretch(Rt(logoutLbl.gameObject), 10, 0, 10, 6);
             var del = Go("DeleteAccount", content.transform); Rt(del).sizeDelta = new Vector2(900, 130);
             del.AddComponent<LayoutElement>().preferredHeight = 130;
             var di = del.AddComponent<Image>(); di.color = new Color32(0x1A, 0x08, 0x09, 255);

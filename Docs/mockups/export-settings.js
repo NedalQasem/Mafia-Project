@@ -59,6 +59,13 @@
     await put('set_vu', '<div class="vu" style="position:absolute;left:4px;top:4px;margin:0;width:140px;height:42px"></div>', 148, 50, 5, '.vu i{display:none}');
     // the brass mic-test button, sliced 14
     await put('set_mic', '<button class="mic" style="position:absolute;left:6px;top:6px;width:120px;height:44px;padding:0"></button>', 132, 62, 5);
+    // the logout button: leather block with the brass-dark edge and a 4px shadow, sliced 12
+    await put('set_out', '<button class="out" style="position:absolute;left:6px;top:6px;width:120px;height:44px;padding:0"></button>', 132, 62, 5);
+    // the drawer icons (30px), and the two chevrons: the gold one of a drawer header (18px) and the grey one of a link row (15px)
+    for (const k of ['mic', 'bell', 'lock', 'eye', 'user', 'help']) await put('set_k_' + k, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="position:absolute;left:1px;top:1px;width:30px;height:30px"><use href="#k-' + k + '"/></svg>', 32, 32, 6);
+    const chev = (px, col, w) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="position:absolute;left:1px;top:1px;width:' + px + 'px;height:' + px + 'px;stroke:' + col + ';fill:none;stroke-width:' + w + ';stroke-linecap:round;stroke-linejoin:round"><use href="#cv"/></svg>';
+    await put('set_cv', chev(18, '#b99048', 2.4), 20, 20, 8);
+    await put('set_lk_cv', chev(15, '#6f685c', 2.4), 17, 17, 8);
     return out.join(' ');
   };
 
