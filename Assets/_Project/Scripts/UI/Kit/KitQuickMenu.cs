@@ -203,7 +203,7 @@ namespace MafiaNight.UI.Kit
             if (!vis) { SetOpen(false); }
             sumText.Text = CoinPill.Format(Total);
             sumDot.gameObject.SetActive(Total > 0);
-            offDotText.Text = CoinPill.Format(ads.Count); offDot.gameObject.SetActive(ads.Count > 0);
+            offDotText.Text = KitText.Badge(ads.Count); offDot.gameObject.SetActive(ads.Count > 0);
             evDotText.Text = CoinPill.Format(events); evDot.gameObject.SetActive(events > 0);
             mailDotText.Text = CoinPill.Format(mail); mailDot.gameObject.SetActive(mail > 0);
             mailRt.gameObject.SetActive(true);

@@ -13,7 +13,7 @@ namespace MafiaNight.UI.Kit
         {
             var th = KitTheme.Current;
             avatar.Set(e.rank);
-            nameLabel.Text = e.name; valueLabel.Text = CoinPill.Format(e.value); rankLabel.Text = KitTheme.RankNames[Mathf.Clamp(e.rank, 0, 7)];
+            KitText.Fit(nameLabel, e.name, 14, 22f); KitText.Fit(valueLabel, CoinPill.Format(e.value), 24, 20f); rankLabel.Text = KitTheme.RankNames[Mathf.Clamp(e.rank, 0, 7)];
             placeLabel.Text = CoinPill.Format(place);
             if (crown != null) crown.SetActive(place == 1);
             nameLabel.GetComponent<TMPro.TMP_Text>().color = paper ? th.paperInk : th.leatherText;

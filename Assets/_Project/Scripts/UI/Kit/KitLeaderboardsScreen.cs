@@ -162,9 +162,9 @@ namespace MafiaNight.UI.Kit
             rewardLabel.Text = view.failed ? "تعذّر تحميل الترتيب. حاول لاحقاً" : list.Count == 0 ? "السبورة فاضية. أول مباراة بتكتب اسمك عليها" : "الترتيب يتجدّد بعد كل مباراة. الجوائز قريباً";
             resetSeconds = view.resetInSeconds > 0 ? view.resetInSeconds : resetSeconds; resetTick = 0f; ShowReset();
             bool ranked = view.mePosition > 0;
-            mineRank.Text = ranked ? "#" + CoinPill.Format(view.mePosition) : "—";
+            KitText.Fit(mineRank, ranked ? "#" + CoinPill.Format(view.mePosition) : "—", 24, 22f);
             mineNeed.Text = view.need > 0 ? "تحتاج " + CoinPill.Format(view.need) + " " + LeaderboardData.Units[cat] + " لتدخل أول ١٠" : (ranked ? "أنت ضمن أول ١٠" : "العب مباراة لتظهر على السبورة");
-            mineValue.Text = CoinPill.Format(view.me != null ? view.me.value : 0);
+            KitText.Fit(mineValue, CoinPill.Format(view.me != null ? view.me.value : 0), 24, 18f);
             SetFill(Mathf.Clamp(view.fill, 0.04f, 1f));
         }
 

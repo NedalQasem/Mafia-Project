@@ -119,7 +119,7 @@ namespace MafiaNight.UI.Kit
                 tabs[i].GetComponent<Image>().sprite = on ? th.brassPlate : th.leatherDark;
                 tabs[i].GetComponentInChildren<TMP_Text>().color = on ? th.brassText : th.ivoryDim;
                 int u = i == 1 ? Sum(dms) : i == 2 ? Sum(groups) : 0;
-                tabBadges[i].SetActive(u > 0); if (u > 0) tabBadgeLabels[i].Text = CoinPill.Format(u);
+                tabBadges[i].SetActive(u > 0); if (u > 0) tabBadgeLabels[i].Text = KitText.Badge(u);
             }
             if (keepOpen && current != null) { RenderConversation(current, false); return; }
             if (tab == 0) { OpenConversation(pub); return; }
@@ -174,7 +174,7 @@ namespace MafiaNight.UI.Kit
                 for (int i = 0; i < tabs.Length; i++)
                 {
                     int u = i == 1 ? Sum(dms) : i == 2 ? Sum(groups) : 0;
-                    tabBadges[i].SetActive(u > 0); if (u > 0) tabBadgeLabels[i].Text = CoinPill.Format(u);
+                    tabBadges[i].SetActive(u > 0); if (u > 0) tabBadgeLabels[i].Text = KitText.Badge(u);
                 }
             }
         }

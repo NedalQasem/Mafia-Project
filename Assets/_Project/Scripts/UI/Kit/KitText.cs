@@ -20,6 +20,9 @@ namespace MafiaNight.UI.Kit
             return sb.ToString();
         }
 
+        /// <summary>A count on a small badge: Arabic digits, and "٩٩+" from a hundred up, so the badge keeps its size.</summary>
+        public static string Badge(int n) => n > 99 ? "٩٩+" : CoinPill.Format(n);
+
         /// <summary>Cuts <paramref name="s"/> to at most <paramref name="max"/> characters at a word boundary and adds "…". Short text is returned as it is.</summary>
         public static string Clip(string s, int max)
         {

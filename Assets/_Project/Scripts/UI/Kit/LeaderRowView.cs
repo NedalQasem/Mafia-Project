@@ -19,8 +19,8 @@ namespace MafiaNight.UI.Kit
             var th = KitTheme.Current;
             Color text = paper ? th.paperInk : th.leatherText;
             posLabel.Text = CoinPill.Format(position);
-            nameLabel.Text = e.name; rankLabel.Text = KitTheme.RankNames[Mathf.Clamp(e.rank, 0, 7)];
-            valueLabel.Text = CoinPill.Format(e.value);
+            KitText.Fit(nameLabel, e.name, 20, 22f); rankLabel.Text = KitTheme.RankNames[Mathf.Clamp(e.rank, 0, 7)];
+            KitText.Fit(valueLabel, CoinPill.Format(e.value), 24, 16f);
             avatar.Set(e.rank);
             nameLabel.GetComponent<TMPro.TMP_Text>().color = text;
             rankLabel.GetComponent<TMPro.TMP_Text>().color = paper ? new Color32(0x6A, 0x5A, 0x3A, 255) : th.ivoryDim;

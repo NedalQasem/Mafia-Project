@@ -28,7 +28,7 @@ namespace MafiaNight.UI.Kit
             rankLabel.gameObject.SetActive(!group);
             if (!group) rankLabel.Text = KitTheme.RankNames[Mathf.Clamp(c.rank, 0, 7)];
             badge.SetActive(c.unread > 0);
-            if (c.unread > 0) badgeLabel.Text = CoinPill.Format(c.unread);
+            if (c.unread > 0) badgeLabel.Text = KitText.Badge(c.unread);
         }
     }
 }
