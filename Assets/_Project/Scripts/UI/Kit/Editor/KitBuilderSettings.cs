@@ -39,6 +39,28 @@ namespace MafiaNight.UI.Kit.Editor
             return i;
         }
 
+        /// <summary>The top bar of settings.html: a dark fade, the round back button with its chevron, the title in Lalezar and the version line under it.</summary>
+        private static void StyleSettingsHeader(Transform hdr, KitTheme th)
+        {
+            var hr = (RectTransform)hdr; hr.sizeDelta = new Vector2(0, 76 * NK);
+            var fade = Go("Fade", hdr); fade.transform.SetAsFirstSibling(); Stretch(Rt(fade));
+            var fi = fade.AddComponent<Image>(); fi.sprite = SetSpr("set_top", 2f); fi.type = Image.Type.Simple; fi.preserveAspect = false; fi.raycastTarget = false;
+
+            var back = (RectTransform)hdr.Find("Back"); Place(back, new Vector2(1, 1), new Vector2(-(12f + 19f) * NK, -49f * NK), new Vector2(38 * NK, 38 * NK));
+            var bi = back.GetComponent<Image>(); bi.sprite = null; bi.color = Color.clear;
+            var art = Go("Art", back); var ar = Rt(art); ar.anchorMin = Vector2.zero; ar.anchorMax = Vector2.one; ar.offsetMin = new Vector2(-8 * NK, -8 * NK); ar.offsetMax = new Vector2(8 * NK, 8 * NK);
+            var ai = art.AddComponent<Image>(); ai.sprite = SetSpr("set_ic", 5f); ai.type = Image.Type.Simple; ai.preserveAspect = false; ai.raycastTarget = false;
+            var arrow = (RectTransform)back.Find("Arrow"); arrow.SetAsLastSibling(); arrow.localRotation = Quaternion.identity; arrow.sizeDelta = new Vector2(20 * NK, 20 * NK);
+            var arrowImg = arrow.GetComponent<Image>(); arrowImg.sprite = SetSpr("set_back", 8f); arrowImg.color = Color.white; arrowImg.preserveAspect = true;
+
+            var title = hdr.Find("Title").GetComponent<TextMeshProUGUI>(); var sub = hdr.Find("Sub").GetComponent<TextMeshProUGUI>();
+            float right = 60f * NK + 300f;                                                  // the text's right edge is 60px from the phone's edge
+            title.font = FindFont("lalezar") ?? th.fontHeading; title.fontStyle = FontStyles.Normal; title.fontSize = 66; title.color = th.ivory;
+            var tr = (RectTransform)title.transform; Place(tr, new Vector2(1, 1), new Vector2(-right, -44f * NK), new Vector2(600, 70));
+            sub.fontStyle = FontStyles.Bold; sub.fontSize = 28; sub.color = new Color32(0x8D, 0x74, 0x4A, 255);
+            var sr2 = (RectTransform)sub.transform; Place(sr2, new Vector2(1, 1), new Vector2(-right, -61f * NK), new Vector2(600, 40));
+        }
+
         private static void BuildSettings(KitTheme th)
         {
             var arrow = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/DropdownArrow.psd");
@@ -50,7 +72,7 @@ namespace MafiaNight.UI.Kit.Editor
             if (pageBg != null) { var pbi = pageBg.GetComponent<Image>(); if (pbi != null) { pbi.sprite = SetSpr("set_bg", 2f); pbi.color = Color.white; pbi.type = Image.Type.Simple; } }
             var screen = Go("SettingsScreen", canvasGo.transform); Stretch(Rt(screen));
             var scrollGo = Go("Scroll", screen.transform);
-            var sr = Rt(scrollGo); sr.anchorMin = Vector2.zero; sr.anchorMax = Vector2.one; sr.offsetMin = new Vector2(0, 0); sr.offsetMax = new Vector2(0, -150);
+            var sr = Rt(scrollGo); sr.anchorMin = Vector2.zero; sr.anchorMax = Vector2.one; sr.offsetMin = new Vector2(0, 0); sr.offsetMax = new Vector2(0, -(84f * NK - 26f));       // the mockup's scroll starts 84px down; the column adds 26 units of its own
             var scroll = scrollGo.AddComponent<ScrollRect>(); scroll.horizontal = false; scroll.movementType = ScrollRect.MovementType.Elastic; scroll.scrollSensitivity = 40f;
             var vp = Go("Viewport", scrollGo.transform); Stretch(Rt(vp)); vp.AddComponent<RectMask2D>(); vp.AddComponent<Image>().color = Color.clear;
             var content = Go("Content", vp.transform);
@@ -279,7 +301,8 @@ namespace MafiaNight.UI.Kit.Editor
             foreach (var s in sections) { var o = new SerializedObject(s); s.SetOpen(o.FindProperty("openAtStart").boolValue, false); }
             BuildRecoverySheet(th);
             AddRecoverySheet(recoveryRow, canvasGo.transform);
-            AddScreenHeader(canvasGo, th, "الإعدادات", "الإصدار ١٫٠٫٠", false);
+            var topBar = AddScreenHeader(canvasGo, th, "الإعدادات", "الإصدار ١٫٠٫٠", false);
+            StyleSettingsHeader(topBar.transform, th);
             LayoutRebuilder.ForceRebuildLayoutImmediate(cRt);
             SaveScene(SettingsScenePath);
         }

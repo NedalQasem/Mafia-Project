@@ -59,6 +59,10 @@
     await put('set_vu', '<div class="vu" style="position:absolute;left:4px;top:4px;margin:0;width:140px;height:42px"></div>', 148, 50, 5, '.vu i{display:none}');
     // the brass mic-test button, sliced 14
     await put('set_mic', '<button class="mic" style="position:absolute;left:6px;top:6px;width:120px;height:44px;padding:0"></button>', 132, 62, 5);
+    // the top bar: the dark fade the title sits on, the round back button (sliced not needed: 38px), and its chevron
+    await put('set_top', '<div style="position:absolute;left:0;top:0;width:390px;height:76px;background:linear-gradient(180deg,#0a0705f2 70%,transparent)"></div>', 390, 76, 2);
+    await put('set_ic', box('ic', 38, 38, 8, 'display:grid'), 54, 54, 5);
+    await put('set_back', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="position:absolute;left:1px;top:1px;width:18px;height:18px;stroke:#cfc6b2;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><use href="#back"/></svg>', 20, 20, 8);
     // the logout button: leather block with the brass-dark edge and a 4px shadow, sliced 12
     await put('set_out', '<button class="out" style="position:absolute;left:6px;top:6px;width:120px;height:44px;padding:0"></button>', 132, 62, 5);
     // the drawer icons (30px), and the two chevrons: the gold one of a drawer header (18px) and the grey one of a link row (15px)
