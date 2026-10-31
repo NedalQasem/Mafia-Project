@@ -48,7 +48,12 @@ namespace MafiaNight.UI.Kit
             if (language != null)
             {
                 language.Set(PlayerPrefs.GetString(MafiaNight.Core.GameConstants.PREF_LANGUAGE, "ar") == "en" ? 1 : 0);
-                language.OnChanged += v => { PlayerPrefs.SetString(MafiaNight.Core.GameConstants.PREF_LANGUAGE, v == 1 ? "en" : "ar"); PlayerPrefs.Save(); };
+                language.OnChanged += v =>
+                {
+                    PlayerPrefs.SetString(MafiaNight.Core.GameConstants.PREF_LANGUAGE, v == 1 ? "en" : "ar"); PlayerPrefs.Save();
+                    // the screens read the language when they are built: this one is loaded again (every other one is built in the new language when it opens)
+                    UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+                };
             }
             SetupFx();
             Paint(0);

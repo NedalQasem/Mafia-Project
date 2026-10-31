@@ -1,6 +1,7 @@
 using System;
 using TMPro;
 using UnityEngine;
+using MafiaNight.Core;
 using UnityEngine.EventSystems;
 
 namespace MafiaNight.UI.Kit
@@ -32,7 +33,33 @@ namespace MafiaNight.UI.Kit
         /// <summary>Turn Latin digits into Arabic-Indic digits (default). Off keeps the digits exactly as written.</summary>
         public bool ArabicDigits { get => arabicDigits; set { arabicDigits = value; Refresh(); } }
 
-        protected override void OnEnable() { base.OnEnable(); Refresh(); }
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            if (Application.isPlaying && Loc.English) { var c = GetComponentInParent<Canvas>(); SetMirrored(c != null && KitLocale.IsMirrored(c.rootCanvas)); }
+            Refresh();
+        }
+
+        private bool mirroredNow;
+
+        /// <summary>
+        /// English mode draws the canvas in a mirror (<see cref="KitLocale"/>): this text is flipped back so its letters read normally, and aligned the
+        /// other way (what was at the right of its box in Arabic sits at the left of the mirrored box).
+        /// </summary>
+        public void SetMirrored(bool on)
+        {
+            if (!Application.isPlaying || on == mirroredNow) return;
+            mirroredNow = on;
+            if (tmp == null) tmp = GetComponent<TMP_Text>();
+            if (tmp != null)
+            {
+                var h = tmp.horizontalAlignment;
+                if (h == HorizontalAlignmentOptions.Left) tmp.horizontalAlignment = HorizontalAlignmentOptions.Right;
+                else if (h == HorizontalAlignmentOptions.Right) tmp.horizontalAlignment = HorizontalAlignmentOptions.Left;
+            }
+            transform.localRotation = transform.localRotation * Quaternion.Euler(0f, 180f, 0f);      // turned back: the letters read normally in the mirror
+            Refresh();
+        }
         protected override void OnRectTransformDimensionsChange() { base.OnRectTransformDimensionsChange(); if (wrap) Refresh(); }
 #if UNITY_EDITOR
         protected override void OnValidate() { base.OnValidate(); if (isActiveAndEnabled) Refresh(); }
@@ -54,6 +81,17 @@ namespace MafiaNight.UI.Kit
                 if (tmp.font != null && tmp.font.name.IndexOf("Lalezar", StringComparison.OrdinalIgnoreCase) >= 0 && tmp.fontFeatures != null && tmp.fontFeatures.Count > 0)
                     tmp.fontFeatures = new System.Collections.Generic.List<UnityEngine.TextCore.OTL_FeatureTag>();
 
+                if (Application.isPlaying && Loc.English)
+                {
+                    // the English line (or the Arabic one when it is not translated yet): English is not shaped and breaks its lines by itself
+                    string en = Loc.LatinDigits(Loc.T(text));
+                    if (!ArabicShaper.ContainsArabic(en))
+                    {
+                        tmp.textWrappingMode = wrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+                        tmp.text = en;
+                        return;
+                    }
+                }
                 if (!ArabicShaper.ContainsArabic(text)) { tmp.text = text; return; }
                 tmp.text = wrap ? WrapShaped() : Shape(text);
             }

@@ -79,10 +79,10 @@ namespace MafiaNight.App
             {
                 var step = RankLadder.FromPoints(p.RankPoints);
                 if (nameLabel != null) KitText.Fit(nameLabel, string.IsNullOrEmpty(p.DisplayName) ? "لاعب" : p.DisplayName, 18, 34f);
-                if (subLabel != null) subLabel.Text = KitTheme.RankNames[Mathf.Clamp(step.RankIndex, 0, KitTheme.RankNames.Length - 1)] + " · المستوى " + Ar(p.Level.ToString());
+                if (subLabel != null) subLabel.Text = Loc.F("{0} · المستوى {1}", "{0} · Level {1}", Loc.T(KitTheme.RankNames[Mathf.Clamp(step.RankIndex, 0, KitTheme.RankNames.Length - 1)]), Ar(p.Level.ToString()));
                 if (avatar != null) avatar.Set(step.RankIndex);
             }
-            if (versionLine != null) versionLine.Text = "المافيا · الإصدار " + Ar(Application.version.Replace('.', '٫')) + " · الحساب " + num;
+            if (versionLine != null) versionLine.Text = Loc.F("المافيا · الإصدار {0} · الحساب {1}", "Mafia · Version {0} · Account {1}", Loc.English ? Application.version : Ar(Application.version.Replace('.', '٫')), num);
         }
 
         private static ArabicText Find(Transform root, string path)
