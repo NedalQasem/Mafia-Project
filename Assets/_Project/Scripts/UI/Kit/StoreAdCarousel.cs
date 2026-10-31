@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using MafiaNight.UI.Animations;
 
 namespace MafiaNight.UI.Kit
 {
@@ -148,9 +149,30 @@ namespace MafiaNight.UI.Kit
             return 3 * y1 * t * (1 - t) * (1 - t) + 3 * y2 * t * t * (1 - t) + t * t * t;
         }
 
+        // The old page burns away on a fire front (BurnTransition, like the screens): "next" from the bottom right corner, "previous" from the bottom left.
+        // If the picture of the page cannot be had, the old page swings away instead (below).
+        private IEnumerator Turn(int from, int to, int dir)
+        {
+            Texture2D snap = null;
+            if (BurnSettings.Mode != BurnSettings.Off) yield return BurnTransition.Capture(pagesRoot, t => snap = t);
+            var a = pages[from]; var b = pages[to];
+            if (snap != null || BurnSettings.Mode == BurnSettings.Off)
+            {
+                b.transform.SetSiblingIndex(0); a.transform.SetAsLastSibling();
+                b.alpha = 1f; b.blocksRaycasts = true; a.blocksRaycasts = false;
+                b.transform.localRotation = Quaternion.Euler(0f, 0f, pageTilt); shades[to].color = new Color(0, 0, 0, 0);
+                current = to; Paint();
+                a.alpha = 0f;                                         // the frozen picture of it burns instead
+                if (snap != null) yield return BurnTransition.Attach(pagesRoot, snap).Play(dir > 0 ? BurnCorner.BottomRight : BurnCorner.BottomLeft, 0.9f);
+                timer = 0f; turn = null;
+                yield break;
+            }
+            yield return Swing(from, to, dir);
+        }
+
         // HTML pageturn: the old page swings away around its right edge (-118 / +118 deg), darkening and fading,
         // while the next page already lies underneath. 0.9 s, ease (.5, 0, .3, 1).
-        private IEnumerator Turn(int from, int to, int dir)
+        private IEnumerator Swing(int from, int to, int dir)
         {
             const float dur = 0.9f;
             var a = pages[from]; var b = pages[to];
