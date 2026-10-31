@@ -24,41 +24,58 @@ namespace MafiaNight.App
             if (th == null || th.loginChoicePrefab == null) { LoginGate.Release(); yield break; }
             // its own canvas above the loading screen (that one sorts at 200): on a phone the first canvas found was a lower one,
             // so the choice screen sat hidden under the loading screen and the game waited at 0 % for a choice nobody could see
-            var root = OverLoading().transform;
-            var go = Object.Instantiate(th.loginChoicePrefab, root, false);
-            go.transform.SetAsLastSibling();
-            var screen = go.GetComponent<KitLoginChoice>();
-            screen.SetAvailable(GoogleSignIn.Available, FacebookSignIn.Available);
+            var canvas = OverLoading(); var root = canvas.transform;
+            KitLocale.Prepare(canvas);
+            KitLoginChoice screen = null;
             bool proceed = false, busy = false;
-            screen.OnGuest += () => { if (!busy) proceed = true; };
-            screen.OnOffice += () =>
+            void Make()
             {
-                if (busy) return;
-                LoginGate.Release();
-                if (th.recoverySheetPrefab == null) return;
-                var sheetGo = Object.Instantiate(th.recoverySheetPrefab, root, false);
-                sheetGo.transform.SetAsLastSibling();
-                var sheet = sheetGo.GetComponent<KitRecoverySheet>();
-                RecoveryFlow.Wire(sheet, host);
-                sheet.Open();
-            };
-            screen.OnGoogle += () =>
-            {
-                if (busy) return;
-                busy = true;
-                host.StartCoroutine(SocialStart("google", screen, () => proceed = true, () => busy = false));
-            };
-            screen.OnFacebook += () =>
-            {
-                if (busy) return;
-                busy = true;
-                host.StartCoroutine(SocialStart("facebook", screen, () => proceed = true, () => busy = false));
-            };
+                var go = Object.Instantiate(th.loginChoicePrefab, root, false);
+                go.transform.SetAsLastSibling();
+                var s = go.GetComponent<KitLoginChoice>();
+                screen = s;
+                s.SetAvailable(GoogleSignIn.Available, FacebookSignIn.Available);
+                s.OnGuest += () => { if (!busy) proceed = true; };
+                s.OnOffice += () =>
+                {
+                    if (busy) return;
+                    LoginGate.Release();
+                    if (th.recoverySheetPrefab == null) return;
+                    var sheetGo = Object.Instantiate(th.recoverySheetPrefab, root, false);
+                    sheetGo.transform.SetAsLastSibling();
+                    var sheet = sheetGo.GetComponent<KitRecoverySheet>();
+                    RecoveryFlow.Wire(sheet, host);
+                    sheet.Open();
+                };
+                s.OnGoogle += () =>
+                {
+                    if (busy) return;
+                    busy = true;
+                    host.StartCoroutine(SocialStart("google", s, () => proceed = true, () => busy = false));
+                };
+                s.OnFacebook += () =>
+                {
+                    if (busy) return;
+                    busy = true;
+                    host.StartCoroutine(SocialStart("facebook", s, () => proceed = true, () => busy = false));
+                };
+                // optional: the two small pills. The choice is saved, the canvas is mirrored (or not), and this screen is made again in that language.
+                s.OnLanguage += code =>
+                {
+                    if (busy) return;
+                    PlayerPrefs.SetString(GameConstants.PREF_LANGUAGE, code); PlayerPrefs.Save();
+                    Loc.Reset();
+                    KitLocale.Prepare(canvas);
+                    Object.Destroy(s.gameObject);
+                    Make();
+                };
+            }
+            Make();
             while (!proceed) yield return null;
             LoginGate.ResumePlayFab();          // a Google or Facebook attempt that did not finish must not leave the PlayFab sign-in waiting
             PlayerPrefs.SetInt(LoginGate.ChosenKey, 1); PlayerPrefs.Save();
             LoginGate.Release();
-            screen.Close();
+            if (screen != null) screen.Close();
         }
 
         private const int OverLoadingOrder = 500;

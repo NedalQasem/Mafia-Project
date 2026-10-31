@@ -95,7 +95,7 @@ namespace MafiaNight.UI.Kit
             if (!en && mirrored.Count == 0) return;
             foreach (var c in FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (c.isRootCanvas) Convert(c, en);
-            foreach (var kv in mirrored) if (kv.Key != null) ReplaceMasks(kv.Key);
+            foreach (var kv in mirrored) if (kv.Key != null) { ReplaceMasks(kv.Key); if (frame % 12 == 0) ReplaceTextPictures(kv.Key); }      // what a screen added later is turned too
             var gone = new List<Canvas>(); foreach (var k in mirrored.Keys) if (k == null) gone.Add(k);
             foreach (var k in gone) mirrored.Remove(k);
         }
@@ -136,11 +136,15 @@ namespace MafiaNight.UI.Kit
                         pictures[p[0]] = new KeyValuePair<float, string>(fs, p[2]);
                     }
             }
-            if (pictures.Count == 0) return;
             var th = KitTheme.Current;
             foreach (var img in c.GetComponentsInChildren<Image>(true))
             {
-                if (img.sprite == null || !pictures.TryGetValue(img.sprite.name, out var info)) continue;
+                if (img.sprite != null && img.sprite.name.StartsWith("brand_"))      // a company logo must not read backwards: it is turned back
+                {
+                    var s = img.transform.localScale; if (s.x > 0f) { s.x = -s.x; img.transform.localScale = s; }
+                    continue;
+                }
+                if (pictures.Count == 0 || img.sprite == null || !pictures.TryGetValue(img.sprite.name, out var info)) continue;
                 var font = info.Key >= 36f ? (th != null && th.fontLalezar != null ? th.fontLalezar : th != null ? th.fontHeading : null) : (th != null ? th.fontBody : null);
                 TextInPlaceOf(img, info.Value, font, info.Key * 1080f / 390f, 0f);
             }

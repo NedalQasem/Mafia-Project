@@ -32,6 +32,11 @@ button{border:0;cursor:pointer;background:none}
 .logo b{display:block;font-family:Lalezar;font-weight:400;font-size:4.6rem;line-height:1;color:var(--ivory);text-shadow:0 4px 0 #000}
 .logo span{display:block;margin-top:2px;font-weight:800;font-size:.95rem;color:var(--brass)}
 
+/* language: two small optional pills at the top right of the first screen (Arabic is the default; nobody has to pick) */
+.lang{position:absolute;top:16px;right:14px;z-index:6;display:flex;gap:3px;padding:3px;border-radius:15px;background:#000a;box-shadow:inset 0 2px 4px #000,0 0 0 1px #3a2e22}
+.lang button{padding:5px 12px;border-radius:12px;font-weight:800;font-size:.72rem;color:#8f8777;font-family:Cairo}
+.lang button.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:inset 0 1px 0 #fff9,0 2px 0 #000}
+
 /* choice plates */
 .plates{position:absolute;left:24px;right:24px;top:240px;display:grid;gap:12px}
 .plate{position:relative;display:flex;align-items:center;gap:12px;padding:0 16px;height:58px;border-radius:12px;font-family:Lalezar;font-size:1.25rem;color:#f0dcd8;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000,0 0 0 1px #000}
@@ -104,6 +109,7 @@ button{border:0;cursor:pointer;background:none}
     <!-- A: choice -->
     <div class="frame on" id="fa">
       <div class="stars"></div><div class="skyline"></div>
+      <div class="lang" id="lang"><button class="on" data-l="ar">العربية</button><button data-l="en">English</button></div>
       <div class="logo"><b>المافيا</b><span>الليلة لا ترحم</span></div>
       <div class="plates">
         <button class="plate red"><span class="ic g">G</span>الدخول بحساب Google</button>
@@ -195,6 +201,7 @@ function show(s) {
 }
 document.getElementById('pick').addEventListener('click', e => { const b = e.target.closest('button'); if (b) show(b.dataset.s); });
 document.getElementById('toOffice').onclick = () => show('b');
+document.querySelectorAll('#lang button').forEach(b => b.onclick = () => document.querySelectorAll('#lang button').forEach(x => x.classList.toggle('on', x === b)));
 document.getElementById('oclose').onclick = () => show('a');
 document.getElementById('ogo').onclick = () => { const e = document.getElementById('oerr'); e.textContent = 'الاسم أو كلمة السر غلط'; };
 show(location.hash.slice(1) || 'a');

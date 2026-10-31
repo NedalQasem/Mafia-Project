@@ -95,6 +95,23 @@ namespace MafiaNight.UI.Kit.Editor
             var tag = Txt(content.transform, "Tag", "الليلة لا ترحم", cairo, 44, brass, TextAlignmentOptions.Center); tag.fontStyle = FontStyles.Bold; tag.overflowMode = TextOverflowModes.Overflow; tag.textWrappingMode = TextWrappingModes.NoWrap;
             At(tag.gameObject, new Vector2(.5f, 1f), new Vector2(0, -540), new Vector2(900, 70), new Vector2(.5f, 1f));
 
+            // the language pills (login.html ".lang"): small, optional, top right
+            var lang = Go("Lang", content.transform); At(lang, new Vector2(1f, 1f), new Vector2(-44, -56), new Vector2(460, 96), new Vector2(1f, 1f));
+            Img(lang, th.segBar, true, 2.4f);
+            var langLayout = lang.AddComponent<HorizontalLayoutGroup>(); langLayout.padding = new RectOffset(8, 8, 8, 8); langLayout.spacing = 6;
+            langLayout.childControlWidth = langLayout.childControlHeight = langLayout.childForceExpandWidth = langLayout.childForceExpandHeight = true; langLayout.reverseArrangement = true;
+            var langButtons = new Button[2]; string[] langNames = { "العربية", "English" };
+            for (int i = 0; i < 2; i++)
+            {
+                var o = Go("Opt" + i, lang.transform); var pillImg = Img(o, th.segOn, true, 2.6f, true); pillImg.color = new Color(1, 1, 1, 0);
+                var ob2 = o.AddComponent<Button>(); ob2.targetGraphic = pillImg; ob2.transition = Selectable.Transition.None; langButtons[i] = ob2;
+                var ot2 = Txt(o.transform, "T", langNames[i], cairo, 34, th.ivoryDim); ot2.fontStyle = FontStyles.Bold; Stretch(Rt(ot2.gameObject), 4, 4, 4, 6);
+                ot2.enableAutoSizing = true; ot2.fontSizeMin = 20; ot2.fontSizeMax = 34;
+            }
+            var langSeg = lang.AddComponent<KitSegmented>();
+            { var lso = new SerializedObject(langSeg); var arr = lso.FindProperty("options"); arr.arraySize = 2; for (int i = 0; i < 2; i++) arr.GetArrayElementAtIndex(i).objectReferenceValue = langButtons[i]; lso.FindProperty("selected").intValue = 0; lso.ApplyModifiedPropertiesWithoutUndo(); }
+            SetRef(view, "language", langSeg); SetRef(view, "languageBox", Rt(lang));
+
             var google = Plate(content.transform, "Google", th.leatherRed, th.ivory, "الدخول بحساب Google", Spr("brand_google"), new Color32(0xF4, 0xEF, 0xE3, 255), "G", new Color32(0xD1, 0x48, 0x36, 255), -820, 160);
             var facebook = Plate(content.transform, "Facebook", th.leatherDark, th.ivory, "الدخول بحساب Facebook", Spr("brand_facebook"), new Color32(0x18, 0x77, 0xF2, 255), "f", Color.white, -1000, 160);
             var apple = Plate(content.transform, "Apple", th.leatherDark, th.ivory, "الدخول بحساب Apple", Spr("brand_apple"), new Color32(0x11, 0x11, 0x11, 255), "A", Color.white, -1180, 160);

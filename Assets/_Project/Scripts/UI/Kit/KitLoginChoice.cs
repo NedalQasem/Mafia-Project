@@ -16,8 +16,12 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private Button googleButton, facebookButton, appleButton, guestButton, officeButton;
         [SerializeField] private GameObject googleSoon, facebookSoon, appleSoon;
         [SerializeField] private ArabicText messageText;
+        [SerializeField] private KitSegmented language;      // the two small optional pills: العربية / English
+        [SerializeField] private RectTransform languageBox;
 
         public event Action OnGoogle, OnFacebook, OnGuest, OnOffice;
+        /// <summary>The player picked a language with the little pills: "ar" or "en". The pref is already saved by the caller.</summary>
+        public event Action<string> OnLanguage;
 
         private bool closing;
 
@@ -30,6 +34,17 @@ namespace MafiaNight.UI.Kit
             guestButton.onClick.AddListener(() => OnGuest?.Invoke());
             officeButton.onClick.AddListener(() => OnOffice?.Invoke());
             appleButton.interactable = false; appleSoon.SetActive(true);
+            if (language != null)
+            {
+                language.Set(MafiaNight.Core.Loc.English ? 1 : 0);
+                language.OnChanged += i => OnLanguage?.Invoke(i == 1 ? "en" : "ar");
+                // the pills stay at the top right in both languages: in English the screen is drawn in a mirror, so they are built on the left
+                if (MafiaNight.Core.Loc.English && languageBox != null)
+                {
+                    languageBox.anchorMin = languageBox.anchorMax = new Vector2(0f, 1f); languageBox.pivot = new Vector2(0f, 1f);
+                    languageBox.anchoredPosition = new Vector2(-languageBox.anchoredPosition.x, languageBox.anchoredPosition.y);
+                }
+            }
             group.alpha = 0f;
         }
 
