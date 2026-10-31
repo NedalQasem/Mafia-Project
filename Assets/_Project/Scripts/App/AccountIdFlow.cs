@@ -3,7 +3,9 @@ using MafiaNight.Data.Player;
 using MafiaNight.Services.Friends;
 using MafiaNight.Services.Profile;
 using MafiaNight.UI.Kit;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MafiaNight.App
 {
@@ -24,6 +26,14 @@ namespace MafiaNight.App
             if (screen == null) { enabled = false; return; }
             idValue = Find(screen.transform, "IdStrip/V");
             versionLine = Find(screen.transform, "Version/T");
+            var pill = idValue != null && idValue.transform.parent != null ? idValue.transform.parent.Find("Pill") : null;
+            if (pill != null)                       // a tap on the id number copies it (the support asks for it)
+            {
+                var pillImg = pill.GetComponent<Image>(); if (pillImg != null) pillImg.raycastTarget = true;
+                var btn = pill.gameObject.AddComponent<Button>(); btn.targetGraphic = pillImg; btn.transition = Selectable.Transition.None;
+                btn.onClick.AddListener(CopyId);
+                var tmp = idValue.GetComponent<TMPro.TMP_Text>(); if (tmp != null && !tmp.enableAutoSizing) { tmp.fontSizeMax = tmp.fontSize; tmp.fontSizeMin = 22f; tmp.enableAutoSizing = true; }
+            }
             nameLabel = Find(screen.transform, "IdStrip/Name"); subLabel = Find(screen.transform, "IdStrip/Sub");
             foreach (var a in screen.GetComponentsInChildren<AvatarFrame>(true)) if (a.transform.parent != null && a.transform.parent.name == "IdStrip") avatar = a;
             if (ServiceLocator.TryGet(out profile)) { profile.OnProfileLoaded += OnProfile; profile.OnProfileUpdated += OnProfile; }
@@ -41,10 +51,29 @@ namespace MafiaNight.App
 
         private void OnProfile(PlayerProfile _) => Paint();
 
+        private Coroutine copied;
+
+        private void CopyId()
+        {
+            string num = friends != null && friends.Me != null ? friends.Me.Num : null;
+            if (string.IsNullOrEmpty(num) || idValue == null) return;
+            GUIUtility.systemCopyBuffer = num;
+            idValue.Text = "تم النسخ";
+            if (copied != null) StopCoroutine(copied);
+            copied = StartCoroutine(ShowNumberAgain());
+        }
+
+        private IEnumerator ShowNumberAgain()
+        {
+            yield return new WaitForSecondsRealtime(1.4f);
+            copied = null;
+            Paint();
+        }
+
         private void Paint()
         {
             string num = friends != null && friends.Me != null && !string.IsNullOrEmpty(friends.Me.Num) ? Ar(friends.Me.Num) : "······";
-            if (idValue != null) idValue.Text = num;
+            if (idValue != null && copied == null) idValue.Text = num;
             var p = profile != null ? profile.LocalProfile : null;
             if (p != null)
             {
