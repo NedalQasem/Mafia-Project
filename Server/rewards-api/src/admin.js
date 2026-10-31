@@ -7,6 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { ChatError } = require('./chat');
+const { RoomError } = require('./officialrooms');
 const { normalize: normCode, CODE_RE } = require('./codes');
 
 const PF_ID = /^[A-Za-z0-9]{6,32}$/;
@@ -112,7 +113,7 @@ function cleanPack(b, id) {
   return { id, name, coins, gems, items };
 }
 
-function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, accounts = null, lbPrizes = null, htmlFile = null, now = () => Date.now(), log = console }) {
+function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, accounts = null, lbPrizes = null, officialRooms = null, htmlFile = null, now = () => Date.now(), log = console }) {
   const base = '/' + String(adminCfg.path || '/admin').replace(/^\/+|\/+$/g, '');
   const passwordHash = adminCfg.passwordHash || '';
   const sessionMs = (adminCfg.sessionHours || 12) * 3600 * 1000;
@@ -468,6 +469,58 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       store.audit(until ? 'player_mute' : 'player_unmute', String(b.pf) + (until ? ' ' + b.minutes + 'm' : ''), String(b.pf));
       return send(res, 200, { ok: true, mutedUntil: until });
     }
+    // ---- official rooms (the Mafia Office room and the rooms like it): definitions, admins, who is inside, the chat and the room's log
+    if (rest.startsWith('/api/office')) {
+      if (!officialRooms) throw new AdminError('no_rooms', 404);
+      if (rest === '/api/office' && method === 'GET') {
+        const view = officialRooms.adminView();
+        const f = friends ? friends._state() : null;
+        for (const r of view.rooms) r.adminList = await Promise.all(r.admins.map(async pf => ({ pf, name: (await chat.who(pf).catch(() => ({ name: '' }))).name || pf, num: f && f.nums[pf] ? f.nums[pf] : null, online: r.members.some(m => m.pf === pf) })));
+        return send(res, 200, view);
+      }
+      if (rest === '/api/office/log' && method === 'GET') { const id = String(url.searchParams.get('room') || ''); return send(res, 200, { ok: true, log: officialRooms.logOf(id, 150), stats: officialRooms.stats(id) }); }
+      if (rest === '/api/office/chat' && method === 'GET') { const id = String(url.searchParams.get('room') || ''); if (!officialRooms.room(id)) throw new AdminError('not_found', 404); return send(res, 200, { ok: true, messages: chat.history('room:' + id, 80).reverse() }); }
+      if (rest === '/api/office/save' && method === 'POST') {
+        const b = await readJson(req);
+        const r = b.id ? officialRooms.update(String(b.id), b) : officialRooms.create(b);
+        store.audit(b.id ? 'office_update' : 'office_create', r.id + ' ' + r.name);
+        return send(res, 200, { ok: true, room: r });
+      }
+      if (rest === '/api/office/delete' && method === 'POST') {
+        const b = await readJson(req);
+        officialRooms.remove(String(b.id || ''));
+        store.audit('office_delete', String(b.id));
+        return send(res, 200, { ok: true });
+      }
+      if (rest === '/api/office/admin' && method === 'POST') {
+        const b = await readJson(req);
+        const pf = resolveTarget(b.player);
+        if (b.on !== false && !(await isAccount(pf))) throw new AdminError('unknown_player', 404);
+        const admins = officialRooms.setAdmin(String(b.room || ''), pf, b.on !== false);
+        store.audit(b.on !== false ? 'office_admin_add' : 'office_admin_remove', String(b.room) + ' ' + pf, pf);
+        return send(res, 200, { ok: true, admins });
+      }
+      if (rest === '/api/office/command' && method === 'POST') {
+        const b = await readJson(req);
+        officialRooms.command(String(b.room || ''), String(b.kind || ''), String(b.puid || ''), String(b.pf || ''), 'الإدارة');
+        store.audit('office_' + String(b.kind), String(b.room) + ' ' + String(b.pf || b.puid), String(b.pf || ''));
+        return send(res, 200, { ok: true });
+      }
+      if (rest === '/api/office/chat/delete' && method === 'POST') {
+        const b = await readJson(req);
+        const ok = chat.removeMessage(Number(b.id));
+        store.audit('office_chat_delete', String(b.id));
+        return send(res, 200, { ok: true, removed: ok });
+      }
+      if (rest === '/api/office/chat/say' && method === 'POST') {
+        const b = await readJson(req);
+        if (!officialRooms.room(String(b.room || ''))) throw new AdminError('not_found', 404);
+        const m = chat.systemLine('room:' + String(b.room), String(b.text || '').trim());
+        store.audit('office_say', String(b.room) + ' ' + String(b.text || '').slice(0, 60));
+        return send(res, 200, { ok: true, id: m.id });
+      }
+      return send(res, 404, { ok: false, error: 'not_found' });
+    }
     // ---- packages
     if (rest === '/api/packs' && method === 'GET') return send(res, 200, { ok: true, packs: store.packs });
     // ---- prizes of the leaderboards (day and week): set here, paid by the server by mail when the period is over
@@ -645,7 +698,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       await api(req, res, rest, url, ip);
     } catch (e) {
       if (res.writableEnded) return;
-      if (e instanceof AdminError || e instanceof ChatError) return send(res, e.status || 400, Object.assign({ ok: false, error: e.code || e.message }, e.playfab ? { playfab: e.playfab } : {}));
+      if (e instanceof AdminError || e instanceof ChatError || e instanceof RoomError) return send(res, e.status || 400, Object.assign({ ok: false, error: e.code || e.message }, e.playfab ? { playfab: e.playfab } : {}));
       log.error('admin failed:', e && e.message);
       send(res, 500, { ok: false, error: 'server_error' });
     }

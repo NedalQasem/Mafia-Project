@@ -56,6 +56,7 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
   // names: pf -> display name of every player seen, kept on disk so the admin search still finds them after a restart
   let state = { nextId: 0, messages: { [PUBLIC]: [] }, groups: {}, reads: {}, blocks: {}, mutes: {}, reported: {}, names: {} };
   try { if (file) state = Object.assign(state, JSON.parse(fs.readFileSync(file, 'utf8'))); } catch { /* first run */ }
+  let rooms = null;                     // the official rooms (officialrooms.js): who may read and write their chat, and how fast
   const lastSend = new Map();           // pf -> { ch -> ms }
   const lastSeen = new Map();           // pf -> ms of the last poll
   const waiters = new Map();            // pf -> { since, resolve, timer }
@@ -114,7 +115,7 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
   }
 
   function checkCooldown(pf, ch) {
-    const gap = ch === PUBLIC ? c.publicCooldownMs : c.cooldownMs;
+    const gap = ch === PUBLIC ? c.publicCooldownMs : ch.startsWith('room:') && rooms ? rooms.slowMs(pf, ch.slice(5)) : c.cooldownMs;
     const mine = lastSend.get(pf) || {};
     const wait = (mine[ch] || 0) + gap - now();
     if (wait > 0) throw new ChatError('slow', 429, { retryMs: wait });
@@ -129,6 +130,7 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     if (ch === PUBLIC) return true;
     if (ch.startsWith('dm:')) return dmMembers(ch).includes(pf);
     if (ch.startsWith('grp:')) { const g = state.groups[ch.slice(4)]; return !!g && g.members.includes(pf); }
+    if (ch.startsWith('room:')) return !!rooms && rooms.canRead(pf, ch.slice(5));
     return false;
   }
 
@@ -182,6 +184,9 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
         ch = dmChannel(pf, other);
       } else if (ch.startsWith('grp:')) {
         if (!canSee(pf, ch)) throw new ChatError('not_member', 403);
+      } else if (ch.startsWith('room:')) {
+        if (!canSee(pf, ch)) throw new ChatError('not_member', 403);
+        if (!rooms.chatOpen(ch.slice(5)) && !rooms.isStaff(pf, ch.slice(5))) throw new ChatError('closed', 403);
       } else throw new ChatError('bad_channel');
     }
     const t = clean(text);
@@ -342,6 +347,17 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     return null;
   }
 
+  /** The last lines of a channel (for somebody who just entered a room), oldest first. */
+  function history(ch, n) { return (state.messages[ch] || []).slice(-n).map(pack); }
+  function countSince(ch, since) { return (state.messages[ch] || []).filter(m => m.ts >= since).length; }
+  /** The admin deletes one message (it disappears for people who load the history; a player who already got it keeps it). */
+  function removeMessage(id) {
+    for (const list of Object.values(state.messages)) { const i = list.findIndex(x => x.id === id); if (i >= 0) { list.splice(i, 1); save(); return true; } }
+    return false;
+  }
+  /** Posts a line in a room's channel as the game itself (a welcome or a notice). */
+  function systemLine(ch, text) { return addMessage(ch, '', 'المكتب', 0, String(text).slice(0, c.maxLen), true); }
+
   /** Forget reports and sends that are old (called now and then). */
   function purge() {
     const dayAgo = now() - 24 * 3600 * 1000;
@@ -378,7 +394,7 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     return out.slice(0, 20);
   }
 
-  return { who, pushEvent, isOnline, onlineCount, onlinePlayers, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, adminMute, muteUntil, searchPeople, forgetPerson, ChatError, _state: () => state };
+  return { setRooms: r => { rooms = r; }, history, countSince, removeMessage, systemLine, who, pushEvent, isOnline, onlineCount, onlinePlayers, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, adminMute, muteUntil, searchPeople, forgetPerson, ChatError, _state: () => state };
 }
 
 module.exports = { createChat, ChatError, normalize, rankIndex, dmChannel, PUBLIC };

@@ -21,6 +21,7 @@ const { createGoogle, createFacebook, createIdentity } = require('./identity');
 const FACEBOOK_APP_ID = '2057586301904403';       // public id of the game's Facebook app; its secret is FACEBOOK_APP_SECRET in /etc/mafia-rewards.env (set-facebook.sh)
 const GOOGLE_WEB_CLIENT_ID = '1007236526273-19121cletqstpgahntdot10rvhmv5n48.apps.googleusercontent.com';       // public identifier of the game's Google web client (not a secret); config.json can list others in googleClientIds
 const { createAdminStore } = require('./adminstore');
+const { createOfficialRooms } = require('./officialrooms');
 const { createAdmin } = require('./admin');
 
 const cfgPath = process.env.CONFIG || path.join(__dirname, '..', 'config.json');
@@ -53,12 +54,17 @@ const identity = createIdentity({ accounts, playfab, chat, providers: {
   google: createGoogle({ clientIds: cfg.googleClientIds || [GOOGLE_WEB_CLIENT_ID] }),
   facebook: createFacebook({ appId: cfg.facebookAppId || FACEBOOK_APP_ID, appSecret: process.env.FACEBOOK_APP_SECRET || '' }),
 } });
+// official rooms (the Mafia Office room...): kept alive by the room bot, which talks to /v1/bot with BOT_KEY (set-bot-key.sh); a player is "new" for his first 7 days
+const NEW_PLAYER_MS = 7 * 24 * 3600 * 1000;
+const officialRooms = createOfficialRooms({ file: dataDir + '/officialrooms.json', chat, isNew: pf => { const t = accounts.firstSeen(pf); return t > 0 && Date.now() - t < NEW_PLAYER_MS; } });
+chat.setRooms(officialRooms);
+const botKey = process.env.BOT_KEY || '';
 // the admin board: needs ADMIN_PASSWORD_HASH (made by set-admin.sh); without it the board does not exist
-const admin = createAdmin({ lbPrizes,
+const admin = createAdmin({ lbPrizes, officialRooms,
   cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, images, accounts, reportsFile: dataDir + '/chat-reports.jsonl',
   adminCfg: Object.assign({}, cfg.admin, process.env.ADMIN_PASSWORD_HASH ? { passwordHash: process.env.ADMIN_PASSWORD_HASH } : {}, process.env.ADMIN_PATH ? { path: process.env.ADMIN_PATH } : {}),
 });
-const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, images, accounts, identity, admin });
+const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, images, accounts, identity, admin, officialRooms, botKey });
 if (admin.enabled) console.log('admin board on ' + admin.base); else console.log('admin board is off (no ADMIN_PASSWORD_HASH)');
 
 setInterval(() => { accounts.sweep().then(r => { if (r.warned || r.deleted || r.failed) console.log('guests', JSON.stringify(r)); }).catch(() => {}); }, 6 * 3600 * 1000).unref();     // warns and (only when config guests.purge is true) deletes abandoned guests
@@ -66,6 +72,6 @@ setInterval(() => { events.autoDistribute().catch(() => {}); }, 60 * 1000).unref
 setInterval(() => { lbPrizes.payDue(); }, 60 * 1000).unref();                            // prizes of the day and the week that ended
 setInterval(() => { chat.purge(); friends.purge(); leaderboard.purge(); events.purge(); mail.purge(); }, 3600 * 1000).unref();
 setInterval(() => store.purge(Date.now(), 48 * 3600 * 1000, new Date().toISOString().slice(0, 10)), 3600 * 1000).unref();
-for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); mail.flushNow(); adminStore.flushNow(); accounts.flushNow(); } finally { process.exit(0); } });
+for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); mail.flushNow(); adminStore.flushNow(); accounts.flushNow(); officialRooms.flushNow(); } finally { process.exit(0); } });
 
 server.listen(cfg.port, cfg.host, () => console.log(`rewards api on ${cfg.host}:${cfg.port} (title ${cfg.titleId})`));

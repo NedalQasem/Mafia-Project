@@ -10,7 +10,7 @@ const { createLegal } = require('./legal');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, accounts = null, identity = null, admin = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, accounts = null, identity = null, admin = null, officialRooms = null, botFarm = null, botKey = '', now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -111,10 +111,10 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     res.end(text);
   }
 
-  function readJson(req, res) {
+  function readJson(req, res, limit = 8192) {
     return new Promise(resolve => {
       let size = 0; const chunks = [];
-      req.on('data', c => { size += c.length; if (size > 8192) { send(res, 413, { ok: false, error: 'too big' }); req.destroy(); resolve(undefined); } else chunks.push(c); });
+      req.on('data', c => { size += c.length; if (size > limit) { send(res, 413, { ok: false, error: 'too big' }); req.destroy(); resolve(undefined); } else chunks.push(c); });
       req.on('end', () => {
         if (res.writableEnded) return resolve(undefined);
         if (size === 0) return resolve({});
@@ -172,7 +172,14 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
   } : {};
   const loginRoutes = { '/v1/auth/google/login': ['google', 'idToken'], '/v1/auth/facebook/login': ['facebook', 'accessToken'] };
   const codesPost = codes ? { '/v1/codes/redeem': async (pf, b) => codes.redeem(pf, b.code) } : {};
-  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
+  // official rooms: the list, entering and leaving a room's chat (a player is inside a room's chat only while he pings)
+  const roomsPost = officialRooms ? {
+    '/v1/rooms/official': async pf => officialRooms.list(pf),
+    '/v1/rooms/official/enter': async (pf, b) => officialRooms.enter(pf, String(b.id || '')),
+    '/v1/rooms/official/ping': async pf => officialRooms.ping(pf),
+    '/v1/rooms/official/leave': async pf => officialRooms.leave(pf),
+  } : {};
+  const posts = Object.assign({}, chat ? chatPost : {}, roomsPost, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
   const legal = createLegal();
 
   const server = http.createServer((req, res) => {
@@ -219,6 +226,25 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
       })();
       return;
     }
+    // the room bot (a program of ours on the same server): it has no player ticket, it has a shared key
+    if (botKey && url.pathname.startsWith('/v1/bot/')) {
+      const got = String(req.headers['x-bot-key'] || '');
+      const ok = got.length === botKey.length && crypto.timingSafeEqual(Buffer.from(got), Buffer.from(botKey));
+      if (!ok) return send(res, 401, { ok: false, error: 'bad key' });
+      (async () => {
+        try {
+          if (req.method === 'POST' && url.pathname === '/v1/bot/beat') {
+            const body = await readJson(req, res, 262144);
+            if (body === undefined) return;
+            const out = officialRooms ? officialRooms.beat(body) : { ok: true, commands: [], rooms: [] };
+            if (botFarm) out.farm = botFarm.beat(body);
+            return send(res, 200, out);
+          }
+          return send(res, 404, { ok: false, error: 'not found' });
+        } catch (e) { fail(res, e, url.pathname); }
+      })();
+      return;
+    }
     const isResult = req.method === 'POST' && url.pathname === '/v1/match-result';
     const isChatPost = req.method === 'POST' && !!posts[url.pathname];
     const isChatGet = req.method === 'GET' && ((!!chat && (url.pathname === '/v1/chat/poll' || url.pathname === '/v1/chat/inbox' || url.pathname === '/v1/chat/blocked')) || (!!friends && (url.pathname === '/v1/friends' || url.pathname === '/v1/me')));
@@ -235,6 +261,7 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
           if (url.pathname === '/v1/me') return send(res, 200, await friends.me(pf));
           if (url.pathname === '/v1/chat/inbox') return send(res, 200, await chat.inbox(pf));
           if (url.pathname === '/v1/chat/blocked') return send(res, 200, chat.blockedList(pf));
+          if (officialRooms) officialRooms.ping(pf);
           const out = await chat.poll(pf, parseInt(url.searchParams.get('since') || '0', 10), Math.min(parseInt(url.searchParams.get('wait') || '0', 10) * 1000 || 0, 25000), url.searchParams.get('history') === '1');
           return send(res, 200, Object.assign({ ok: true }, out));
         }

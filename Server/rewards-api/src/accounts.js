@@ -93,7 +93,10 @@ function createAccounts({ cfg = {}, file = null, mail = null, playfab = null, re
     return out;
   }
 
-  return { touch, link, owner, status, summary, sweep, isLinked, flushNow, METHODS };
+  /** When the server first saw this player (ms), or 0. */
+  const firstSeen = pf => (state.players[pf] && state.players[pf].first) || 0;
+
+  return { touch, link, owner, status, summary, sweep, isLinked, firstSeen, flushNow, METHODS };
 }
 
 module.exports = { createAccounts };
