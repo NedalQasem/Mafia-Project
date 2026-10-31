@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The room bot: keeps the official rooms (Mafia Office...) open on EOS and runs the made-up players. It shares the game's own code:
+       the EOS C# wrapper and the pure room / match rules (MatchRules), so the rules the players run are the ones the bot runs. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>12</LangVersion>
+    <RootNamespace>MafiaNight.RoomBot</RootNamespace>
+    <AssemblyName>RoomBot</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>$(NoWarn);CS1591;CS0618;CS8981</NoWarn>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <DefineConstants>$(DefineConstants);EOS_PLATFORM_WINDOWS_64</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="src/**/*.cs" />
+    <Compile Include="../../Assets/ThirdParty/EOS-SDK/SDK/Source/**/*.cs" Link="eos/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../Assets/_Project/Scripts/MatchRules/**/*.cs" Link="rules/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- the EOS native library next to the program -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <None Include="../../Assets/ThirdParty/EOS-SDK/SDK/Bin/EOSSDK-Win64-Shipping.dll" CopyToOutputDirectory="PreserveNewest" Link="EOSSDK-Win64-Shipping.dll" />
+    <None Include="../../Assets/ThirdParty/EOS-SDK/SDK/Bin/x64/xaudio2_9redist.dll" CopyToOutputDirectory="PreserveNewest" Link="xaudio2_9redist.dll" Condition="Exists('../../Assets/ThirdParty/EOS-SDK/SDK/Bin/x64/xaudio2_9redist.dll')" />
+  </ItemGroup>
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <None Include="../../Assets/ThirdParty/EOS-SDK/SDK/Bin/libEOSSDK-Linux-Shipping.so" CopyToOutputDirectory="PreserveNewest" Link="libEOSSDK-Linux-Shipping.so" />
+  </ItemGroup>
+
+</Project>
