@@ -153,6 +153,23 @@ body.wide .phone{height:470px;border-radius:22px}
 .D .key .ico.ill{width:26px;height:26px}
 .E .key .ico.ill{width:34px;height:34px}
 .E .s.on .key .ico.ill{width:28px;height:28px;filter:drop-shadow(0 1px 1px #000)}
+/* the menu that rises from a tab with two places behind it */
+.scrim{position:absolute;inset:0;z-index:9;background:#000a}   /* under the bar (z 10), so the bar stays lit */
+.menu{position:absolute;z-index:30;width:250px;max-width:calc(100% - 16px);padding:7px;border-radius:12px;background:var(--grain),linear-gradient(180deg,#2e2018,#160e0a);background-blend-mode:multiply,normal;
+  box-shadow:0 0 0 1px #000,0 0 0 2.5px #8a6a30,0 0 0 3.5px #000,0 18px 30px #000e;animation:rise .28s cubic-bezier(.2,1.3,.4,1);transform-origin:var(--ax) 100%}
+.menu::after{content:"";position:absolute;bottom:-7px;left:var(--ax);width:13px;height:13px;transform:translateX(-50%) rotate(45deg);background:#160e0a;box-shadow:2.5px 2.5px 0 0 #8a6a30,3.5px 3.5px 0 0 #000}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.9)}}
+.mi{position:relative;display:flex;align-items:center;gap:10px;width:100%;padding:7px 9px;border-radius:8px;text-align:start}
+.mi + .mi{margin-top:3px}
+.mi + .mi::before{content:"";position:absolute;inset-inline:10px;top:-2px;border-top:1px dashed #a98f6244}
+.mi .ico.ill{width:38px;height:38px;flex:none;filter:drop-shadow(0 2px 2px #000)}
+.mi .tx{flex:1;min-width:0}
+.mi b{display:block;font-family:Lalezar;font-weight:400;font-size:1.08rem;line-height:1.15;color:#f0dca0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi small{display:block;font-size:.66rem;font-weight:700;color:#a1957f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi.cur{background:linear-gradient(180deg,#5a141a,#360a0e);box-shadow:inset 0 0 0 1px #c9a050}
+.mi.cur small{color:#d7c3a0}
+.mi:active{transform:scale(.97)}
+.mi .cnt,.mi .nd{position:static;flex:none;box-shadow:0 0 0 2px #1d130e}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
 </style>
 </head>
@@ -263,10 +280,49 @@ body.wide .phone{height:470px;border-radius:22px}
     <rect x="32.5" y="18" width="3.2" height="12" rx="1.4" fill="url(#mBrass)" stroke="#000" stroke-width=".7"/>
     <rect x="9" y="41.5" width="5" height="2.5" fill="#000"/><rect x="34" y="41.5" width="5" height="2.5" fill="#000"/>
   </symbol>
+  <symbol id="m-phone" viewBox="0 0 48 48">
+    <path d="M7 15.5q0-6.5 6-6.5h22q6 0 6 6.5v1q0 2.4-2.4 2.4h-4q-2.4 0-2.4-2.4v-2H16.8v2q0 2.4-2.4 2.4h-5Q7 18.9 7 16.5z" fill="url(#mSuit)" stroke="#000" stroke-width="1"/>
+    <path d="M12 10.8h24" stroke="#ffffff30" stroke-width=".8"/>
+    <rect x="14.2" y="18" width="3" height="4" fill="url(#mBrass)" stroke="#000" stroke-width=".5"/><rect x="30.8" y="18" width="3" height="4" fill="url(#mBrass)" stroke="#000" stroke-width=".5"/>
+    <path d="M11.5 21.5h25l5.6 18.6q.5 2.4-2 2.4H7.9q-2.5 0-2-2.4z" fill="url(#mCrim)" stroke="#000" stroke-width="1"/>
+    <circle cx="24" cy="32" r="8.2" fill="url(#mIvory)" stroke="#000" stroke-width=".9"/>
+    <g fill="#3a2a20"><circle cx="24" cy="26.3" r="1.3"/><circle cx="28" cy="28" r="1.3"/><circle cx="29.7" cy="32" r="1.3"/><circle cx="28" cy="36" r="1.3"/><circle cx="24" cy="37.7" r="1.3"/><circle cx="20" cy="36" r="1.3"/><circle cx="18.3" cy="32" r="1.3"/><circle cx="20" cy="28" r="1.3"/></g>
+    <circle cx="24" cy="32" r="2.6" fill="url(#mBrass)" stroke="#000" stroke-width=".6"/>
+    <rect x="6" y="43" width="36" height="1.6" fill="#000" opacity=".5"/>
+  </symbol>
+  <symbol id="m-case" viewBox="0 0 48 48">
+    <path d="M17 15v-3.4q0-3 3-3h8q3 0 3 3V15" fill="none" stroke="#000" stroke-width="4.2"/>
+    <path d="M17 15v-3.4q0-3 3-3h8q3 0 3 3V15" fill="none" stroke="#7a4a28" stroke-width="2.6"/>
+    <rect x="4.5" y="14.5" width="39" height="27.5" rx="3.2" fill="url(#mWood)" stroke="#000" stroke-width="1.1"/>
+    <rect x="6.6" y="16.6" width="34.8" height="23.3" rx="2.2" fill="none" stroke="#e8c48c" stroke-width=".6" stroke-dasharray="1.4 1.2" opacity=".55"/>
+    <path d="M4.5 23.5h39" stroke="#000" stroke-width=".9" opacity=".6"/>
+    <rect x="11" y="20.5" width="6" height="6.6" rx="1" fill="url(#mBrass)" stroke="#000" stroke-width=".7"/>
+    <rect x="31" y="20.5" width="6" height="6.6" rx="1" fill="url(#mBrass)" stroke="#000" stroke-width=".7"/>
+    <circle cx="14" cy="24.4" r=".8" fill="#3a2a10"/><circle cx="34" cy="24.4" r=".8" fill="#3a2a10"/>
+    <rect x="5" y="42.6" width="38" height="1.8" fill="#000" opacity=".5"/>
+  </symbol>
+  <symbol id="m-trophy" viewBox="0 0 48 48">
+    <path d="M15 10q-8 0-7.2 6.2.8 5 7.8 5M33 10q8 0 7.2 6.2-.8 5-7.8 5" fill="none" stroke="#000" stroke-width="3.6"/>
+    <path d="M15 10q-8 0-7.2 6.2.8 5 7.8 5M33 10q8 0 7.2 6.2-.8 5-7.8 5" fill="none" stroke="url(#mBrass)" stroke-width="2"/>
+    <path d="M13.5 6.5h21V14q0 11-10.5 13Q13.5 25 13.5 14z" fill="url(#mBrass)" stroke="#000"/>
+    <path d="M24 10.4l1.4 2.9 3.2.4-2.3 2.2.6 3.2-2.9-1.5-2.9 1.5.6-3.2-2.3-2.2 3.2-.4z" fill="url(#mCrim)" stroke="#000" stroke-width=".5"/>
+    <rect x="21.8" y="26.6" width="4.4" height="6.4" fill="url(#mBrass)" stroke="#000" stroke-width=".7"/>
+    <rect x="16" y="33" width="16" height="4.2" rx="1" fill="url(#mDark)" stroke="url(#mBrass)" stroke-width=".9"/>
+    <rect x="12.5" y="37.2" width="23" height="5.6" rx="1" fill="url(#mDark)" stroke="#000"/>
+    <rect x="19" y="38.8" width="10" height="2.3" fill="url(#mBrass)"/>
+  </symbol>
+  <symbol id="m-medal" viewBox="0 0 48 48">
+    <path d="M14.5 3.5h7.4l5.6 19.5h-7.4z" fill="url(#mCrim)" stroke="#000" stroke-width=".8"/>
+    <path d="M33.5 3.5h-7.4L20.5 23h7.4z" fill="#7a141a" stroke="#000" stroke-width=".8"/>
+    <path d="M18.2 3.5l5.6 19.5M29.8 3.5L24.2 23" stroke="#f3ead6" stroke-width="1.2" opacity=".75"/>
+    <circle cx="24" cy="32" r="11" fill="url(#mBrass)" stroke="#000"/>
+    <circle cx="24" cy="32" r="8.4" fill="none" stroke="#7a5a22" stroke-width="1"/>
+    <path d="M24 25.6l1.9 3.9 4.3.6-3.1 3 .7 4.3-3.8-2-3.8 2 .7-4.3-3.1-3 4.3-.6z" fill="url(#mCrim)" stroke="#000" stroke-width=".6"/>
+  </symbol>
 </defs></svg>
 
 <h1>الشريط السفلي: خمس أفكار</h1>
-<p class="sub">نفس التبويبات الخمسة بكل الأفكار. الأيقونات رسومات مافيا: محل للسوق، رجال العيلة للعائلة، البيت للغرف، مسدسين للرتب، والخزنة للإعدادات (اختيار صاحب المشروع). فيك تقلبها لأيقونات خطوط من الأزرار. اضغط على أي تبويب لتجرّب. الأرقام: ٣ على العائلة، نقطة على الرتب، وعدد المتصلين على الغرف.</p>
+<p class="sub">نفس التبويبات الخمسة بكل الأفكار. الأيقونات رسومات مافيا: محل للسوق، رجال العيلة للعائلة، البيت للغرف، مسدسين للرتب، والخزنة للإعدادات (اختيار صاحب المشروع). فيك تقلبها لأيقونات خطوط من الأزرار. <b>السوق والعائلة والرتب</b> بيفتحوا قائمة صغيرة لفوق (المتجر/الحقيبة، الدردشة/العائلة، التصنيفات/رتبتي)، والغرف والإعدادات بيفتحوا مباشرة. اضغط على أي تبويب لتجرّب. الأرقام: ٣ على العائلة، نقطة على الرتب، وعدد المتصلين على الغرف.</p>
 <div class="ctl">
   <button data-lang="ar" class="on">عربي</button><button data-lang="en">English</button>
   <span style="width:12px"></span>
@@ -295,12 +351,44 @@ const IDEAS = [
   { c: 'D', name: 'د · فيش الطاولة', cap: 'الشريط حافة طاولة لعب: جوخ أخضر وإطار خشب. كل تبويب فيشة، والمختارة بتنرفع فوق رزمة فيش ذهبية. «الغرف» فيشة حمرا.' },
   { c: 'E', name: 'هـ · ختم الدون', cap: 'جلد غامق والأيقونات محفورة فيه. لما تختار تبويب بينطبع عليه ختم شمع أحمر بنقطة شمع سايلة، والاسم بخط الرقعة، كأنه الدون وقّع.' },
 ];
+// tabs with two places behind them open a small menu above the tab; rooms and settings open straight away
+const MENUS = {
+  market: [
+    { k: 'store', ic: 'm-market', ar: 'المتجر', en: 'Store', sar: 'كوينز وجواهر وعروض', sen: 'Coins, gems and offers' },
+    { k: 'bag', ic: 'm-case', ar: 'الحقيبة', en: 'Bag', sar: 'الأغراض اللي اشتريتها', sen: 'Everything you bought' }],
+  family: [
+    { k: 'chat', ic: 'm-phone', ar: 'الدردشة', en: 'Chat', sar: 'الخاص والمجموعات والساحة', sen: 'Private, groups and the square', cnt: 2 },
+    { k: 'friends', ic: 'm-family', ar: 'العائلة', en: 'Family', sar: 'الأصدقاء والطلبات', sen: 'Friends and requests', cnt: 1 }],
+  ranks: [
+    { k: 'boards', ic: 'm-trophy', ar: 'التصنيفات', en: 'Leaderboards', sar: 'الأقوى اليوم والأسبوع', sen: 'Best of the day and the week', dot: true },
+    { k: 'myrank', ic: 'm-medal', ar: 'رتبتي', en: 'My rank', sar: 'من الصبي للدون', sen: 'From errand boy to the Don' }],
+};
 const ar = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 let lang = 'ar', iconSet = 'mafia', settingsIcon = 'safe';
 const state = { A: 'rooms', B: 'rooms', C: 'rooms', D: 'rooms', E: 'rooms' };
+const open = {};                                              // bar letter -> tab whose menu is open
+const sub = { market: 'store', family: 'chat', ranks: 'boards' };  // the place last opened behind each tab
+
+function menuHtml(c) {
+  const k = open[c]; if (!k) return '';
+  const num = n => lang === 'ar' ? ar(n) : String(n);
+  return `<div class="scrim" data-close="${c}"></div><div class="menu" data-for="${k}">${MENUS[k].map(m =>
+    `<button class="mi${state[c] === k && sub[k] === m.k ? ' cur' : ''}" data-c="${c}" data-tab="${k}" data-sub="${m.k}"><svg class="ico ill"><use href="#${m.ic}"/></svg>
+      <span class="tx"><b>${m[lang]}</b><small>${lang === 'ar' ? m.sar : m.sen}</small></span>${m.cnt ? `<span class="cnt">${num(m.cnt)}</span>` : ''}${m.dot ? '<span class="nd"></span>' : ''}</button>`).join('')}</div>`;
+}
+// the menu sits over its tab, kept inside the phone; the little arrow still points at the tab
+function place() {
+  document.querySelectorAll('.menu').forEach(m => {
+    const ph = m.closest('.phone'), tab = ph.querySelector(`.s[data-k=${m.dataset.for}]`);
+    const P = ph.getBoundingClientRect(), T = tab.getBoundingClientRect(), bar = ph.querySelector('.bar').getBoundingClientRect();
+    const w = m.offsetWidth, cx = T.left + T.width / 2 - P.left;
+    const left = Math.max(8, Math.min(P.width - w - 8, cx - w / 2));
+    m.style.left = left + 'px'; m.style.bottom = (P.bottom - bar.top + 14) + 'px'; m.style.setProperty('--ax', (cx - left) + 'px');
+  });
+}
 
 function tabHtml(c, t) {
-  const on = state[c] === t.k ? ' on' : '', main = t.main ? ' main' : '';
+  const on = (open[c] ? open[c] === t.k : state[c] === t.k) ? ' on' : '', main = t.main ? ' main' : '';
   const num = n => lang === 'ar' ? ar(n) : String(n);
   const sym = iconSet === 'line' ? 'i-' + t.k : t.k === 'settings' ? 'm-' + settingsIcon : 'm-' + t.k;
   const icon = `<svg class="ico${iconSet === 'line' ? '' : ' ill'}"><use href="#${sym}"/></svg>`;
@@ -312,18 +400,23 @@ function tabHtml(c, t) {
 function draw() {
   document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.getElementById('row').innerHTML = IDEAS.map(i => {
-    const page = TABS.find(t => t.k === state[i.c])[lang];
+    const k = state[i.c], page = MENUS[k] ? MENUS[k].find(m => m.k === sub[k])[lang] : TABS.find(t => t.k === k)[lang];
     return `<div class="col"><h2>${i.name}</h2><p class="cap">${i.cap}</p>
       <div class="phone"><div class="page"><div class="t">${page}</div>${'<div class="r"><i></i><span></span></div>'.repeat(8)}</div>
-        <nav class="bar ${i.c}"><div class="slots">${TABS.map(t => tabHtml(i.c, t)).join('')}</div></nav><span class="home"></span></div></div>`;
+        <nav class="bar ${i.c}"><div class="slots">${TABS.map(t => tabHtml(i.c, t)).join('')}</div></nav>${menuHtml(i.c)}<span class="home"></span></div></div>`;
   }).join('');
+  place();
 }
 document.addEventListener('click', e => {
-  const s = e.target.closest('.s[data-c]'); if (s) { state[s.dataset.c] = s.dataset.k; draw(); return; }
+  const mi = e.target.closest('.mi'); if (mi) { const c = mi.dataset.c; state[c] = mi.dataset.tab; sub[mi.dataset.tab] = mi.dataset.sub; open[c] = null; draw(); return; }
+  const sc = e.target.closest('[data-close]'); if (sc) { open[sc.dataset.close] = null; draw(); return; }
+  const s = e.target.closest('.s[data-c]'); if (s) { const c = s.dataset.c, k = s.dataset.k;
+    if (MENUS[k]) open[c] = open[c] === k ? null : k; else { state[c] = k; open[c] = null; }
+    draw(); return; }
   const l = e.target.closest('[data-lang]'); if (l) { lang = l.dataset.lang; document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('on', b === l)); draw(); return; }
   const ic = e.target.closest('[data-set]'); if (ic) { iconSet = ic.dataset.set; document.querySelectorAll('[data-set]').forEach(b => b.classList.toggle('on', b === ic)); draw(); return; }
   const st = e.target.closest('[data-st]'); if (st) { settingsIcon = st.dataset.st; document.querySelectorAll('[data-st]').forEach(b => b.classList.toggle('on', b === st)); draw(); return; }
-  const w = e.target.closest('[data-w]'); if (w) { document.body.className = w.dataset.w; document.querySelectorAll('[data-w]').forEach(b => b.classList.toggle('on', b === w)); }
+  const w = e.target.closest('[data-w]'); if (w) { document.body.className = w.dataset.w; document.querySelectorAll('[data-w]').forEach(b => b.classList.toggle('on', b === w)); place(); }
 });
 draw();
 </script>

@@ -31,8 +31,8 @@
   }
   const save = (name, c) => fetch('/save?dir=shots&name=' + encodeURIComponent(name + '.png'), { method: 'POST', body: c.toDataURL('image/png') });
   window.shotRow = async name => { const c = await render(document.getElementById('row'), 2); await save(name, c); return c.width + 'x' + c.height; };
-  window.shotBars = async (name, only) => {   // only = bar letters, e.g. 'DE'
-    const phones = [...document.querySelectorAll('.phone')].filter(p => !only || only.includes(p.querySelector('.bar').classList[1])), scale = 3, h = 150, gap = 16;
+  window.shotBars = async (name, only, tall) => {   // only = bar letters, e.g. 'DE'; tall = crop height (default 150)
+    const phones = [...document.querySelectorAll('.phone')].filter(p => !only || only.includes(p.querySelector('.bar').classList[1])), scale = 3, h = tall || 150, gap = 16;
     const parts = [];
     for (const p of phones) { const r = p.getBoundingClientRect(); parts.push(await render(p, scale, [0, r.height - h, r.width, h])); }
     const out = document.createElement('canvas'); out.width = parts.reduce((s, c) => s + c.width, 0) + gap * scale * (parts.length - 1); out.height = h * scale;
