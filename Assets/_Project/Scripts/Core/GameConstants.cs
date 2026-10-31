@@ -28,7 +28,7 @@ namespace MafiaNight.Core
         /// <summary>The game's Facebook app (developers.facebook.com, under mafia@). Both are public; the app SECRET lives only on the server.
         /// They are also written into Assets/Plugins/Android/AndroidManifest.xml (meta-data and the fb&lt;id&gt; scheme): change both places together.</summary>
         public const string FACEBOOK_APP_ID = "2057586301904403";
-        public const string FACEBOOK_CLIENT_TOKEN = "";         // App settings -> Advanced -> Client token
+        public const string FACEBOOK_CLIENT_TOKEN = "c2793dce8dbde60b080d31033bbb3fe3";         // App settings -> Advanced -> Client token (public, it ships in the game)
         public static bool FacebookReady => !string.IsNullOrEmpty(FACEBOOK_CLIENT_TOKEN);
 
         #region PlayerPrefs Keys
