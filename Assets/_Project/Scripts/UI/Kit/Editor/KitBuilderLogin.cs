@@ -21,6 +21,7 @@ namespace MafiaNight.UI.Kit.Editor
             EnsureBrandSprites();
             BuildLoginChoice(th);
             BuildAccountSheet(th);
+            BuildConflictSheet(th);
             AssetDatabase.SaveAssets();
             Debug.Log("[UIKit] built the login screens");
         }
@@ -112,11 +113,63 @@ namespace MafiaNight.UI.Kit.Editor
             var fine = Txt(content.transform, "Fine", "الضيف بيلعب فوراً. اربط حسابك لاحقاً من الإعدادات عشان ما تخسر تقدمك لو بدّلت جهازك.", cairo, 30, dim, TextAlignmentOptions.Top, true); fine.fontStyle = FontStyles.Bold;
             At(fine.gameObject, new Vector2(.5f, 1f), new Vector2(0, -1850), new Vector2(860, 130), new Vector2(.5f, 1f));
 
-            SetRef(view, "content", Rt(content)); SetRef(view, "group", cg);
+            var msg = Txt(content.transform, "Message", "", cairo, 34, new Color32(0xE6, 0x7A, 0x80, 255), TextAlignmentOptions.Center, true); msg.fontStyle = FontStyles.Bold;
+            At(msg.gameObject, new Vector2(.5f, 1f), new Vector2(0, -2010), new Vector2(860, 110), new Vector2(.5f, 1f));
+
+            SetRef(view, "content", Rt(content)); SetRef(view, "group", cg); SetRef(view, "messageText", msg.GetComponent<ArabicText>());
             SetRef(view, "googleButton", google.GetComponent<Button>()); SetRef(view, "facebookButton", facebook.GetComponent<Button>()); SetRef(view, "appleButton", apple.GetComponent<Button>());
             SetRef(view, "guestButton", guest.GetComponent<Button>()); SetRef(view, "officeButton", ob);
             SetRef(view, "googleSoon", googleSoon); SetRef(view, "facebookSoon", facebookSoon); SetRef(view, "appleSoon", appleSoon);
             th.loginChoicePrefab = Save(root, "LoginChoice");
+            EditorUtility.SetDirty(th);
+        }
+
+        private static void BuildConflictSheet(KitTheme th)
+        {
+            var lalezar = th.fontLalezar != null ? th.fontLalezar : th.fontHeading; var cairo = th.fontBody;
+            var ink = (Color)th.paperInk; var soft = new Color32(0x4A, 0x3C, 0x24, 255); var crimDark = (Color)th.crimson;
+            EnsureDmSprites();
+            var sPaper = Spr("dm_paper"); var sGrain = Spr("dm_grain"); var sGreen = Spr("ev_green");
+            void At(GameObject g, Vector2 anchor, Vector2 pos, Vector2 size, Vector2? pivot = null) { var r = Rt(g); r.anchorMin = r.anchorMax = anchor; r.pivot = pivot ?? new Vector2(.5f, .5f); r.anchoredPosition = pos; r.sizeDelta = size; }
+
+            var root = new GameObject("ConflictSheet", typeof(RectTransform)); Stretch(Rt(root));
+            var view = root.AddComponent<KitConflictSheet>();
+            var dimGo = Go("Dim", root.transform); Stretch(Rt(dimGo));
+            var dimImg = dimGo.AddComponent<Image>(); dimImg.color = new Color(0, 0, 0, .78f); dimImg.raycastTarget = true;
+            var dimBtn = dimGo.AddComponent<Button>(); dimBtn.targetGraphic = dimImg; dimBtn.transition = Selectable.Transition.None;
+            var dimCg = dimGo.AddComponent<CanvasGroup>();
+
+            var sheet = Go("Sheet", root.transform); var sr = Rt(sheet);
+            sr.anchorMin = new Vector2(0f, 0f); sr.anchorMax = new Vector2(1f, 0f); sr.pivot = new Vector2(.5f, 0f); sr.anchoredPosition = new Vector2(0, 40); sr.sizeDelta = new Vector2(-48, 1080);
+            Img(sheet, sPaper, true, 1f, true);
+            { var gr = Go("Grain", sheet.transform); Stretch(Rt(gr)); var gi = gr.AddComponent<Image>(); gi.sprite = sGrain; gi.type = Image.Type.Tiled; gi.raycastTarget = false; }
+
+            var title = Txt(sheet.transform, "Title", "هالـGoogle إله حساب قديم", lalezar, 70, ink, TextAlignmentOptions.MidlineRight); title.overflowMode = TextOverflowModes.Overflow; title.textWrappingMode = TextWrappingModes.NoWrap;
+            At(title.gameObject, new Vector2(1f, 1f), new Vector2(-60, -60), new Vector2(840, 100), new Vector2(1f, 1f));
+            { var r = Bar(sheet.transform, "Rule", ink, 840, 5); At(r.gameObject, new Vector2(.5f, 1f), new Vector2(0, -168), new Vector2(840, 5), new Vector2(.5f, 1f)); }
+            var sub = Txt(sheet.transform, "Sub", "هاد الحساب مربوط من قبل بحساب لاعب. بدك تفتحه؟", cairo, 34, soft, TextAlignmentOptions.TopRight, true); sub.fontStyle = FontStyles.Bold;
+            At(sub.gameObject, new Vector2(.5f, 1f), new Vector2(0, -200), new Vector2(840, 100), new Vector2(.5f, 1f));
+
+            var who = Go("Who", sheet.transform); At(who, new Vector2(.5f, 1f), new Vector2(0, -330), new Vector2(840, 130), new Vector2(.5f, 1f));
+            var whoImg = who.AddComponent<Image>(); whoImg.color = new Color(.11f, .09f, .06f, .09f); whoImg.raycastTarget = false;
+            var nm = Txt(who.transform, "Name", "أبو فارس", lalezar, 56, ink, TextAlignmentOptions.MidlineRight); nm.overflowMode = TextOverflowModes.Overflow; nm.textWrappingMode = TextWrappingModes.NoWrap; Stretch(Rt(nm.gameObject), 30, 4, 30, 4);
+
+            var warn = Go("Warn", sheet.transform); At(warn, new Vector2(.5f, 1f), new Vector2(0, -490), new Vector2(840, 150), new Vector2(.5f, 1f));
+            var warnImg = warn.AddComponent<Image>(); warnImg.color = new Color(.54f, .11f, .14f, .12f); warnImg.raycastTarget = false;
+            var wt = Txt(warn.transform, "Text", "حسابك الحالي بينحذف لأنه ما إله ربط. اللي لعبته فيه بيروح.", cairo, 32, crimDark, TextAlignmentOptions.MidlineRight, true); wt.fontStyle = FontStyles.Bold; Stretch(Rt(wt.gameObject), 24, 8, 24, 8);
+
+            var msg = Txt(sheet.transform, "Message", "", cairo, 34, crimDark, TextAlignmentOptions.Center, true); msg.fontStyle = FontStyles.Bold;
+            At(msg.gameObject, new Vector2(.5f, 1f), new Vector2(0, -665), new Vector2(840, 100), new Vector2(.5f, 1f));
+
+            var open = MakeButton("Open", sGreen, th.ivory, "افتح حسابي القديم", lalezar, 46); open.transform.SetParent(sheet.transform, false); At(open, new Vector2(1f, 0f), new Vector2(-60, 170), new Vector2(480, 150), new Vector2(1f, 0f));
+            var keep = MakeButton("Keep", th.leatherDark, th.ivory, "لا، أبقى بحسابي", lalezar, 42); keep.transform.SetParent(sheet.transform, false); At(keep, new Vector2(0f, 0f), new Vector2(60, 170), new Vector2(300, 150), new Vector2(0f, 0f));
+            var help = Txt(sheet.transform, "Help", "بعد الفتح لازم تسكّر اللعبة وتفتحها من جديد.", cairo, 28, soft, TextAlignmentOptions.Center); help.fontStyle = FontStyles.Bold; At(help.gameObject, new Vector2(.5f, 0f), new Vector2(0, 90), new Vector2(840, 50), new Vector2(.5f, 0f));
+
+            SetRef(view, "sheet", sr); SetRef(view, "dim", dimCg); SetRef(view, "dimButton", dimBtn);
+            SetRef(view, "titleText", title.GetComponent<ArabicText>()); SetRef(view, "nameText", nm.GetComponent<ArabicText>()); SetRef(view, "warnText", wt.GetComponent<ArabicText>()); SetRef(view, "messageText", msg.GetComponent<ArabicText>());
+            SetRef(view, "openLabel", open.transform.Find("Face/Label").GetComponent<ArabicText>());
+            SetRef(view, "keepButton", keep.GetComponent<Button>()); SetRef(view, "openButton", open.GetComponent<Button>());
+            th.conflictSheetPrefab = Save(root, "ConflictSheet");
             EditorUtility.SetDirty(th);
         }
 

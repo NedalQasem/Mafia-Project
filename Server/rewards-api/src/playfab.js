@@ -80,15 +80,15 @@ function createPlayFab({ titleId, secretKey, baseUrl, fetchImpl }) {
       await call('/Server/RevokeAllBansForUser', { PlayFabId: playFabId });
     },
     /** Ties a server custom id to a player: with it the server can open a session of this account (account recovery). */
-    async linkServerCustomId(playFabId, serverCustomId) {
-      await call('/Server/LinkServerCustomId', { PlayFabId: playFabId, ServerCustomId: serverCustomId, ForceLink: true });
+    async linkServerCustomId(playFabId, serverCustomId, force = true) {
+      await call('/Server/LinkServerCustomId', { PlayFabId: playFabId, ServerCustomId: serverCustomId, ForceLink: force });
     },
     async unlinkServerCustomId(playFabId, serverCustomId) {
       await call('/Server/UnlinkServerCustomId', { PlayFabId: playFabId, ServerCustomId: serverCustomId });
     },
     /** Opens a session of the account that owns the server custom id: { SessionTicket, PlayFabId, ... }. */
-    async loginServerCustomId(serverCustomId) {
-      return await call('/Server/LoginWithServerCustomId', { ServerCustomId: serverCustomId, CreateAccount: false });
+    async loginServerCustomId(serverCustomId, create = false) {
+      return await call('/Server/LoginWithServerCustomId', { ServerCustomId: serverCustomId, CreateAccount: !!create });
     },
     /** { CO: coins, GM: gems, ... } */
     async getBalances(playFabId) {

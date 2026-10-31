@@ -17,6 +17,8 @@ const { createCodes } = require('./codes');
 const { createRecovery } = require('./recovery');
 const { createImages } = require('./images');
 const { createAccounts } = require('./accounts');
+const { createGoogle, createIdentity } = require('./identity');
+const GOOGLE_WEB_CLIENT_ID = '1007236526273-19121cletqstpgahntdot10rvhmv5n48.apps.googleusercontent.com';       // public identifier of the game's Google web client (not a secret); config.json can list others in googleClientIds
 const { createAdminStore } = require('./adminstore');
 const { createAdmin } = require('./admin');
 
@@ -43,12 +45,13 @@ const codes = createCodes({ store: adminStore, mail, packs: () => adminStore.pac
 const recovery = createRecovery({ store: adminStore, playfab });
 const images = createImages({ dir: dataDir + '/images' });
 const accounts = createAccounts({ cfg, file: dataDir + '/accounts.json', mail, playfab, recovery });
+const identity = createIdentity({ accounts, playfab, chat, providers: { google: createGoogle({ clientIds: cfg.googleClientIds || [GOOGLE_WEB_CLIENT_ID] }) } });
 // the admin board: needs ADMIN_PASSWORD_HASH (made by set-admin.sh); without it the board does not exist
 const admin = createAdmin({
   cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, images, accounts, reportsFile: dataDir + '/chat-reports.jsonl',
   adminCfg: Object.assign({}, cfg.admin, process.env.ADMIN_PASSWORD_HASH ? { passwordHash: process.env.ADMIN_PASSWORD_HASH } : {}, process.env.ADMIN_PATH ? { path: process.env.ADMIN_PATH } : {}),
 });
-const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, images, accounts, admin });
+const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, images, accounts, identity, admin });
 if (admin.enabled) console.log('admin board on ' + admin.base); else console.log('admin board is off (no ADMIN_PASSWORD_HASH)');
 
 setInterval(() => { accounts.sweep().then(r => { if (r.warned || r.deleted || r.failed) console.log('guests', JSON.stringify(r)); }).catch(() => {}); }, 6 * 3600 * 1000).unref();     // warns and (only when config guests.purge is true) deletes abandoned guests

@@ -22,6 +22,9 @@ namespace MafiaNight.Core
         /// <summary>The only address players see inside the game (the owner's other mailbox is for the developer consoles).</summary>
         public const string SUPPORT_EMAIL = "supportmafia@mena-gaming.com";
 
+        /// <summary>The Google "web" OAuth client of the game (a public identifier, not a secret): the Android sign-in asks Google for an ID token meant for it, and the server accepts only tokens meant for it.</summary>
+        public const string GOOGLE_WEB_CLIENT_ID = "1007236526273-19121cletqstpgahntdot10rvhmv5n48.apps.googleusercontent.com";
+
         #region PlayerPrefs Keys
         public const string PREF_PLAYER_CUSTOM_NAME = "PlayerCustomName";
         /// <summary>The language the player chose in the settings: "ar" or "en". Not set = Arabic.</summary>

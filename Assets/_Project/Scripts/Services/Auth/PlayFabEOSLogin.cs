@@ -56,12 +56,14 @@ namespace MafiaNight.Services.Auth
             }
 
             _eos = GetComponent<EOSSDKComponent>();
+            LoginGate.PlayFabResumed += ResumePlayFab;
             _eos.OnLoggedIn += HandleEOSLoggedIn;
             _eos.OnLoginFailed += HandleEOSLoginFailed;
         }
 
         protected override void OnDestroy()
         {
+            LoginGate.PlayFabResumed -= ResumePlayFab;
             if (_eos != null)
             {
                 _eos.OnLoggedIn -= HandleEOSLoggedIn;
@@ -105,6 +107,11 @@ namespace MafiaNight.Services.Auth
                 });
         }
 
+        private void ResumePlayFab()
+        {
+            if (isEOSLoggedIn && !isPlayFabLoggedIn) LoginToPlayFab();
+        }
+
         #region EOS
 
         private void HandleEOSLoggedIn(ProductUserId userId)
@@ -113,6 +120,7 @@ namespace MafiaNight.Services.Auth
             isEOSLoggedIn = true;
 
             Log.Info($"EOS login success. ProductUserId: {_productUserId}", Tag);
+            if (LoginGate.DeferPlayFab) { Log.Info("PlayFab login waits for the chosen account", Tag); return; }
             LoginToPlayFab();
         }
 

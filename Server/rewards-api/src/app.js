@@ -9,7 +9,7 @@ const { PlayFabError } = require('./playfab');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, accounts = null, admin = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, accounts = null, identity = null, admin = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -165,8 +165,9 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     '/v1/mail/read': (pf, b) => withLock('pf:' + pf, async () => mail.read(pf, String(b.id || ''))),
   } : {};
   const accountPost = accounts ? { '/v1/account': async pf => accounts.status(pf) } : {};
+  const identityPost = identity ? { '/v1/auth/google/link': (pf, b) => withLock('pf:' + pf, () => identity.link(pf, 'google', b.idToken)) } : {};
   const codesPost = codes ? { '/v1/codes/redeem': async (pf, b) => codes.redeem(pf, b.code) } : {};
-  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost);
+  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
 
   const server = http.createServer((req, res) => {
     const ip = (cfg.trustProxy && req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : req.socket.remoteAddress) || 'unknown';
@@ -189,6 +190,17 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
           const body = await readJson(req, res);
           if (body === undefined) return;
           send(res, 200, await recovery.login(body && body.username, body && body.password, ip));
+        } catch (e) { fail(res, e, url.pathname); }
+      })();
+      return;
+    }
+    // sign in with Google on a device that has no session yet (a new device, or the first start): answers with a PlayFab session
+    if (identity && req.method === 'POST' && url.pathname === '/v1/auth/google/login') {
+      (async () => {
+        try {
+          const body = await readJson(req, res);
+          if (body === undefined) return;
+          send(res, 200, await identity.login('google', body && body.idToken));
         } catch (e) { fail(res, e, url.pathname); }
       })();
       return;

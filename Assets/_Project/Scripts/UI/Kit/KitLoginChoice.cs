@@ -15,6 +15,7 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private CanvasGroup group;
         [SerializeField] private Button googleButton, facebookButton, appleButton, guestButton, officeButton;
         [SerializeField] private GameObject googleSoon, facebookSoon, appleSoon;
+        [SerializeField] private ArabicText messageText;
 
         public event Action OnGoogle, OnFacebook, OnGuest, OnOffice;
 
@@ -33,6 +34,9 @@ namespace MafiaNight.UI.Kit
         }
 
         private void OnEnable() { if (group != null) StartCoroutine(Fade(0f, 1f, .45f, false)); }
+
+        /// <summary>A line under the buttons (an error from a sign-in); empty hides it.</summary>
+        public void SetMessage(string text) { if (messageText != null) messageText.Text = text ?? ""; }
 
         /// <summary>Which of Google and Facebook can be used now (the others show "soon").</summary>
         public void SetAvailable(bool google, bool facebook)

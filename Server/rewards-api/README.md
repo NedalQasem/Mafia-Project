@@ -94,6 +94,10 @@
 
 السيرفر بيسجّل أول وآخر مرة شاف فيها كل لاعب (`accounts.json`، بيتحدّث مرة بالساعة). **الضيف** = لاعب ما إله طريقة يرجع فيها (بدون Google/Facebook/Apple وبدون حساب استرجاع من المكتب). `POST /v1/account` بيرجّع `{ guest, methods, daysLeft, purge }` للعبة. الحذف **مطفي افتراضياً**؛ لتفعيله بـ`config.json` على السيرفر: `"guests": { "purge": true, "days": 30, "warnDays": 7 }`. لما يشتغل: كل ٦ ساعات بيبعت لضيف باقي له `warnDays` أيام رسالة ببريد اللعبة (مرة)، وبيحذف (`Server/DeletePlayer`) اللي مرّ عليه `days` يوم بدون دخول. اللوحة (`/api/overview`) بتعرض `guests: { total, guests, atRisk }`.
 
+## الدخول بـ Google (وبعده Facebook)
+
+السيرفر هو الوسيط: اللعبة بتبعت توكن Google (`idToken`) والسيرفر بيتحقق منه من `oauth2.googleapis.com/tokeninfo` (مجاني، بدون مفاتيح): لازم `aud` يكون واحد من `googleClientIds` (افتراضياً معرّف الويب العام للعبة) والمُصدر Google وغير منتهي. كل هوية = «server custom id» (`g-<sub>`) على حساب PlayFab. `POST /v1/auth/google/login` (بدون تذكرة): بيرجّع جلسة PlayFab لحساب الهوية (وبيعمل حساب جديد لهوية جديدة) والمحاولات الغلط `bad_token`. `POST /v1/auth/google/link` (بتذكرة): بيربط الهوية بحساب اللاعب؛ لو الهوية لحساب ثاني: `409 account_exists` مع `name` الحساب القديم، واللعبة بتسأل اللاعب. الربط ما بيسحب هوية من حساب ثاني أبداً (`ForceLink: false`).
+
 ## التركيب على الـ VPS (Docker، جنب موقع mena-gaming.com)
 
 > موقعك بيشتغل بـ Docker: حاوية nginx بتمسك 80 و443، ومعها frontend وbackend وpostgres. الخدمة بتشتغل **حاوية منفصلة** على نفس الشبكة، بدون ما نغيّر `docker-compose.yml` تبع الموقع. **ما بنركّب nginx ولا certbot على السيرفر نفسه** (بيتصادموا مع حاوية الموقع على 80/443).
