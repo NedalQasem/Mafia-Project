@@ -148,6 +148,7 @@ namespace MafiaNight.Services.Auth
         private void Start()
         {
             if (s_PlatformInterface == null && !InitializePlatform()) return;
+            if (LoginGate.Hold) { LoginGate.Released += StartLogin; return; }       // the very first start: the player chooses how to come in first
             StartLogin();
         }
 
@@ -166,6 +167,7 @@ namespace MafiaNight.Services.Auth
 
         private void OnDestroy()
         {
+            LoginGate.Released -= StartLogin;
             if (_registeredService) ServiceLocator.Unregister<IEosPlatform>(this);
 #if UNITY_EDITOR
             // Release the platform when stopping play mode in the Editor

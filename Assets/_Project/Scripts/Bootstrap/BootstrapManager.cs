@@ -100,6 +100,13 @@ namespace MafiaNight.Bootstrap
             }
             ServiceLocator.TryGet<IRemoteConfig>(out var remote);
 
+            // ---------- 0. first start: how does the player want to come in? (the sign-in waits for the answer) ----------
+            if (LoginGate.Hold)
+            {
+                if (LoginGate.Screen == null) LoginGate.Release();
+                else yield return LoginGate.Screen(this);
+            }
+
             // ---------- 1-2. EOS + PlayFab login ----------
             string loginError = null;
             Action<string> onLoginFailed = error => loginError = error;
