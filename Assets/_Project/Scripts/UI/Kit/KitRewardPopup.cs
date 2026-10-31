@@ -81,7 +81,7 @@ namespace MafiaNight.UI.Kit
             coins = coinsNow; gems = gemsNow;
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
-            kicker.Text = kickerText ?? ""; title.Text = titleText ?? "";
+            KitText.Fit(kicker, kickerText, 34, 20f); KitText.Fit(title, titleText, 26, 34f);       // server text of any length stays on its line
             coinValue.text = CoinPill.Format(coins); gemValue.text = CoinPill.Format(gems);
             StopAllCoroutines();
             StartCoroutine(Enter());
@@ -164,7 +164,7 @@ namespace MafiaNight.UI.Kit
                 var label = chip.GetComponentInChildren<ArabicText>(true);
                 var icon = chip.Find("Icon") as RectTransform;
                 if (it.IsMoney) { label.Text = "+" + CoinPill.Format(it.amount); icon.GetComponent<Image>().sprite = it.kind == "coins" ? coinToken : gemToken; }
-                else { label.Text = it.name; icon.gameObject.SetActive(false); }
+                else { KitText.Fit(label, it.name, 16, 20f); icon.gameObject.SetActive(false); }
             }
             bool frame = false; foreach (var it in items) if (it.kind == "frame") frame = true;
             wearButton.gameObject.SetActive(frame);
@@ -254,8 +254,8 @@ namespace MafiaNight.UI.Kit
             var amount = c.Find("Amount").gameObject; amount.SetActive(it.IsMoney);
             amount.GetComponent<TextMeshProUGUI>().text = "+" + CoinPill.Format(0);
             var nm = c.Find("Name"); nm.gameObject.SetActive(!it.IsMoney);
-            nm.GetComponent<ArabicText>().Text = it.name ?? "";
-            nm.Find("Sub").GetComponent<ArabicText>().Text = it.sub ?? "";
+            KitText.Fit(nm.GetComponent<ArabicText>(), it.name, 18, 22f);
+            KitText.Fit(nm.Find("Sub").GetComponent<ArabicText>(), it.sub, 22, 16f);
             c.Find("Ribbon").GetComponent<ArabicText>().Text = it.rarity == RewardRarity.Legend ? "أسطوري" : it.rarity == RewardRarity.Rare ? "نادر" : "عادي";
             c.Find("Sheen").gameObject.SetActive(it.rarity == RewardRarity.Legend);
         }

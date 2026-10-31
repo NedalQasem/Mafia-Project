@@ -55,12 +55,13 @@ namespace MafiaNight.UI.Kit
                 prt.localRotation = Quaternion.Euler(0f, 0f, pageTilt);
                 var cg = go.GetComponent<CanvasGroup>(); cg.alpha = i == 0 ? 1f : 0f; cg.blocksRaycasts = i == 0;
                 shades.Add(go.transform.Find("Shade").GetComponent<Image>());
-                go.transform.Find("Mast/Right").GetComponent<ArabicText>().Text = ad.mast;
-                go.transform.Find("Headline").GetComponent<ArabicText>().Text = ad.headline;
-                go.transform.Find("Body").GetComponent<ArabicText>().Text = ad.body;
+                // server text of any length: clipped, and shrunk to fit its line
+                KitText.Fit(go.transform.Find("Mast/Right").GetComponent<ArabicText>(), ad.mast, 32, 18f);
+                KitText.Fit(go.transform.Find("Headline").GetComponent<ArabicText>(), KitText.ClipLines(ad.headline, 2, 24), 60, 40f);
+                go.transform.Find("Body").GetComponent<ArabicText>().Text = KitText.Clip(ad.body, 76);
                 var stamp = go.transform.Find("Stamp");
                 stamp.gameObject.SetActive(!string.IsNullOrEmpty(ad.stamp));
-                if (stamp.gameObject.activeSelf) stamp.GetComponentInChildren<ArabicText>().Text = ad.stamp;
+                if (stamp.gameObject.activeSelf) KitText.Fit(stamp.GetComponentInChildren<ArabicText>(), ad.stamp, 14, 22f);
                 var art = (RectTransform)go.transform.Find("Art");
                 StoreArt.Create(ad.item, art, th);
                 var cd = go.transform.Find("Countdown");
@@ -73,7 +74,7 @@ namespace MafiaNight.UI.Kit
                     was.gameObject.SetActive(!string.IsNullOrEmpty(ad.was));
                     if (!string.IsNullOrEmpty(ad.was))
                     {
-                        var wv = was.Find("Value").GetComponent<ArabicText>(); wv.Text = ad.was;
+                        var wv = was.Find("Value").GetComponent<ArabicText>(); KitText.Fit(wv, ad.was, 14, 24f);
                         var wt = wv.GetComponent<TMPro.TMP_Text>(); wt.ForceMeshUpdate();
                         var strike = wv.transform.Find("Strike") as RectTransform;
                         if (strike != null) strike.sizeDelta = new Vector2(wt.preferredWidth + 8f, strike.sizeDelta.y);
@@ -84,7 +85,7 @@ namespace MafiaNight.UI.Kit
                 var block = go.transform.Find("Block");
                 if (block != null) block.GetComponent<Button>().onClick.AddListener(() => OnBlock?.Invoke(ad));
                 var buy = go.transform.Find("Buy");
-                buy.GetComponentInChildren<ArabicText>().Text = ad.price;
+                KitText.Fit(buy.GetComponentInChildren<ArabicText>(), ad.price, 22, 30f);
                 var item = ad.item;
                 buy.GetComponent<Button>().onClick.AddListener(() => OnBuy?.Invoke(item));
                 pages.Add(cg);

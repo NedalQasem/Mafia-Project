@@ -151,17 +151,17 @@ namespace MafiaNight.UI.Kit
             if (!inRanking) { mastTitle0 = mastTitle.Text; mastSub0 = mastSub.Text; count0 = countText.Text; }
             inRanking = true;
             tabsRoot.SetActive(false); listRoot.SetActive(false); rankPanel.SetActive(true); closeObject.SetActive(false); backObject.SetActive(true);
-            mastTitle.Text = "تصنيف الحدث"; mastSub.Text = d.title + " · " + d.metric; countText.Text = d.endsText ?? "";
+            mastTitle.Text = "تصنيف الحدث"; KitText.Fit(mastSub, KitText.Clip(d.title, 22) + " · " + KitText.Clip(d.metric, 12), 40, 16f); KitText.Fit(countText, d.endsText ?? "", 24, 16f);
             rankNote.Text = d.distributed ? "انوزّعت الجوائز على البريد" : "بتنوزّع على البريد عند انتهاء الحدث";
             foreach (Transform t in rankRows) Destroy(t.gameObject);
             foreach (Transform t in prizeRow) Destroy(t.gameObject);
             foreach (var p in d.prizes)
             {
                 var g = Instantiate(prizePillPrefab, prizeRow, false); g.SetActive(true);
-                g.transform.Find("Range").GetComponent<ArabicText>().Text = p.range;
+                KitText.Fit(g.transform.Find("Range").GetComponent<ArabicText>(), p.range, 10, 20f);
                 string val = p.coins > 0 ? CoinPill.Format(p.coins) : (p.gems > 0 ? CoinPill.Format(p.gems) + " جوهرة" : "");
-                g.transform.Find("ValueRow/Value").GetComponent<ArabicText>().Text = val;
-                var extra = g.transform.Find("Items").GetComponent<ArabicText>(); extra.Text = p.items ?? ""; extra.gameObject.SetActive(!string.IsNullOrEmpty(p.items));
+                KitText.Fit(g.transform.Find("ValueRow/Value").GetComponent<ArabicText>(), val, 14, 20f);
+                var extra = g.transform.Find("Items").GetComponent<ArabicText>(); KitText.Fit(extra, p.items ?? "", 26, 16f); extra.gameObject.SetActive(!string.IsNullOrEmpty(p.items));
                 g.transform.Find("ValueRow/Coin").gameObject.SetActive(p.coins > 0);
             }
             prizeRow.gameObject.SetActive(d.prizes.Count > 0);
@@ -170,9 +170,9 @@ namespace MafiaNight.UI.Kit
             {
                 if (r.rank > last + 1 && r.me) Instantiate(rankGapPrefab, rankRows, false);
                 var go = Instantiate(rankRowPrefab, rankRows, false);
-                go.transform.Find("Number").GetComponent<ArabicText>().Text = CoinPill.Format(r.rank);
-                go.transform.Find("Name").GetComponent<ArabicText>().Text = r.name;
-                go.transform.Find("Value").GetComponent<ArabicText>().Text = CoinPill.Format(r.value);
+                KitText.Fit(go.transform.Find("Number").GetComponent<ArabicText>(), CoinPill.Format(r.rank), 8, 18f);
+                KitText.Fit(go.transform.Find("Name").GetComponent<ArabicText>(), r.name, 22, 22f);
+                KitText.Fit(go.transform.Find("Value").GetComponent<ArabicText>(), CoinPill.Format(r.value), 12, 18f);
                 go.transform.Find("Me").gameObject.SetActive(r.me);
                 var num = go.transform.Find("Number").GetComponent<TMPro.TMP_Text>();
                 num.color = r.rank == 1 ? new Color32(0x9A, 0x6B, 0x00, 255) : r.rank == 2 ? new Color32(0x5C, 0x60, 0x66, 255) : r.rank == 3 ? new Color32(0x7A, 0x4A, 0x1C, 255) : new Color32(0x1C, 0x17, 0x0F, 255);

@@ -126,7 +126,7 @@ namespace MafiaNight.UI.Kit
         {
             if (Shown != null) foreach (var key in it.keys) Shown(key);
             showing = it; shownFor = 0f; leaving = false; dragged = false;
-            title.Text = it.title ?? ""; detail.Text = it.detail ?? "";
+            KitText.Fit(title, it.title, 26, 22f); KitText.Fit(detail, it.detail, 44, 18f);       // server text of any length stays on its line
             sealImage.sprite = it.kind == Kind.Mail ? sealMail : it.kind == Kind.Reward ? sealReward : it.kind == Kind.Event ? sealEvent : it.kind == Kind.Ending ? sealEnding : sealOffer;
             timeImage.fillAmount = 1f;
             UpdateMore();
