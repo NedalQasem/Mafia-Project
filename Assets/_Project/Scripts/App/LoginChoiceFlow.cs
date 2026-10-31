@@ -22,10 +22,15 @@ namespace MafiaNight.App
 
         private void Start()
         {
+            // The first-start choice now comes before the sign-in (LoginGateFlow), and Google / Facebook link from Settings, so this second screen with its "soon" tags is not shown any more.
+            if (PlayerPrefs.GetInt(ChosenKey, 0) != 1) { PlayerPrefs.SetInt(ChosenKey, 1); PlayerPrefs.Save(); }
+            Destroy(this); return;
+            #pragma warning disable 0162
             if (SceneManager.GetActiveScene().name != AppScenes.Home || PlayerPrefs.GetInt(ChosenKey, 0) == 1) { Destroy(this); return; }
             if (PlayerPrefs.HasKey("mafia.launch.seen")) { PlayerPrefs.SetInt(ChosenKey, 1); PlayerPrefs.Save(); Destroy(this); return; }       // an old player: he is already in
             ServiceLocator.TryGet(out rooms);
             showAt = Time.unscaledTime + 0.8f;
+            #pragma warning restore 0162
         }
 
         private void Update()
