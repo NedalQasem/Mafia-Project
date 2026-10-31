@@ -9,10 +9,10 @@ using UnityEngine.Networking;
 
 namespace MafiaNight.Services.Config
 {
-    /// <summary>Picks the text of the player's language out of an Arabic / English pair the server sends (Arabic is the fallback).</summary>
+    /// <summary>Picks the text of the player's chosen language (settings, Arabic by default) out of an Arabic / English pair the server sends (Arabic is the fallback).</summary>
     public static class Localized
     {
-        public static bool English => Application.systemLanguage == SystemLanguage.English;
+        public static bool English => PlayerPrefs.GetString(GameConstants.PREF_LANGUAGE, "ar") == "en";       // the player's choice in the settings; Arabic until he picks English
         public static string Pick(string ar, string en)
         {
             bool hasAr = !string.IsNullOrEmpty(ar), hasEn = !string.IsNullOrEmpty(en);

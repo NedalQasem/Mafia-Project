@@ -145,9 +145,9 @@ namespace MafiaNight.UI.Kit.Editor
             var when = Txt(head.transform, "When", "هلأ", cairo, 28, soft, TextAlignmentOptions.MidlineLeft); when.fontStyle = FontStyles.Bold; NoWrap(when); Stretch(Rt(when.gameObject), 0, 4, 0, 0);
             var rule = Bar(head.transform, "Rule", ink, 100, 5); { var r = Rt(rule.gameObject); r.anchorMin = new Vector2(0, 0); r.anchorMax = new Vector2(1, 0); r.pivot = new Vector2(.5f, 0); r.sizeDelta = new Vector2(0, 5); r.anchoredPosition = Vector2.zero; }
 
-            var titleRow = Go("TitleRow", letter.transform); Le(titleRow, -1, 110); var trh = titleRow.AddComponent<HorizontalLayoutGroup>(); trh.childControlWidth = true; trh.childControlHeight = true; trh.childForceExpandWidth = true; trh.childForceExpandHeight = true;
+            var titleRow = Go("TitleRow", letter.transform); { var tl = Le(titleRow); tl.minHeight = 90; } var trh = titleRow.AddComponent<HorizontalLayoutGroup>(); trh.childControlWidth = true; trh.childControlHeight = true; trh.childForceExpandWidth = true; trh.childForceExpandHeight = true;
             var title = Txt(titleRow.transform, "Title", "ملاحظة على ملفك", lalezar, 78, ink, TextAlignmentOptions.TopRight, true);
-            var body = Txt(letter.transform, "Body", "نص الرسالة", cairo, 34, soft, TextAlignmentOptions.TopRight, true); body.fontStyle = FontStyles.Bold; Le(body.gameObject, -1, 110);
+            var body = Txt(letter.transform, "Body", "نص الرسالة", cairo, 34, soft, TextAlignmentOptions.TopRight, true); body.fontStyle = FontStyles.Bold; Le(body.gameObject).minHeight = 60;
 
             // the photo taped on
             var photo = Go("Photo", letter.transform); Le(photo, -1, 420);

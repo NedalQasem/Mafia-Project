@@ -179,7 +179,7 @@ namespace MafiaNight.UI.Kit.Editor
             MakeSection("الحساب", "الاسم واللغة والربط", th.avatarDefault, false, out c);
             LinkRow(c, "تغيير الاسم", "مرة كل ٣٠ يوماً"); LinkRow(c, "ربط الحساب (حفظ تقدمك)", "غير مربوط");
             var recoveryRow = LinkRow(c, RecoveryRowTitle, null); LinkRow(c, "استعادة المشتريات", null);
-            SegRow(c, "اللغة", new[] { "العربية", "English" }, 0);
+            var langSeg = SegRow(c, "اللغة", new[] { "العربية", "English" }, 0);
 
             MakeSection("المساعدة", "القواعد والدعم", th.levelSeal, false, out c);
             foreach (var t in new[] { "كيف تُلعب المافيا؟", "قواعد السهرة وآدابها", "تواصل مع الدعم", "الإبلاغ عن مشكلة", "الشروط والخصوصية", "عن اللعبة والفريق" }) LinkRow(c, t, null);
@@ -205,7 +205,7 @@ namespace MafiaNight.UI.Kit.Editor
             var ma = sso.FindProperty("meter"); ma.arraySize = meter.Length; for (int i = 0; i < meter.Length; i++) ma.GetArrayElementAtIndex(i).objectReferenceValue = meter[i];
             sso.ApplyModifiedPropertiesWithoutUndo();
             SetRef(ss, "micKnob", micKnob); SetRef(ss, "speakerKnob", spkKnob); SetRef(ss, "micTestButton", micTest); SetRef(ss, "micTestLabel", micTestLbl);
-            SetRef(ss, "sensitivity", sensSeg); SetRef(ss, "noiseToggle", noiseTg); SetRef(ss, "pttToggle", pttTg); SetRef(ss, "muteJoinToggle", muteJoinTg); SetRef(ss, "narratorToggle", narratorTg);
+            SetRef(ss, "sensitivity", sensSeg); SetRef(ss, "language", langSeg); SetRef(ss, "noiseToggle", noiseTg); SetRef(ss, "pttToggle", pttTg); SetRef(ss, "muteJoinToggle", muteJoinTg); SetRef(ss, "narratorToggle", narratorTg);
 
             foreach (var s in sections) { var o = new SerializedObject(s); s.SetOpen(o.FindProperty("openAtStart").boolValue, false); }
             BuildRecoverySheet(th);

@@ -21,6 +21,8 @@ namespace MafiaNight.Core
 
         #region PlayerPrefs Keys
         public const string PREF_PLAYER_CUSTOM_NAME = "PlayerCustomName";
+        /// <summary>The language the player chose in the settings: "ar" or "en". Not set = Arabic.</summary>
+        public const string PREF_LANGUAGE = "mafia.lang";
         #endregion
 
         #region Scene Names (must match Build Settings)

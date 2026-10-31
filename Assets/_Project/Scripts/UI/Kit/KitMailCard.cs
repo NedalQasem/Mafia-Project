@@ -39,6 +39,7 @@ namespace MafiaNight.UI.Kit
             from = A("From/Who"); when = A("From/When"); title = A("Title"); body = A("Body");
             dot = T("Deco/Dot").gameObject; stamp = T("Deco/Stamp").gameObject; stampText = A("Deco/Stamp/Text"); stampImage = stamp.GetComponent<Image>();
             tape = T("Deco/Tape").gameObject; band = T("Deco/Band").gameObject; thumb = T("Deco/Thumb").gameObject; thumbPic = T("Deco/Thumb/Pic").GetComponent<RawImage>();
+            stamp.transform.SetAsLastSibling();       // the stamp lies over the photo
             chips = T("Chips").gameObject; coinChip = T("Chips/Coin").gameObject; gemChip = T("Chips/Gem").gameObject; itemChipTemplate = T("Chips/Item").gameObject;
             coinText = A("Chips/Coin/Text"); gemText = A("Chips/Gem/Text");
             actionRow = T("Row").gameObject; expiry = A("Row/Expiry"); expiryGo = T("Row/Expiry").gameObject;
@@ -61,21 +62,24 @@ namespace MafiaNight.UI.Kit
             from.Text = (msg ? (warn ? "تحذير · من: " : "رسالة خاصة · من: ") : "من: ") + (c.from ?? "مكتب الريّس"); when.Text = c.when ?? "";
             from.GetComponent<TMPro.TMP_Text>().color = warn ? Crim : StampRed;
             title.Text = c.title ?? "";
+            { var tt = title.GetComponent<TMPro.TMP_Text>(); tt.enableAutoSizing = true; tt.fontSizeMin = 34f; tt.fontSizeMax = 54f; }       // a long title gets smaller instead of running off the card
             title.GetComponent<TMPro.TMP_Text>().color = warn ? Crim : Ink;
-            title.GetComponent<TMPro.TMP_Text>().margin = warn ? new Vector4(c.claimed ? 330f : 250f, 0, 0, 0) : Vector4.zero;       // keeps clear of the stamp
 
             // the text: a message shows two lines, next to its photo when it has one
             bool pic = msg && !string.IsNullOrEmpty(c.imageId);
             var bodyText = body.GetComponent<TMPro.TMP_Text>();
-            bodyText.margin = pic ? new Vector4(0, 0, 250f, 0) : Vector4.zero;
-            body.Text = c.body ?? "";
-            body.gameObject.SetActive(!string.IsNullOrEmpty(c.body));
-            if (!string.IsNullOrEmpty(c.body))
+            // a warning's stamp lands on its photo like a rubber stamp, or beside the text when there is no photo; the text keeps a fixed column either way
+            bodyText.margin = new Vector4(warn && !pic ? (c.claimed ? 330f : 260f) : 0f, 0, pic ? 250f : 0f, 0);
+            { var sr = (RectTransform)stamp.transform; sr.anchoredPosition = !warn ? new Vector2(200f, -150f) : pic ? new Vector2(752f, -286f) : new Vector2(200f, -300f); sr.localScale = Vector3.one * (warn && pic ? 0.72f : 1f); }
+            // a message shows a short preview (the letter has the rest), so every card of a kind has the same shape whatever the text length
+            string shown = c.body ?? "";
+            if (msg) { int cut = pic ? 64 : 110; if (shown.Length > cut) shown = shown.Substring(0, cut).TrimEnd() + "…"; }
+            body.Text = shown;
+            body.gameObject.SetActive(!string.IsNullOrEmpty(shown));
+            if (!string.IsNullOrEmpty(shown))
             {
-                int chars = pic ? 22 : 42, lines = Mathf.Max(1, Mathf.CeilToInt((c.body ?? "").Length / (float)chars));
-                if (msg) lines = Mathf.Min(lines, 3);
+                int chars = pic ? 22 : (warn ? 28 : 42), lines = Mathf.Max(1, Mathf.CeilToInt(shown.Length / (float)chars));
                 body.GetComponent<LayoutElement>().preferredHeight = Mathf.Max(pic ? 170f : 0f, 14f + lines * 46f);
-                bodyText.overflowMode = msg ? TMPro.TextOverflowModes.Ellipsis : TMPro.TextOverflowModes.Overflow;
             }
             thumb.SetActive(pic);
             if (pic) { thumbPic.texture = null; thumbPic.color = new Color(1f, 1f, 1f, 0f); if (KitImages.Loader != null) StartCoroutine(KitImages.Loader(c.imageId, tex => { if (this == null || tex == null) return; thumbPic.texture = tex; thumbPic.color = Color.white; })); }

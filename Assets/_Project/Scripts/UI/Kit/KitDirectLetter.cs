@@ -64,8 +64,6 @@ namespace MafiaNight.UI.Kit
             paper.color = warn ? new Color32(0xFC, 0xF7, 0xF2, 255) : Color.white;
             tapeTop.SetActive(warn); tapeBottom.SetActive(warn); warnStamp.SetActive(warn);
             sealLetter.Text = warn ? "!" : "م";
-            titleRow.GetComponent<LayoutElement>().preferredHeight = 24f + Mathf.Max(1, Mathf.CeilToInt((d.title ?? "").Length / (warn ? 11f : 20f))) * 84f;
-            bodyText.GetComponent<LayoutElement>().preferredHeight = 20f + Mathf.Max(1, Mathf.CeilToInt((d.body ?? "").Length / 34f)) * 54f;
             mustNote.SetActive(warn && d.must);
             keepNote.SetActive(!warn);
             okFace.sprite = warn && redFace != null ? redFace : greenFace;
@@ -77,10 +75,38 @@ namespace MafiaNight.UI.Kit
                 photoPic.color = new Color(1f, 1f, 1f, 0f);
                 if (KitImages.Loader != null) StartCoroutine(KitImages.Loader(d.imageId, tex => { if (this == null || tex == null) return; loaded = tex; photoPic.texture = tex; photoPic.color = Color.white; Cover(photoPic, tex); }));
             }
-            LayoutRebuilder.ForceRebuildLayoutImmediate(letter);
+            Settle();
+            FitToScreen();
+            letter.anchoredPosition = new Vector2(0f, letter.localScale.x >= 0.999f ? 70f : 0f);       // a little above the middle on a tall screen, dead centre when it had to shrink
             StartCoroutine(Enter(warn));
             if (warn && d.must) countdown = StartCoroutine(Countdown());
             else { ready = true; okButton.interactable = true; }
+        }
+
+        // Any text length and any screen: the heights above come from the real text (no guessing by letter count), and when the letter is taller
+        // than the screen allows (a short or wide device, a long message) the whole letter is scaled down so it always fits with a margin.
+        private void FitToScreen()
+        {
+            var parent = letter.parent as RectTransform;
+            if (parent == null) return;
+            float free = parent.rect.height - 2f * 90f - Mathf.Abs(letter.anchoredPosition.y) * 2f, w = parent.rect.width - 2f * 20f;
+            float k = Mathf.Min(1f, free / Mathf.Max(1f, letter.rect.height), w / Mathf.Max(1f, letter.rect.width));
+            letter.localScale = Vector3.one * Mathf.Clamp(k, 0.3f, 1f);
+        }
+
+        private void Update() { if (letter != null && !leaving) FitToScreen(); }       // every frame: the canvas may change size (rotation, a window resize)
+
+        // the layout is built twice: the first pass wraps the texts at their real width, the second gives each text the height it really needs
+        private void Settle()
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(letter);
+            foreach (var t in new[] { titleText, bodyText })
+            {
+                var tmp = t.GetComponent<TMPro.TMP_Text>(); tmp.ForceMeshUpdate();
+                var le = t == titleText ? titleRow.GetComponent<LayoutElement>() : t.GetComponent<LayoutElement>();
+                le.minHeight = Mathf.Max(60f, tmp.preferredHeight + 10f);
+            }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(letter);
         }
 
         // the picture fills its frame like a photo print: the middle is kept and the edges are cut

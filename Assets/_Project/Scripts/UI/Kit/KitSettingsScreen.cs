@@ -13,7 +13,7 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private Image[] meter;
         [SerializeField] private Button micTestButton;
         [SerializeField] private ArabicText micTestLabel;
-        [SerializeField] private KitSegmented sensitivity;
+        [SerializeField] private KitSegmented sensitivity, language;
         [SerializeField] private KitToggle noiseToggle, pttToggle, muteJoinToggle, narratorToggle;
 
         public event Action<int> OnMicVolume, OnSpeakerVolume, OnSensitivity;
@@ -37,6 +37,11 @@ namespace MafiaNight.UI.Kit
             if (pttToggle != null) pttToggle.OnChanged += on => OnToggleChanged?.Invoke("ptt", on);
             if (muteJoinToggle != null) muteJoinToggle.OnChanged += on => OnToggleChanged?.Invoke("mutejoin", on);
             if (narratorToggle != null) narratorToggle.OnChanged += on => OnToggleChanged?.Invoke("narrator", on);
+            if (language != null)
+            {
+                language.Set(PlayerPrefs.GetString(MafiaNight.Core.GameConstants.PREF_LANGUAGE, "ar") == "en" ? 1 : 0);
+                language.OnChanged += v => { PlayerPrefs.SetString(MafiaNight.Core.GameConstants.PREF_LANGUAGE, v == 1 ? "en" : "ar"); PlayerPrefs.Save(); };
+            }
             Paint(0);
         }
 
