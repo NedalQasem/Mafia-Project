@@ -78,7 +78,12 @@ namespace MafiaNight.UI.Kit
                 var tmp = label.GetComponent<TMPro.TMP_Text>(); tmp.ForceMeshUpdate();
                 float w = Mathf.Max(150f, tmp.preferredWidth + 62f);   // HTML .cat: the label sets the width, padding 12px
                 go.GetComponent<LayoutElement>().preferredWidth = w; ((RectTransform)go.transform).sizeDelta = new Vector2(w, 150f);
-                var b = go.GetComponent<Button>(); string id = cat.id; b.onClick.AddListener(() => Select(id));
+                var b = go.GetComponent<Button>(); string id = cat.id; b.onClick.AddListener(() =>
+                {
+                    if (category == id) { Select(id); return; }
+                    var sr = shelvesRoot.GetComponentInParent<ScrollRect>();
+                    KitTabBurn.Swap(this, sr != null && sr.viewport != null ? sr.viewport : shelvesRoot, () => Select(id), MafiaNight.UI.Animations.BurnCorner.BottomRight, catsRoot);
+                });
                 catButtons.Add(b);
             }
             if (string.IsNullOrEmpty(category) || cats.Find(c => c.id == category) == null)

@@ -180,6 +180,13 @@ namespace MafiaNight.App
 
         // ---------------------------------------------------------------- the frame and its chrome (tabs, top bar)
 
+        /// <summary>A tab pressed on the screen: the page burns away to the next one (like the bottom bar's screens, but quicker).</summary>
+        private void Tab(string f)
+        {
+            if (f == frame || view == null) { ShowTab(f); return; }
+            KitTabBurn.Swap(this, (RectTransform)view.transform, () => ShowTab(f), f == "c3" || f == "f2" || f == "f3" ? MafiaNight.UI.Animations.BurnCorner.BottomLeft : MafiaNight.UI.Animations.BurnCorner.BottomRight);
+        }
+
         private void ShowTab(string f)
         {
             frame = f;
@@ -218,9 +225,9 @@ namespace MafiaNight.App
 
         private void WireChrome(string f, Chrome c)
         {
-            view.SetTap(f, c.Friends, () => ShowTab("f1"));
-            view.SetTap(f, c.Requests, () => ShowTab("f2"));
-            view.SetTap(f, c.Add, () => ShowTab("f3"));
+            view.SetTap(f, c.Friends, () => Tab("f1"));
+            view.SetTap(f, c.Requests, () => Tab("f2"));
+            view.SetTap(f, c.Add, () => Tab("f3"));
             view.SetTap(f, c.Back, () => ShowTab("c1"));      // the friends pages sit behind the chats
             var title = view.Node(f, c.Sub - 2);              // the title sits two parts before the subtitle
             var ta = title != null ? title.GetComponent<ArabicText>() : null;
@@ -567,8 +574,8 @@ namespace MafiaNight.App
 
             TabLabel(f, c.DmLabel, c.DmBadge, c.DmNum, dms.Sum(x => x.Unread));
             TabLabel(f, c.GrLabel, c.GrBadge, c.GrNum, grs.Sum(x => x.Unread));
-            view.SetTap(f, c.Dm, () => ShowTab("c1"));
-            view.SetTap(f, c.Gr, () => ShowTab("c3"));
+            view.SetTap(f, c.Dm, () => Tab("c1"));
+            view.SetTap(f, c.Gr, () => Tab("c3"));
             view.SetTap(f, c.Pub, () => OpenConversation(ChatService.Public));
 
             if (f == "c2") { DrawNoChats(); return; }

@@ -59,6 +59,7 @@ namespace MafiaNight.UI.Animations
         private readonly List<Particle> live = new List<Particle>();
         private readonly Stack<Image> pool = new Stack<Image>();
         private int sparkCount, smokeCount;
+        private bool lightMode;      // small tabs: fewer sparks and no smoke
 
         private sealed class Particle { public Image img; public float x, y, vx, vy, life, age, size; public bool smoke; }
 
@@ -83,8 +84,9 @@ namespace MafiaNight.UI.Animations
 
         /// <summary>
         /// A snapshot of just this rectangle (a page, a card) as it is on the screen now; waits for the end of the frame. null when it cannot be had.
+        /// With <c>below</c>, only the part of the rectangle under that element is taken (the tabs stay out of it).
         /// </summary>
-        public static IEnumerator Capture(RectTransform area, Action<Texture2D> done)
+        public static IEnumerator Capture(RectTransform area, Action<Texture2D> done, RectTransform below = null)
         {
             yield return new WaitForEndOfFrame();
             Texture2D full = null, crop = null;
@@ -93,6 +95,7 @@ namespace MafiaNight.UI.Animations
                 var canvas = area.GetComponentInParent<Canvas>();
                 var cam = canvas != null && canvas.rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.rootCanvas.worldCamera : null;
                 var c = new Vector3[4]; area.GetWorldCorners(c);
+                if (below != null) { var bc = new Vector3[4]; below.GetWorldCorners(bc); float cut = Mathf.Clamp(bc[0].y, c[0].y, c[1].y); c[1].y = cut; c[2].y = cut; }
                 var lo = RectTransformUtility.WorldToScreenPoint(cam, c[0]); var hi = RectTransformUtility.WorldToScreenPoint(cam, c[2]);
                 int x0 = Mathf.Clamp(Mathf.RoundToInt(lo.x), 0, Screen.width - 1), y0 = Mathf.Clamp(Mathf.RoundToInt(lo.y), 0, Screen.height - 1);
                 int x1 = Mathf.Clamp(Mathf.RoundToInt(hi.x), x0 + 1, Screen.width), y1 = Mathf.Clamp(Mathf.RoundToInt(hi.y), y0 + 1, Screen.height);
@@ -106,12 +109,19 @@ namespace MafiaNight.UI.Animations
         }
 
         /// <summary>Covers the rectangle `area` (a child of it, on top) with the frozen snapshot of it. Takes ownership of the texture.</summary>
-        public static BurnTransition Attach(RectTransform area, Texture2D snapshot)
+        public static BurnTransition Attach(RectTransform area, Texture2D snapshot, RectTransform below = null)
         {
             var go = new GameObject("BurnTransition", typeof(RectTransform));
             var rt = (RectTransform)go.transform; rt.SetParent(area, false);
             rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero; rt.SetAsLastSibling();
-            return Build(go, snapshot, area.rect.size);
+            float inset = 0f;
+            if (below != null)
+            {
+                var bc = new Vector3[4]; below.GetWorldCorners(bc);
+                inset = Mathf.Clamp(area.rect.yMax - area.InverseTransformPoint(bc[0]).y, 0f, area.rect.height - 1f);
+                rt.offsetMax = new Vector2(0f, -inset);
+            }
+            return Build(go, snapshot, new Vector2(area.rect.width, area.rect.height - inset));
         }
 
         private static BurnTransition Build(GameObject go, Texture2D snapshot, Vector2 size)
@@ -142,8 +152,9 @@ namespace MafiaNight.UI.Animations
         }
 
         /// <summary>Burns the old screen away to the live one under it. seconds = 0.9 normal, 0.5 fast, 1.6 slow. Ends with the overlay destroyed.</summary>
-        public IEnumerator Play(BurnCorner corner, float seconds = 0.9f)
+        public IEnumerator Play(BurnCorner corner, float seconds = 0.9f, bool light = false)
         {
+            lightMode = light;
             string mode = BurnSettings.Mode;
             if (mode == BurnSettings.Off || mat == null) { Finish(); yield break; }
             if (mode == BurnSettings.Simple || Application.isBatchMode)
@@ -195,7 +206,7 @@ namespace MafiaNight.UI.Animations
         {
             bool right = corner == BurnCorner.BottomRight || corner == BurnCorner.TopRight, bottom = corner == BurnCorner.BottomRight || corner == BurnCorner.BottomLeft;
             float cx = right ? 1f : 0f, cy = bottom ? 1f : 0f, W = area.x, H = area.y, far = Mathf.Sqrt(W * W + H * H);
-            int tries = Mathf.RoundToInt(70f * dt * 60f * quality);
+            int tries = Mathf.RoundToInt(70f * dt * 60f * quality * (lightMode ? 0.4f : 1f));
             float k = W / 390f;
             for (int n = 0; n < tries; n++)
             {
@@ -205,7 +216,7 @@ namespace MafiaNight.UI.Animations
                 float t = d * 0.8f + NoiseAt(x, yJ) * 0.2f, s = (p - t) / Band;
                 if (s > 0.03f && s < 0.3f && UnityEngine.Random.value < 0.5f)
                     Spawn(u * W, (1f - w) * H, (UnityEngine.Random.value - 0.5f) * 30f * k, (30f + UnityEngine.Random.value * 90f) * k, 0.5f + UnityEngine.Random.value * 0.9f, (1f + UnityEngine.Random.value * 2.4f) * 2f * k, false);
-                else if (s > 0.35f && s < 0.7f && UnityEngine.Random.value < 0.04f)
+                else if (!lightMode && s > 0.35f && s < 0.7f && UnityEngine.Random.value < 0.04f)
                     Spawn(u * W, (1f - w) * H, (UnityEngine.Random.value - 0.5f) * 12f * k, (14f + UnityEngine.Random.value * 20f) * k, 1.4f + UnityEngine.Random.value * 0.8f, (14f + UnityEngine.Random.value * 22f) * 2f * k, true);
             }
         }

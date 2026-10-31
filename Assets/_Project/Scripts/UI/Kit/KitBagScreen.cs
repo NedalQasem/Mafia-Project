@@ -180,7 +180,12 @@ namespace MafiaNight.UI.Kit
             var nr = (RectTransform)ni.transform; nr.sizeDelta = new Vector2(nw * K, nr.sizeDelta.y);
             var le = c.GetComponent<LayoutElement>(); le.preferredWidth = (12f + tw + 6f + nw + 12f) * K;
             var g = c.GetComponent<CanvasGroup>(); g.alpha = n == 0 && id != "all" ? Mathf.Pow(0.45f, 2.2f) : 1f;   // Linear colour space
-            c.GetComponent<Button>().onClick.AddListener(() => { tab = id; Redraw(); });
+            c.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                if (tab == id) return;
+                var sr = list != null ? list.GetComponentInParent<ScrollRect>() : null;
+                KitTabBurn.Swap(this, sr != null && sr.viewport != null ? sr.viewport : list, () => { tab = id; Redraw(); }, MafiaNight.UI.Animations.BurnCorner.BottomRight, chipsContent);
+            });
         }
 
         // ---------------------------------------------------------------- compartments
