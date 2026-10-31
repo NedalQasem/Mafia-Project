@@ -101,7 +101,12 @@ namespace MafiaNight.App
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
             if (lb != null) { lb.OnBack += GoHome; gameObject.AddComponent<LeaderboardsFlow>(); }
             header = FindAnyObjectByType<KitScreenHeader>();
-            if (header != null) { header.OnBack += GoHome; header.SetCoins(currency.Coins); }
+            if (header != null)
+            {   // the chat is reached from the family tab, so its back button returns there
+                if (SceneManager.GetActiveScene().name == AppScenes.Chat) header.OnBack += () => { if (sceneLoader != null) sceneLoader.LoadScene(AppScenes.Family); };
+                else header.OnBack += GoHome;
+                header.SetCoins(currency.Coins);
+            }
 
             Refresh();
             if (SceneManager.GetActiveScene().name == AppScenes.Home) ReloadAccount();      // back on the home screen

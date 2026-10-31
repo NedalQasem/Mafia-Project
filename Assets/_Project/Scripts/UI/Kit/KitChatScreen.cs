@@ -55,6 +55,8 @@ namespace MafiaNight.UI.Kit
         public event Action<ChatConversation> OnHeaderTapped;
         /// <summary>The player pressed "new group".</summary>
         public event Action OnNewGroup;
+        /// <summary>The player pressed a tab (0 public, 1 direct, 2 groups).</summary>
+        public event Action<int> OnTabTapped;
 
         public ChatConversation Current => current;
         public bool IsOpen => current != null;
@@ -66,7 +68,7 @@ namespace MafiaNight.UI.Kit
             if (inited) return;
             inited = true;
             if (pub == null && !KitLiveMode.Active) { pub = ChatData.Public(); dms = ChatData.Direct(); groups = ChatData.Groups(); sample = true; }
-            for (int i = 0; i < tabs.Length; i++) { int idx = i; tabs[i].onClick.AddListener(() => SelectTab(idx)); }
+            for (int i = 0; i < tabs.Length; i++) { int idx = i; tabs[i].onClick.AddListener(() => { SelectTab(idx); OnTabTapped?.Invoke(idx); }); }
             backButton.onClick.AddListener(() => { current = null; OnClosed?.Invoke(); Refresh(); });
             if (!sample && convHeader != null) KitTap.On(convHeader.transform, () => { if (current != null) OnHeaderTapped?.Invoke(current); });
             sendButton.onClick.AddListener(Send);

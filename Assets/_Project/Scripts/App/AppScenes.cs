@@ -1,6 +1,6 @@
 namespace MafiaNight.App
 {
-    /// <summary>Scene names of the new UI-kit screens, in nav-bar tab order (shop, family, rooms, ranks, settings); the chat is reached from the family screen.</summary>
+    /// <summary>Scene names of the new UI-kit screens, in nav-bar tab order (shop, family, rooms, ranks, settings); the family tab opens on the chats, and a conversation opens in the chat scene.</summary>
     public static class AppScenes
     {
         public const string Store = "UIKitStore";

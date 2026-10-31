@@ -17,7 +17,16 @@
     if (has('phone')) return { s: 'bg', stretch: true };
     if (has('dock')) return { kind: 'nav' };
     if (has('top')) return { s: 'top_fade' };
+    if (has('ic') && has('fr')) return { s: 'ic_fr' };
     if (has('ic')) return { s: 'ic_btn' };
+    if (has('ctab')) return { s: has('on') ? 'ctab_on' : 'ctab_off' };
+    if (has('cbd')) return { s: 'cbd' };
+    if (has('av') && has('grp')) return { s: 'av_grp' };
+    if (has('av') && el.closest('.add')) return { s: 'av_add' };
+    if (has('letter')) return { s: 'letter_bg' };
+    if (has('big')) return { s: has('red') ? 'big_red' : 'big_dim' };
+    if (has('newg')) return { s: 'newg_bg' };
+    if (has('coach')) return { s: 'coach_bg' };
     if (has('dot')) return { s: 'badge_dot' };
     if (has('seg')) return { s: 'seg_bg' };
     if (el.tagName === 'BUTTON' && par && par.classList.contains('seg') && has('on')) return { s: 'seg_on' };
@@ -152,7 +161,7 @@
       frames.push({ name, w: 390, h: 790, nodes: extract(phone) });
       style.remove();
     };
-    for (const id of ['f1', 'f2', 'f3', 'f4', 'f5', 'f6']) await run(id, id);
+    for (const id of ['f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'c1', 'c2', 'c3']) await run(id, id);
     document.getElementById('rb2').click(); await new Promise(r => setTimeout(r, 30));
     await run('f6', 'f6_after');
     document.getElementById('rb1').click(); await new Promise(r => setTimeout(r, 30));

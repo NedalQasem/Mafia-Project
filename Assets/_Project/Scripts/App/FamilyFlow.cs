@@ -15,7 +15,8 @@ using UnityEngine.UI;
 namespace MafiaNight.App
 {
     /// <summary>
-    /// Puts the family (friends) on the screens of Docs/mockups/family.html: the list grouped by where everybody is, the requests, adding
+    /// Puts the family on the screens of Docs/mockups/family.html. The tab opens on the chats (c1 private, c2 nothing yet, c3 groups, from
+    /// family-chat.html); the friends button on top leads to the friends pages: the list grouped by where everybody is, the requests, adding
     /// somebody by his id number, the sheet of one friend, and the report sheet. It fills the frames the editor builder made, node by node
     /// (numbers are the parts of Art/UI/Family/frames.json), and keeps the lists fresh from <see cref="FriendsService"/>.
     /// Added by <see cref="KitAppBinder"/> in the family scene.
@@ -41,7 +42,10 @@ namespace MafiaNight.App
         private ISceneLoader scenes;
         private KitToast toast;
 
-        private string frame = "f1";
+        /// <summary>Set by the chat screen before it comes back: which chats frame to open (c1 private, c3 groups).</summary>
+        public static string StartFrame = "c1";
+
+        private string frame = "c1";
         private Friend sheetFriend;
         private int reportReason;
         private bool reportBlock = true;
@@ -61,11 +65,19 @@ namespace MafiaNight.App
             chat = ChatService.Ensure();
             fs.OnChanged += Redraw;
             fs.OnNews += OnNews;
+            chat.OnConversationsChanged += Redraw;
             fs.Refresh();
-            ShowTab("f1");
+            chat.RefreshInbox();
+            string start = view.Has(StartFrame) ? StartFrame : "f1";
+            StartFrame = "c1";
+            ShowTab(start);
         }
 
-        private void OnDestroy() { if (fs != null) { fs.OnChanged -= Redraw; fs.OnNews -= OnNews; } }
+        private void OnDestroy()
+        {
+            if (fs != null) { fs.OnChanged -= Redraw; fs.OnNews -= OnNews; }
+            if (chat != null) chat.OnConversationsChanged -= Redraw;
+        }
 
         private void Update()
         {
@@ -148,6 +160,24 @@ namespace MafiaNight.App
 
         private static string Clip(string name, int max) => string.IsNullOrEmpty(name) ? "" : name.Length > max ? name.Substring(0, max - 1) + "…" : name;
 
+        /// <summary>Shows the text on one line no wider than <paramref name="maxCss"/> (mockup pixels): measured, and cut with "…" only when it does not fit.</summary>
+        private static void FitWidth(ArabicText a, string s, float maxCss)
+        {
+            s = s ?? "";
+            a.Text = s;
+            if (TextW(a) <= maxCss) return;
+            var font = a.GetComponent<TMP_Text>().font;
+            string dots = font != null && font.name.Contains("Lalezar") ? "..." : "…";      // Lalezar draws "…" as a single dot
+            int lo = 0, hi = s.Length - 1;
+            while (lo < hi)
+            {
+                int mid = (lo + hi + 1) / 2;
+                a.Text = s.Substring(0, mid).TrimEnd() + dots;
+                if (TextW(a) <= maxCss) lo = mid; else hi = mid - 1;
+            }
+            a.Text = s.Substring(0, lo).TrimEnd() + dots;
+        }
+
         // ---------------------------------------------------------------- the frame and its chrome (tabs, top bar)
 
         private void ShowTab(string f)
@@ -167,6 +197,8 @@ namespace MafiaNight.App
                 case "f4": DrawFriends("f4"); FillSheet(); break;
                 case "f6": DrawFriends("f6"); FillReport(); break;
                 case "f6_after": DrawFriends("f6_after"); break;
+                case "c1": case "c2": DrawChats(false); break;
+                case "c3": DrawChats(true); break;
                 default: DrawFriends(frame); break;
             }
         }
@@ -176,20 +208,33 @@ namespace MafiaNight.App
             view.SetTap(f, c.Friends, () => ShowTab("f1"));
             view.SetTap(f, c.Requests, () => ShowTab("f2"));
             view.SetTap(f, c.Add, () => ShowTab("f3"));
-            view.SetTap(f, c.Back, GoHome);
+            view.SetTap(f, c.Back, () => ShowTab("c1"));      // the friends pages sit behind the chats
+            var title = view.Node(f, c.Sub - 2);              // the title sits two parts before the subtitle
+            var ta = title != null ? title.GetComponent<ArabicText>() : null;
+            if (ta != null && ta.Text != "الأصدقاء")
+            {
+                var rt = (RectTransform)title;
+                float right = rt.anchoredPosition.x / K + rt.sizeDelta.x / K / 2f;
+                ta.Text = "الأصدقاء";
+                float w = TextW(ta) + 4f;
+                X(title, right - w, w);
+            }
             int n = fs.Incoming.Count;
             view.SetActive(f, c.Badge, n > 0);
             if (n > 0) view.SetText(f, c.BadgeNum, Ar(n));
         }
 
-        private void GoHome()
-        {
-            if (scenes != null) scenes.LoadScene(AppScenes.Home); else UnityEngine.SceneManagement.SceneManager.LoadScene(AppScenes.Home);
-        }
-
         private void OpenChat(string pf = null, string name = null, int rank = 0)
         {
             if (!string.IsNullOrEmpty(pf)) { ChatFlow.PendingDirectPf = pf; ChatFlow.PendingDirectName = name; ChatFlow.PendingDirectRank = rank; }
+            LoadChat();
+        }
+
+        private void OpenConversation(string channel) { ChatFlow.PendingChannel = channel; LoadChat(); }
+        private void OpenNewGroup() { ChatFlow.PendingNewGroup = true; LoadChat(); }
+
+        private void LoadChat()
+        {
             if (scenes != null) scenes.LoadScene(AppScenes.Chat); else UnityEngine.SceneManagement.SceneManager.LoadScene(AppScenes.Chat);
         }
 
@@ -234,8 +279,11 @@ namespace MafiaNight.App
         /// <summary>Fills the name, level and status of a row (or of the friend sheet's head) and lays them out as the mockup's flex rows do.</summary>
         private static void Info(ArabicText name, ArabicText level, ArabicText status, float infoW, string n, int lv, string st)
         {
-            name.Text = Clip(n, 14); level.Text = Ar(lv); status.Text = st;
-            float nw = TextW(name) + 4f, lw = TextW(level), sw = TextW(status) + 4f;
+            level.Text = Ar(lv);
+            float lw = TextW(level);
+            FitWidth(name, n, infoW - lw - 22f);
+            FitWidth(status, st, infoW - 4f);
+            float nw = TextW(name) + 4f, sw = TextW(status) + 4f;
             var b = name.transform.parent; var info = b.parent;
             X(name.transform, infoW - nw, nw);
             float pill = lw + 12f;
@@ -266,8 +314,7 @@ namespace MafiaNight.App
 
             int online = fs.Friends.Count(x => x.Online);
             view.SetText(f, 117, fs.Friends.Count == 0 ? "ما عندك أصدقاء بعد" : Ar(online) + " من " + Ar(fs.Friends.Count) + " متصلين");
-            view.SetSprite(f, 119, "icon_chat");                       // the top-left button opens the chat
-            view.SetTap(f, 118, () => OpenChat());
+            view.SetActive(f, 118, false);                             // the chats are behind the back button now
 
             bool iAmInRoom = rooms != null && rooms.InRoom;
             var inRoom = fs.Friends.Where(x => x.Online && x.Room != null).ToList();
@@ -303,20 +350,48 @@ namespace MafiaNight.App
             Y(row, top, RowH);
             var texts = row.GetComponentsInChildren<ArabicText>(true);
             string status = !online ? "آخر ظهور " + Ago(fr.Seen) : room != null ? (room.IsPrivate ? "بغرفة خاصة · مغلقة" : room.InMatch ? "بغرفة «" + room.Name + "» · بالمباراة" : "بغرفة «" + room.Name + "» · " + Ar(room.Count) + " من " + Ar(room.Cap)) : "متصل";
-            Info(texts[0], texts[1], texts[2], 216f, fr.Name, fr.Level, status);
             var friend = fr;
             KitTap.On(row, () => OpenSheet(friend));
             if (texts.Length > 3)
-            {   // the button on the left
+            {   // the button on the left, and the message button next to it (a copy of the round "more" button)
                 var btn = texts[3].transform.parent;
                 if (tpl == 7) { ButtonLabel(texts[3], "انضم"); KitTap.On(btn, () => JoinFriend(friend)); }
                 else if (tpl == 19) { ButtonLabel(texts[3], room != null && room.Cap > 0 && room.Count >= room.Cap ? "ممتلئة" : "مغلقة"); KitTap.On(btn, () => OpenSheet(friend)); }
                 else if (tpl == 36) { ButtonLabel(texts[3], "دعوة"); KitTap.On(btn, () => InviteFriend(friend)); }
+                float btnRight = 12f + TextW(texts[3]) + 28f;
+                var more = FindPart(view.Node(f, 77), "f_button.more");
+                if (more != null)
+                {
+                    var msg = Instantiate(more.gameObject, row).transform;
+                    msg.name = "f_button.msg";
+                    msg.gameObject.SetActive(true);
+                    X(msg, btnRight + 8f, 32f);
+                    MessageButton(msg, friend);
+                }
+                Info(texts[0], texts[1], texts[2], 295f - (btnRight + 8f + 32f + 10f), fr.Name, fr.Level, status);
             }
             else
-            {   // the "more" button
-                foreach (var t in row.GetComponentsInChildren<Transform>(true)) if (t.name.StartsWith("f_button.more")) { KitTap.On(t, () => OpenSheet(friend)); break; }
+            {   // the round button becomes the message button (the sheet opens from the row)
+                Info(texts[0], texts[1], texts[2], 216f, fr.Name, fr.Level, status);
+                var more = FindPart(row, "f_button.more");
+                if (more != null) MessageButton(more, friend);
             }
+        }
+
+        private static Transform FindPart(Transform root, string prefix)
+        {
+            if (root == null) return null;
+            foreach (var t in root.GetComponentsInChildren<Transform>(true)) if (t.name.StartsWith(prefix)) return t;
+            return null;
+        }
+
+        private void MessageButton(Transform button, Friend fr)
+        {
+            var icon = FindPart(button, "f_svg");
+            var im = icon != null ? icon.GetComponent<Image>() : null;
+            var s = view.Sprite("icon_chat");
+            if (im != null && s != null) im.sprite = s;
+            KitTap.On(button, () => OpenChat(fr.Pf, fr.Name, fr.Rank));
         }
 
         private void JoinFriend(Friend fr)
@@ -442,6 +517,199 @@ namespace MafiaNight.App
             if (reportBlock) view.SetText(f, 133, "حظرنا «" + Clip(fr.Name, 14) + "» عندك. تقدر تشيل الحظر من الإعدادات ← الخصوصية والأمان.");
             view.SetTap(f, 120, CloseSheet);
             view.SetTap(f, 134, CloseSheet);
+        }
+
+        // ---------------------------------------------------------------- the chats (c1 private, c2 nothing yet, c3 groups)
+
+        // per frame: subtitle, friends button, its badge and number; the private / groups / public tabs (button, label, badge, number)
+        private struct ChatsChrome
+        {
+            public int Sub, Friends, Dot, DotNum, Dm, DmLabel, DmBadge, DmNum, Gr, GrLabel, GrBadge, GrNum, Pub;
+            public ChatsChrome(int sub, int fr, int dot, int dotNum, int dm, int dmL, int dmB, int dmN, int gr, int grL, int grB, int grN, int pub)
+            { Sub = sub; Friends = fr; Dot = dot; DotNum = dotNum; Dm = dm; DmLabel = dmL; DmBadge = dmB; DmNum = dmN; Gr = gr; GrLabel = grL; GrBadge = grB; GrNum = grN; Pub = pub; }
+        }
+        private static readonly ChatsChrome ChromeC1 = new ChatsChrome(135, 136, 138, 139, 121, 122, 123, 124, 125, 126, 127, 128, 129);
+        private static readonly ChatsChrome ChromeC2 = new ChatsChrome(27, 28, 30, 31, 15, 16, -1, -1, 17, 18, 19, 20, 21);
+        private static readonly ChatsChrome ChromeC3 = new ChatsChrome(43, 44, 46, 47, 29, 30, 31, 32, 33, 34, 35, 36, 37);
+        private const float TabW = 117f, ChatRowH = 66f, ChatGap = 10f;
+
+        private List<ChatConv> Convs(bool groups) =>
+            chat.Conversations.Where(c => c.IsGroup == groups).OrderByDescending(c => c.Last != null ? c.Last.Ts : 0).ToList();
+
+        private void DrawChats(bool groups)
+        {
+            var dms = Convs(false); var grs = Convs(true);
+            string f = groups ? "c3" : dms.Count == 0 ? "c2" : "c1";
+            if (frame != f || view.Current != f) { frame = f; view.Show(f); }
+            var c = f == "c1" ? ChromeC1 : f == "c2" ? ChromeC2 : ChromeC3;
+
+            int unread = chat.UnreadTotal, online = fs.Friends.Count(x => x.Online);
+            string sub = fs.Friends.Count == 0 && unread == 0 ? (dms.Count == 0 && grs.Count == 0 ? "ما عندك محادثات بعد" : "ما عندك أصدقاء بعد")
+                : (unread > 0 ? UnreadText(unread) : "ما في رسائل جديدة") + (online > 0 ? " · " + Ar(online) + " متصلين" : "");
+            FitWidth(view.Node(f, c.Sub).GetComponent<ArabicText>(), sub, 300f);
+            int req = fs.Incoming.Count;
+            view.SetActive(f, c.Dot, req > 0);
+            if (req > 0) view.SetText(f, c.DotNum, KitText.Badge(req));
+            view.SetTap(f, c.Friends, () => ShowTab("f1"));
+
+            TabLabel(f, c.DmLabel, c.DmBadge, c.DmNum, dms.Sum(x => x.Unread));
+            TabLabel(f, c.GrLabel, c.GrBadge, c.GrNum, grs.Sum(x => x.Unread));
+            view.SetTap(f, c.Dm, () => ShowTab("c1"));
+            view.SetTap(f, c.Gr, () => ShowTab("c3"));
+            view.SetTap(f, c.Pub, () => OpenConversation(ChatService.Public));
+
+            if (f == "c2") { DrawNoChats(); return; }
+            var scroll = view.Node(f, 1); if (scroll == null) return;
+            float y = ListTop;
+            if (f == "c1")
+            {
+                HideTemplates(f, scroll, 35, 50, 65, 80, 93, 106);    // the six sample rows of the mockup
+                y = DrawOnlineStrip(f, scroll, y);
+                Y(view.Node(f, 32), y, SecH); y += SecH + ChatGap;
+                foreach (var cv in dms) { ChatRow(f, scroll, cv.Unread > 0 ? 35 : 80, cv, y); y += ChatRowH + ChatGap; }
+            }
+            else
+            {
+                HideTemplates(f, scroll, 2, 14);
+                foreach (var cv in grs) { ChatRow(f, scroll, cv.Unread > 0 ? 2 : 14, cv, y); y += ChatRowH + ChatGap; }
+                var newg = view.Node(f, 24);
+                Y(newg, y, 52f); y += 52f;
+                view.SetTap(f, 24, OpenNewGroup);
+            }
+            view.MakeScrollable(f, (RectTransform)scroll, Mathf.Max(790f, y + 110f));
+        }
+
+        private static string UnreadText(int n) => n == 1 ? "رسالة جديدة" : n == 2 ? "رسالتان جديدتان" : KitText.Badge(n) + (n <= 10 ? " رسائل جديدة" : " رسالة جديدة");
+
+        /// <summary>Centres a tab's words, with its red count (when there is one) on their left as in the mockup's flex row.</summary>
+        private void TabLabel(string f, int labelNode, int badgeNode, int numNode, int count)
+        {
+            var label = view.Node(f, labelNode).GetComponent<ArabicText>();
+            float lw = TextW(label) + 2f, bw = 0f;
+            bool show = badgeNode >= 0 && count > 0;
+            if (badgeNode >= 0) view.SetActive(f, badgeNode, show);
+            if (show)
+            {
+                var num = view.Node(f, numNode).GetComponent<ArabicText>();
+                num.Text = KitText.Badge(count);
+                float nw = TextW(num) + 1f;
+                bw = Mathf.Max(17f, nw + 8f);
+                X(view.Node(f, badgeNode), 0f, bw);    // placed below with the label
+                X(num.transform, (bw - nw) / 2f, nw);
+            }
+            float total = lw + (show ? 6f + bw : 0f), start = (TabW - total) / 2f;
+            X(label.transform, start + (show ? bw + 6f : 0f), lw);
+            if (show) X(view.Node(f, badgeNode), start, bw);
+        }
+
+        /// <summary>The friends who are on line, in rooms first, as round buttons under the tabs (up to four besides "add"); returns where the chats start.</summary>
+        private float DrawOnlineStrip(string f, Transform scroll, float y)
+        {
+            var strip = view.Node(f, 7);
+            for (int i = strip.childCount - 1; i >= 0; i--) { var ch = strip.GetChild(i); if (ch.name.StartsWith("Dyn")) Destroy(ch.gameObject); }
+            foreach (int n in new[] { 12, 17, 22, 27 }) view.SetActive(f, n, false);
+            var on = fs.Friends.Where(x => x.Online).OrderBy(x => x.Room == null ? 1 : 0).ToList();
+            bool show = on.Count > 0;
+            view.SetActive(f, 2, show); view.SetActive(f, 7, show);
+            if (!show) return y;
+            Y(view.Node(f, 2), y, SecH);
+            var count = view.Node(f, 6).GetComponent<ArabicText>(); count.Text = Ar(on.Count);
+            y += SecH + ChatGap;
+            Y(strip, y, 79f);
+            view.SetTap(f, 8, () => ShowTab("f3"));
+            int k = 0;
+            foreach (var fr in on.Take(4))
+            {
+                var pp = Instantiate(view.Node(f, 12).gameObject, strip).transform;
+                pp.name = "DynPP"; pp.gameObject.SetActive(true);
+                X(pp, 232f - 70f * k, 58f);
+                var st = FindPart(pp, "f_i.st");
+                if (st != null) SetPicture(st, fr.Room != null ? "st_room" : "st_on");
+                var label = pp.GetComponentInChildren<ArabicText>(true);
+                FitWidth(label, fr.Name, 58f);
+                float w = TextW(label) + 2f; X(label.transform, (58f - w) / 2f, w);
+                var friend = fr;
+                KitTap.On(pp, () => OpenChat(friend.Pf, friend.Name, friend.Rank));
+                k++;
+            }
+            return y + 79f + 14f;
+        }
+
+        private void SetPicture(Transform part, string sprite)
+        {
+            var v = part.Find("V");
+            var im = v != null ? v.GetComponent<Image>() : part.GetComponent<Image>();
+            var s = view.Sprite(sprite);
+            if (im != null && s != null) im.sprite = s;
+        }
+
+        /// <summary>One conversation row: name (and rank) and the last line on the right, the time and the unread count on the left.</summary>
+        private void ChatRow(string f, Transform scroll, int tpl, ChatConv cv, float top)
+        {
+            var row = Clone(f, tpl, scroll, "DynRow");
+            Y(row, top, ChatRowH);
+            var t = row.GetComponentsInChildren<ArabicText>(true);
+            bool rank = !cv.IsGroup, badge = cv.Unread > 0;
+            int i = 0;
+            var name = t[i++]; var lv = rank ? t[i++] : null; var last = t[i++]; var time = t[i++]; var num = badge ? t[i++] : null;
+
+            if (!cv.IsGroup)
+            {   // the dot on the avatar: in a room, on line, away (the friends list knows better than the chat)
+                var fr = fs.Friends.FirstOrDefault(x => x.Pf == cv.OtherPf);
+                bool isOn = fr != null ? fr.Online : cv.Online;
+                var st = FindPart(row, "f_i.st");
+                if (st != null) SetPicture(st, fr != null && fr.Online && fr.Room != null ? "st_room" : isOn ? "st_on" : "st_off");
+            }
+
+            // the left column: time over the count
+            time.Text = ChatTime(cv.Last);
+            float tw = TextW(time) + 1f, bw = 0f;
+            if (badge) { num.Text = KitText.Badge(cv.Unread); float nw = TextW(num) + 1f; bw = Mathf.Max(17f, nw + 8f); X(num.transform, (bw - nw) / 2f, nw); }
+            float metaW = Mathf.Max(tw, bw);
+            X(time.transform.parent, metaW - tw, tw); X(time.transform, 0f, tw);
+            if (badge) X(num.transform.parent, metaW - bw, bw);
+            X(time.transform.parent.parent, 12f, metaW);
+
+            // the right column: name, rank and last line, as wide as the row leaves
+            float infoLeft = 12f + metaW + 10f, infoW = 295f - infoLeft;
+            float pill = 0f;
+            if (lv != null) { lv.Text = KitTheme.RankNames[Mathf.Clamp(cv.Rank, 0, KitTheme.RankNames.Length - 1)]; float lw = TextW(lv); pill = lw + 12f; X(lv.transform, 6f, lw + 2f); }
+            FitWidth(name, cv.Name, infoW - (pill > 0 ? pill + 6f : 0f));
+            float nw2 = TextW(name) + 4f;
+            X(name.transform, infoW - nw2, nw2);
+            if (lv != null) X(lv.transform.parent, infoW - nw2 - 6f - pill, pill);
+            string text = cv.Last == null ? "" : (cv.Last.Mine ? "أنا: " : cv.IsGroup && !cv.Last.System ? cv.Last.Name + ": " : "") + cv.Last.Text;
+            FitWidth(last, text, infoW);
+            float lw2 = TextW(last) + 4f;
+            X(last.transform, infoW - lw2, lw2);
+            last.GetComponent<TMP_Text>().color = badge ? new Color32(0xE6, 0xD9, 0xBD, 255) : new Color32(0x8F, 0x87, 0x77, 255);
+            X(name.transform.parent, 0f, infoW); X(last.transform.parent, 0f, infoW);
+            X(name.transform.parent.parent, infoLeft, infoW);
+
+            string channel = cv.Channel;
+            KitTap.On(row, () => OpenConversation(channel));
+        }
+
+        private static string ChatTime(ChatMsg m)
+        {
+            if (m == null || m.Ts <= 0) return "";
+            var d = DateTimeOffset.FromUnixTimeMilliseconds(m.Ts).ToLocalTime();
+            if (d.Date == DateTime.Now.Date) return Ar(d.ToString("h:mm"));
+            if (d.Date == DateTime.Now.Date.AddDays(-1)) return "أمس";
+            return Ar(d.ToString("d/M"));
+        }
+
+        /// <summary>No private chat yet: the welcome letter; the hint at the friends button only for a player without friends.</summary>
+        private void DrawNoChats()
+        {
+            const string f = "c2";
+            bool lonely = fs.Friends.Count == 0;
+            view.SetActive(f, 32, lonely);
+            view.SetText(f, 4, lonely ? "عائلتك لسا فاضية" : "ما في محادثات بعد");
+            view.SetText(f, 6, lonely ? "ضيف أصدقاء برقم الهوية، أو تعرّف على الناس بالساحة العامة وبالسهرات. لما تحكي مع حدا بتطلع محادثته هون."
+                                      : "افتح صفحة الأصدقاء من الزر فوق وابعت رسالة لأي صديق، أو احكي مع الناس بالساحة العامة. محادثاتك بتطلع هون.");
+            view.SetTap(f, 7, () => ShowTab("f3"));
+            view.SetTap(f, 10, () => OpenConversation(ChatService.Public));
         }
 
         // ---------------------------------------------------------------- requests (f2)

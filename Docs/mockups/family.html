@@ -114,6 +114,38 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .ok{display:grid;gap:12px;justify-items:center;text-align:center;padding:6px 0 4px}
 .stamp{font-family:"Aref Ruqaa";font-size:2.2rem;line-height:1;color:#4fa58b;border:3px solid currentColor;border-radius:10px;padding:2px 22px;rotate:-5deg;opacity:.92}
 .small{font-size:.7rem;font-weight:700;color:#8f8777;line-height:1.6}
+
+/* chat-first home (family-chat.html, approved 2026-10-31): c1 private chats, c2 nothing yet, c3 groups */
+.ic.fr{width:44px;height:44px;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 1.5px #000,0 0 0 3px #6e5224,0 3px 6px #000a}
+.ic.fr svg{width:22px;height:22px;stroke:#e8cc8c}
+.ic.fr .dot{top:-3px;right:-3px;min-width:18px;height:18px;font-size:.66rem}
+.ctabs{position:absolute;top:84px;left:14px;right:14px;height:36px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;z-index:7}
+.ctab{position:relative;height:36px;padding:0 4px;border-radius:9px 9px 3px 3px;font-weight:800;font-size:.8rem;color:#8f8777;background:var(--grain),linear-gradient(180deg,#2a1e17,#140d0a);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #000;display:flex;justify-content:center;align-items:center;gap:6px}
+.ctab.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);top:-3px;box-shadow:0 0 0 1px #000,0 8px 12px #000a,inset 0 1px 0 #fff9}
+.cbd{min-width:17px;height:17px;padding:0 4px;border-radius:9px;display:grid;place-items:center;font-family:Lalezar;font-size:.66rem;font-style:normal;line-height:1;background:#d6313b;color:#fff;box-shadow:0 0 0 1.5px #15100d}
+.citem .meta{display:grid;justify-items:end;gap:5px;font-size:.62rem;color:#7d756a;font-weight:700;flex:none}
+.citem .info small.unread{color:#e6d9bd}
+.av.grp{border-radius:12px}
+.av.grp svg{width:24px;height:24px;fill:none;stroke:#d2ad60;stroke-width:2;stroke-linecap:round}
+.strip{display:flex;gap:12px;padding:2px 2px 4px}
+.pp{display:grid;justify-items:center;gap:4px;width:58px;flex:none;font-size:.64rem;font-weight:800;color:#cfc6b2}
+.pp span{width:100%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp .av{width:50px;height:50px}
+.pp.add .av{background:#ffffff06;box-shadow:inset 0 0 0 2px #a98f6288}
+.pp.add .av svg{width:22px;height:22px;stroke:#b99048;fill:none;stroke-width:2.4;stroke-linecap:round}
+.pp.add{color:#b99048}
+.letter{position:relative;margin-top:18px;padding:22px 18px 18px;border-radius:4px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 26px #8a7a5a99,0 10px 20px #000c;rotate:-1deg;display:grid;gap:8px;justify-items:center;text-align:center}
+.letter::before{content:"";position:absolute;top:-8px;left:50%;translate:-50% 0;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e0525a,#6a0f16);box-shadow:0 2px 3px #0009}
+.letter h3{margin:0;font-family:Lalezar;font-weight:400;font-size:1.5rem;line-height:1.1;color:var(--crim)}
+.letter p{margin:0;font-size:.78rem;font-weight:700;line-height:1.7;color:#4a3d28}
+.big{width:100%;height:48px;border-radius:10px;font-weight:800;font-size:.92rem;display:flex;align-items:center;justify-content:center;gap:8px}
+.big svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.big.red{color:#f0dcd8;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000}
+.big.dim2{color:#b9a67e;background:#000a;box-shadow:inset 0 0 0 1px #3a2e22}
+.newg{height:52px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:11px;border:2px dashed #a98f6288;color:#b99048;font-weight:800;font-size:.86rem;background:#ffffff05}
+.newg svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round}
+.coach{position:absolute;top:84px;left:12px;z-index:9;max-width:210px;padding:9px 12px;border-radius:4px;background:var(--paper);color:var(--ink);font-size:.72rem;font-weight:800;line-height:1.5;box-shadow:inset 0 0 12px #8a7a5a88,0 8px 14px #000c;rotate:-1.5deg}
+.coach::before{content:"";position:absolute;top:-7px;left:22px;border:7px solid transparent;border-top:0;border-bottom-color:var(--paper)}
 </style>
 </head>
 <body>
@@ -132,6 +164,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></symbol>
 <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></symbol>
 <symbol id="check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+<symbol id="friends" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.8 2.9-6 6.5-6s6.5 2.2 6.5 6"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14.2c2.9.1 5 1.9 5 4.8"/></symbol>
+<symbol id="useradd" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.8 2.9-6 6.5-6s6.5 2.2 6.5 6M19 8v6M16 11h6"/></symbol>
+<symbol id="square" viewBox="0 0 24 24"><path d="M3 21h18M5 21V10l7-5 7 5v11M10 21v-6h4v6"/></symbol>
+<symbol id="grp" viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5M15 15c3 0 6 1.5 6 4"/></symbol>
 </defs></svg>
 
 <!-- 1) friends list -->
@@ -164,6 +200,20 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 <p class="cap">٦ — الإبلاغ عن لاعب: السبب + ملاحظة + خيار الحظر. تصل للوحة PlayFab وتُحظر تلقائياً عند تكرارها</p>
 <div class="tabsx" style="display:flex;gap:4px"><button class="ghost" id="rb1">الورقة</button><button class="ghost" id="rb2">بعد الإرسال</button></div>
 <div class="phone" id="f6"></div>
+</div>
+
+<!-- 7) chat-first home (family-chat.html) -->
+<div class="col">
+<p class="cap">٧ — تبويب العائلة يفتح هون: المحادثات الخاصة، صف المتصلين، وأيقونة الأصدقاء فوق بعدد الطلبات</p>
+<div class="phone" id="c1"></div>
+</div>
+<div class="col">
+<p class="cap">٨ — ما في محادثات بعد: ورقة ترحيب، والتلميح بيطلع بس إذا ما عنده أصدقاء</p>
+<div class="phone" id="c2"></div>
+</div>
+<div class="col">
+<p class="cap">٩ — المجموعات، وزر مجموعة جديدة</p>
+<div class="phone" id="c3"></div>
 </div>
 
 <script>
@@ -242,6 +292,39 @@ function f6(after){
  }
 }
 f1();f2();f3();f4();f5();f6(false);
+/* chat-first home: c1 private chats, c2 nothing yet, c3 groups (approved in family-chat.html) */
+const ctop=(sub,req)=>`<div class="top"><div class="ttl">العائلة<small>${sub}</small></div><button class="ic fr" aria-label="الأصدقاء">${ic('friends')}${req?`<i class="dot">${req}</i>`:''}</button></div>`;
+const ctabs=(on,dm,gr)=>`<div class="ctabs"><button class="ctab ${on===0?'on':''}">الخاص${dm?`<i class="cbd">${dm}</i>`:''}</button><button class="ctab ${on===1?'on':''}">المجموعات${gr?`<i class="cbd">${gr}</i>`:''}</button><button class="ctab">الساحة العامة</button></div>`;
+const citem=(name,rank,last,time,unread,st,grp)=>`<div class="row citem">${grp?`<div class="av grp">${ic('grp')}</div>`:`<div class="av">${hat}<i class="st ${st}"></i></div>`}<div class="info"><b>${name}${rank?`<span class="lv">${rank}</span>`:''}</b><small class="${unread?'unread':''}${st==='room'?' live':''}">${last}</small></div><div class="meta"><span>${time}</span>${unread?`<i class="cbd">${unread}</i>`:''}</div></div>`;
+const pp=(name,st)=>`<div class="pp"><div class="av">${hat}<i class="st ${st}"></i></div><span>${name}</span></div>`;
+function c1(){
+ $('#c1').innerHTML=ctop('٥ رسائل جديدة · ٤ متصلين','٢')+ctabs(0,'٥','٥')+`<div class="scroll">
+  <div class="sec">متصلين الآن <small>٤</small></div>
+  <div class="strip"><div class="pp add"><div class="av">${ic('plus')}</div><span>أضف</span></div>${pp('أبو سالم','room')}${pp('أم سعيد','on')}${pp('البيك','on')}${pp('لينا','room')}</div>
+  <div class="sec">المحادثات</div>
+  ${citem('أبو سالم','الريّس','بغرفة «سهرة الشباب» · تعال','٩:٣٨','٢','room')}
+  ${citem('أم سعيد','المستشار','تعال لغرفتي لو فاضي','٩:٣١','٢','on')}
+  ${citem('البيك','الزعيم','سهرة أمس كانت خرافية','٨:١٠','١','on')}
+  ${citem('لينا','العميل','شكراً على الهدية','أمس','','room')}
+  ${citem('الحج حسن','العرّاب','خلّينا نكمل بالغرفة','أمس','','off')}
+  ${citem('سارة','الصبي','تمام','الأحد','','off')}
+ </div>`+dock;
+}
+function c2(){
+ $('#c2').innerHTML=ctop('ما عندك محادثات بعد','١')+ctabs(0,'','١')+`<div class="coach">من هون بتشوف أصدقاءك وطلباتهم وبتضيف أصدقاء جدد</div><div class="scroll" style="padding-top:150px">
+  <div class="letter"><h3>عائلتك لسا فاضية</h3><p>ضيف أصدقاء برقم الهوية، أو تعرّف على الناس بالساحة العامة وبالسهرات. لما تحكي مع حدا بتطلع محادثته هون.</p></div>
+  <button class="big red">${ic('useradd')}أضف أصدقاء</button>
+  <button class="big dim2">${ic('square')}ادخل الساحة العامة</button>
+ </div>`+dock;
+}
+function c3(){
+ $('#c3').innerHTML=ctop('٥ رسائل جديدة · ٤ متصلين','٢')+ctabs(1,'٥','٥')+`<div class="scroll">
+  ${citem('شلّة الحارة','','مازن: الليلة الساعة ١٠؟','٩:٤٠','٥','',1)}
+  ${citem('محققو السهرة','','نور: كشفتهم من أول ليلة','٨:٠٠','','',1)}
+  <button class="newg">${ic('plus')}مجموعة جديدة</button>
+ </div>`+dock;
+}
+c1();c2();c3();
 $('#rb1').onclick=()=>f6(false);$('#rb2').onclick=()=>f6(true);
 
 /* compare mode: family.html?only=f3 shows just that phone at 390x790 */

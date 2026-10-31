@@ -23,6 +23,9 @@ namespace MafiaNight.App
         /// <summary>Set by the family screen before it opens the chat: start a private chat with this player.</summary>
         public static string PendingDirectPf, PendingDirectName;
         public static int PendingDirectRank;
+        /// <summary>Set by the family screen before it opens the chat: the conversation to open ("public" for the square), or a new group to start.</summary>
+        public static string PendingChannel;
+        public static bool PendingNewGroup;
         private const int MaxPicks = 6;
 
         private ChatService service;
@@ -37,6 +40,8 @@ namespace MafiaNight.App
         private ChatConversation pub;
         private readonly Dictionary<string, ChatConversation> byChannel = new Dictionary<string, ChatConversation>();
         private readonly List<ChatConversation> dms = new List<ChatConversation>(), groups = new List<ChatConversation>();
+        private string pendingOpen;             // a conversation asked for before the inbox brought it
+        private bool openedGroup;               // the kind of the last open conversation, to come back to the right list of the family screen
 
         private void Start()
         {
@@ -51,8 +56,9 @@ namespace MafiaNight.App
             pub = new ChatConversation { id = ChatService.Public, kind = ChatKind.Public, name = "ساحة الحارة" };
             byChannel[pub.id] = pub;
             screen.OnSend += OnSend;
-            screen.OnOpened += c => { if (!string.IsNullOrEmpty(c.id)) service.Open(c.id); };
-            screen.OnClosed += () => service.Close();
+            screen.OnOpened += c => { openedGroup = c.kind == ChatKind.Group; if (!string.IsNullOrEmpty(c.id)) service.Open(c.id); };
+            screen.OnClosed += () => { service.Close(); BackToFamily(openedGroup); };     // the lists live on the family screen
+            screen.OnTabTapped += i => { if (i != 0) BackToFamily(i == 2); };
             screen.OnMessageTapped += OnMessageTapped;
             screen.OnHeaderTapped += OnHeaderTapped;
             screen.OnNewGroup += StartNewGroup;
@@ -67,6 +73,26 @@ namespace MafiaNight.App
                 PendingDirectPf = null;
                 MessagePlayer(pf, name ?? "لاعب", rank);
             }
+            if (!string.IsNullOrEmpty(PendingChannel))
+            {
+                if (PendingChannel != ChatService.Public) { pendingOpen = PendingChannel; OpenPending(); }
+                PendingChannel = null;
+            }
+            if (PendingNewGroup) { PendingNewGroup = false; StartNewGroup(); }
+        }
+
+        private void OpenPending()
+        {
+            if (string.IsNullOrEmpty(pendingOpen) || !byChannel.TryGetValue(pendingOpen, out var c)) return;
+            pendingOpen = null;
+            screen.Show(c);
+        }
+
+        private void BackToFamily(bool groupsList)
+        {
+            FamilyFlow.StartFrame = groupsList ? "c3" : "c1";
+            if (ServiceLocator.TryGet(out MafiaNight.Services.Scenes.ISceneLoader loader)) loader.LoadScene(AppScenes.Family);
+            else UnityEngine.SceneManagement.SceneManager.LoadScene(AppScenes.Family);
         }
 
         private void OnDestroy()
@@ -136,6 +162,7 @@ namespace MafiaNight.App
             SyncRoomConversation();
             if (roomConv != null) groups.Insert(0, roomConv);
             screen.SetData(pub, dms, groups);
+            OpenPending();
         }
 
         // ---------------------------------------------------------------- the room chat
@@ -242,7 +269,7 @@ namespace MafiaNight.App
         {
             var choices = new List<KitActionSheet.Choice>();
             if (c.kind == ChatKind.Group)
-                choices.Add(new KitActionSheet.Choice("مغادرة المجموعة", () => service.LeaveGroup(c.id, ok => { if (this == null) return; Say(ok ? "غادرت المجموعة." : "تعذّرت المغادرة."); if (ok) { byChannel.Remove(c.id); screen.SelectTab(2); Rebuild(); } }), danger: true));
+                choices.Add(new KitActionSheet.Choice("مغادرة المجموعة", () => service.LeaveGroup(c.id, ok => { if (this == null) return; Say(ok ? "غادرت المجموعة." : "تعذّرت المغادرة."); if (ok) BackToFamily(true); }), danger: true));
             else if (c.kind == ChatKind.Direct && !string.IsNullOrEmpty(c.peerId))
                 choices.Add(new KitActionSheet.Choice(service.IsBlocked(c.peerId) ? "رفع الحظر عن " + c.name : "حظر " + c.name, () => ToggleBlock(c.peerId, c.name)));
             if (choices.Count == 0) return;
@@ -284,7 +311,7 @@ namespace MafiaNight.App
             var choices = new List<KitActionSheet.Choice>();
             foreach (var c in left) { var cc = c; choices.Add(new KitActionSheet.Choice(cc.Name, () => { picked.Add(cc); PickMembers(picked); })); }
             if (picked.Count > 0) choices.Add(new KitActionSheet.Choice("إنشاء المجموعة (" + picked.Count + ")", () => CreateGroup(picked), danger: true));
-            choices.Add(new KitActionSheet.Choice("إلغاء", null, quiet: true));
+            choices.Add(new KitActionSheet.Choice("إلغاء", () => BackToFamily(true), quiet: true));
             string title = left.Count == 0 && picked.Count == 0 ? "ما عندك محادثات خاصة بعد" : "أضف أعضاء (" + picked.Count + ")";
             KitActionSheet.Show(canvas, title, choices.ToArray());
         }
@@ -299,7 +326,8 @@ namespace MafiaNight.App
                 if (this == null) return;
                 if (ch == null) { Say("تعذّر إنشاء المجموعة."); return; }
                 Say("أُنشئت المجموعة.");
-                screen.SelectTab(2);
+                pendingOpen = ch;      // opens as soon as the inbox lists it
+                OpenPending();
             });
         }
     }

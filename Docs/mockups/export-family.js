@@ -32,7 +32,7 @@
   add('bg', '<div style="position:absolute;inset:0;background:radial-gradient(ellipse 90% 30% at 50% 0,#e8c27a18,transparent 70%),linear-gradient(180deg,#15100d,#090605)"></div>', 390, 790, 0, 3);
   add('top_fade', '<div style="position:absolute;inset:0;background:linear-gradient(180deg,#0a0705f2 70%,transparent)"></div>', 390, 80, 0, 2);
   add('ic_btn', `<button class="ic" style="${fill}"></button>`, 38, 38, 8, 4);
-  add('badge_dot', `<div class="ic" style="${none}"><span class="dot" style="position:static;${fill}"></span></div>`, 16, 16, 4, 4);
+  add('badge_dot', `<div class="ic" style="${none}display:block;width:100%;height:100%"><span class="dot" style="position:static;${fill}"></span></div>`, 16, 16, 4, 4);
   add('seg_bg', `<div class="seg" style="position:static;${fill}"></div>`, 100, 38, 6, 4, 10);
   add('seg_on', `<div class="seg" style="position:static;${none}padding:0;display:block;width:100%;height:100%"><button class="on" style="display:block;${fill}"></button></div>`, 100, 31, 6, 4, 7);
   add('seg_n', `<div class="seg" style="position:static;${none}padding:0;display:block;width:100%;height:100%"><i class="n" style="position:static;${fill}display:grid"></i></div>`, 17, 17, 4, 4);
@@ -64,7 +64,19 @@
   add('banner_bg', `<div class="banner" style="position:static;${fill}display:block"></div>`, 370, 64, 24, 3, 18);
   add('bar_fill', `<div class="banner" style="position:static;${none}padding:0;display:block;width:100%;height:100%"><div class="bar" style="position:static;${none}width:100%;height:100%"><i style="width:100%"></i></div></div>`, 100, 3, 1, 4);
   add('stamp', `<span class="stamp" style="display:block;${fill}rotate:none;opacity:1;color:#fff"></span>`, 100, 56, 4, 4, 14);
-  for (const id of ['back', 'plus', 'dots', 'door', 'mail', 'chat', 'user-x', 'flag', 'block', 'copy', 'info', 'search', 'check'])
+  // chat-first home (c1 c2 c3)
+  add('ic_fr', `<button class="ic fr" style="${fill}"></button>`, 44, 44, 8, 4);
+  add('ctab_off', `<button class="ctab" style="position:static;display:block;${fill}"></button>`, 110, 36, 6, 4, 10);
+  add('ctab_on', `<button class="ctab on" style="position:static;display:block;${fill}"></button>`, 110, 36, 14, 4, 10);
+  add('cbd', `<i class="cbd" style="display:block;${fill}"></i>`, 17, 17, 4, 4);
+  add('av_grp', `<div class="av grp" style="width:100%;height:100%">${svg('grp', 'width:24px;height:24px')}</div>`, 46, 46, 8, 4);
+  add('av_add', `<div class="pp add" style="width:100%;height:100%;display:block"><div class="av" style="width:100%;height:100%">${svg('plus', 'width:22px;height:22px')}</div></div>`, 50, 50, 8, 4);
+  add('letter_bg', `<div class="letter" style="margin:0;rotate:none;display:block;${fill}"></div>`, 362, 140, 30, 3, 24);
+  add('big_red', `<button class="big red" style="display:block;${fill}"></button>`, 362, 48, 10, 3, 12);
+  add('big_dim', `<button class="big dim2" style="display:block;${fill}"></button>`, 362, 48, 6, 3, 12);
+  add('newg_bg', `<button class="newg" style="display:block;${fill}"></button>`, 362, 52, 4, 3, 14);
+  add('coach_bg', `<div class="coach" style="position:static;rotate:none;display:block;max-width:none;${fill}"></div>`, 210, 60, 16, 3, 10);
+  for (const id of ['back', 'plus', 'dots', 'door', 'mail', 'chat', 'user-x', 'flag', 'block', 'copy', 'info', 'search', 'check', 'friends', 'useradd', 'square', 'grp'])
     add('icon_' + id, svg(id, 'stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round'), 24, 24, 2, 6);
 
   window.exportAll = async function () {
