@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using MafiaNight.UI.Animations;
 
 namespace MafiaNight.UI.Kit
 {
@@ -15,6 +16,13 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private ArabicText micTestLabel;
         [SerializeField] private KitSegmented sensitivity, language;
         [SerializeField] private KitToggle noiseToggle, pttToggle, muteJoinToggle, narratorToggle;
+        [Header("Screen change effect")]
+        [SerializeField] private KitSegmented fxSegment;
+        [SerializeField] private KitToggle reduceMotionToggle;
+        [SerializeField] private Button fxPreviewButton;
+        [SerializeField] private RectTransform fxPreviewArea;
+        [SerializeField] private GameObject fxPreviewOld;
+        [SerializeField] private ArabicText fxHint;
 
         public event Action<int> OnMicVolume, OnSpeakerVolume, OnSensitivity;
         /// <summary>key: "noise", "ptt", "mutejoin" or "narrator".</summary>
@@ -42,7 +50,59 @@ namespace MafiaNight.UI.Kit
                 language.Set(PlayerPrefs.GetString(MafiaNight.Core.GameConstants.PREF_LANGUAGE, "ar") == "en" ? 1 : 0);
                 language.OnChanged += v => { PlayerPrefs.SetString(MafiaNight.Core.GameConstants.PREF_LANGUAGE, v == 1 ? "en" : "ar"); PlayerPrefs.Save(); };
             }
+            SetupFx();
             Paint(0);
+        }
+
+        private static readonly string[] FxModes = { BurnSettings.Fire, BurnSettings.Simple, BurnSettings.Off };
+        private bool previewing;
+
+        private void SetupFx()
+        {
+            if (fxSegment != null)
+            {
+                fxSegment.Set(Mathf.Max(0, System.Array.IndexOf(FxModes, BurnSettings.Chosen)));
+                fxSegment.OnChanged += i => { BurnSettings.Chosen = FxModes[Mathf.Clamp(i, 0, FxModes.Length - 1)]; PaintFxHint(); Preview(); };
+            }
+            if (reduceMotionToggle != null)
+            {
+                reduceMotionToggle.IsOn = BurnSettings.ReduceMotion;
+                reduceMotionToggle.OnChanged += on => { BurnSettings.ReduceMotion = on; PaintFxHint(); };
+            }
+            if (fxPreviewButton != null) fxPreviewButton.onClick.AddListener(Preview);
+            PaintFxHint();
+        }
+
+        private void PaintFxHint()
+        {
+            if (fxHint == null) return;
+            string chosen = BurnSettings.Chosen;
+            fxHint.Text = chosen == BurnSettings.Fire && BurnSettings.ReduceMotion ? "تقليل الحركة شغّال، فنستعمل التلاشي البسيط بدل الحرق."
+                : chosen == BurnSettings.Fire ? "الشاشة القديمة تحترق من زاوية لزاوية وتظهر الجديدة تحتها، مع شرر ودخان."
+                : chosen == BurnSettings.Simple ? "تلاشي سريع للشاشة القديمة. أخف على الجهاز."
+                : "تبديل فوري بين الشاشات من غير أي حركة.";
+            // the line may have changed its number of lines: the open drawer measures itself again
+            if (sections != null) foreach (var s in sections) if (s != null && s.IsOpen && fxHint.transform.IsChildOf(s.transform)) s.SetOpen(true, false);
+        }
+
+        /// <summary>The preview strip: the "old screen" paper burns away (or fades, or just goes) over the "new screen".</summary>
+        public void Preview()
+        {
+            if (previewing || fxPreviewArea == null || fxPreviewOld == null || !isActiveAndEnabled) return;
+            StartCoroutine(PreviewRoutine());
+        }
+
+        private IEnumerator PreviewRoutine()
+        {
+            previewing = true;
+            fxPreviewOld.SetActive(true);
+            Texture2D snap = null;
+            if (BurnSettings.Mode != BurnSettings.Off) yield return BurnTransition.Capture(fxPreviewArea, t => snap = t);
+            fxPreviewOld.SetActive(false);
+            if (snap != null) yield return BurnTransition.Attach(fxPreviewArea, snap).Play(BurnCorner.BottomRight, 0.9f);
+            yield return new WaitForSecondsRealtime(0.7f);
+            fxPreviewOld.SetActive(true);
+            previewing = false;
         }
 
         private void OnSection(KitSettingsSection s)

@@ -99,6 +99,7 @@ namespace MafiaNight.UI.Kit.Editor
                     var o = Go("Opt" + i, bar.transform); var oi = Img(o, th.segOn, true, 2.6f, true); oi.color = new Color(1, 1, 1, 0);
                     var ob = o.AddComponent<Button>(); ob.targetGraphic = oi; ob.transition = Selectable.Transition.None; buttons[i] = ob;
                     var ot = Txt(o.transform, "T", opts[i], th.fontHeading, 32, th.ivoryDim); Stretch(Rt(ot.gameObject), 4, 6, 4, 8);
+                    ot.enableAutoSizing = true; ot.fontSizeMin = 18; ot.fontSizeMax = 32;
                 }
                 var comp = bar.AddComponent<KitSegmented>();
                 var so = new SerializedObject(comp); var arr = so.FindProperty("options"); arr.arraySize = opts.Length;
@@ -174,7 +175,18 @@ namespace MafiaNight.UI.Kit.Editor
 
             MakeSection("العرض والأداء", "البطارية والحركة", th.navIcons[4], false, out c);
             SegRow(c, "جودة الرسوم", new[] { "منخفضة", "متوسطة", "عالية" }, 1);
-            ToggleRow(c, "توفير البطارية", "يخفض الحركة وسرعة الرسم", false); ToggleRow(c, "تقليل الحركة", "يوقف التأرجح والومضات", false); ToggleRow(c, "الاهتزاز", null, true);
+            var fxSeg = SegRow(c, "تأثير التنقّل بين الشاشات", new[] { "ورقة تنحرق", "تلاشي بسيط", "بدون" }, 0);
+            // preview strip: the old screen (paper) lies over the new one (dark leather) and burns away when tried
+            var pv = Go("FxPreview", c); Rt(pv).sizeDelta = new Vector2(940, 190); pv.AddComponent<LayoutElement>().preferredHeight = 190;
+            Img(pv, th.slotDark, true, 2f); pv.AddComponent<RectMask2D>();
+            var pvNew = Go("New", pv.transform); Stretch(Rt(pvNew), 6, 6, 6, 6); Img(pvNew, th.leatherDark, true, 1f).color = new Color(1.1f, 0.8f, 0.8f, 1f);
+            var pvNewT = Txt(pvNew.transform, "T", "الشاشة الجديدة", th.fontHeading, 40, th.brassLight); Stretch(Rt(pvNewT.gameObject), 10, 6, 10, 10);
+            var pvOld = Go("Old", pv.transform); Stretch(Rt(pvOld), 6, 6, 6, 6); var pvOldI = pvOld.AddComponent<Image>(); pvOldI.color = new Color32(0xE9, 0xDC, 0xB8, 255); pvOldI.raycastTarget = false;
+            var pvOldT = Txt(pvOld.transform, "T", "الشاشة القديمة", th.fontHeading, 40, new Color32(0x2A, 0x1A, 0x08, 255)); Stretch(Rt(pvOldT.gameObject), 10, 6, 10, 10);
+            var tryBtn = InstChild("KitButton_Brass", c, "TryFx"); Rt(tryBtn).sizeDelta = new Vector2(940, 120); tryBtn.AddComponent<LayoutElement>().preferredHeight = 120;
+            tryBtn.GetComponentInChildren<ArabicText>().Text = "جرّب التأثير"; tryBtn.GetComponentInChildren<TextMeshProUGUI>().fontSize = 40;
+            var fxHint = Txt(c, "FxHint", "", th.fontBody, 28, th.ivoryDim, TextAlignmentOptions.TopRight, true);
+            ToggleRow(c, "توفير البطارية", "يخفض الحركة وسرعة الرسم", false); var reduceTg = ToggleRow(c, "تقليل الحركة", "يوقف التأرجح والومضات", false); ToggleRow(c, "الاهتزاز", null, true);
 
             MakeSection("الحساب", "الاسم واللغة والربط", th.avatarDefault, false, out c);
             LinkRow(c, "تغيير الاسم", "مرة كل ٣٠ يوماً"); LinkRow(c, "ربط الحساب (حفظ تقدمك)", "غير مربوط");
@@ -206,6 +218,7 @@ namespace MafiaNight.UI.Kit.Editor
             sso.ApplyModifiedPropertiesWithoutUndo();
             SetRef(ss, "micKnob", micKnob); SetRef(ss, "speakerKnob", spkKnob); SetRef(ss, "micTestButton", micTest); SetRef(ss, "micTestLabel", micTestLbl);
             SetRef(ss, "sensitivity", sensSeg); SetRef(ss, "language", langSeg); SetRef(ss, "noiseToggle", noiseTg); SetRef(ss, "pttToggle", pttTg); SetRef(ss, "muteJoinToggle", muteJoinTg); SetRef(ss, "narratorToggle", narratorTg);
+            SetRef(ss, "fxSegment", fxSeg); SetRef(ss, "reduceMotionToggle", reduceTg); SetRef(ss, "fxPreviewButton", tryBtn.GetComponent<Button>()); SetRef(ss, "fxPreviewArea", Rt(pv)); SetRef(ss, "fxPreviewOld", pvOld); SetRef(ss, "fxHint", fxHint.GetComponent<ArabicText>());
 
             foreach (var s in sections) { var o = new SerializedObject(s); s.SetOpen(o.FindProperty("openAtStart").boolValue, false); }
             BuildRecoverySheet(th);

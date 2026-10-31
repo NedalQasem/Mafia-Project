@@ -14,7 +14,15 @@ namespace MafiaNight.UI.Animations
         public const string Key = "mafia.fx";
         public const string Fire = "fire", Simple = "simple", Off = "off";
 
-        public static string Mode
+        /// <summary>"تقليل الحركة" in settings: the burning page is replaced by the simple fade.</summary>
+        public const string ReduceKey = "mafia.reducemotion";
+        public static bool ReduceMotion { get => PlayerPrefs.GetInt(ReduceKey, 0) == 1; set { PlayerPrefs.SetInt(ReduceKey, value ? 1 : 0); PlayerPrefs.Save(); } }
+
+        /// <summary>What the player chose, with reduce-motion applied (it turns the fire into the simple fade).</summary>
+        public static string Mode => Chosen == Fire && ReduceMotion ? Simple : Chosen;
+
+        /// <summary>Exactly what the player picked in settings.</summary>
+        public static string Chosen
         {
             get { var m = PlayerPrefs.GetString(Key, Fire); return m == Simple || m == Off ? m : Fire; }
             set { PlayerPrefs.SetString(Key, value == Simple || value == Off ? value : Fire); PlayerPrefs.Save(); }
