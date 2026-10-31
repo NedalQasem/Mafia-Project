@@ -210,6 +210,13 @@ h2{font-family:Lalezar;font-weight:400;font-size:1.3rem;color:#a98f62;margin:0 0
 .gm2 b{display:block;font-family:Lalezar;font-weight:400;font-size:.95rem}.gm2 small{font-size:.62rem;font-weight:700;color:#a79d88}
 .gm2 span{position:absolute;top:-7px;right:8px;font-family:Lalezar;font-size:.6rem;padding:0 7px;border-radius:3px;background:#2c8d73;color:#06231a}
 
+
+.startbtn{margin-top:8px;padding:12px;border-radius:10px;border:0;font-family:Lalezar;font-size:1.25rem;color:#f0dcd8;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000}
+.ib.sitb i{background:#e8c27a;color:#2a1a08}
+.segm{display:flex;gap:4px}
+.segm span{flex:1;text-align:center;padding:7px 4px;border-radius:7px;font-weight:800;font-size:.75rem;background:#cfc4a8;color:#4a3c24;box-shadow:inset 0 0 0 1px #1c170f33}
+.segm span.on{background:#1c170f;color:#e8c27a}
+
 /* ---- the admin board page ---- */
 .board{border-radius:12px;overflow:hidden;box-shadow:0 0 0 2px #000,0 0 0 4px #2a2018;display:grid;grid-template-columns:200px 1fr;min-height:760px;background:#0d0907}
 .board aside{padding:16px 12px;display:flex;flex-direction:column;gap:5px;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset -1px 0 0 #000,inset -3px 0 0 #6e5224}
@@ -513,7 +520,60 @@ h2{font-family:Lalezar;font-weight:400;font-size:1.3rem;color:#a98f62;margin:0 0
 </section>
 
 <section>
-<h2>٣ · لوحة الإدارة: صفحة جديدة «الغرف الرسمية»</h2>
+<h2>٣ · نفس الشاشة لكل غرف اللعبة (مش بس المكتب)</h2>
+<div class="phones">
+
+<div><div class="cap">أ · غرفة عادية أنشأها لاعب (المايك حر)</div>
+<div class="phone rm">
+ <div class="rh"><div class="back"><svg><use href="#arrow"/></svg></div><div class="rt"><b>سهرة أبو فارس</b><small>ID ٤٨٢١٣ <span class="off" style="background:#2a2523;color:#cfc6b2">سهرة وحكي</span></small></div><div class="cntp"><svg><use href="#users"/></svg>٩</div></div>
+ <div class="seats"><div class="adminrow"><div class="seat big adm live"><div class="sv"><span class="crown">👑</span><svg><use href="#fed"/></svg></div><small>أبو فارس</small><em>المضيف</em></div></div>
+ <div class="grid8"><div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>سارة</small></div><div class="seat "><div class="sv"><svg><use href="#fed"/></svg><b class="mk"><svg><use href="#micoff"/></svg></b></div><small>مازن</small></div><div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>لينا</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty lock"><div class="sv"><svg class="ic"><use href="#lock"/></svg></div><small>مقفل</small></div></div></div>
+ <div class="status" style="margin-top:8px"><span>🎤</span><span>اضغط <b>مقعد فاضي</b> لتقعد وتفتح مايكك. المضيف بيقدر يقفل المقاعد.</span></div>
+ <div class="chat"><div class="sys">سارة قعدت على المايك</div><div class="msg"><div class="who"><b>مازن</b><time>٩:١٢</time></div><p>مين بدو يلعب دور بعد شوي؟</p></div><div class="msg me"><div class="who"><b>أنت</b><time>٩:١٣</time></div><p>أنا معكم 👍</p></div></div>
+ <div class="bb"><div class="inp">اكتب رسالتك…</div><div class="ib">😊</div><div class="ib gm sitb"><svg><use href="#micoff"/></svg><i>اقعد</i></div><div class="ib"><svg><use href="#vol"/></svg></div><div class="ib gm"><svg><use href="#grid"/></svg><i>قريباً</i></div></div>
+</div></div>
+
+<div><div class="cap">ب · غرفة مباراة مافيا قبل ما تبدأ (المضيف)</div>
+<div class="phone rm">
+ <div class="rh"><div class="back"><svg><use href="#arrow"/></svg></div><div class="rt"><b>ليلة المافيا</b><small>ID ٤٨٢٢٠ <span class="off" style="background:linear-gradient(180deg,#a2262f,#561016);color:#f0dcd8">مباراة مافيا</span></small></div><div class="cntp"><svg><use href="#users"/></svg>٦</div></div>
+ <div class="seats"><div class="adminrow"><div class="seat big adm live"><div class="sv"><span class="crown">👑</span><svg><use href="#fed"/></svg></div><small>أنت</small><em>المضيف</em></div></div>
+ <div class="grid8"><div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>سارة</small></div><div class="seat "><div class="sv"><svg><use href="#fed"/></svg><b class="mk"><svg><use href="#micoff"/></svg></b></div><small>مازن</small></div><div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>لينا</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty lock"><div class="sv"><svg class="ic"><use href="#lock"/></svg></div><small>مقفل</small></div></div></div>
+ <div class="strip"><span>🕵️</span><b>٦ لاعبين</b><small>تقدر تبدأ من ٤ لاعبين</small></div>
+ <div class="chat"><div class="sys">سارة قعدت على المايك</div><div class="msg"><div class="who"><b>مازن</b><time>٩:١٢</time></div><p>مين بدو يلعب دور بعد شوي؟</p></div><div class="msg me"><div class="who"><b>أنت</b><time>٩:١٣</time></div><p>أنا معكم 👍</p></div></div>
+ <button class="startbtn">ابدأ المباراة</button>
+ <div class="bb"><div class="inp">اكتب رسالتك…</div><div class="ib">😊</div><div class="ib mic"><svg><use href="#mic"/></svg></div><div class="ib"><svg><use href="#vol"/></svg></div><div class="ib gm"><svg><use href="#grid"/></svg><i>قريباً</i></div></div>
+</div></div>
+
+<div><div class="cap">ج · إعدادات المضيف (ضغطة على اسم الغرفة)</div>
+<div class="phone rm">
+ <div class="rh"><div class="back"><svg><use href="#arrow"/></svg></div><div class="rt"><b>سهرة أبو فارس</b><small>ID ٤٨٢١٣ </small></div><div class="cntp"><svg><use href="#users"/></svg>٩</div></div>
+ <div class="seats"><div class="adminrow"><div class="seat big adm live"><div class="sv"><span class="crown">👑</span><svg><use href="#fed"/></svg></div><small>أنت</small><em>المضيف</em></div></div>
+ <div class="grid8"><div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>سارة</small></div><div class="seat "><div class="sv"><svg><use href="#fed"/></svg><b class="mk"><svg><use href="#micoff"/></svg></b></div><small>مازن</small></div><div class="seat live"><div class="sv"><svg><use href="#fed"/></svg></div><small>لينا</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty"><div class="sv"><svg class="ic"><use href="#plus"/></svg></div><small>فاضي</small></div><div class="seat empty lock"><div class="sv"><svg class="ic"><use href="#lock"/></svg></div><small>مقفل</small></div></div></div>
+ <div class="chat"><div class="sys">سارة قعدت على المايك</div><div class="msg"><div class="who"><b>مازن</b><time>٩:١٢</time></div><p>مين بدو يلعب دور بعد شوي؟</p></div><div class="msg me"><div class="who"><b>أنت</b><time>٩:١٣</time></div><p>أنا معكم 👍</p></div></div>
+ <div class="bb"><div class="inp">اكتب رسالتك…</div><div class="ib">😊</div><div class="ib mic"><svg><use href="#mic"/></svg></div><div class="ib"><svg><use href="#vol"/></svg></div><div class="ib gm"><svg><use href="#grid"/></svg><i>قريباً</i></div></div>
+ <div class="sheet tall" style="bottom:0">
+  <h4>إعدادات الغرفة <small>للمضيف بس</small></h4>
+  <div class="frm" style="margin-top:8px">
+   <label>المايك<div class="segm"><span class="on">حر: أي واحد يقعد</span><span>بالطلب: المضيف بيطلّع</span></div></label>
+   <label>عدد مقاعد المايك<div class="segm"><span>٤</span><span>٦</span><span class="on">٨</span></div></label>
+   <div class="tog on"><i></i>الدردشة الكتابية مفتوحة</div>
+   <div class="tog"><i></i>قفل الباب (ما حدا جديد بيدخل)</div>
+   <div class="tog"><i></i>خلّي اللاعبين يدخلوا مكتومين</div>
+   <button class="btnb" style="justify-self:start">حفظ</button>
+  </div>
+ </div>
+</div></div>
+
+</div>
+<p class="note">• هالتصميم هو <b>شاشة الغرفة الصوتية الموحّدة لكل اللعبة</b>: غرف السهرة العادية، غرف المباراة قبل البدء، والغرف الرسمية (مكتب المافيا). الفرق بس بالتسمية والصلاحيات: المقعد الكبير = «المضيف» بالغرف العادية و«الأدمن» بالرسمية.<br>
+• <b>الغرف العادية:</b> المقاعد حرة: اللاعب بيضغط مقعد فاضي بيقعد وبيفتح مايكه، وبيضغط ⏏ لينزل. المضيف بيقفل مقاعد أو بيحوّلها «بالطلب» (نفس طابور الأيدي بمكتب المافيا). اللي ما قعد بيسمع ويكتب.<br>
+• <b>غرف المباراة:</b> نفس الشاشة وبالشريط السفلي زر كبير «ابدأ المباراة» للمضيف (من ٤ لاعبين). الطاولة الحالية بتنشال. المباراة نفسها بتضل بشاشتها الخاصة (شاشة المافيا) وما بتتغيّر.<br>
+• عدد الأعضاء بالغرفة بيضل بسعتها (الغرف العادية لحد ١٦ حالياً)، بس مقاعد المايك ٤/٦/٨ + مقعد المضيف. الباقي مستمعين.<br>
+• شاشة «إنشاء غرفة» بتزيد خيارين: عدد مقاعد المايك، ونوع المايك (حر / بالطلب).</p>
+</section>
+
+<section>
+<h2>٤ · لوحة الإدارة: صفحة جديدة «الغرف الرسمية»</h2>
 <div class="board">
  <aside>
   <div class="brand"><b>MAFIA ADMIN</b><small>لوحة الإدارة</small></div>
