@@ -111,6 +111,12 @@ button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
 .notes{width:min(390px,100%);background:#0d0a08;border-radius:12px;padding:12px 16px;font-size:.78rem;line-height:1.75;color:#a39b89;box-shadow:0 0 0 1px #2a2018}
 .notes b{color:#e6d9bd}
 .notes ul{margin:4px 0 0;padding-inline-start:18px}
+/* a picture uploaded from the admin board (server image): fills the art area like a photo printed in the newspaper */
+.art .poster{position:absolute;inset:2px 6px;border-radius:2px;background:#222 center/cover no-repeat;rotate:-.6deg;box-shadow:0 0 0 3px #efe6cf,0 0 0 4px #1c170f55,0 8px 14px #0007}
+.art .poster::before{content:"";position:absolute;top:-9px;left:50%;width:62px;height:16px;translate:-50% 0;rotate:2deg;background:#d9c9a2cc;box-shadow:0 1px 3px #0005}
+.art .poster::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#0006);pointer-events:none}
+.art .poster.load{background-image:none!important;background:linear-gradient(110deg,#c9bfa4 30%,#e2d9c0 50%,#c9bfa4 70%) 0 0/200% 100%;animation:shim 1.4s linear infinite}
+@keyframes shim{to{background-position:-200% 0}}
 </style>
 </head>
 <body>
@@ -152,6 +158,8 @@ button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
   <button id="again">إعادة العرض</button>
   <button id="one">عرض واحد فقط</button>
   <button id="three">ثلاثة عروض</button>
+  <button id="pics" aria-pressed="false">صور من السيرفر: مطفية</button>
+  <button id="load">وهي تتحمّل</button>
 </div>
 
 <div class="notes">
@@ -183,6 +191,11 @@ button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
     {kick:"عرض الكوينز",h:"صندوق كوينز<br>بسعر الحفنة",p:"٣٬٥٠٠ كوينز للهدايا والزينة، وأكثر بـ٣٠٪ من العادي.",stamp:"+٣٠٪",green:1,price:"٤٫٩٩ $",art:'<div class="pack"><i style="bottom:0"></i><i style="bottom:22px;scale:.97"></i><i style="bottom:44px;scale:.94"></i></div>'}
   ];
   var phone=document.getElementById("phone"),pages=document.getElementById("pages"),dotsEl=document.getElementById("dots"),prog=document.getElementById("prog"),cnt=document.getElementById("count");
+  // sample pictures as they come from the admin board (1300x800)
+  function svg(s){return "url('data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 800" preserveAspectRatio="xMidYMid slice">'+s+'</svg>')+"')"}
+  var SKY1='<defs><linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0608"/><stop offset=".6" stop-color="#4a0f14"/><stop offset="1" stop-color="#8a2a18"/></linearGradient><radialGradient id="g" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd08a"/><stop offset=".35" stop-color="#ff7a2a" stop-opacity=".9"/><stop offset="1" stop-color="#ff7a2a" stop-opacity="0"/></radialGradient></defs><rect width="1300" height="800" fill="url(#a)"/><circle cx="650" cy="360" r="330" fill="url(#g)"/><circle cx="650" cy="360" r="150" fill="none" stroke="#ffe3b0" stroke-width="34"/><circle cx="650" cy="360" r="150" fill="none" stroke="#ff5a1a" stroke-width="14" opacity=".8"/><g fill="#08040a"><path d="M0 800V560l90-40 70 30 60-90 90 60 60-30 110 90 70-60 80 40 90-70 60 50 110-80 90 90 70-50 100 60 90-40 60 60 90-30 80 80V800z"/></g><g fill="#ffcf7a" opacity=".85"><rect x="130" y="610" width="14" height="20"/><rect x="330" y="590" width="14" height="20"/><rect x="520" y="640" width="14" height="20"/><rect x="760" y="600" width="14" height="20"/><rect x="980" y="630" width="14" height="20"/><rect x="1150" y="610" width="14" height="20"/></g><g fill="#ffb25a"><circle cx="300" cy="200" r="5"/><circle cx="980" cy="160" r="4"/><circle cx="1090" cy="300" r="6"/><circle cx="210" cy="320" r="4"/></g>';
+  var SKY2='<defs><linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1812"/><stop offset="1" stop-color="#2a2008"/></linearGradient><linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1c4"/><stop offset=".5" stop-color="#d2ad60"/><stop offset="1" stop-color="#7a5a22"/></linearGradient></defs><rect width="1300" height="800" fill="url(#b)"/><g stroke="#000" stroke-width="6"><ellipse cx="650" cy="640" rx="270" ry="60" fill="url(#c)"/><ellipse cx="650" cy="590" rx="270" ry="60" fill="url(#c)"/><ellipse cx="650" cy="540" rx="270" ry="60" fill="url(#c)"/><ellipse cx="650" cy="490" rx="270" ry="60" fill="url(#c)"/><ellipse cx="650" cy="440" rx="270" ry="60" fill="url(#c)"/></g><g stroke="#000" stroke-width="6"><ellipse cx="330" cy="660" rx="180" ry="42" fill="url(#c)"/><ellipse cx="330" cy="624" rx="180" ry="42" fill="url(#c)"/><ellipse cx="970" cy="660" rx="180" ry="42" fill="url(#c)"/><ellipse cx="970" cy="624" rx="180" ry="42" fill="url(#c)"/><ellipse cx="970" cy="588" rx="180" ry="42" fill="url(#c)"/></g><g fill="#fff4cf" opacity=".9"><path d="M650 120l14 36 38 3-29 25 9 38-32-21-32 21 9-38-29-25 38-3z"/><circle cx="220" cy="180" r="6"/><circle cx="1080" cy="230" r="5"/></g>';
+  var PIC=false,POSTER={0:svg(SKY1),2:svg(SKY2)},LOADING=false;
   var list=OFFERS.slice(),cur=0,timer=null,paused=false,start=0,SEC=6000,busy=false;
 
   function build(){
@@ -190,7 +203,7 @@ button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
     dotsEl.innerHTML="";
     list.forEach(function(a,i){
       var d=document.createElement("div");d.className="pg"+(i===cur?" on":"");
-      d.innerHTML='<div class="kick">'+a.kick+'</div><div class="art">'+(a.stamp?'<span class="stamp'+(a.green?' green':'')+'">'+a.stamp+'</span>':'')+a.art+'</div>'
+      d.innerHTML='<div class="kick">'+a.kick+'</div><div class="art">'+(a.stamp?'<span class="stamp'+(a.green?' green':'')+'">'+a.stamp+'</span>':'')+(PIC&&POSTER[OFFERS.indexOf(a)]?'<div class="poster'+(LOADING?' load':'')+'" style="background-image:'+POSTER[OFFERS.indexOf(a)]+'"></div>':a.art)+'</div>'
         +'<h2>'+a.h+'</h2><p>'+a.p+'</p>'+(a.cd?'<div class="cd">ينتهي خلال <b class="cdv">٠٢:١٤:٣٣</b></div>':'')
         +(a.old?'<div class="was">السعر العادي <s>'+a.old+'</s></div>':'')+'<button class="cta" data-i="'+i+'">اشتريه الآن <span class="coin"></span> '+a.price+'</button><button class="more">شوف في المتجر</button>';
       pages.appendChild(d);
@@ -238,6 +251,9 @@ button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
   document.getElementById("again").addEventListener("click",function(){show(list.length)});
   document.getElementById("one").addEventListener("click",function(){show(1)});
   document.getElementById("three").addEventListener("click",function(){show(3)});
+  var pb=document.getElementById("pics");
+  pb.addEventListener("click",function(){PIC=!PIC;LOADING=false;pb.setAttribute("aria-pressed",PIC);pb.textContent="صور من السيرفر: "+(PIC?"شغّالة":"مطفية");show(list.length)});
+  document.getElementById("load").addEventListener("click",function(){PIC=true;LOADING=true;pb.textContent="صور من السيرفر: شغّالة";show(list.length);setTimeout(function(){LOADING=false;var c=cur;build();[].forEach.call(pages.querySelectorAll(".pg"),function(e,i){e.classList.toggle("on",i===c)})},2500)});
 
   var secs=2*3600+14*60+33;setInterval(function(){secs--;var h=Math.floor(secs/3600),m=Math.floor(secs%3600/60),s=secs%60;var t=[h,m,s].map(function(x){return ar(x).length<2?"٠"+ar(x):ar(x)}).join(":");[].forEach.call(document.querySelectorAll(".cdv"),function(e){e.textContent=t})},1000);
   build();restart();timer=requestAnimationFrame(tick);

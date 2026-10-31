@@ -113,6 +113,13 @@ button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
 .demo button.on{box-shadow:0 0 0 1px #b99048;color:#f5e2a8}
 .notes{width:min(390px,100%);background:#0d0a08;border-radius:12px;padding:12px 16px;font-size:.78rem;line-height:1.75;color:#a39b89;box-shadow:0 0 0 1px #2a2018}
 .notes b{color:#e6d9bd}.notes ul{margin:4px 0 8px;padding-inline-start:18px}
+/* a picture uploaded from the admin board: the top of the clipping, edge to edge (shown in the phone only while it has the class .pics) */
+.ev .pic{display:block;margin:-12px -14px 10px;height:150px;background:#222 center/cover no-repeat;position:relative;box-shadow:inset 0 -26px 22px -18px #0007,inset 0 0 0 1px #0004}
+.ev .pic::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:7px;background:repeating-linear-gradient(90deg,var(--pg,#d9cfb4) 0 5px,transparent 5px 9px)}
+.ev .pic.load{background-image:none!important;background:linear-gradient(110deg,#c9bfa4 30%,#e2d9c0 50%,#c9bfa4 70%) 0 0/200% 100%;animation:shim 1.4s linear infinite}
+@keyframes shim{to{background-position:-200% 0}}
+.phone:not(.pics) .ev .pic{display:none}
+.ev .pic ~ .kick{margin-top:2px}
 </style>
 </head>
 <body>
@@ -141,7 +148,7 @@ button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
 
     <div class="list" id="list">
       <article class="ev" data-s="live">
-        <span class="tape"></span><span class="ring"></span><span class="stamp">شغّال</span>
+        <span class="tape"></span><span class="ring"></span><span class="stamp">شغّال</span><div class="pic" data-p="0"></div>
         <div class="kick"><span>عرض الأسبوع</span><span>الحدث ١</span></div>
         <h4>عطلة الذهب المضاعف</h4>
         <p>كل ربح من المباريات يتضاعف طول العطلة. العب أكثر واجمع أكثر.</p>
@@ -160,7 +167,7 @@ button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
       </article>
 
       <article class="ev soon" data-s="soon" hidden>
-        <span class="tape"></span><span class="stamp brown">قريباً</span>
+        <span class="tape"></span><span class="stamp brown">قريباً</span><div class="pic" data-p="1"></div>
         <div class="kick"><span>بطولة</span><span>الحدث ٣</span></div>
         <h4>ليلة العصابة الكبرى<span class="typed">TOP SECRET</span></h4>
         <p>بطولة ليلية بجوائز نادرة. الجائزة: <span class="red-bar" style="width:70px"></span> <span class="red-bar" style="width:38px"></span></p>
@@ -186,6 +193,8 @@ button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
   <button class="on" data-d="open">افتح القائمة</button>
   <button data-d="win">أكمل التحدّي (١٠ من ١٠)</button>
   <button data-d="empty">حالة فارغة</button>
+  <button id="pics">صور من السيرفر: مطفية</button>
+  <button id="load">وهي تتحمّل</button>
 </div>
 
 <div class="notes">
@@ -230,6 +239,20 @@ $$('#demo button').forEach(b=>b.onclick=()=>{
 setInterval(()=>$$('[data-cd]').forEach(e=>{let s=Math.max(0,+e.dataset.cd-1);e.dataset.cd=s;
   const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;
   e.textContent=A([h,m,x].map(v=>String(v).padStart(2,'0')).join(':'))}),1000);
+</script>
+
+<script>
+(function(){
+  // sample pictures as the admin board sends them (1200x600)
+  function svg(b){return "url('data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">'+b+'</svg>')+"')"}
+  var GOLD='<defs><linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1604"/><stop offset="1" stop-color="#7a4a10"/></linearGradient><linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1c4"/><stop offset=".5" stop-color="#d2ad60"/><stop offset="1" stop-color="#7a5a22"/></linearGradient></defs><rect width="1200" height="600" fill="url(#a)"/><g stroke="#000" stroke-width="5"><ellipse cx="600" cy="470" rx="230" ry="50" fill="url(#c)"/><ellipse cx="600" cy="430" rx="230" ry="50" fill="url(#c)"/><ellipse cx="600" cy="390" rx="230" ry="50" fill="url(#c)"/><ellipse cx="600" cy="350" rx="230" ry="50" fill="url(#c)"/><ellipse cx="260" cy="500" rx="150" ry="36" fill="url(#c)"/><ellipse cx="260" cy="468" rx="150" ry="36" fill="url(#c)"/><ellipse cx="950" cy="500" rx="150" ry="36" fill="url(#c)"/><ellipse cx="950" cy="468" rx="150" ry="36" fill="url(#c)"/></g><g fill="#fff4cf"><path d="M600 90l16 42 44 3-34 28 11 44-37-24-37 24 11-44-34-28 44-3z"/><circle cx="250" cy="140" r="6"/><circle cx="980" cy="190" r="5"/></g>';
+  var NIGHT='<defs><linearGradient id="d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#06080f"/><stop offset="1" stop-color="#1e2a44"/></linearGradient></defs><rect width="1200" height="600" fill="url(#d)"/><circle cx="900" cy="150" r="70" fill="#f3ead0"/><circle cx="930" cy="135" r="62" fill="#0d1424"/><g fill="#04060b"><rect x="60" y="280" width="120" height="320"/><rect x="200" y="220" width="150" height="380"/><rect x="370" y="320" width="110" height="280"/><rect x="500" y="250" width="170" height="350"/><rect x="700" y="300" width="130" height="300"/><rect x="850" y="230" width="160" height="370"/><rect x="1030" y="310" width="140" height="290"/></g><g fill="#ffcf7a"><rect x="90" y="320" width="14" height="20"/><rect x="240" y="270" width="14" height="20"/><rect x="290" y="340" width="14" height="20"/><rect x="540" y="300" width="14" height="20"/><rect x="600" y="380" width="14" height="20"/><rect x="740" y="350" width="14" height="20"/><rect x="900" y="290" width="14" height="20"/><rect x="960" y="400" width="14" height="20"/><rect x="1080" y="360" width="14" height="20"/></g>';
+  var P=[svg(GOLD),svg(NIGHT)];
+  [].forEach.call(document.querySelectorAll('.pic'),function(e){e.style.backgroundImage=P[+e.dataset.p]});
+  var ph=document.getElementById('phone'),b=document.getElementById('pics'),l=document.getElementById('load');
+  b.addEventListener('click',function(){var on=ph.classList.toggle('pics');[].forEach.call(document.querySelectorAll('.pic'),function(e){e.classList.remove('load')});b.textContent='صور من السيرفر: '+(on?'شغّالة':'مطفية')});
+  l.addEventListener('click',function(){ph.classList.add('pics');b.textContent='صور من السيرفر: شغّالة';var pics=document.querySelectorAll('.pic');[].forEach.call(pics,function(e){e.classList.add('load')});setTimeout(function(){[].forEach.call(pics,function(e){e.classList.remove('load')})},2500)});
+})();
 </script>
 </body>
 </html>

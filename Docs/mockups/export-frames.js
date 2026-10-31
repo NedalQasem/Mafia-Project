@@ -23,7 +23,7 @@
   async function frameToPng(phone, scale) {
     const fonts = await loadFonts();
     const css = [...document.querySelectorAll('style')].map(s => s.textContent).join('\n').replace(/body\{[^}]*\}/, '');
-    const defs = new XMLSerializer().serializeToString(document.querySelector('body > svg'));
+    const defsEl = document.querySelector('body > svg'); const defs = defsEl ? new XMLSerializer().serializeToString(defsEl) : '';   // some pages keep no symbol sheet
     const cl = phone.cloneNode(true);
     cl.removeAttribute('id');
     cl.setAttribute('style', 'position:absolute;left:0;top:0;width:390px;height:790px;border-radius:0;box-shadow:none;');

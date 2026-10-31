@@ -1,0 +1,352 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>صور العروض والأحداث من اللوحة</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap"><style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--soft:#4a3c24;--crim:#c0323a;--crimd:#8a1c24;--brass:#b99048;--green:#1d4a3c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;background:#070504;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif;font-size:15px}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{border:0;cursor:pointer;background:none}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.leather{background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal}
+.red{background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal}
+.greenb{background:var(--grain),linear-gradient(180deg,#2c6a55,#1d4a3c 55%,#102c24);background-blend-mode:multiply,normal}
+.paper{position:relative;background:var(--paper);color:var(--ink);border-radius:3px;box-shadow:inset 0 0 40px #8a7a5a88,0 10px 20px #000c}
+.paper::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.1;mix-blend-mode:multiply;pointer-events:none;border-radius:inherit}
+.paper>*{position:relative}
+.btn{padding:8px 20px;border-radius:9px;font-family:Lalezar;font-size:1.05rem;color:#f0dcd8;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000;transition:transform .12s}
+.btn:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #ffffff22,0 0 0 #000}
+.btn.sm{padding:4px 14px;font-size:.9rem;border-radius:7px}
+.btn.ghost{background:#0b080888;box-shadow:inset 0 0 0 1px #6e5224;color:#e6d9bd}
+.stamp{display:inline-block;padding:0 10px;font-family:Lalezar;font-size:.95rem;line-height:1.35;color:var(--crim);border:2.5px solid var(--crim);border-radius:4px;rotate:-6deg;mix-blend-mode:multiply}
+.stamp.green{color:var(--green);border-color:var(--green)}.stamp.brown{color:#6e4b1c;border-color:#6e4b1c}.stamp.grey{color:#6a6458;border-color:#6a6458}
+
+/* ---------- login ---------- */
+#login{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:radial-gradient(ellipse 70% 50% at 50% 0,#e8c27a24,transparent 70%),#070504}
+#login.off{display:none}
+.lamp{position:absolute;top:0;left:50%;translate:-50% 0;width:520px;height:720px;clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);background:linear-gradient(180deg,#ffe9a02e,transparent 85%);pointer-events:none}
+.lbox{width:min(400px,92vw);padding:26px 28px 24px;text-align:center;rotate:-.6deg}
+.lbox .plaque{display:inline-block;padding:3px 18px;margin-bottom:6px;font-family:Lalezar;font-size:1.6rem;letter-spacing:2px;white-space:nowrap;border-block:3px double var(--ink)}
+.lbox small{display:block;font-weight:800;color:var(--crimd);font-size:.8rem;margin-bottom:14px}
+.lbox label{display:block;text-align:right;font-weight:800;font-size:.85rem;color:var(--soft);margin-bottom:4px}
+.lbox input{width:100%;padding:10px 14px;border-radius:6px;border:2px solid #1c170f88;background:#f0e8d2;color:var(--ink);font-size:1.1rem;letter-spacing:2px;text-align:center}
+.lbox .btn{width:100%;margin-top:14px;padding:11px}
+.lbox p{margin:12px 0 0;font-size:.75rem;font-weight:700;color:var(--soft)}
+.lbox .stamp{position:absolute;top:-14px;left:-18px;font-size:1.1rem;background:#d9cfb4cc}
+
+/* ---------- shell ---------- */
+#app{display:grid;grid-template-columns:240px 1fr;height:100vh}
+#app.off{display:none}
+aside{padding:18px 14px;display:flex;flex-direction:column;gap:6px;box-shadow:inset -1px 0 0 #000,inset -3px 0 0 #6e5224;position:relative}
+aside .brand{text-align:center;margin-bottom:14px}
+aside .brand b{display:block;font-family:Lalezar;font-weight:400;font-size:1.45rem;letter-spacing:2px;color:#f5e2a8;line-height:1.1}
+aside .brand small{font-weight:700;font-size:.7rem;color:#8d744a}
+.nav{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-weight:800;color:#b9a98a;text-align:right;position:relative;transition:background .15s}
+.nav svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.nav:hover{background:#ffffff0a}
+.nav.on{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 14px #8a7a5a88,0 0 0 1px #000}
+.nav .n{margin-inline-start:auto;min-width:22px;height:22px;border-radius:11px;padding:0 6px;background:radial-gradient(circle at 35% 30%,#e0525a,#8a1c24);color:#fff;font-size:.75rem;line-height:22px;text-align:center;box-shadow:0 0 0 1.5px #000}
+aside .out{margin-top:auto}
+main{overflow:auto;padding:22px 30px 40px;background:radial-gradient(ellipse 80% 30% at 50% 0,#e8c27a14,transparent 70%),#0d0907}
+.top{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.top h1{margin:0;font-family:Lalezar;font-weight:400;font-size:2rem;line-height:1.1}
+.top h1 small{display:block;font-family:Cairo;font-weight:700;font-size:.8rem;color:#8d744a;margin-top:2px}
+.top .sp{margin-inline-start:auto}
+.live{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:7px;background:#0b080899;box-shadow:inset 0 0 0 1px #6e5224;font-weight:800;font-size:.8rem}
+.live i{width:8px;height:8px;border-radius:50%;background:#4fd49b;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.3}}
+section.view{display:none}section.view.on{display:block}
+
+/* cards and tables */
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g2{grid-template-columns:1.4fr 1fr}
+@media(max-width:1100px){.g2{grid-template-columns:1fr}#app{grid-template-columns:76px 1fr}aside .brand small,.nav span,aside .out span{display:none}.nav{justify-content:center}}
+.stat{padding:16px 18px 14px;rotate:-.4deg}
+.stat:nth-child(even){rotate:.4deg}
+.stat b{display:block;font-family:Lalezar;font-weight:400;font-size:2.4rem;line-height:1}
+.stat span{font-weight:800;font-size:.85rem;color:var(--soft)}
+.stat em{position:absolute;top:12px;left:14px;font-style:normal;font-weight:800;font-size:.72rem;color:var(--green)}
+.stat em.dn{color:var(--crimd)}
+#sGuestsCard em{position:static;display:block;margin-top:4px}
+.card{padding:16px 18px}
+.card h3{margin:0 0 10px;font-family:Lalezar;font-weight:400;font-size:1.3rem;border-bottom:3px double var(--ink);padding-bottom:2px;display:flex;align-items:baseline;gap:8px}
+.card h3 small{font-family:Cairo;font-weight:700;font-size:.72rem;color:var(--crimd);margin-inline-start:auto}
+.bars{display:flex;align-items:flex-end;gap:12px;height:170px;padding-top:10px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;font-weight:800;font-size:.72rem}
+.bars i{display:block;width:100%;border-radius:3px 3px 0 0;background:linear-gradient(90deg,#1c170f,#3a2e1c,#1c170f);box-shadow:inset 0 2px 0 #ffffff22}
+.bars div.today i{background:linear-gradient(90deg,#8a1c24,#c0323a,#8a1c24)}
+.feed{list-style:none;margin:0;padding:0}
+.feed li{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed #1c170f55;font-weight:700;font-size:.85rem}
+.feed li:last-child{border:0}
+.feed time{margin-inline-start:auto;font-size:.72rem;color:var(--soft);font-weight:800}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--crim)}.dot.g{background:var(--green)}.dot.b{background:#b99048}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-family:Lalezar;font-weight:400;font-size:1rem;text-align:right;padding:6px 10px;border-bottom:2px solid var(--ink)}
+.tbl td{padding:10px;border-bottom:1px dashed #1c170f55;font-weight:700;vertical-align:middle}
+.tbl tr:last-child td{border:0}
+.tbl .act{display:flex;gap:6px;justify-content:flex-end}
+.tbl .t{font-family:Lalezar;font-weight:400;font-size:1.05rem}
+.tbl .m{font-size:.75rem;color:var(--soft)}
+.kind{display:inline-block;padding:1px 10px;border-radius:5px;font-weight:800;font-size:.72rem;color:#f0dcd8;background:var(--crimd)}
+.kind.c{background:var(--green)}.kind.i{background:#6e4b1c}
+.paper .btn.ghost{background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal}
+.tog{display:inline-block;vertical-align:middle;width:44px;height:24px;border-radius:12px;background:#1c170f44;box-shadow:inset 0 0 0 1px #1c170f66;position:relative;transition:background .2s;flex:none}
+.tog::after{content:"";position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#f0e8d2;box-shadow:0 1px 3px #0008;transition:translate .2s}
+.tog.on{background:var(--green)}.tog.on::after{translate:-20px 0}
+.bar-actions{display:flex;gap:10px;margin-bottom:14px;align-items:center}
+
+/* editor (drawer + live preview) */
+.drawer{position:fixed;inset:0;z-index:30;background:#050302cc;display:none;place-items:center;padding:20px}
+.drawer.on{display:grid}
+.edit{width:min(1020px,100%);max-height:92vh;overflow:auto;display:grid;grid-template-columns:1fr 330px;gap:0;padding:0}
+.edit .form{padding:20px 24px}
+.edit .prev{padding:20px 16px;background:var(--grain),linear-gradient(180deg,#2b1f18,#140d0a);background-blend-mode:multiply,normal;box-shadow:inset 1px 0 0 #000,inset 3px 0 0 #6e5224;display:flex;flex-direction:column;align-items:center;gap:14px;border-radius:0 3px 3px 0}
+.edit h2{margin:0 0 12px;font-family:Lalezar;font-weight:400;font-size:1.6rem;border-bottom:3px double var(--ink);display:flex;align-items:center}
+.edit h2 .x{margin-inline-start:auto;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1.5px #000,0 2px 0 #000;color:#2a1a08;font-size:1rem;font-family:Cairo;font-weight:800}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f{margin-bottom:12px}
+.f label{display:block;font-weight:800;font-size:.8rem;color:var(--soft);margin-bottom:3px}
+.f input,.f select,.f textarea{width:100%;padding:8px 12px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+.f textarea{min-height:62px;resize:vertical}
+.f small{display:block;font-size:.68rem;font-weight:700;color:var(--soft);margin-top:2px}
+.kinds{display:flex;gap:8px;margin-bottom:12px}
+.kinds button{flex:1;padding:7px;border-radius:7px;font-family:Lalezar;font-size:.95rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.kinds button.on{background:var(--ink);color:#f5e2a8}
+.hide{display:none!important}
+.foot-act{display:flex;gap:10px;margin-top:6px}
+.prev h4{margin:0;font-family:Lalezar;font-weight:400;color:#e6d9bd;font-size:1rem}
+.prev small{color:#8d744a;font-weight:700;font-size:.7rem;text-align:center}
+.clip{width:100%;padding:12px 14px 22px;position:relative;rotate:.6deg;filter:drop-shadow(0 7px 5px #000c)}
+.clip .pg{position:absolute;inset:0;background:var(--paper);box-shadow:inset 0 0 30px #8a7a5a88;clip-path:polygon(0 0,100% 0,100% 94%,96% 97%,91% 94%,86% 98%,80% 95%,74% 99%,68% 95%,62% 98%,55% 94%,49% 98%,42% 95%,36% 99%,30% 95%,23% 98%,17% 94%,11% 98%,6% 95%,0 98%)}
+.clip>*:not(.pg){position:relative;color:var(--ink)}
+.clip .tape{position:absolute;top:-10px;left:50%;translate:-50% 0;width:60px;height:19px;background:#d8c88a99;rotate:-2deg}
+.clip .kick{display:flex;justify-content:space-between;font-weight:800;font-size:.62rem;color:var(--crim);border-bottom:1.5px solid var(--ink);margin-bottom:6px}
+.clip .kick span:last-child{color:var(--soft)}
+.clip h5{margin:0;font-family:Lalezar;font-weight:400;font-size:1.25rem;line-height:1.1;padding-inline-end:70px}
+.clip p{margin:3px 0 8px;font-size:.72rem;font-weight:700;line-height:1.55;color:var(--soft)}
+.clip .st{position:absolute;top:44px;left:8px;font-size:.85rem;background:#d9cfb4cc}
+.clip .cd{font-weight:800;font-size:.66rem;color:var(--crim)}
+.clip .cd b{padding:1px 8px;border-radius:4px;background:#0b0807;color:#ffd98a;font-family:Lalezar;font-weight:400;font-size:.8rem;box-shadow:0 0 0 1px #6e5224}
+.clip .rw{font-family:Lalezar;font-size:.9rem;margin-top:6px;display:flex;align-items:center;gap:5px}
+.coin{width:14px;height:14px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000}
+.red-bar{display:inline-block;height:.9em;width:70px;border-radius:2px;background:#15100d;vertical-align:-1px}
+
+/* words and chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 6px 3px 12px;border-radius:6px;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;font-weight:800}
+.chip button{width:20px;height:20px;border-radius:50%;background:#8a1c2433;color:var(--crimd);font-weight:800;line-height:20px}
+.addrow{display:flex;gap:8px}
+.addrow input{flex:1;padding:8px 12px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+.player{display:grid;grid-template-columns:90px 1fr auto;gap:18px;align-items:center}
+.av{width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);box-shadow:0 0 0 4px var(--brass),0 6px 10px #000a}
+.kv{display:grid;grid-template-columns:repeat(4,auto);gap:4px 26px}
+.kv span{font-size:.72rem;font-weight:800;color:var(--soft)}
+.kv b{font-family:Lalezar;font-weight:400;font-size:1.3rem}
+
+.toast{position:fixed;z-index:60;left:50%;bottom:28px;translate:-50% 30px;opacity:0;pointer-events:none;transition:.3s;padding:10px 20px;border-radius:9px;font-weight:800;background:#0a0807f2;box-shadow:0 0 0 1px #b99048,0 8px 16px #000;color:#f5e2a8}
+.toast.on{opacity:1;translate:-50% 0}
+.note{margin-top:22px;max-width:860px;font-size:.78rem;line-height:1.8;color:#8d8576}
+.note b{color:#e6d9bd}
+
+/* extra pieces of the live page */
+#login{display:grid}
+.lbox .err,.f .err,.edit .err{min-height:1.2em;margin-top:8px;font-weight:800;font-size:.82rem;color:var(--crimd)}
+.off{display:none!important}
+.srcnote{margin:0 0 12px;padding:8px 14px;border-radius:6px;background:#0b080899;box-shadow:inset 0 0 0 1px #6e5224;font-weight:700;font-size:.82rem;color:#e6d9bd}
+.empty{padding:22px;text-align:center;font-weight:800;color:var(--soft)}
+.hint{display:block;margin-top:6px;font-weight:700;font-size:.72rem;color:var(--soft)}
+.tbl code{font-family:Consolas,monospace;font-size:.85rem;direction:ltr;display:inline-block}
+.btn.del{color:#ff9a9a}
+.sw{display:flex!important;align-items:center;gap:10px}
+.tog{cursor:pointer}
+.chips .m{font-weight:700;font-size:.8rem;color:var(--soft)}
+.paper .m{color:var(--soft)}
+.nav .n.hide{display:none}
+
+/* live ops pages */
+.lang{display:flex;gap:6px;margin-bottom:10px}
+.lang button{padding:3px 14px;border-radius:6px;font-weight:800;font-size:.8rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.lang button.on{background:var(--ink);color:#f5e2a8}
+.lang .hintl{margin-inline-start:auto;font-size:.7rem;font-weight:700;color:var(--soft);align-self:center}
+input.ltr,textarea.ltr{direction:ltr;text-align:left}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:1px 9px;border-radius:6px;background:#0b0807;color:#ffd98a;font-family:Lalezar;font-size:.8rem;box-shadow:0 0 0 1px #6e5224;margin-inline-end:4px}
+.coin{width:12px;height:12px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000}
+.gem{width:11px;height:11px;display:inline-block;rotate:45deg;background:linear-gradient(135deg,#9be8d0,#2c8f74);box-shadow:0 0 0 1px #000;border-radius:2px}
+.cols2{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+@media(max-width:1100px){.cols2{grid-template-columns:1fr}}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.seg button{padding:6px 14px;border-radius:7px;font-weight:800;font-size:.82rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.seg button.on{background:var(--ink);color:#f5e2a8}
+.warn{margin:8px 0;padding:8px 12px;border-radius:6px;background:#8a1c2422;box-shadow:inset 0 0 0 1px #8a1c2488;font-weight:800;font-size:.78rem;color:var(--crimd)}
+.sect{margin-top:16px;padding-top:12px;border-top:2px dashed #1c170f55}
+.sect h5{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1.15rem}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.tile{padding:12px 14px;border-radius:6px;background:#1c170f0d;box-shadow:inset 0 0 0 1px #1c170f33}
+.tile h6{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1rem}
+.rowin{display:flex;gap:8px;margin-bottom:8px}
+.seg{display:flex;margin-bottom:10px;border-radius:7px;overflow:hidden;box-shadow:0 0 0 2px #1c170f66}
+.seg button{flex:1;padding:6px 8px;font-weight:800;font-size:.82rem;background:#f0e8d2;color:var(--soft);border:0;cursor:pointer;font-family:inherit}
+.seg button.on{background:#1d4a3c;color:#f0dcd8}.seg button.on.wn{background:#8a1c24}
+.dmimg{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.dmimg .box{flex:none;width:84px;height:58px;border-radius:5px;background:#1c170f14;box-shadow:inset 0 0 0 2px #1c170f55;overflow:hidden;display:grid;place-items:center;font-size:.62rem;font-weight:800;color:var(--soft);text-align:center}
+.dmimg .box img{width:100%;height:100%;object-fit:cover;display:block}
+.mpill{display:inline-block;padding:0 8px;border-radius:9px;font-weight:800;font-size:.66rem;color:#f6efe0}.mpill.n{background:#1d4a3c}.mpill.w{background:#8a1c24}.mpill.m{background:#6e4b1c}
+.rowin input,.rowin select{flex:1;min-width:0;padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+.mono{font-family:Consolas,monospace;direction:ltr;display:inline-block;font-weight:800;letter-spacing:1px}
+.ok{color:var(--green);font-weight:800;font-size:.82rem}
+
+/* the narrow table of the sent list */
+.cols2 .tbl{min-width:0}
+/* ranking block of the event editor */
+.rankbox{margin:6px 0 12px;padding:12px 14px;border-radius:6px;background:#1c170f0d;box-shadow:inset 0 0 0 1px #1c170f33}
+.rankbox h6{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1.05rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.prizes{display:grid;gap:6px}
+.prizes .pz{display:grid;grid-template-columns:64px 64px 1fr 40px;gap:8px;align-items:center}
+.prizes .pz input,.prizes .pz select{padding:6px 8px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700;min-width:0}
+/* narrow screens: the collapsed sidebar keeps only a tiny name */
+@media(max-width:1100px){aside .brand b{font-size:.58rem;letter-spacing:.5px;overflow:hidden}aside{padding:14px 8px}}
+/* phones */
+.card{overflow-x:auto}
+#v-lbprizes .tbl{min-width:0}.lbadd .f,.lbadd select{min-width:0}.lbadd select{width:100%}.lbadd .rowin input{min-width:0;flex:1;width:100%}
+.tbl{min-width:560px}
+@media(max-width:720px){
+  main{padding:16px 14px 30px}
+  .top{flex-wrap:wrap}.top h1{font-size:1.6rem}
+  .g2,.edit{grid-template-columns:1fr!important}
+  .edit .prev{display:none}
+  .row2{grid-template-columns:1fr}
+  .player{grid-template-columns:70px 1fr}.player>div:last-child{grid-column:1/-1;grid-auto-flow:column}
+  .kv{grid-template-columns:repeat(2,auto)}
+  #v-words .grid{grid-template-columns:1fr!important}
+  .bars{gap:5px}.bars div{font-size:.6rem}
+}
+
+body{height:auto;padding:18px 14px 50px;background:#070504}
+h1.page{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 4px;font-size:1.9rem}
+p.sub{text-align:center;color:#8f8777;margin:0 auto 18px;max-width:760px;line-height:1.8;font-size:.85rem}
+.state{margin:0 auto 34px;max-width:1040px}
+.state>.cap{color:#8d744a;font-weight:800;font-size:.8rem;margin:0 0 8px}
+.state .drawer{position:static;display:block;background:none;padding:0}
+.state .edit{max-height:none;margin:0 auto}
+/* the new picture field */
+.pic{display:grid;gap:8px;margin:2px 0 12px}
+.pic .head{display:flex;align-items:baseline;gap:8px}
+.pic .head b{font-weight:800}
+.pic .head small{color:var(--soft);font-weight:700;font-size:.72rem}
+.zone{position:relative;display:grid;place-items:center;gap:4px;text-align:center;padding:18px 12px;border-radius:6px;border:2.5px dashed #6e5224;background:#1c170f0d;color:var(--soft);cursor:pointer}
+.zone svg{width:30px;height:30px;stroke:#8a1c24;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.zone b{color:var(--ink);font-size:.9rem}
+.zone span{font-size:.72rem;font-weight:700}
+.zone.over{border-color:#8a1c24;background:#8a1c2412}
+.shot{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:start}
+.frame{position:relative;aspect-ratio:13/8;border-radius:4px;background:#222 center/cover no-repeat;box-shadow:0 0 0 2px #1c170f,0 6px 12px #0006;overflow:hidden}
+.frame .safe{position:absolute;inset:15% 6%;border:1.5px dashed #ffffffcc;border-radius:2px;box-shadow:0 0 0 999px #00000045}
+.frame.ev{aspect-ratio:2/1}
+.shot .meta{display:grid;gap:5px;align-content:start}
+.shot .meta .ok{display:flex;align-items:center;gap:6px;font-weight:800;font-size:.78rem;color:#1d6a4a}
+.shot .meta .ok svg{width:16px;height:16px;stroke:#1d6a4a;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.shot .meta .bad{color:#8a1c24}
+.shot .meta .bad svg{stroke:#8a1c24}
+.shot .meta .m{font-size:.72rem;font-weight:700;color:var(--soft)}
+.shot .acts{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.tog{display:flex;gap:6px}
+.note{font-size:.7rem;font-weight:700;color:var(--soft);line-height:1.6;margin:0}
+.note b{color:var(--crim)}
+/* the preview with the picture */
+.clip .photo{height:96px;margin:-2px -4px 8px;background:#222 center/cover no-repeat;box-shadow:0 0 0 2px #efe6cf,0 0 0 3px #1c170f55,0 4px 8px #0007;rotate:-.6deg}
+.clip .photo.ev{height:78px}
+.clip.dim .ghost{opacity:.5}
+/* sizes table */
+.sizes{max-width:1040px;margin:0 auto}
+.sizes table{width:100%;border-collapse:collapse;font-size:.82rem}
+.sizes th,.sizes td{padding:8px 10px;border-bottom:1px solid #1c170f33;text-align:start;vertical-align:top}
+.sizes th{font-family:Lalezar;font-weight:400;font-size:.95rem;border-bottom:3px double var(--ink)}
+.sizes code{direction:ltr;unicode-bidi:embed;white-space:nowrap;background:#1c170f14;padding:1px 6px;border-radius:3px;font-weight:800}
+.err2{margin-top:8px;padding:8px 10px;border-radius:5px;background:#8a1c2414;box-shadow:inset 0 0 0 1.5px #8a1c24;color:#8a1c24;font-weight:800;font-size:.78rem}
+</style></head><body>
+<h1 class="page">صور العروض والأحداث من لوحة الإدارة</h1>
+<p class="sub">بتضيف صورة لأي عرض أو حدث من اللوحة، وبتظهر عند اللاعبين فوراً بدون نسخة جديدة من اللعبة. الصورة اختيارية؛ بدونها كل شي بيضل متل هلّق. شكل اللوحة هو نفس الأدراج اللي عندك، ومعاينة «هيك رح يظهر باللعبة» بتبيّن الصورة قبل ما تحفظ.</p>
+<section class="state" id="s1"><p class="cap">١ · العرض: بدون صورة بعد</p>
+<div class="drawer on"><div class="paper edit"><div class="form"><h2><span>تعديل عرض</span><button class="x" type="button">×</button></h2>
+  <form>
+        <div class="kinds"><button type="button" class="on">إعلان من المتجر (adId)</button><button type="button">عنصر من المتجر (itemId)</button></div>
+        <div class="f"><label>معرّف الإعلان</label><input value="ad_ember" readonly><small>لازم يكون موجود باللعبة وبمتجر PlayFab.</small></div>
+        <div class="row2"><div class="f"><label>العنوان الصغير (اختياري)</label><input value="عرض الليلة فقط" readonly></div><div class="f"><label>الختم (اختياري)</label><input value="−٣٠٪" readonly></div></div>
+        <div class="f"><label>العنوان (اختياري، سطر جديد = سطر ثاني)</label><textarea readonly>إطار الجمر
+بنصف الثمن تقريباً</textarea></div>
+        <div class="pic"><div class="head"><b>صورة العرض</b><small>اختيارية · بدون صورة بتظهر رسمة العنصر</small></div>
+          <div class="zone"><svg viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 19h14"/></svg><b>اسحب الصورة لهون أو اضغط لتختار</b><span>JPG أو PNG · المقاس المثالي <code>١٣٠٠ × ٨٠٠</code> · أقصى حجم ١ ميغا</span></div>
+          <p class="note">الصورة بتتقصّ تلقائياً على قد المكان. خلّي الشي المهم (وجه، اسم، سعر) بالنص، لأنه الأطراف ممكن تنقصّ شوي على بعض الشاشات.</p></div>
+        <div class="row2"><div class="f"><label>يبدأ</label><input type="datetime-local" value="2026-11-01T18:00" readonly></div><div class="f"><label>ينتهي</label><input type="datetime-local" value="2026-11-02T18:00" readonly></div></div>
+        <div class="foot-act"><button class="btn red" type="button">احفظ وطبّق</button><button class="btn ghost" type="button">إلغاء</button></div></form></div>
+    <div class="prev"><h4>هيك رح يظهر باللعبة</h4>
+      <div class="clip"><div class="pg"></div><span class="tape"></span><span class="stamp st">−٣٠٪</span>
+        <div class="kick"><span>عرض الليلة فقط</span><span>العرض ١</span></div>
+        
+        <h5>إطار الجمر<br>بنصف الثمن تقريباً</h5><p>حلقة نارية تتوهج حول صورتك في كل غرفة.</p>
+        <div class="cd">ينتهي خلال <b>٠٢:١٤:١٩</b></div></div>
+      <small>بدون صورة: بتطلع رسمة العنصر متل هلّق</small></div></div></div></section>
+<section class="state" id="s2"><p class="cap">٢ · العرض: بعد رفع الصورة (المربع المنقّط = الجزء اللي بيظهر دايماً)</p>
+<div class="drawer on"><div class="paper edit"><div class="form"><h2><span>تعديل عرض</span><button class="x" type="button">×</button></h2>
+  <form>
+        <div class="kinds"><button type="button" class="on">إعلان من المتجر (adId)</button><button type="button">عنصر من المتجر (itemId)</button></div>
+        <div class="f"><label>معرّف الإعلان</label><input value="ad_ember" readonly><small>لازم يكون موجود باللعبة وبمتجر PlayFab.</small></div>
+        <div class="row2"><div class="f"><label>العنوان الصغير (اختياري)</label><input value="عرض الليلة فقط" readonly></div><div class="f"><label>الختم (اختياري)</label><input value="−٣٠٪" readonly></div></div>
+        <div class="f"><label>العنوان (اختياري، سطر جديد = سطر ثاني)</label><textarea readonly>إطار الجمر
+بنصف الثمن تقريباً</textarea></div>
+        <div class="pic"><div class="head"><b>صورة العرض</b><small>اختيارية</small></div>
+          <div class="shot"><div class="frame" style="background-image:url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201300%20800%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22a%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230d0608%22%2F%3E%3Cstop%20offset%3D%22.6%22%20stop-color%3D%22%234a0f14%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%238a2a18%22%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%22.5%22%20cy%3D%22.5%22%20r%3D%22.5%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ffd08a%22%2F%3E%3Cstop%20offset%3D%22.35%22%20stop-color%3D%22%23ff7a2a%22%20stop-opacity%3D%22.9%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ff7a2a%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%221300%22%20height%3D%22800%22%20fill%3D%22url(%23a)%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22330%22%20fill%3D%22url(%23g)%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22150%22%20fill%3D%22none%22%20stroke%3D%22%23ffe3b0%22%20stroke-width%3D%2234%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22150%22%20fill%3D%22none%22%20stroke%3D%22%23ff5a1a%22%20stroke-width%3D%2214%22%20opacity%3D%22.8%22%2F%3E%3Cpath%20fill%3D%22%2308040a%22%20d%3D%22M0%20800V560l90-40%2070%2030%2060-90%2090%2060%2060-30%20110%2090%2070-60%2080%2040%2090-70%2060%2050%20110-80%2090%2090%2070-50%20100%2060%2090-40%2060%2060%2090-30%2080%2080V800z%22%2F%3E%3C%2Fsvg%3E')"><i class="safe"></i></div>
+            <div class="meta"><span class="ok"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>المقاس مناسب · ١٣٠٠ × ٨٠٠</span><span class="m">ember-offer.jpg · ٣٤٢ كيلو</span>
+              <span class="m">المربع المنقّط = الجزء اللي بيطلع دايماً على كل الشاشات</span>
+              <div class="acts"><button class="btn ghost sm" type="button">غيّر الصورة</button><button class="btn ghost sm del" type="button">احذف الصورة</button></div></div></div></div>
+        <div class="row2"><div class="f"><label>يبدأ</label><input type="datetime-local" value="2026-11-01T18:00" readonly></div><div class="f"><label>ينتهي</label><input type="datetime-local" value="2026-11-02T18:00" readonly></div></div>
+        <div class="foot-act"><button class="btn red" type="button">احفظ وطبّق</button><button class="btn ghost" type="button">إلغاء</button></div></form></div>
+    <div class="prev"><h4>هيك رح يظهر باللعبة</h4>
+      <div class="clip"><div class="pg"></div><span class="tape"></span><span class="stamp st">−٣٠٪</span>
+        <div class="kick"><span>عرض الليلة فقط</span><span>العرض ١</span></div>
+        <div class="photo" style="background-image:url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201300%20800%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22a%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230d0608%22%2F%3E%3Cstop%20offset%3D%22.6%22%20stop-color%3D%22%234a0f14%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%238a2a18%22%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%22.5%22%20cy%3D%22.5%22%20r%3D%22.5%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ffd08a%22%2F%3E%3Cstop%20offset%3D%22.35%22%20stop-color%3D%22%23ff7a2a%22%20stop-opacity%3D%22.9%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ff7a2a%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%221300%22%20height%3D%22800%22%20fill%3D%22url(%23a)%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22330%22%20fill%3D%22url(%23g)%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22150%22%20fill%3D%22none%22%20stroke%3D%22%23ffe3b0%22%20stroke-width%3D%2234%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22150%22%20fill%3D%22none%22%20stroke%3D%22%23ff5a1a%22%20stroke-width%3D%2214%22%20opacity%3D%22.8%22%2F%3E%3Cpath%20fill%3D%22%2308040a%22%20d%3D%22M0%20800V560l90-40%2070%2030%2060-90%2090%2060%2060-30%20110%2090%2070-60%2080%2040%2090-70%2060%2050%20110-80%2090%2090%2070-50%20100%2060%2090-40%2060%2060%2090-30%2080%2080V800z%22%2F%3E%3C%2Fsvg%3E')"></div>
+        <h5>إطار الجمر<br>بنصف الثمن تقريباً</h5><p>حلقة نارية تتوهج حول صورتك في كل غرفة.</p>
+        <div class="cd">ينتهي خلال <b>٠٢:١٤:١٩</b></div></div>
+      <small>الصورة بتطلع بمكان رسمة العنصر</small></div></div></div></section>
+<section class="state" id="s3"><p class="cap">٣ · رسالة خطأ لما الصورة ما بتنفع</p>
+<div class="drawer on"><div class="paper edit"><div class="form"><h2><span>تعديل عرض</span><button class="x" type="button">×</button></h2>
+  <form>
+        <div class="kinds"><button type="button" class="on">إعلان من المتجر (adId)</button><button type="button">عنصر من المتجر (itemId)</button></div>
+        <div class="f"><label>معرّف الإعلان</label><input value="ad_ember" readonly><small>لازم يكون موجود باللعبة وبمتجر PlayFab.</small></div>
+        <div class="row2"><div class="f"><label>العنوان الصغير (اختياري)</label><input value="عرض الليلة فقط" readonly></div><div class="f"><label>الختم (اختياري)</label><input value="−٣٠٪" readonly></div></div>
+        <div class="f"><label>العنوان (اختياري، سطر جديد = سطر ثاني)</label><textarea readonly>إطار الجمر
+بنصف الثمن تقريباً</textarea></div>
+        <div class="pic"><div class="head"><b>صورة العرض</b><small>اختيارية</small></div>
+          <div class="zone"><svg viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 19h14"/></svg><b>اسحب الصورة لهون أو اضغط لتختار</b><span>JPG أو PNG · المقاس المثالي <code>١٣٠٠ × ٨٠٠</code> · أقصى حجم ١ ميغا</span></div>
+          <div class="err2">الصورة صغيرة كتير (٣٢٠ × ٢٠٠). لازم تكون ٨٠٠ عرض على الأقل لتطلع حادّة على الموبايلات الكبيرة.</div></div>
+        <div class="row2"><div class="f"><label>يبدأ</label><input type="datetime-local" value="2026-11-01T18:00" readonly></div><div class="f"><label>ينتهي</label><input type="datetime-local" value="2026-11-02T18:00" readonly></div></div>
+        <div class="foot-act"><button class="btn red" type="button">احفظ وطبّق</button><button class="btn ghost" type="button">إلغاء</button></div></form></div>
+    <div class="prev"><h4>هيك رح يظهر باللعبة</h4>
+      <div class="clip"><div class="pg"></div><span class="tape"></span><span class="stamp st">−٣٠٪</span>
+        <div class="kick"><span>عرض الليلة فقط</span><span>العرض ١</span></div>
+        
+        <h5>إطار الجمر<br>بنصف الثمن تقريباً</h5><p>حلقة نارية تتوهج حول صورتك في كل غرفة.</p>
+        <div class="cd">ينتهي خلال <b>٠٢:١٤:١٩</b></div></div>
+      <small>بدون صورة: بتطلع رسمة العنصر متل هلّق</small></div></div></div></section>
+<section class="state" id="s4"><p class="cap">٤ · الحدث: صورة بعرض البطاقة</p>
+<div class="drawer on"><div class="paper edit"><div class="form"><h2><span>تعديل حدث</span><button class="x" type="button">×</button></h2>
+  <form>
+        <div class="kinds"><button type="button" class="on">إعلان (info)</button><button type="button">مكافأة مضاعفة (bonus)</button><button type="button">تحدّي (challenge)</button></div>
+        <div class="f"><label>العنوان</label><input value="ليلة العصابة الكبرى" readonly></div>
+        <div class="f"><label>الوصف</label><textarea readonly>بطولة ليلية بجوائز نادرة. شارك وكوّن اسمك بالحارة.</textarea></div>
+        <div class="pic"><div class="head"><b>صورة الحدث</b><small>اختيارية · بتطلع فوق بطاقة الحدث</small></div>
+          <div class="shot"><div class="frame ev" style="background-image:url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201300%20800%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22a%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230d0608%22%2F%3E%3Cstop%20offset%3D%22.6%22%20stop-color%3D%22%234a0f14%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%238a2a18%22%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%22.5%22%20cy%3D%22.5%22%20r%3D%22.5%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ffd08a%22%2F%3E%3Cstop%20offset%3D%22.35%22%20stop-color%3D%22%23ff7a2a%22%20stop-opacity%3D%22.9%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ff7a2a%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%221300%22%20height%3D%22800%22%20fill%3D%22url(%23a)%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22330%22%20fill%3D%22url(%23g)%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22150%22%20fill%3D%22none%22%20stroke%3D%22%23ffe3b0%22%20stroke-width%3D%2234%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22150%22%20fill%3D%22none%22%20stroke%3D%22%23ff5a1a%22%20stroke-width%3D%2214%22%20opacity%3D%22.8%22%2F%3E%3Cpath%20fill%3D%22%2308040a%22%20d%3D%22M0%20800V560l90-40%2070%2030%2060-90%2090%2060%2060-30%20110%2090%2070-60%2080%2040%2090-70%2060%2050%20110-80%2090%2090%2070-50%20100%2060%2090-40%2060%2060%2090-30%2080%2080V800z%22%2F%3E%3C%2Fsvg%3E')"><i class="safe" style="inset:12% 6%"></i></div>
+            <div class="meta"><span class="ok"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>المقاس مناسب · ١٢٠٠ × ٦٠٠</span><span class="m">night-event.jpg · ٢٨٠ كيلو</span>
+              <div class="acts"><button class="btn ghost sm" type="button">غيّر الصورة</button><button class="btn ghost sm del" type="button">احذف الصورة</button></div></div></div></div><div class="foot-act"><button class="btn red" type="button">احفظ وطبّق</button><button class="btn ghost" type="button">إلغاء</button></div></form></div>
+  <div class="prev"><h4>هيك رح يظهر باللعبة</h4>
+    <div class="clip"><div class="pg"></div><span class="tape"></span>
+      <div class="photo ev" style="background-image:url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201300%20800%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22a%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230d0608%22%2F%3E%3Cstop%20offset%3D%22.6%22%20stop-color%3D%22%234a0f14%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%238a2a18%22%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%22.5%22%20cy%3D%22.5%22%20r%3D%22.5%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ffd08a%22%2F%3E%3Cstop%20offset%3D%22.35%22%20stop-color%3D%22%23ff7a2a%22%20stop-opacity%3D%22.9%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ff7a2a%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%221300%22%20height%3D%22800%22%20fill%3D%22url(%23a)%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22330%22%20fill%3D%22url(%23g)%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22150%22%20fill%3D%22none%22%20stroke%3D%22%23ffe3b0%22%20stroke-width%3D%2234%22%2F%3E%3Ccircle%20cx%3D%22650%22%20cy%3D%22360%22%20r%3D%22150%22%20fill%3D%22none%22%20stroke%3D%22%23ff5a1a%22%20stroke-width%3D%2214%22%20opacity%3D%22.8%22%2F%3E%3Cpath%20fill%3D%22%2308040a%22%20d%3D%22M0%20800V560l90-40%2070%2030%2060-90%2090%2060%2060-30%20110%2090%2070-60%2080%2040%2090-70%2060%2050%20110-80%2090%2090%2070-50%20100%2060%2090-40%2060%2060%2090-30%2080%2080V800z%22%2F%3E%3C%2Fsvg%3E');margin:-2px -4px 8px"></div>
+      <div class="kick"><span>بطولة</span><span>الحدث ٣</span></div><h5>ليلة العصابة الكبرى</h5><p>بطولة ليلية بجوائز نادرة. شارك وكوّن اسمك بالحارة.</p></div>
+    <small>الصورة بتطلع فوق البطاقة بعرضها كامل</small></div></div></div></section>
+<section class="state" id="s5"><p class="cap">٥ · جدول المقاسات (بيطلع جنب الخانات وبالتوثيق)</p>
+<div class="paper card sizes"><h3>مقاسات الصور (بتنكتب جنب كل خانة صورة)</h3>
+<table><tr><th>وين</th><th>المقاس المثالي</th><th>النسبة</th><th>الحد الأدنى</th><th>ملاحظات</th></tr>
+<tr><td><b>صورة العرض</b><br><span class="m">لافتة «جريدة الليل» عند فتح اللعبة</span></td><td><code>١٣٠٠ × ٨٠٠</code></td><td>١٣ لكل ٨</td><td><code>٨٠٠ × ٤٩٠</code></td><td>ارتفاع المكان بيتغيّر مع طول الشاشة (٢٣٠–١٥٠)، فبتتقصّ من فوق وتحت شوي. الشي المهم بالنص.</td></tr>
+<tr><td><b>صورة الحدث</b><br><span class="m">بطاقة بـ«أخبار الحارة»</span></td><td><code>١٢٠٠ × ٦٠٠</code></td><td>٢ لكل ١</td><td><code>٧٢٠ × ٣٦٠</code></td><td>بعرض البطاقة كامل. لو فيه كتابة بالصورة خلّيها بعيدة عن الأطراف.</td></tr>
+<tr><td><b>صورة الرسالة الخاصة</b><br><span class="m">موجودة هلّق</span></td><td><code>٩٠٠ عرض</code></td><td>حرّة</td><td>—</td><td>بتتصغّر لحالها قبل الرفع.</td></tr></table>
+<p class="note" style="margin-top:10px"><b>للكل:</b> JPG أو PNG، أقصى حجم ١ ميغا. اللوحة بتصغّر الصورة لحالها إذا كانت أكبر من المقاس المثالي وبتضغطها. لا تحط فيها أسعار أو تواريخ (بتتغيّر بالنص، والصورة ما بتتغيّر). بعد الحفظ بتطلع عند اللاعبين فوراً بدون تحديث اللعبة.</p></div></section>
+</body></html>
