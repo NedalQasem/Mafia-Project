@@ -25,6 +25,12 @@ namespace MafiaNight.Core
         /// <summary>The Google "web" OAuth client of the game (a public identifier, not a secret): the Android sign-in asks Google for an ID token meant for it, and the server accepts only tokens meant for it.</summary>
         public const string GOOGLE_WEB_CLIENT_ID = "1007236526273-19121cletqstpgahntdot10rvhmv5n48.apps.googleusercontent.com";
 
+        /// <summary>The game's Facebook app (developers.facebook.com, under mafia@). Both are public; the app SECRET lives only on the server.
+        /// They are also written into Assets/Plugins/Android/AndroidManifest.xml (meta-data and the fb&lt;id&gt; scheme): change both places together.</summary>
+        public const string FACEBOOK_APP_ID = "2057586301904403";
+        public const string FACEBOOK_CLIENT_TOKEN = "";         // App settings -> Advanced -> Client token
+        public static bool FacebookReady => !string.IsNullOrEmpty(FACEBOOK_CLIENT_TOKEN);
+
         #region PlayerPrefs Keys
         public const string PREF_PLAYER_CUSTOM_NAME = "PlayerCustomName";
         /// <summary>The language the player chose in the settings: "ar" or "en". Not set = Arabic.</summary>

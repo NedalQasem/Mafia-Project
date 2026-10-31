@@ -27,7 +27,7 @@ namespace MafiaNight.App
             var go = Object.Instantiate(th.loginChoicePrefab, root, false);
             go.transform.SetAsLastSibling();
             var screen = go.GetComponent<KitLoginChoice>();
-            screen.SetAvailable(GoogleSignIn.Available, false);
+            screen.SetAvailable(GoogleSignIn.Available, FacebookSignIn.Available);
             bool proceed = false, busy = false;
             screen.OnGuest += () => { if (!busy) proceed = true; };
             screen.OnOffice += () =>
@@ -45,21 +45,36 @@ namespace MafiaNight.App
             {
                 if (busy) return;
                 busy = true;
-                host.StartCoroutine(GoogleStart(screen, () => proceed = true, () => busy = false));
+                host.StartCoroutine(SocialStart("google", screen, () => proceed = true, () => busy = false));
+            };
+            screen.OnFacebook += () =>
+            {
+                if (busy) return;
+                busy = true;
+                host.StartCoroutine(SocialStart("facebook", screen, () => proceed = true, () => busy = false));
             };
             while (!proceed) yield return null;
-            LoginGate.ResumePlayFab();          // a Google attempt that did not finish must not leave the PlayFab sign-in waiting
+            LoginGate.ResumePlayFab();          // a Google or Facebook attempt that did not finish must not leave the PlayFab sign-in waiting
             PlayerPrefs.SetInt(LoginGate.ChosenKey, 1); PlayerPrefs.Save();
             LoginGate.Release();
             screen.Close();
         }
 
-        private static IEnumerator GoogleStart(KitLoginChoice screen, System.Action succeeded, System.Action finished)
+        /// <summary>The provider's own sign-in on the phone ("google" or "facebook"): done(token, null) or done(null, reason).</summary>
+        internal static IEnumerator ProviderToken(string provider, System.Action<string, string> done)
+        {
+            if (provider == "facebook") yield return FacebookSignIn.SignIn(done);
+            else yield return GoogleSignIn.SignIn(done);
+        }
+
+        internal static string ProviderName(string provider) => provider == "facebook" ? "Facebook" : "Google";
+
+        private static IEnumerator SocialStart(string provider, KitLoginChoice screen, System.Action succeeded, System.Action finished)
         {
             screen.SetMessage("");
             string token = null, why = null;
-            yield return GoogleSignIn.SignIn((t, e) => { token = t; why = e; });
-            if (token == null) { screen.SetMessage(GoogleReason(why)); finished(); yield break; }
+            yield return ProviderToken(provider, (t, e) => { token = t; why = e; });
+            if (token == null) { screen.SetMessage(ProviderReason(provider, why)); finished(); yield break; }
 
             // the device identity is needed to tie the device to the account, but the PlayFab sign-in waits until that account is open
             LoginGate.DeferPlayFabLogin();
@@ -70,8 +85,8 @@ namespace MafiaNight.App
             if (auth == null || !auth.IsEOSLoggedIn) { screen.SetMessage("تعذّر الاتصال بالخادم. جرّب كمان مرة."); finished(); yield break; }
 
             IdentityResult res = null;
-            yield return IdentityService.LoginGoogle(token, r => res = r);
-            if (res == null || !res.Ok) { screen.SetMessage(ServerReason(res != null ? res.Error : "network")); finished(); yield break; }
+            yield return IdentityService.Login(provider, token, r => res = r);
+            if (res == null || !res.Ok) { screen.SetMessage(ServerReason(res != null ? res.Error : "network", provider)); finished(); yield break; }
 
             bool linked = false, ok = false;
             auth.LinkDeviceToAccount(res.SessionTicket, (o, _) => { ok = o; linked = true; });
@@ -81,23 +96,25 @@ namespace MafiaNight.App
             finished();
         }
 
-        internal static string GoogleReason(string why)
+        internal static string ProviderReason(string provider, string why)
         {
+            string n = ProviderName(provider);
             switch (why)
             {
                 case "cancelled": return "";
-                case "no_account": return "ما في حساب Google على جهازك. أضف حساب من إعدادات الجهاز وجرّب.";
-                case "unavailable": return "الدخول بـ Google مش متاح هون.";
-                default: return "تعذّر الدخول بـ Google. جرّب كمان مرة.";
+                case "no_account": return "ما في حساب " + n + " على جهازك. أضف حساب من إعدادات الجهاز وجرّب.";
+                case "unavailable": return "الدخول بـ " + n + " مش متاح هون.";
+                default: return "تعذّر الدخول بـ " + n + ". جرّب كمان مرة.";
             }
         }
 
-        internal static string ServerReason(string code)
+        internal static string ServerReason(string code, string provider = "google")
         {
+            string n = ProviderName(provider);
             switch (code)
             {
-                case "bad_token": return "تعذّر التحقق من حساب Google.";
-                case "not_configured": return "الدخول بـ Google مش مفعّل بعد.";
+                case "bad_token": return "تعذّر التحقق من حساب " + n + ".";
+                case "not_configured": return "الدخول بـ " + n + " مش مفعّل بعد.";
                 case "try_again": return "السيرفر مش جاهز هلأ، جرّب بعد شوي.";
                 default: return "ما في اتصال بالسيرفر.";
             }

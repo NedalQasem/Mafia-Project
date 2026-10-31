@@ -61,7 +61,10 @@ namespace MafiaNight.App
 
         private static KitAccountSheet.Data ToData(AccountStatus st)
         {
-            var data = new KitAccountSheet.Data { ready = GoogleSignIn.Available ? new[] { "google" } : new string[0] };
+            var ready = new System.Collections.Generic.List<string>();
+            if (GoogleSignIn.Available) ready.Add("google");
+            if (FacebookSignIn.Available) ready.Add("facebook");
+            var data = new KitAccountSheet.Data { ready = ready.ToArray() };
             if (st != null) { data.guest = st.Guest; data.purge = st.Purge; data.daysLeft = st.DaysLeft; data.methods = st.Methods; }
             else data.guest = true;           // no answer from the server: the sheet still opens, as for a guest
             return data;
@@ -85,19 +88,19 @@ namespace MafiaNight.App
                     var recovery = FindAnyObjectByType<KitRecoverySheet>(FindObjectsInactive.Include);
                     if (recovery != null) { sheet.Close(); recovery.Open(); }
                 }
-                else if (key == "google" && !working) StartCoroutine(LinkGoogle(sheet));
+                else if ((key == "google" || key == "facebook") && !working) StartCoroutine(LinkProvider(key, sheet));
             };
             sheet.Show(ToData(st));
         }
 
-        private IEnumerator LinkGoogle(KitAccountSheet sheet)
+        private IEnumerator LinkProvider(string provider, KitAccountSheet sheet)
         {
             working = true;
             string token = null, why = null;
-            yield return GoogleSignIn.SignIn((t, e) => { token = t; why = e; });
+            yield return LoginGateFlow.ProviderToken(provider, (t, e) => { token = t; why = e; });
             if (token == null) { working = false; yield break; }              // cancelled or failed: the sheet stays as it was
             IdentityResult res = null;
-            yield return IdentityService.LinkGoogle(token, r => res = r);
+            yield return IdentityService.Link(provider, token, r => res = r);
             if (res != null && res.Ok)
             {
                 AccountStatus st = null;
@@ -105,11 +108,11 @@ namespace MafiaNight.App
                 if (sheet != null) sheet.Show(ToData(st));
                 working = false; yield break;
             }
-            if (res != null && res.Error == "account_exists") { ShowConflict(token, res.ExistingName); yield break; }
+            if (res != null && res.Error == "account_exists") { ShowConflict(provider, token, res.ExistingName); yield break; }
             working = false;
         }
 
-        private void ShowConflict(string token, string existingName)
+        private void ShowConflict(string provider, string token, string existingName)
         {
             var th = KitTheme.Current; var canvas = InviteFlow.FindCanvas();
             if (th == null || th.conflictSheetPrefab == null || canvas == null) { working = false; return; }
@@ -125,16 +128,16 @@ namespace MafiaNight.App
                 Application.Quit();
 #endif
             };
-            conflict.OnOpenOld += () => StartCoroutine(OpenOld(conflict, token));
-            conflict.Show(existingName, "Google");
+            conflict.OnOpenOld += () => StartCoroutine(OpenOld(provider, conflict, token));
+            conflict.Show(existingName, LoginGateFlow.ProviderName(provider));
         }
 
-        private IEnumerator OpenOld(KitConflictSheet conflict, string token)
+        private IEnumerator OpenOld(string provider, KitConflictSheet conflict, string token)
         {
             conflict.SetBusy(true);
             IdentityResult res = null;
-            yield return IdentityService.LoginGoogle(token, r => res = r);
-            if (res == null || !res.Ok) { conflict.ShowMessage(LoginGateFlow.ServerReason(res != null ? res.Error : "network")); yield break; }
+            yield return IdentityService.Login(provider, token, r => res = r);
+            if (res == null || !res.Ok) { conflict.ShowMessage(LoginGateFlow.ServerReason(res != null ? res.Error : "network", provider)); yield break; }
             ServiceLocator.TryGet<IAuthService>(out var auth);
             bool linked = false, ok = false;
             if (auth != null) auth.LinkDeviceToAccount(res.SessionTicket, (o, _) => { ok = o; linked = true; }); else linked = true;

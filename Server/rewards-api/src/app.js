@@ -6,6 +6,7 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const R = require('./rewards');
 const { PlayFabError } = require('./playfab');
+const { createLegal } = require('./legal');
 
 const PROGRESS_KEY = 'Progress';
 
@@ -165,14 +166,25 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     '/v1/mail/read': (pf, b) => withLock('pf:' + pf, async () => mail.read(pf, String(b.id || ''))),
   } : {};
   const accountPost = accounts ? { '/v1/account': async pf => accounts.status(pf) } : {};
-  const identityPost = identity ? { '/v1/auth/google/link': (pf, b) => withLock('pf:' + pf, () => identity.link(pf, 'google', b.idToken)) } : {};
+  const identityPost = identity ? {
+    '/v1/auth/google/link': (pf, b) => withLock('pf:' + pf, () => identity.link(pf, 'google', b.idToken)),
+    '/v1/auth/facebook/link': (pf, b) => withLock('pf:' + pf, () => identity.link(pf, 'facebook', b.accessToken)),
+  } : {};
+  const loginRoutes = { '/v1/auth/google/login': ['google', 'idToken'], '/v1/auth/facebook/login': ['facebook', 'accessToken'] };
   const codesPost = codes ? { '/v1/codes/redeem': async (pf, b) => codes.redeem(pf, b.code) } : {};
   const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
+  const legal = createLegal();
 
   const server = http.createServer((req, res) => {
     const ip = (cfg.trustProxy && req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : req.socket.remoteAddress) || 'unknown';
     const url = new URL(req.url, 'http://local');
     if (req.method === 'GET' && url.pathname === '/health') return send(res, 200, { ok: true });
+    // the public privacy policy and data deletion pages (asked by the stores and by Facebook)
+    if (req.method === 'GET' && legal.page(url.pathname)) {
+      const html = legal.page(url.pathname);
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=3600', 'X-Content-Type-Options': 'nosniff' });
+      return res.end(html);
+    }
     if (limited(ip)) return send(res, 429, { ok: false, error: 'slow down' });
     if (admin && admin.owns(url.pathname)) return admin.handle(req, res, url, ip);      // the admin board (its own login)
 
@@ -194,13 +206,14 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
       })();
       return;
     }
-    // sign in with Google on a device that has no session yet (a new device, or the first start): answers with a PlayFab session
-    if (identity && req.method === 'POST' && url.pathname === '/v1/auth/google/login') {
+    // sign in with Google or Facebook on a device that has no session yet (a new device, or the first start): answers with a PlayFab session
+    if (identity && req.method === 'POST' && loginRoutes[url.pathname]) {
+      const [provider, field] = loginRoutes[url.pathname];
       (async () => {
         try {
           const body = await readJson(req, res);
           if (body === undefined) return;
-          send(res, 200, await identity.login('google', body && body.idToken));
+          send(res, 200, await identity.login(provider, body && body[field]));
         } catch (e) { fail(res, e, url.pathname); }
       })();
       return;

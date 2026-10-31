@@ -6,7 +6,29 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Facebook login: lets the SDK find the Facebook app on Android 11+ -->
+    <queries>
+        <provider android:authorities="com.facebook.katana.provider.PlatformProvider" />
+    </queries>
     <application>
+        <!-- Facebook login (FacebookLoginActivity.java). The app id is written "fb<id>" so it stays a string (the SDK drops the "fb");
+             both values are public and also in GameConstants.FACEBOOK_APP_ID / FACEBOOK_CLIENT_TOKEN: change them together. -->
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="fb2057586301904403" />
+        <meta-data android:name="com.facebook.sdk.ClientToken" android:value="FACEBOOK_CLIENT_TOKEN" />
+        <meta-data android:name="com.facebook.sdk.AutoLogAppEventsEnabled" android:value="false" />
+        <meta-data android:name="com.facebook.sdk.AdvertiserIDCollectionEnabled" android:value="false" />
+        <activity android:name="com.menagaming.mafia.FacebookLoginActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+                  android:exported="false" />
+        <activity android:name="com.facebook.CustomTabActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="fb2057586301904403" />
+            </intent-filter>
+        </activity>
         <!--Used when Application Entry is set to Activity, otherwise remove this activity block-->
         <activity android:name="com.unity3d.player.UnityPlayerActivity"
                   android:theme="@style/UnityThemeSelector">

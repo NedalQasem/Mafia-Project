@@ -31,6 +31,31 @@ function createGoogle({ clientIds = [], fetchFn = globalThis.fetch, now = () => 
   return { verify, enabled: allowed.size > 0 };
 }
 
+/**
+ * Checks a Facebook user access token with Facebook's debug_token endpoint, using the app's own token (app id | app secret).
+ * The token must be valid and made for THIS app. Returns { sub } (the app-scoped Facebook user id).
+ */
+function createFacebook({ appId = '', appSecret = '', fetchFn = globalThis.fetch, now = () => Date.now() }) {
+  const enabled = !!(appId && appSecret);
+  async function verify(accessToken) {
+    const tok = String(accessToken || '');
+    if (!enabled) throw new ChatError('not_configured', 503);
+    if (tok.length < 20 || tok.length > 4096 || /\s/.test(tok)) throw new ChatError('bad_token', 401);
+    let d;
+    try {
+      const url = 'https://graph.facebook.com/debug_token?input_token=' + encodeURIComponent(tok) + '&access_token=' + encodeURIComponent(appId + '|' + appSecret);
+      const res = await fetchFn(url, { signal: AbortSignal.timeout(8000) });
+      const j = await res.json().catch(() => null);
+      if (!res.ok && !(j && j.data)) throw new ChatError(res.status >= 500 ? 'try_again' : 'bad_token', res.status >= 500 ? 502 : 401);
+      d = j && j.data;
+    } catch (e) { if (e instanceof ChatError) throw e; throw new ChatError('try_again', 502); }
+    const exp = Number(d && d.expires_at) || 0;          // 0 = does not expire
+    if (!d || d.is_valid !== true || String(d.app_id) !== String(appId) || !d.user_id || (exp && exp * 1000 <= now())) throw new ChatError('bad_token', 401);
+    return { sub: String(d.user_id) };
+  }
+  return { verify, enabled };
+}
+
 function createIdentity({ accounts, playfab, providers = {}, chat = null, log = console }) {
   const customId = (provider, id) => provider.charAt(0) + '-' + id;
   const prov = name => { const p = providers[name]; if (!p || !p.enabled) throw new ChatError('not_configured', 503); return p; };
@@ -64,4 +89,4 @@ function createIdentity({ accounts, playfab, providers = {}, chat = null, log = 
   return { login, link };
 }
 
-module.exports = { createGoogle, createIdentity };
+module.exports = { createGoogle, createFacebook, createIdentity };

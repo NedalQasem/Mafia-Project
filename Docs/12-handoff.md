@@ -1,21 +1,22 @@
 # 12 — وين وصلنا (ملف التسليم بين الجلسات والحسابات)
 
-> **آخر تحديث:** 2026-10-31 (تسليم لحساب Claude التاني) · الفرع `refactor/architecture` · آخر كوميت شغل: `e004c04` (كله مرفوع على GitHub: `origin/refactor/architecture`)
+> **آخر تحديث:** 2026-10-31 · الفرع `refactor/architecture` · آخر شغل: الدخول بـ Facebook (كله مرفوع على GitHub: `origin/refactor/architecture`)
 > **لأي جلسة Claude جديدة:** اقرأ هالملف أول شي، بعدين `git log --oneline -30` و `git status`، وكمّل من «الخطوة الجاية». حدّث هالملف بآخر كل جلسة.
 
 ## 0. ملخص سريع للجلسة الجاية (ابدأ من هون)
 
-**وين وصلنا:** Live Ops كامل (بريد، أحداث وتصنيف، أكواد، لوحة إدارة، دعم، استرجاع)، الرسائل الخاصة من الإدارة (عادية/تحذير + صورة)، معايير التصميم (محتوى طويل + أي حجم شاشة) مطبّقة على كل الشاشات، وطرق تسجيل الدخول: **ضيف + مكتب المافيا + Google** (Facebook وApple لسا). السيرفر 134 اختبار ناجح.
+**وين وصلنا:** Live Ops كامل (بريد، أحداث وتصنيف، أكواد، لوحة إدارة، دعم، استرجاع)، الرسائل الخاصة من الإدارة (عادية/تحذير + صورة)، معايير التصميم (محتوى طويل + أي حجم شاشة) مطبّقة على كل الشاشات، وطرق تسجيل الدخول: **ضيف + مكتب المافيا + Google + Facebook** (Apple لسا). صفحات الخصوصية وحذف البيانات على السيرفر (`/privacy`، `/data-deletion`). السيرفر 137 اختبار ناجح.
 
-**اللي مش مجرّب على جهاز حقيقي أبداً:** الرسائل الخاصة (وصول لحظي والورقة)، شاشة الاختيار قبل الدخول (`LoginGate`)، الدخول والربط بـGoogle (كود أندرويد + Gradle)، تعديلات الريسبونسيف. بالـEditor انصوّروا ومشيوا.
+**اللي مش مجرّب على جهاز حقيقي أبداً:** الرسائل الخاصة (وصول لحظي والورقة)، شاشة الاختيار قبل الدخول (`LoginGate`)، الدخول والربط بـGoogle وFacebook (كود أندرويد + Gradle)، تعديلات الريسبونسيف. بالـEditor انصوّروا ومشيوا.
 
 **لازم صاحب المشروع يعمله (ما عنا SSH ولا جهاز):**
-1. يرفع السيرفر بملف التثبيت (القسم 3). مش مؤكّد شو منشور حالياً: اسأله (آخر شي مؤكّد منشور = Live Ops 1-6 + هدايا الإدارة بالبريد؛ بعده انضاف: البريد الفوري، الرسائل الخاصة والصور، الضيف وحذفه، Google).
+1. يرفع السيرفر بملف التثبيت (القسم 3). مش مؤكّد شو منشور حالياً: اسأله (آخر شي مؤكّد منشور = Live Ops 1-6 + هدايا الإدارة بالبريد؛ بعده انضاف: البريد الفوري، الرسائل الخاصة والصور، الضيف وحذفه، Google، Facebook وصفحات الخصوصية). وبعد الرفع: `bash /root/rewards-api/set-facebook.sh` ويلصق **App Secret** تبع فيسبوك (هو بيحطه، ما بينكتب بالمحادثة).
 2. يبني APK جديد باسم الحزمة `com.menagaming.mafia` ويحذف النسخة القديمة من الموبايل أول. لو فشل Gradle: يبعتلك النص كامل (المكتبات الجديدة بـ`mainTemplate.gradle`).
-3. يجرّب أقسام خطة الاختبار 27 (رسائل)، 28 (الدخول)، 29 (Google) بـ`Docs/10-test-plan.md`.
+3. يجرّب أقسام خطة الاختبار 27 (رسائل)، 28 (الدخول)، 29 (Google)، 30 (Facebook) بـ`Docs/10-test-plan.md`.
+3ب. **فيسبوك (developers.facebook.com، App ID `2057586301904403`):** لازم يبعت **Client Token** (App settings ← Advanced، مش سري) لينحط بـ`GameConstants.FACEBOOK_CLIENT_TOKEN` وبـ`AndroidManifest.xml` (مكان `FACEBOOK_CLIENT_TOKEN`)؛ بدونه زر فيسبوك بيضل «قريباً». بإعدادات التطبيق: Privacy policy URL = `https://api.mena-gaming.com/privacy`، User data deletion = `https://api.mena-gaming.com/data-deletion`، أيقونة 1024×1024، منصة Android (الحزمة `com.menagaming.mafia`، Class `com.unity3d.player.UnityPlayerActivity`، Key hash `9oN+gCQgN8LxVm3nzdkiU3uLvCQ=`). وبعد التجربة يحوّله Live.
 4. بعد ما يتأكد إنه كل شي تمام: يفعّل حذف الضيف بـ`config.json` على السيرفر: `"guests": {"purge": true}` (مطفي افتراضياً لأنه كل اللاعبين الحاليين بيعدّوا ضيوف لحد ما يرتبطوا).
 
-**الشغل الجاي (بالترتيب):** (أ) لو Google طلع تمام: Facebook بنفس نمط السيرفر الوسيط (`/v1/auth/facebook/*`، التحقق بـ`graph.facebook.com/debug_token`، يحتاج تطبيق بـdevelopers.facebook.com تحت `mafia@mena-gaming.com`). (ب) Apple مؤجّل لحد ما يربط حساب مطوّر. (ج) لوحة الإدارة: عرض عدّاد الضيوف (`guests` بـ`/api/overview` جاهز بس الصفحة ما بتعرضه). (د) الميزات الناقصة بالقسم 5.
+**الشغل الجاي (بالترتيب):** (أ) تجربة Google وFacebook على الجهاز وتصليح اللي بيطلع. (ب) Apple مؤجّل لحد ما يربط حساب مطوّر. (ج) لوحة الإدارة: عرض عدّاد الضيوف (`guests` بـ`/api/overview` جاهز بس الصفحة ما بتعرضه). (د) الميزات الناقصة بالقسم 5.
 
 ## 1. قواعد الشغل مع صاحب المشروع
 
@@ -43,7 +44,7 @@
 
 بعد أي تعديل بـ `Server/rewards-api/src`: ابنِ ملف التثبيت:
 ```bash
-cd Server/rewards-api && B=$(tar czf - --owner=0 --group=0 package.json Dockerfile docker-compose.rewards.yml .dockerignore config.example.json set-key.sh set-admin.sh src | base64 -w0) && printf "mkdir -p /root/rewards-api && echo '%s' | base64 -d | tar xz -C /root/rewards-api && ls /root/rewards-api /root/rewards-api/src\n" "$B" > ../rewards-api-install.txt
+cd Server/rewards-api && B=$(tar czf - --owner=0 --group=0 package.json Dockerfile docker-compose.rewards.yml .dockerignore config.example.json set-key.sh set-admin.sh set-facebook.sh src | base64 -w0) && printf "mkdir -p /root/rewards-api && echo '%s' | base64 -d | tar xz -C /root/rewards-api && ls /root/rewards-api /root/rewards-api/src\n" "$B" > ../rewards-api-install.txt
 ```
 وصاحب المشروع بيعمل (أمر واحد بكل مرة، هو بينفّذ؛ ما عنا SSH):
 1. بـ PowerShell على جهازه: `scp "F:\Game_Projects\Mafia Voice Chat project\Server\rewards-api-install.txt" root@187.127.79.192:/root/` (أضمن من لصق السطر الطويل)
@@ -110,3 +111,4 @@ cd Server/rewards-api && B=$(tar czf - --owner=0 --group=0 package.json Dockerfi
 | 2026-10-31 | جلسة «Live Ops» | **إيميلات المشروع:** `mafia@mena-gaming.com` لحسابات المطوّر (Google Cloud وFacebook)، و`supportmafia@mena-gaming.com` هو الوحيد اللي بيظهر للاعبين: `GameConstants.SUPPORT_EMAIL` بورقة الاسترجاع ولوحة الحساب وصف «تواصل مع الدعم» بالإعدادات (بينسخ العنوان بالضغط) | `a5c2a39` |
 | 2026-10-31 | جلسة «Live Ops» | **اسم حزمة أندرويد:** صار `com.menagaming.mafia` (كان المؤقت `com.DefaultCompany.2D-URP`). السبب: مفتاح Google OAuth لأندرويد بيرتبط بالاسم وبالـSHA-1. SHA-1 توقيع الـdebug على جهاز صاحب المشروع: `F6:83:7E:80:24:20:37:C2:F1:56:6D:E7:CD:D9:22:53:7B:8B:BC:24` (مش سر). لما ننشر بنضيف SHA-1 لتوقيع Play | `7087d3a` |
 | 2026-10-31 | جلسة «Live Ops» | **الدخول بـ Google (المرحلة ٢، مش مجرّب على جهاز):** سيرفر `identity.js` (تحقق التوكن، `/v1/auth/google/login` و`/link`، تضارب 409)، 134 اختبار. Unity: `GoogleSignIn` + `Assets/Plugins/Android/GoogleSignInBridge.java` (Credential Manager) + 3 مكتبات بـ`mainTemplate.gradle`، `IdentityService`، `LoginGate.DeferPlayFab` (الدخول لـPlayFab بيستنى فتح الحساب الصح، فما بينعمل ضيف فاضي)، `KitConflictSheet`، `AccountFlow`/`LoginGateFlow` محدّثين. معرّف الويب العام `GameConstants.GOOGLE_WEB_CLIENT_ID`. قسم 29 بخطة الاختبار | `e004c04` |
+| 2026-10-31 | جلسة «Live Ops» (الحساب الأول) | **الدخول بـ Facebook (مش مجرّب على جهاز):** سيرفر `createFacebook` بـ`identity.js` (التحقق بـ`graph.facebook.com/debug_token` بتوكن التطبيق id\|secret، لازم يكون للتطبيق تبعنا)، `/v1/auth/facebook/login` و`/link`، `set-facebook.sh` (السر بـ`/etc/mafia-rewards.env` بس)، صفحات `/privacy` و`/data-deletion` (`legal.js`، عربي وإنجليزي)، 137 اختبار. Unity: `FacebookSignIn` + `Assets/Plugins/Android/FacebookLoginActivity.java` (Activity شفافة لأن فيسبوك بيرد بـonActivityResult) + `facebook-login:18.0.3` بـ`mainTemplate.gradle` + meta-data بالـManifest (`fb2057586301904403`)؛ `IdentityService.Login/Link(provider)`، `LoginGateFlow`/`AccountFlow` صاروا لـGoogle وFacebook. **ناقص:** Client Token من صاحب المشروع. قسم 30 بخطة الاختبار | (هالكوميت) |
