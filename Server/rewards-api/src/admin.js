@@ -8,6 +8,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { ChatError } = require('./chat');
 const { RoomError } = require('./officialrooms');
+const { BotError } = require('./botfarm');
 const { normalize: normCode, CODE_RE } = require('./codes');
 
 const PF_ID = /^[A-Za-z0-9]{6,32}$/;
@@ -113,7 +114,7 @@ function cleanPack(b, id) {
   return { id, name, coins, gems, items };
 }
 
-function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, accounts = null, lbPrizes = null, officialRooms = null, htmlFile = null, now = () => Date.now(), log = console }) {
+function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, accounts = null, lbPrizes = null, officialRooms = null, botFarm = null, htmlFile = null, now = () => Date.now(), log = console }) {
   const base = '/' + String(adminCfg.path || '/admin').replace(/^\/+|\/+$/g, '');
   const passwordHash = adminCfg.passwordHash || '';
   const sessionMs = (adminCfg.sessionHours || 12) * 3600 * 1000;
@@ -521,6 +522,48 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       }
       return send(res, 404, { ok: false, error: 'not_found' });
     }
+    // ---- bots (made-up players for trying the game and for filling rooms at the launch)
+    if (rest.startsWith('/api/bots')) {
+      if (!botFarm) throw new AdminError('no_bots', 404);
+      if (rest === '/api/bots' && method === 'GET') return send(res, 200, botFarm.view());
+      if (rest === '/api/bots/generate' && method === 'POST') {
+        const b = await readJson(req);
+        const made = botFarm.generate(b);
+        store.audit('bots_generate', made.length + ' bots');
+        return send(res, 200, { ok: true, made });
+      }
+      if (rest === '/api/bots/profile' && method === 'POST') {
+        const b = await readJson(req);
+        const p = botFarm.saveProfile(b);
+        store.audit('bot_save', p.id + ' ' + p.name);
+        return send(res, 200, { ok: true, profile: p });
+      }
+      if (rest === '/api/bots/profile/delete' && method === 'POST') {
+        const b = await readJson(req);
+        botFarm.removeProfile(String(b.id || ''));
+        store.audit('bot_delete', String(b.id));
+        return send(res, 200, { ok: true });
+      }
+      if (rest === '/api/bots/order' && method === 'POST') {
+        const b = await readJson(req);
+        const o = botFarm.addOrder(b);
+        store.audit('bots_order', o.room + ' x' + o.count);
+        return send(res, 200, { ok: true, order: o });
+      }
+      if (rest === '/api/bots/order/delete' && method === 'POST') {
+        const b = await readJson(req);
+        botFarm.removeOrder(String(b.id || ''));
+        store.audit('bots_order_delete', String(b.id));
+        return send(res, 200, { ok: true });
+      }
+      if (rest === '/api/bots/launch' && method === 'POST') {
+        const b = await readJson(req);
+        const l = botFarm.setLaunch(b);
+        store.audit('bots_launch', l.enabled ? 'on min ' + l.minPerRoom : 'off');
+        return send(res, 200, { ok: true, launch: l });
+      }
+      return send(res, 404, { ok: false, error: 'not_found' });
+    }
     // ---- packages
     if (rest === '/api/packs' && method === 'GET') return send(res, 200, { ok: true, packs: store.packs });
     // ---- prizes of the leaderboards (day and week): set here, paid by the server by mail when the period is over
@@ -698,7 +741,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       await api(req, res, rest, url, ip);
     } catch (e) {
       if (res.writableEnded) return;
-      if (e instanceof AdminError || e instanceof ChatError || e instanceof RoomError) return send(res, e.status || 400, Object.assign({ ok: false, error: e.code || e.message }, e.playfab ? { playfab: e.playfab } : {}));
+      if (e instanceof AdminError || e instanceof ChatError || e instanceof RoomError || e instanceof BotError) return send(res, e.status || 400, Object.assign({ ok: false, error: e.code || e.message }, e.playfab ? { playfab: e.playfab } : {}));
       log.error('admin failed:', e && e.message);
       send(res, 500, { ok: false, error: 'server_error' });
     }
