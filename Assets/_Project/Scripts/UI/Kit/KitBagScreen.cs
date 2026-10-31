@@ -284,11 +284,11 @@ namespace MafiaNight.UI.Kit
 
         private static void ClearKids(RectTransform r) { for (int i = r.childCount - 1; i >= 0; i--) Destroy(r.GetChild(i).gameObject); }
 
-        private static float Width(TMP_Text t) { t.ForceMeshUpdate(); return t.preferredWidth; }
+        internal static float Width(TMP_Text t) { t.ForceMeshUpdate(); return t.preferredWidth; }
 
         /// <summary>Sets a line of text; when maxCss > 0 and it is wider, cuts it with an ellipsis measured on the real font
         /// (ArabicText reverses the line, so TMP's own ellipsis would cut the wrong end). Lalezar draws "…" as a dot: it gets "...".</summary>
-        private static void SetText(TMP_Text t, string s, float maxCss)
+        internal static void SetText(TMP_Text t, string s, float maxCss)
         {
             var a = t.GetComponent<ArabicText>();
             s = s ?? "";
@@ -305,7 +305,7 @@ namespace MafiaNight.UI.Kit
             a.Text = s.Substring(0, lo).TrimEnd() + dots;
         }
 
-        private static string Ar(int n) => CoinPill.Format(n);
+        internal static string Ar(int n) => CoinPill.Format(n);
 
         /// <summary>Arabic counts the noun by the number: غرض واحد، غرضين، ٣-١٠ أغراض، ١١+ غرض.</summary>
         public static string Things(int n) => n == 1 ? "غرض واحد" : n == 2 ? "غرضين" : Ar(n) + (n >= 3 && n <= 10 ? " أغراض" : " غرض");

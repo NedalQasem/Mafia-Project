@@ -164,7 +164,7 @@ namespace MafiaNight.UI.Kit.Editor
             string[,] titles = { { "المتجر", "الحقيبة" }, { "الدردشة", "العائلة" }, { "التصنيفات", "رتبتي" } };
             string[,] subs = { { "كوينز وجواهر وعروض", "الأغراض اللي اشتريتها" }, { "الخاص والمجموعات والساحة", "الأصدقاء والطلبات" }, { "الأقوى اليوم والأسبوع", "من الصبي للدون" } };
             string[,] micons = { { "market", "case" }, { "phone", "family" }, { "trophy", "medal" } };
-            bool[,] soon = { { false, false }, { false, false }, { false, true } };    // the rank ladder is not built yet
+            bool[,] soon = { { false, false }, { false, false }, { false, false } };      // every place is built
             const float MW = 250f, MH = 124.72f, ItemW = 236f, ItemH = 53.86f;
             for (int m = 0; m < 3; m++)
             {

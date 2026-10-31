@@ -154,7 +154,7 @@ function card(p) {
       <span class="nm">${p.name}</span><span class="rk">${r.n}</span>
       <div class="tier"><span class="bul">${bullets}</span>${st.top ? 'كل الدرجات' : 'الدرجة ' + TIER[st.tier] + ' من ٣'}</div></div></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
-    <div class="prog"><span>${st.top ? num(MAX) + ' نقطة' : num(st.into) + ' / ' + num(PER_TIER) + ' ' + next}</span><b>${st.top ? 'العرّاب' : 'باقيلك ' + wins(Math.ceil(st.left / WIN))}</b></div>
+    <div class="prog"><span>${st.top ? num(MAX) + ' نقطة' : num(st.into) + ' من ' + num(PER_TIER) + ' ' + next}</span><b>${st.top ? 'العرّاب' : 'باقيلك ' + wins(Math.ceil(st.left / WIN))}</b></div>
     <span class="stamp">${st.top ? 'العرّاب' : 'عضو'}</span></div>`;
 }
 function ladder(p) {
