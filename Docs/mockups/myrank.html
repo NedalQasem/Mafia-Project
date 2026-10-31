@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>رتبتي</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--brass:#b99048;--crim:#d6313b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:12px 8px 30px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 2px;font-size:1.8rem}
+.subh{text-align:center;color:#8f8777;margin:0 auto 14px;font-size:.85rem;max-width:700px;line-height:1.7}
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+.col{display:grid;gap:8px;justify-items:center;align-content:start;width:min(390px,100%)}
+.cap{color:#6f685c;font-size:.78rem;margin:0;text-align:center;line-height:1.6}
+button{font-family:inherit;border:0;color:inherit;background:none;padding:0;cursor:pointer}
+button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
+
+.phone{width:100%;height:790px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 90% 30% at 50% 0,#e8c27a18,transparent 70%),linear-gradient(180deg,#15100d,#090605);box-shadow:0 0 0 7px #14100e,0 0 0 8px #ffffff14,0 24px 50px #000}
+.phone.short{height:560px}
+.top{position:absolute;top:0;left:0;right:0;padding:28px 14px 10px;display:flex;align-items:center;gap:10px;z-index:8;background:linear-gradient(180deg,#0a0705f2 75%,transparent)}
+.ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 1.5px #000,0 3px 6px #000a}
+.ic svg{width:18px;height:18px;stroke:#cfc6b2;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.ttl{flex:1;min-width:0;font-family:Lalezar;font-size:1.7rem;line-height:1}
+.ttl small{display:block;font-family:Cairo;font-weight:600;font-size:.66rem;color:#a98f62;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scroll{position:absolute;inset:0;overflow-y:auto;padding:84px 14px 30px;scrollbar-width:none;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content;gap:12px}
+.scroll::-webkit-scrollbar{display:none}
+
+/* the membership card: ivory paper, a red stamp, the medal pinned on it */
+.card{position:relative;padding:14px 14px 12px;border-radius:6px;color:#2a1a0e;background:var(--grain),linear-gradient(180deg,#efe4c8,#d9c9a2);background-blend-mode:multiply,normal;box-shadow:0 0 0 1px #000,0 12px 22px #000c;rotate:-.6deg}
+.card .hd{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:2px solid #2a1a0e;padding-bottom:5px;margin-bottom:10px}
+.card .hd b{font-family:Lalezar;font-weight:400;font-size:.95rem;letter-spacing:.5px}
+.card .hd span{font-size:.62rem;font-weight:800;color:#8a1c24}
+.card .body{display:flex;gap:12px;align-items:center}
+.card .medal{width:92px;height:92px;flex:none;filter:drop-shadow(0 6px 8px #0008)}
+.card .mid{flex:1;min-width:0;display:grid;gap:3px}
+.card .nm{font-weight:800;font-size:.8rem;color:#5a4330;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .rk{font-family:'Aref Ruqaa',serif;font-weight:700;font-size:1.9rem;line-height:1.15;color:#2a1a0e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .tier{display:flex;align-items:center;gap:8px;font-size:.7rem;font-weight:800;color:#5a4330}
+.bul{display:flex;gap:3px}
+.bul img{width:9px;height:22px;display:block}
+.bul img.off{opacity:.35;filter:grayscale(1)}
+.bar{position:relative;height:10px;border-radius:5px;background:#2a1a0e33;box-shadow:inset 0 1px 2px #0005;margin-top:10px;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;right:auto;border-radius:5px;background:linear-gradient(90deg,#8a1c24,#c9424c)}
+.bar i{left:auto;right:0}
+.prog{display:flex;justify-content:space-between;gap:8px;margin-top:5px;font-size:.66rem;font-weight:800;color:#5a4330}
+.prog b{color:#8a1c24;white-space:nowrap}
+.stamp{position:absolute;right:66px;top:122px;z-index:2;rotate:-12deg;padding:3px 9px;border:2px solid #8a1c24;border-radius:4px;font-family:Lalezar;font-size:.85rem;color:#8a1c24;opacity:.75}
+
+/* how points come */
+.rules{display:flex;gap:6px}
+.rule{flex:1;min-width:0;display:grid;justify-items:center;gap:1px;padding:8px 4px;border-radius:10px;background:var(--grain),linear-gradient(180deg,#2a1e17,#17100c);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff12,0 0 0 1px #000}
+.rule b{font-family:Lalezar;font-weight:400;font-size:1.15rem;line-height:1.1}
+.rule span{font-size:.6rem;font-weight:800;color:#a79d88;text-align:center;line-height:1.4}
+.rule.up b{color:#8fd4b4}.rule.dn b{color:#e0646a}.rule.st b{color:#e8cc8c}
+
+.sec{font-family:Lalezar;font-size:1.02rem;color:#a98f62;display:flex;align-items:center;gap:8px;margin-top:2px}
+.sec small{font-family:Cairo;font-weight:700;font-size:.64rem;color:#6f685c}
+.sec::after{content:"";flex:1;height:1px;background:#ffffff14}
+
+/* the ladder: from the Godfather down to the errand boy, a brass rail through the medals */
+.ladder{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.ladder::before{content:"";position:absolute;right:31px;top:24px;bottom:24px;width:4px;border-radius:2px;background:linear-gradient(180deg,#6a4c1c,#d2ad60 50%,#6a4c1c);box-shadow:0 0 0 1px #000}
+.rung{position:relative;display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;border-radius:11px;text-align:start;width:100%;
+  background:var(--grain),linear-gradient(180deg,#2a1e17,#17100c);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff12,0 0 0 1px #000,0 5px 8px #0008}
+.rung img.m{width:44px;height:44px;flex:none;position:relative;z-index:1;filter:drop-shadow(0 3px 4px #000a)}
+.rung .tx{flex:1;min-width:0}
+.rung .tx b{display:block;font-family:Lalezar;font-weight:400;font-size:1.05rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rung .tx p{margin:1px 0 0;font-size:.66rem;font-weight:700;color:#a79d88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rung .end{flex:none;display:grid;justify-items:end;gap:3px;font-size:.6rem;font-weight:800;color:#8f8777;text-align:left}
+.rung .end .pts{font-family:Lalezar;font-weight:400;font-size:.8rem;color:#a98f62}
+.rung.done .end .ok{color:#8fd4b4}
+.rung.lock{background:var(--grain),linear-gradient(180deg,#1c1511,#110c09);background-blend-mode:multiply,normal}
+.rung.lock img.m{filter:grayscale(1) brightness(.45)}
+.rung.lock .tx b{color:#7d7365}.rung.lock .tx p{color:#5f574c}
+.rung.lock .lk{width:14px;height:14px;stroke:#8f8777;fill:none;stroke-width:2.2;stroke-linecap:round}
+.rung.now{background:radial-gradient(ellipse 80% 90% at 70% 50%,#6a141c,#3a0a0e);box-shadow:inset 0 0 0 1.5px #c9a050,0 0 0 1px #000,0 0 18px #c9a05033,0 6px 10px #000a}
+.rung.now .tx p{color:#d7c3a0}
+.pin{position:absolute;top:-8px;left:74px;rotate:-6deg;z-index:2;padding:2px 9px 1px;border-radius:3px;font-weight:800;font-size:.6rem;color:#2a1a0e;background:#d9c9a2;box-shadow:0 0 0 1px #8a1c24,0 3px 5px #000a}
+.rung:active{transform:scale(.98)}
+
+/* the rank sheet */
+.dim{position:absolute;inset:0;z-index:20;background:#000a}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:21;padding:12px 18px 24px;border-radius:18px 18px 0 0;display:grid;justify-items:center;gap:7px;text-align:center;
+  background:var(--grain),linear-gradient(180deg,#2e2018,#140c08);background-blend-mode:multiply,normal;box-shadow:0 0 0 1px #000,0 -2px 0 #8a6a30,0 -18px 30px #000c}
+.sheet .hd{width:44px;height:4px;border-radius:2px;background:#ffffff33;margin-bottom:4px}
+.sheet img.m{width:96px;height:96px;filter:drop-shadow(0 6px 10px #000c)}
+.sheet img.m.lockm{filter:grayscale(1) brightness(.55) drop-shadow(0 6px 10px #000c)}
+.sheet b.nm{font-family:Lalezar;font-weight:400;font-size:1.5rem;line-height:1.1}
+.sheet p{margin:0;font-size:.8rem;color:#cdbf9f;line-height:1.7;max-width:100%}
+.sheet .range{font-size:.7rem;font-weight:800;color:#a98f62}
+.sheet .need{font-size:.74rem;font-weight:800;color:#e0646a}
+.sheet .need.ok{color:#8fd4b4}
+.set{width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:4px}
+.it{position:relative;display:grid;justify-items:center;gap:3px;padding:8px 3px 6px;border-radius:10px;background:radial-gradient(ellipse 80% 60% at 50% 40%,#3a0a10,#1e0508);box-shadow:inset 0 4px 10px #000d,0 0 0 1px #000}
+.it i{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-style:normal}
+.it span{font-size:.56rem;font-weight:800;color:#d9d0bd;line-height:1.3;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it small{font-size:.52rem;font-weight:800;color:#a98f62}
+.it.locked i{filter:grayscale(1) brightness(.5)}
+.it.locked::after{content:"";position:absolute;top:5px;left:5px;width:12px;height:12px;border-radius:50%;background:#000a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a79d88' stroke-width='3' stroke-linecap='round'%3E%3Crect x='6' y='11' width='12' height='9' rx='2'/%3E%3Cpath d='M9 11V8a3 3 0 0 1 6 0v3'/%3E%3C/svg%3E") center/8px no-repeat}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 20px;border-radius:10px;font-weight:800;font-size:.86rem;color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:inset 0 1px 0 #fff9,0 3px 0 #000,0 6px 10px #000a;margin-top:4px}
+.btn.dark{color:#e8cc8c;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 1px #000,0 3px 0 #000}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="back" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+</defs></svg>
+
+<h1>رتبتي</h1>
+<p class="subh">بتنفتح من الشريط: «الرتب» ← «رتبتي». فوق «بطاقة العضوية» برتبتك ودرجتك (٣ رصاصات بكل رتبة) وكم باقيلك. تحتها كيف بتجي النقاط، وبعدها «سلّم العيلة» من العرّاب لفوق للصبي تحت، وحبل نحاس ماشي بين الأوسمة. اضغط على أي رتبة لتشوف شو بتفتحلك (الأغراض الحصرية الخمسة).</p>
+
+<div class="row" id="row"></div>
+
+<script>
+const RANKS = [
+  { n: 'الصبي', d: 'بيوصّل الرسائل وبيفتح الأبواب. كل كبير بلّش من هون.', c: ['#8a6a4a', '#e0c2a0'], set: ['حبل الصبي', 'زقاق الحارة', 'ورقة جريدة', 'خطوات على الرصيف', 'ابن الحارة'] },
+  { n: 'العميل', d: 'معه مفتاح واحد، وبيعرف مين داخل ومين طالع.', c: ['#9aa0a4', '#e6ebee'], set: ['حلقة المفتاح', 'مكتب صغير', 'بطاقة عمل', 'طرقة على الباب', 'المطّلع'] },
+  { n: 'الجندي', d: 'بينفّذ وما بيسأل. اسمه صار ينسمع بالحارة.', c: ['#c08a5a', '#ffd8b0'], set: ['إطار الرصاصة', 'ساحة التدريب', 'فقاعة الخرطوش', 'دخول الجندي', 'الجندي الأمين'] },
+  { n: 'الريّس', d: 'بيقود جماعته بقبعته وكلمته.', c: ['#d2ad60', '#fff0c0'], set: ['إطار الفيدورا', 'المقهى الخلفي', 'فقاعة الريّس', 'وصول السيارة', 'الريّس'] },
+  { n: 'المستشار', d: 'الكل بيرجعله قبل أي قرار.', c: ['#e8cc8c', '#fff6d8'], set: ['إطار الريشة', 'المكتبة', 'فقاعة الحكمة', 'ظل المستشار', 'صاحب الرأي'] },
+  { n: 'اليد اليمنى', d: 'أقرب واحد للزعيم، وكلمته من كلمته.', c: ['#c9424c', '#ffd9db'], set: ['إطار الخاتم', 'الغرفة المغلقة', 'فقاعة الختم', 'دخول بلا ضجيج', 'الذراع القوية'] },
+  { n: 'الزعيم', d: 'الحارة كلها تحت إيده.', c: ['#f0d68a', '#fff2c4'], set: ['إطار التاج', 'قاعة العرش', 'فقاعة الزعيم', 'السجادة الذهبية', 'الزعيم'] },
+  { n: 'العرّاب', d: 'فوق الكل. كلمته ما بتنرد.', c: ['#f5e2a8', '#ffe9a0'], set: ['إطار الوردة', 'الحديقة السوداء', 'فقاعة العرّاب', 'دخول العرّاب', 'العرّاب'] },
+];
+const TYPES = ['إطار', 'روم', 'دردشة', 'دخول', 'لقب'];
+const PER_TIER = 250, PER_RANK = 750, MAX = 6000, WIN = 50, LOSE = 20;
+const ar = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+const num = n => ar(n.toLocaleString('en')).replace(/,/g, '٬');
+const TIER = ['الأولى', 'الثانية', 'الثالثة'];
+const wins = n => n <= 1 ? 'فوز واحد' : n === 2 ? 'فوزين' : num(n) + (n <= 10 ? ' انتصارات' : ' انتصار');
+
+function step(pts) {
+  const s = Math.min(23, Math.floor(pts / PER_TIER)), top = pts >= MAX;
+  return { rank: Math.floor(s / 3), tier: s % 3, into: top ? PER_TIER : pts - s * PER_TIER, left: top ? 0 : PER_TIER - (pts - s * PER_TIER), top };
+}
+const PH = [
+  { id: 'r1', cap: '١ · رتبتك: الجندي، الدرجة الثانية. البطاقة بتقلّك كم باقيلك بالانتصارات.', pts: 1880, name: 'أبو سالم' },
+  { id: 'r2', cap: '٢ · ضغطت على «الريّس» (لسا مقفلة): شو بتفتحلك وكم باقي.', pts: 1880, name: 'أبو سالم', open: 3 },
+  { id: 'r3', cap: '٣ · لاعب جديد: الصبي، صفر نقاط.', pts: 0, name: 'لاعب جديد' },
+  { id: 'r4', cap: '٤ · وصل للقمة (العرّاب) + اسم طويل جداً وشاشة قصيرة.', pts: 6000, name: 'أبو سالم الحلبي ابن الحارة القديمة صاحب الكلمة', short: true },
+];
+const S = {}; PH.forEach(p => S[p.id] = { open: p.open ?? null });
+
+function card(p) {
+  const st = step(p.pts), r = RANKS[st.rank];
+  const bullets = [0, 1, 2].map(i => `<img src="img/bullet_on.png" class="${i <= st.tier ? '' : 'off'}" alt="">`).join('');
+  const pct = st.top ? 100 : Math.round(st.into / PER_TIER * 100);
+  const next = st.top ? 'وصلت لفوق، ما في أعلى من هيك' : st.tier < 2 ? 'للدرجة ' + TIER[st.tier + 1] : 'للترقية لـ' + RANKS[st.rank + 1].n;
+  return `<div class="card"><div class="hd"><b>بطاقة العضوية</b><span>رقم ${num(1000 + p.pts % 997)}</span></div>
+    <div class="body"><img class="medal" src="img/medal_r${st.rank + 1}.png" alt=""><div class="mid">
+      <span class="nm">${p.name}</span><span class="rk">${r.n}</span>
+      <div class="tier"><span class="bul">${bullets}</span>${st.top ? 'كل الدرجات' : 'الدرجة ' + TIER[st.tier] + ' من ٣'}</div></div></div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <div class="prog"><span>${st.top ? num(MAX) + ' نقطة' : num(st.into) + ' / ' + num(PER_TIER) + ' ' + next}</span><b>${st.top ? 'العرّاب' : 'باقيلك ' + wins(Math.ceil(st.left / WIN))}</b></div>
+    <span class="stamp">${st.top ? 'العرّاب' : 'عضو'}</span></div>`;
+}
+function ladder(p) {
+  const st = step(p.pts);
+  return RANKS.map((r, i) => ({ r, i })).reverse().map(({ r, i }) => {
+    const done = i < st.rank, now = i === st.rank, lock = i > st.rank;
+    const from = i * PER_RANK, to = (i + 1) * PER_RANK;
+    const end = now ? `<span class="pts">${num(p.pts)}</span><span>نقطة</span>` : done ? `<span class="ok">وصلتها</span><span>${num(from)}+</span>` : `<svg class="lk"><use href="#lock"/></svg><span>من ${num(from)}</span>`;
+    return `<button class="rung${done ? ' done' : ''}${now ? ' now' : ''}${lock ? ' lock' : ''}" data-open="${i}">${now ? '<span class="pin">إنت هون</span>' : ''}<img class="m" src="img/medal_r${i + 1}.png" alt=""><span class="tx"><b>${r.n}</b><p>${r.d}</p></span><span class="end">${end}</span></button>`;
+  }).join('');
+}
+function sheet(p, i) {
+  const st = step(p.pts), r = RANKS[i], lock = i > st.rank, from = i * PER_RANK, need = from - p.pts;
+  const items = r.set.map((n, k) => `<div class="it${lock ? ' locked' : ''}"><i style="background:linear-gradient(160deg,${r.c[1]},${r.c[0]})"></i><span>${n}</span><small>${TYPES[k]}</small></div>`).join('');
+  return `<div class="dim" data-close></div><div class="sheet"><span class="hd"></span><img class="m${lock ? ' lockm' : ''}" src="img/medal_r${i + 1}.png" alt=""><b class="nm">${r.n}</b>
+    <p>${r.d}</p><span class="range">الرتبة ${ar(i + 1)} من ٨ · من ${num(from)} لـ ${num(from + PER_RANK)} نقطة</span>
+    <div class="set">${items}</div>
+    ${lock ? `<span class="need">باقيلك ${num(need)} نقطة ≈ ${wins(Math.ceil(need / WIN))}</span><button class="btn dark" data-close>تمام</button>`
+           : `<span class="need ok">${i === st.rank ? 'هاي رتبتك هلّق، أغراضها مفتوحة إلك' : 'وصلتها، أغراضها مفتوحة إلك'}</span><button class="btn">شوفها بالمتجر</button>`}</div>`;
+}
+function phoneHtml(p) {
+  const s = S[p.id];
+  return `<div class="top"><button class="ic"><svg><use href="#back"/></svg></button><div class="ttl">رتبتي<small>من الصبي للعرّاب · ٨ رتب، بكل وحدة ٣ درجات</small></div></div>
+    <div class="scroll">${card(p)}
+      <div class="rules"><div class="rule up"><b>+${ar(WIN)}</b><span>نقطة لكل فوز</span></div><div class="rule dn"><b>−${ar(LOSE)}</b><span>لكل خسارة</span></div><div class="rule st"><b>${ar(PER_TIER)}</b><span>نقطة لكل درجة</span></div></div>
+      <div class="sec">سلّم العيلة <small>اضغط على رتبة لتشوف شو بتفتحلك</small></div>
+      <div class="ladder">${ladder(p)}</div></div>${s.open !== null ? sheet(p, s.open) : ''}`;
+}
+function draw() { document.getElementById('row').innerHTML = PH.map(p => `<div class="col"><p class="cap">${p.cap}</p><div class="phone${p.short ? ' short' : ''}" id="${p.id}">${phoneHtml(p)}</div></div>`).join(''); }
+document.addEventListener('click', e => {
+  const ph = e.target.closest('.phone'); if (!ph) return;
+  const o = e.target.closest('[data-open]'); if (o) { S[ph.id].open = +o.dataset.open; draw(); return; }
+  if (e.target.closest('[data-close]')) { S[ph.id].open = null; draw(); }
+});
+draw();
+</script>
+</body>
+</html>
