@@ -21,6 +21,7 @@ namespace MafiaNight.Core
         {
             if (table != null) return;
             table = new Dictionary<string, string>(); patterns = new List<KeyValuePair<Regex, string>>(); cache.Clear();
+            var literal = new List<int>();
             var asset = Resources.Load<TextAsset>("Kit/lang_en");
             if (asset == null) return;
             foreach (var raw in asset.text.Split('\n'))
@@ -33,8 +34,14 @@ namespace MafiaNight.Core
                 if (ar.Length == 0 || en.Length == 0) continue;
                 ar = ar.Replace("\\n", "\n");
                 en = en.Replace("\\n", "\n");
-                if (ar.Contains("{")) patterns.Add(new KeyValuePair<Regex, string>(ToRegex(ar), en)); else table[ar] = en;
+                if (ar.Contains("{")) { patterns.Add(new KeyValuePair<Regex, string>(ToRegex(ar), en)); literal.Add(Regex.Replace(ar, @"\{\*?\d\}", "").Length); } else table[ar] = en;
             }
+            // the most specific pattern (the most fixed text around its parts) is tried first, so "جريدة الأسبوع · {*0}" wins over the general "{*0} · {1}"
+            var order = new List<int>(); for (int i = 0; i < patterns.Count; i++) order.Add(i);
+            order.Sort((a, b) => literal[a] != literal[b] ? literal[b].CompareTo(literal[a]) : a.CompareTo(b));
+            var sorted = new List<KeyValuePair<Regex, string>>(patterns.Count);
+            foreach (int i in order) sorted.Add(patterns[i]);
+            patterns = sorted;
         }
 
         // "قبل {0} دقيقة" matches "قبل ٥ دقيقة": {0} is a number, {*0} any part of the line; each arrives in the English line as {0} (Arabic digits turned Latin,
@@ -105,7 +112,9 @@ namespace MafiaNight.Core
             Load();
             string key = ar.Trim();
             if (table.TryGetValue(key, out var en)) return en;
-            return patterns.Count > 0 ? (FromPatterns(key) ?? ar) : ar;
+            var own = patterns.Count > 0 ? FromPatterns(key) : null;
+            if (own != null) return own;
+            return key.Contains("، ") ? TranslatePart(key, 0) : ar;                  // a list of translatable parts ("٥٠٠ كوينز، ٢ جوهرة") on its own
         }
 
         /// <summary>An Arabic text with its English twin written in the code.</summary>
