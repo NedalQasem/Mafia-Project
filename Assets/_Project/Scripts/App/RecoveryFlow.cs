@@ -29,6 +29,21 @@ namespace MafiaNight.App
             sheet.OnQuit -= Quit;
         }
 
+        /// <summary>Connects a sheet made elsewhere (the first-start screen) the same way the settings screen does.</summary>
+        public static void Wire(KitRecoverySheet sheet, MonoBehaviour host)
+        {
+            sheet.OnSubmit += (username, password) =>
+            {
+                sheet.SetBusy(true);
+                host.StartCoroutine(RecoveryService.Recover(username, password, r =>
+                {
+                    if (sheet == null) return;
+                    if (r.Ok) sheet.ShowDone("رجع حسابك! سكّر اللعبة وافتحها من جديد."); else sheet.ShowMessage(ErrorText(r.Error));
+                }));
+            };
+            sheet.OnQuit += Quit;
+        }
+
         private void Submit(string username, string password)
         {
             sheet.SetBusy(true);

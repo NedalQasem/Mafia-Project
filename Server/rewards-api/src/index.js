@@ -16,6 +16,7 @@ const { createMail } = require('./mail');
 const { createCodes } = require('./codes');
 const { createRecovery } = require('./recovery');
 const { createImages } = require('./images');
+const { createAccounts } = require('./accounts');
 const { createAdminStore } = require('./adminstore');
 const { createAdmin } = require('./admin');
 
@@ -41,17 +42,19 @@ const events = createEvents({ cfg, playfab, mail, packs: () => adminStore.packs,
 const codes = createCodes({ store: adminStore, mail, packs: () => adminStore.packs });
 const recovery = createRecovery({ store: adminStore, playfab });
 const images = createImages({ dir: dataDir + '/images' });
+const accounts = createAccounts({ cfg, file: dataDir + '/accounts.json', mail, playfab, recovery });
 // the admin board: needs ADMIN_PASSWORD_HASH (made by set-admin.sh); without it the board does not exist
 const admin = createAdmin({
-  cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, images, reportsFile: dataDir + '/chat-reports.jsonl',
+  cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, images, accounts, reportsFile: dataDir + '/chat-reports.jsonl',
   adminCfg: Object.assign({}, cfg.admin, process.env.ADMIN_PASSWORD_HASH ? { passwordHash: process.env.ADMIN_PASSWORD_HASH } : {}, process.env.ADMIN_PATH ? { path: process.env.ADMIN_PATH } : {}),
 });
-const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, images, admin });
+const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, images, accounts, admin });
 if (admin.enabled) console.log('admin board on ' + admin.base); else console.log('admin board is off (no ADMIN_PASSWORD_HASH)');
 
+setInterval(() => { accounts.sweep().then(r => { if (r.warned || r.deleted || r.failed) console.log('guests', JSON.stringify(r)); }).catch(() => {}); }, 6 * 3600 * 1000).unref();     // warns and (only when config guests.purge is true) deletes abandoned guests
 setInterval(() => { events.autoDistribute().catch(() => {}); }, 60 * 1000).unref();      // prizes of the events that ended
 setInterval(() => { chat.purge(); friends.purge(); leaderboard.purge(); events.purge(); mail.purge(); }, 3600 * 1000).unref();
 setInterval(() => store.purge(Date.now(), 48 * 3600 * 1000, new Date().toISOString().slice(0, 10)), 3600 * 1000).unref();
-for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); mail.flushNow(); adminStore.flushNow(); } finally { process.exit(0); } });
+for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); mail.flushNow(); adminStore.flushNow(); accounts.flushNow(); } finally { process.exit(0); } });
 
 server.listen(cfg.port, cfg.host, () => console.log(`rewards api on ${cfg.host}:${cfg.port} (title ${cfg.titleId})`));

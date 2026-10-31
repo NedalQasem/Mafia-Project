@@ -14,7 +14,7 @@ namespace MafiaNight.UI.Kit
         public TMP_FontAsset fontLalezar, fontAref;   // match screens: the exact web-mockup fonts (converted, see Art/Fonts/FONT-LICENSES.txt)
 
         [Header("Prefabs the app creates at runtime")]
-        public GameObject launchBannerPrefab, quickMenuPrefab, eventsBoardPrefab, mailBoardPrefab, rewardPopupPrefab, quickNoticePrefab, directLetterPrefab;
+        public GameObject launchBannerPrefab, quickMenuPrefab, eventsBoardPrefab, mailBoardPrefab, rewardPopupPrefab, quickNoticePrefab, directLetterPrefab, loginChoicePrefab, accountSheetPrefab, recoverySheetPrefab;
 
         [Header("Colors")]
         public Color ivory = new Color32(0xD9, 0xD0, 0xBD, 255);

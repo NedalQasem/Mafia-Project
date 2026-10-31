@@ -9,7 +9,7 @@ const { PlayFabError } = require('./playfab');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, admin = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, accounts = null, admin = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -21,6 +21,7 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     const pf = await playfab.authenticate(ticket);
     tickets.set(ticket, { pf, until: t + 5 * 60 * 1000 });
     if (tickets.size > 5000) for (const [k, v] of tickets) if (v.until < t) tickets.delete(k);
+    if (accounts) accounts.touch(pf);
     if (chat) chat.who(pf).catch(() => {});      // learns the name of every player who opens the game, so the admin can find him by it
     return pf;
   }
@@ -163,8 +164,9 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
     '/v1/mail/claim-all': pf => withLock('pf:' + pf, () => mail.claimAll(pf)),
     '/v1/mail/read': (pf, b) => withLock('pf:' + pf, async () => mail.read(pf, String(b.id || ''))),
   } : {};
+  const accountPost = accounts ? { '/v1/account': async pf => accounts.status(pf) } : {};
   const codesPost = codes ? { '/v1/codes/redeem': async (pf, b) => codes.redeem(pf, b.code) } : {};
-  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost);
+  const posts = Object.assign({}, chat ? chatPost : {}, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost);
 
   const server = http.createServer((req, res) => {
     const ip = (cfg.trustProxy && req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : req.socket.remoteAddress) || 'unknown';

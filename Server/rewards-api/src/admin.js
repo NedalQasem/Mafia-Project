@@ -111,7 +111,7 @@ function cleanPack(b, id) {
   return { id, name, coins, gems, items };
 }
 
-function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, htmlFile = null, now = () => Date.now(), log = console }) {
+function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, accounts = null, htmlFile = null, now = () => Date.now(), log = console }) {
   const base = '/' + String(adminCfg.path || '/admin').replace(/^\/+|\/+$/g, '');
   const passwordHash = adminCfg.passwordHash || '';
   const sessionMs = (adminCfg.sessionHours || 12) * 3600 * 1000;
@@ -282,7 +282,7 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
     return {
       ok: true, online: chat.onlineCount(), players: leaderboard && leaderboard.playerCount ? leaderboard.playerCount() : 0,
       matchesToday: store.matchesOn(day()), days, openReports: open, liveEvents: live, activity: store.recentAudit(8),
-      serverTime: now(),
+      serverTime: now(), guests: accounts ? accounts.summary() : null,
     };
   }
 

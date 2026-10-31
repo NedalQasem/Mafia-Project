@@ -67,6 +67,10 @@ function createPlayFab({ titleId, secretKey, baseUrl, fetchImpl }) {
       await call('/Admin/UpdateUserTitleDisplayName', { PlayFabId: playFabId, DisplayName: name });
     },
     /** Bans a player from the game: PlayFab refuses his login. hours 0 = for ever. */
+    /** Removes a player from the title for good (an abandoned guest account). */
+    async deletePlayer(playFabId) {
+      await call('/Server/DeletePlayer', { PlayFabId: playFabId });
+    },
     async banUser(playFabId, reason, hours = 0) {
       const ban = { PlayFabId: playFabId, Reason: String(reason).slice(0, 140) };
       if (hours > 0) ban.DurationInHours = hours;

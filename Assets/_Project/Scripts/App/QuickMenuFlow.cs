@@ -135,7 +135,7 @@ namespace MafiaNight.App
         private void TryLetter()
         {
             if (letterOpen || mailData == null || (rooms != null && rooms.InRoom)) return;
-            if (FindAnyObjectByType<KitRewardPopup>() != null || FindAnyObjectByType<KitLaunchBanner>() != null || FindAnyObjectByType<KitDirectLetter>() != null) return;
+            if (FindAnyObjectByType<KitRewardPopup>() != null || FindAnyObjectByType<KitLaunchBanner>() != null || FindAnyObjectByType<KitDirectLetter>() != null || FindAnyObjectByType<KitLoginChoice>() != null) return;
             MailItem pick = null;
             foreach (var m in mailData.Items)
             {
@@ -403,7 +403,7 @@ namespace MafiaNight.App
         {
             if (Time.unscaledTime < freeCheckAt) return freeCache;
             freeCheckAt = Time.unscaledTime + .5f;
-            freeCache = mailBoard == null && board == null && FindAnyObjectByType<KitLaunchBanner>() == null && FindAnyObjectByType<KitRewardPopup>() == null;
+            freeCache = mailBoard == null && board == null && FindAnyObjectByType<KitLaunchBanner>() == null && FindAnyObjectByType<KitRewardPopup>() == null && FindAnyObjectByType<KitLoginChoice>() == null;
             return freeCache;
         }
 

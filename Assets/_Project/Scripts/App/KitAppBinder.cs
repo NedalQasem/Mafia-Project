@@ -90,13 +90,13 @@ namespace MafiaNight.App
                 gameObject.AddComponent<RoomsFlow>();
                 MafiaNight.Services.Match.MatchRunner.Ensure();
             }
-            if (FindAnyObjectByType<KitSettingsScreen>() != null) { gameObject.AddComponent<VoiceSettingsFlow>(); gameObject.AddComponent<RecoveryFlow>(); gameObject.AddComponent<AccountIdFlow>(); }
+            if (FindAnyObjectByType<KitSettingsScreen>() != null) { gameObject.AddComponent<VoiceSettingsFlow>(); gameObject.AddComponent<RecoveryFlow>(); gameObject.AddComponent<AccountIdFlow>(); gameObject.AddComponent<AccountFlow>(); }
             MafiaNight.Services.Chat.ChatService.Ensure();   // listens for messages in every scene (the chat screen reads from it)
             if (FindAnyObjectByType<KitChatScreen>(FindObjectsInactive.Include) != null) gameObject.AddComponent<ChatFlow>();
             MafiaNight.Services.Friends.FriendsService.Ensure();   // reports where the player sits and hears friend news in every scene
             InviteFlow.Ensure();
             ReconnectFlow.Ensure();      // offers the way back into a match the player lost with his connection
-            if (SceneManager.GetActiveScene().name == AppScenes.Home) { gameObject.AddComponent<LaunchBannerFlow>(); gameObject.AddComponent<QuickMenuFlow>(); }       // the offers banner at the start of the game, and the quick menu that brings it back
+            if (SceneManager.GetActiveScene().name == AppScenes.Home) { gameObject.AddComponent<LoginChoiceFlow>(); gameObject.AddComponent<LaunchBannerFlow>(); gameObject.AddComponent<QuickMenuFlow>(); }       // the offers banner at the start of the game, and the quick menu that brings it back
             if (SceneManager.GetActiveScene().name == AppScenes.Family && FindAnyObjectByType<KitMatchView>(FindObjectsInactive.Include) != null) gameObject.AddComponent<FamilyFlow>();
             var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
             if (lb != null) { lb.OnBack += GoHome; gameObject.AddComponent<LeaderboardsFlow>(); }
