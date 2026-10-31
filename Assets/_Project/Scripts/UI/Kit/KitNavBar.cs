@@ -89,6 +89,15 @@ namespace MafiaNight.UI.Kit
 
         private void Awake()
         {
+            // the chosen tab's name is a picture of Arabic lettering: in English its text takes the place
+            if (MafiaNight.Core.Loc.English)
+                foreach (var tab in tabs)
+                {
+                    if (tab == null || tab.labelOn == null || tab.label == null) continue;
+                    var ar = tab.label.GetComponent<ArabicText>();
+                    var pic = tab.labelOn.GetComponentInChildren<UnityEngine.UI.Image>(true);
+                    if (ar != null && pic != null) KitLocale.TextInPlaceOf(pic, ar.Text, tab.label.font, tab.label.fontSize * 1.15f, 200f);
+                }
             EnsureInit();
             for (int i = 0; i < tabs.Length; i++)
             {

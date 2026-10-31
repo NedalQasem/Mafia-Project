@@ -40,6 +40,8 @@ namespace MafiaNight.UI.Kit
             Refresh();
         }
 
+        private static readonly System.Text.RegularExpressions.Regex ArabicRun = new System.Text.RegularExpressions.Regex("[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+(?:[  ]+[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+)*");
+
         private bool mirroredNow;
 
         /// <summary>
@@ -98,7 +100,8 @@ namespace MafiaNight.UI.Kit
                 if (Application.isPlaying && Loc.English)
                 {
                     // the English line (or the Arabic one when it is not translated yet): English is not shaped and breaks its lines by itself
-                    string en = Loc.LatinDigits(Loc.T(text));
+                    string translated = Loc.T(text);
+                    string en = Loc.LatinDigits(translated);
                     if (!ArabicShaper.ContainsArabic(en))
                     {
                         tmp.textWrappingMode = wrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
@@ -106,6 +109,13 @@ namespace MafiaNight.UI.Kit
                         // English is usually longer than the Arabic the boxes were drawn for: a one-line text shrinks (down to half) rather than run into its neighbour
                         if (!wrap && !tmp.enableAutoSizing) { tmp.fontSizeMax = tmp.fontSize; tmp.fontSizeMin = tmp.fontSize * 0.5f; tmp.enableAutoSizing = true; }
                         tmp.text = en;
+                        return;
+                    }
+                    if (translated != text)
+                    {
+                        // an English line with an Arabic name or word inside (a player's name): only the Arabic parts are shaped, the line stays left to right
+                        tmp.textWrappingMode = wrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+                        tmp.text = ArabicRun.Replace(en, m => Shape(m.Value));
                         return;
                     }
                     if (!string.IsNullOrWhiteSpace(text)) Loc.Missing.Add(text.Trim());
