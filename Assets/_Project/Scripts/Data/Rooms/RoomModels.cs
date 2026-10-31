@@ -18,6 +18,10 @@ namespace MafiaNight.Data.Rooms
         public int Capacity = 12;
         public bool ChatEnabled = true;
         public bool MicMutedOnJoin;
+        /// <summary>Mic seats besides the host's big seat (the stage of the room screen).</summary>
+        public int MicSeats = 8;
+        /// <summary>False: anybody sits on a free seat; true: only the host puts people on seats (they raise a hand).</summary>
+        public bool MicByRequest;
         /// <summary>Catalog id of the room background (store item), empty = default.</summary>
         public string BackgroundId = "";
     }
@@ -41,6 +45,8 @@ namespace MafiaNight.Data.Rooms
         public bool InMatch;              // a mafia round is running
         public bool Locked;               // the host closed the door: nobody new can join (the creator always can)
         public bool ChatEnabled = true;
+        public int MicSeats = 8;          // the stage the host started with (the host's own copy of it is the live one)
+        public bool MicByRequest;
         public string BackgroundId = "";
         public long CreatedUnix;
 

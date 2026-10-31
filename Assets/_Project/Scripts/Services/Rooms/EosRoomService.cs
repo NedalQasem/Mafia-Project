@@ -24,7 +24,7 @@ namespace MafiaNight.Services.Rooms
         // lobby attributes
         private const string KName = "name", KType = "room_type", KMode = "mode", KLang = "lang", KCode = "code";
         private const string KOwnerName = "owner_name", KOwnerLevel = "owner_level", KOwnerRank = "owner_rank", KOwnerPf = "owner_pf";
-        private const string KLocked = "locked", KInMatch = "in_match", KChat = "chat", KBackground = "bg", KCreated = "created";
+        private const string KLocked = "locked", KInMatch = "in_match", KChat = "chat", KBackground = "bg", KCreated = "created", KMicSeats = "mic_seats", KMicMode = "mic_mode";
         // member attributes
         private const string MName = "name", MRank = "rank", MLevel = "level", MPf = "pf";
 
@@ -153,6 +153,8 @@ namespace MafiaNight.Services.Rooms
                 InMatch = Int(d, KInMatch) == 1,
                 Locked = Int(d, KLocked) == 1,
                 ChatEnabled = Int(d, KChat, 1) == 1,
+                MicSeats = (int)Int(d, KMicSeats, 8),
+                MicByRequest = Int(d, KMicMode) == 1,
                 BackgroundId = Str(d, KBackground) ?? "",
                 CreatedUnix = Int(d, KCreated),
             };
@@ -339,6 +341,8 @@ namespace MafiaNight.Services.Rooms
             AddInt(m, KInMatch, 0);
             AddInt(m, KLocked, 0);
             AddInt(m, KChat, s.ChatEnabled ? 1 : 0);
+            AddInt(m, KMicSeats, Mathf.Clamp(s.MicSeats, MafiaNight.MatchRules.Stage.RoomStage.MinSeats, MafiaNight.MatchRules.Stage.RoomStage.MaxSeats));
+            AddInt(m, KMicMode, s.MicByRequest ? 1 : 0);
             AddStr(m, KBackground, s.BackgroundId);
             AddInt(m, KCreated, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             FillMemberAttributes(m);

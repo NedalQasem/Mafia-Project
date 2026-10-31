@@ -5,6 +5,7 @@ using MafiaNight.Core;
 using MafiaNight.Data.Rooms;
 using MafiaNight.MatchRules;
 using MafiaNight.MatchRules.Net;
+using MafiaNight.MatchRules.Stage;
 using MafiaNight.Services.Auth;
 using MafiaNight.Services.Rooms;
 using UnityEngine;
@@ -37,6 +38,8 @@ namespace MafiaNight.Services.Match
 
         public ClientMatchController Client { get; private set; }
         public HostMatchController Host { get; private set; }
+        /// <summary>The mic seats of the room (who sits where, the raised hands). The room's host is the authority.</summary>
+        public StageSync Stage { get; private set; }
         public bool IAmHost => Host != null;
 
         /// <summary>The match was cancelled for everybody (reason in Arabic); the screens go back to the room.</summary>
@@ -56,6 +59,11 @@ namespace MafiaNight.Services.Match
             net.PeerLost += peerLost;
             net.Open();
             lastHostId = HostId;
+
+            var room = rooms.CurrentRoom;
+            Stage = new StageSync(myId, () => HostId, () => rooms.Members.Select(m => m.Puid), net.Send, null,
+                room != null ? room.MicSeats : 8, room != null && room.MicByRequest ? MicMode.Request : MicMode.Free);
+            if (rooms.IAmHost) Stage.Sit(RoomStage.Head);          // the host takes the big seat
         }
 
         private string HostId => rooms.Members.FirstOrDefault(m => m.IsHost)?.Puid;
@@ -71,6 +79,7 @@ namespace MafiaNight.Services.Match
         private void OnReceived(string sender, WireMessage m)
         {
             if (m.Type == Msg.Chat) { RoomChat?.Invoke(sender, m.Arg(0)); return; }
+            if (m.Type == Msg.StageAct || m.Type == Msg.Stage) { Stage.Receive(sender, m); return; }
             if (m.Type == Msg.Act) { Host?.Receive(sender, m); return; }
             if (m.Type == Msg.Snapshot)
             {
@@ -110,10 +119,10 @@ namespace MafiaNight.Services.Match
         private void OnFinished() { if (rooms.IAmHost) rooms.SetInMatch(false); held = null; }
 
         /// <summary>A player left the room: he counts as dead.</summary>
-        public void MemberLeft(string puid) { Host?.PlayerLeft(puid); }
+        public void MemberLeft(string puid) { Host?.PlayerLeft(puid); Stage.MemberLeft(puid); }
 
         /// <summary>Somebody entered the room: during a match he watches, or, if he played before and left, he gets his seat back.</summary>
-        public void MemberJoined(string puid) { Host?.AddSpectator(puid); }
+        public void MemberJoined(string puid) { Host?.AddSpectator(puid); Stage.MemberJoined(puid); }
 
         /// <summary>The host kicked a member: if he comes back during this match he only watches.</summary>
         public void MemberKicked(string puid) { Host?.Forbid(puid); }
@@ -179,6 +188,7 @@ namespace MafiaNight.Services.Match
             if (host != null && host != lastHostId)
             {
                 lastHostId = host;
+                if (host == myId) { Stage.HostChanged(); if (Stage.Stage.HeadHolder == null) Stage.Sit(RoomStage.Head); }
                 if (host == myId) BecameHost();
                 else if (held != null && !gaveSnapshotToNewHost && MatchActive)
                 {
