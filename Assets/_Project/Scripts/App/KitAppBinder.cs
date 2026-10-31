@@ -162,6 +162,8 @@ namespace MafiaNight.App
             if (sceneLoader == null || index < 0 || index >= AppScenes.ByTab.Length) return;
             string target = AppScenes.ByTab[index];
             if (SceneManager.GetActiveScene().name == target) return;
+            // the page burns from the bottom corner next to the tab that was pressed (ranks and settings are on the left)
+            MafiaNight.UI.Animations.BurnSettings.NextCorner = index >= 3 ? MafiaNight.UI.Animations.BurnCorner.BottomLeft : MafiaNight.UI.Animations.BurnCorner.BottomRight;
             sceneLoader.LoadScene(target);
         }
 
@@ -182,7 +184,11 @@ namespace MafiaNight.App
                 return;
             }
             string target = tab == MarketTab ? (place == 0 ? AppScenes.Store : AppScenes.Bag) : tab == RanksTab ? (place == 0 ? AppScenes.Leaderboards : AppScenes.Rank) : null;
-            if (target != null && here != target) sceneLoader.LoadScene(target);
+            if (target != null && here != target)
+            {
+                MafiaNight.UI.Animations.BurnSettings.NextCorner = tab == RanksTab ? MafiaNight.UI.Animations.BurnCorner.BottomLeft : MafiaNight.UI.Animations.BurnCorner.BottomRight;
+                sceneLoader.LoadScene(target);
+            }
         }
 
         private void Refresh(bool animateCoins = false)

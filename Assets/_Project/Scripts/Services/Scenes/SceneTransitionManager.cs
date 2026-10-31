@@ -19,6 +19,7 @@ namespace MafiaNight.Services.Scenes
         [Header("Transition Settings")]
         [SerializeField] private float fadeDuration = 0.5f;
         [SerializeField] private bool showLoadingScreen = true;
+        [SerializeField] private float burnSeconds = 0.9f;
 
         [Header("Loading UI (Optional)")]
         [SerializeField] private GameObject loadingCanvas;
@@ -50,6 +51,31 @@ namespace MafiaNight.Services.Scenes
         private IEnumerator LoadSceneRoutine(string sceneName)
         {
             isTransitioning = true;
+
+            // the player's choice (settings): the burning page, a short fade, or nothing
+            string fx = BurnSettings.Mode;
+            var corner = BurnSettings.TakeCorner();
+            if (fx == BurnSettings.Off)
+            {
+                yield return SceneManager.LoadSceneAsync(sceneName);
+                isTransitioning = false;
+                yield break;
+            }
+            Texture2D snap = null;
+            yield return BurnTransition.Capture(t => snap = t);
+            if (snap != null)
+            {
+                // the old screen is frozen on top, the new one loads under it, then the old one burns away (or fades)
+                var burn = BurnTransition.Begin(snap);
+                yield return SceneManager.LoadSceneAsync(sceneName);
+                for (int i = 0; i < 3; i++) yield return null;                 // the new screen builds its UI in its first frames
+                yield return new WaitForEndOfFrame();
+                yield return burn.Play(corner, burnSeconds);
+                Log.Info($"✅ Loaded scene: {sceneName}", Tag);
+                isTransitioning = false;
+                yield break;
+            }
+
             ServiceLocator.TryGet<SceneTransitionAnimator>(out var animator);
 
             // Fade out
