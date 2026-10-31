@@ -57,6 +57,13 @@ namespace MafiaNight.UI.Kit
             for (int i = 0; i < names.Length; i++) byName[names[i]] = i;
             if (bank != null) foreach (var s in bank) if (s != null) sprites[s.name] = s;
             FindProtos();
+            // the frames are drawn for the tall phone: on a shorter screen they shrink together instead of the table running under the bottom panel
+            if (frames != null && frames.Length > 0 && frames[0] != null && frames[0].transform.parent is RectTransform frameParent)
+            {
+                var rts = new List<RectTransform>();
+                foreach (var f in frames) if (f != null) rts.Add((RectTransform)f.transform);
+                KitFitGroup.Wrap(frameParent, 2188f, rts.ToArray());
+            }
         }
 
         public bool Has(string frame) { Init(); return byName.ContainsKey(frame); }

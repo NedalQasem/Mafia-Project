@@ -163,7 +163,7 @@ namespace MafiaNight.UI.Kit
                 var chip = Instantiate(chipTemplate, chipsRoot); chip.gameObject.SetActive(true);
                 var label = chip.GetComponentInChildren<ArabicText>(true);
                 var icon = chip.Find("Icon") as RectTransform;
-                if (it.IsMoney) { label.Text = "+" + CoinPill.Format(it.amount); icon.GetComponent<Image>().sprite = it.kind == "coins" ? coinToken : gemToken; }
+                if (it.IsMoney) { KitText.Fit(label, "+" + CoinPill.Format(it.amount), 16, 26f); icon.GetComponent<Image>().sprite = it.kind == "coins" ? coinToken : gemToken; }
                 else { KitText.Fit(label, it.name, 16, 20f); icon.gameObject.SetActive(false); }
             }
             bool frame = false; foreach (var it in items) if (it.kind == "frame") frame = true;
