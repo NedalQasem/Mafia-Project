@@ -296,7 +296,7 @@ namespace MafiaNight.UI.Kit
         internal static void SetText(TMP_Text t, string s, float maxCss)
         {
             var a = t.GetComponent<ArabicText>();
-            s = s ?? "";
+            s = MafiaNight.Core.Loc.T(s ?? "");     // in English the English line is the one that is cut
             a.Text = s;
             if (maxCss <= 0f || Width(t) <= maxCss * K) return;
             string dots = t.font != null && t.font.name.Contains("Lalezar") ? "..." : "…";

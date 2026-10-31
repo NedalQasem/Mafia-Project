@@ -158,12 +158,12 @@ namespace MafiaNight.App
             return d == 1 ? "أمس" : d == 2 ? "قبل يومين" : "قبل " + Ar(d) + " أيام";
         }
 
-        private static string Clip(string name, int max) => string.IsNullOrEmpty(name) ? "" : name.Length > max ? name.Substring(0, max - 1) + "…" : name;
+        private static string Clip(string name, int max) { name = Loc.T(name); return string.IsNullOrEmpty(name) ? "" : name.Length > max ? name.Substring(0, max - 1) + "…" : name; }
 
         /// <summary>Shows the text on one line no wider than <paramref name="maxCss"/> (mockup pixels): measured, and cut with "…" only when it does not fit.</summary>
         private static void FitWidth(ArabicText a, string s, float maxCss)
         {
-            s = s ?? "";
+            s = Loc.T(s ?? "");                     // in English the English line is the one that is cut
             a.Text = s;
             if (TextW(a) <= maxCss) return;
             var font = a.GetComponent<TMP_Text>().font;

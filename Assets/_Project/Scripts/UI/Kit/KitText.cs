@@ -26,6 +26,7 @@ namespace MafiaNight.UI.Kit
         /// <summary>Cuts <paramref name="s"/> to at most <paramref name="max"/> characters at a word boundary and adds "…". Short text is returned as it is.</summary>
         public static string Clip(string s, int max)
         {
+            s = MafiaNight.Core.Loc.T(s);           // in English the English line is the one that is cut (a cut Arabic prefix has no translation)
             if (string.IsNullOrEmpty(s) || s.Length <= max) return s ?? "";
             int cut = s.LastIndexOf(' ', max - 1);
             if (cut < max / 2) cut = max - 1;       // a very long single word: cut inside it
