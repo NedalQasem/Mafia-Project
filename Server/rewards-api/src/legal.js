@@ -87,12 +87,17 @@ const DELETION = `
 <p>We delete the account and its data within 30 days of the request and reply when it is done. Deletion is final (balance and items are lost).</p>
 </div>`;
 
-function createLegal({ base = '', htmlFile = null } = {}) {
+/**
+ * The pages live under the game's own folder (/mafia/privacy, /mafia/data-deletion), as the company may have other games on this host.
+ * The first addresses without the folder answer with a permanent redirect to the new ones.
+ */
+function createLegal({ base = '/mafia', htmlFile = null } = {}) {
   let tpl = '';
   try { tpl = fs.readFileSync(htmlFile || path.join(__dirname, 'legal.html'), 'utf8'); } catch { tpl = '<!doctype html><meta charset="utf-8"><title>MAFIA</title>__BODY__'; }
   const page = (title, body) => tpl.replace('__TITLE__', title).replace('__BODY__', body).split('__BASE__').join(base);
-  const pages = { '/privacy': page('Privacy', PRIVACY), '/data-deletion': page('Data deletion', DELETION) };
-  return { page: p => pages[p] || null };
+  const pages = { [base + '/privacy']: page('Privacy', PRIVACY), [base + '/data-deletion']: page('Data deletion', DELETION) };
+  const moved = { '/privacy': base + '/privacy', '/data-deletion': base + '/data-deletion' };
+  return { page: p => pages[p] || null, movedTo: p => moved[p] || null };
 }
 
 module.exports = { createLegal, SUPPORT };

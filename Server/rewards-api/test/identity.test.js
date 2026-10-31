@@ -142,11 +142,15 @@ test('Facebook routes, and the public privacy and data deletion pages', async ()
     assert.equal(login.status, 200); assert.equal(login.json.created, true);
     assert.equal((await post('/v1/auth/facebook/link', { accessToken: 'fbtoken-padding-5005005005' })).status, 401);                // no ticket
     assert.equal((await post('/v1/auth/facebook/link', { accessToken: 'fbtoken-padding-5005005005' }, 'GUEST012-ticket-0123456789')).status, 200);
-    for (const [p, words] of [['/privacy', ['سياسة الخصوصية', 'Privacy Policy', 'supportmafia@mena-gaming.com']], ['/data-deletion', ['حذف بياناتك', 'Delete your data', 'supportmafia@mena-gaming.com']]]) {
+    for (const [p, words] of [['/mafia/privacy', ['سياسة الخصوصية', 'Privacy Policy', 'supportmafia@mena-gaming.com', '/mafia/data-deletion']], ['/mafia/data-deletion', ['حذف بياناتك', 'Delete your data', 'supportmafia@mena-gaming.com']]]) {
       const res = await fetch(base + p); const html = await res.text();
       assert.equal(res.status, 200); assert.match(res.headers.get('content-type'), /text\/html/);
       for (const w of words) assert.ok(html.includes(w), p + ' has ' + w);
       assert.ok(!html.includes('__BODY__') && !html.includes('__BASE__'));
+    }
+    for (const old of ['/privacy', '/data-deletion']) {                      // the first addresses move to the game's folder
+      const res = await fetch(base + old, { redirect: 'manual' });
+      assert.equal(res.status, 301); assert.equal(res.headers.get('location'), '/mafia' + old);
     }
   } finally { server.close(); }
 });

@@ -185,6 +185,7 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=3600', 'X-Content-Type-Options': 'nosniff' });
       return res.end(html);
     }
+    if (req.method === 'GET' && legal.movedTo(url.pathname)) { res.writeHead(301, { Location: legal.movedTo(url.pathname) }); return res.end(); }
     if (limited(ip)) return send(res, 429, { ok: false, error: 'slow down' });
     if (admin && admin.owns(url.pathname)) return admin.handle(req, res, url, ip);      // the admin board (its own login)
 
