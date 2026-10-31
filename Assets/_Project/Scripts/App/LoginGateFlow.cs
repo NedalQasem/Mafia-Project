@@ -21,9 +21,10 @@ namespace MafiaNight.App
         private static IEnumerator Run(MonoBehaviour host)
         {
             var th = KitTheme.Current;
-            var canvas = Object.FindFirstObjectByType<Canvas>();
-            if (th == null || th.loginChoicePrefab == null || canvas == null) { LoginGate.Release(); yield break; }
-            var root = canvas.rootCanvas.transform;
+            if (th == null || th.loginChoicePrefab == null) { LoginGate.Release(); yield break; }
+            // its own canvas above the loading screen (that one sorts at 200): on a phone the first canvas found was a lower one,
+            // so the choice screen sat hidden under the loading screen and the game waited at 0 % for a choice nobody could see
+            var root = OverLoading().transform;
             var go = Object.Instantiate(th.loginChoicePrefab, root, false);
             go.transform.SetAsLastSibling();
             var screen = go.GetComponent<KitLoginChoice>();
@@ -58,6 +59,19 @@ namespace MafiaNight.App
             PlayerPrefs.SetInt(LoginGate.ChosenKey, 1); PlayerPrefs.Save();
             LoginGate.Release();
             screen.Close();
+        }
+
+        private const int OverLoadingOrder = 500;
+
+        /// <summary>A screen-space canvas drawn above the loading screen, scaled like the game's (1080 x 2400 by width), with input.</summary>
+        private static Canvas OverLoading()
+        {
+            var go = new GameObject("LoginGateCanvas", typeof(RectTransform));
+            var c = go.AddComponent<Canvas>(); c.renderMode = RenderMode.ScreenSpaceOverlay; c.sortingOrder = OverLoadingOrder;
+            var scaler = go.AddComponent<UnityEngine.UI.CanvasScaler>();
+            scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1080, 2400); scaler.matchWidthOrHeight = 0f;
+            go.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+            return c;
         }
 
         /// <summary>The provider's own sign-in on the phone ("google" or "facebook"): done(token, null) or done(null, reason).</summary>
