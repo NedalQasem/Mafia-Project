@@ -28,7 +28,12 @@ namespace MafiaNight.Services.Leaderboard
         public int MePosition;        // 0 = not on the board yet
         public int Tenth;             // value of the tenth place (0 when fewer than ten)
         public int Need;              // how much more this player needs to enter the first ten (0 = already in)
+        /// <summary>What the first places of this board get when the period is over (empty: no prizes).</summary>
+        public List<BoardPrize> Prizes = new List<BoardPrize>();
     }
+
+    /// <summary>The prize of places From..To of a board: coins, gems, store items, and the package name when it is one.</summary>
+    public sealed class BoardPrize { public int From, To, Coins, Gems; public string[] Items = new string[0]; public string Name; }
 
     public sealed class WallRecord { public string Name; public int Value; }
 
@@ -42,7 +47,8 @@ namespace MafiaNight.Services.Leaderboard
 
     [Serializable] internal sealed class RowDto { public string pf, name; public int rank, level, value; public bool me; }
     [Serializable] internal sealed class MeDto { public string name; public int rank, level, value, position, tenth, need; }
-    [Serializable] internal sealed class BoardDto { public bool ok; public int cat, resetIn; public List<RowDto> top; public MeDto me; }
+    [Serializable] internal sealed class PrizeDto { public int from, to, coins, gems; public string[] items; public string name; }
+    [Serializable] internal sealed class BoardDto { public bool ok; public int cat, resetIn; public List<RowDto> top; public MeDto me; public List<PrizeDto> prizes; }
     [Serializable] internal sealed class GodDto { public string pf, name; public int rank, points; }
     [Serializable] internal sealed class RecDto { public string name; public int value; }
     [Serializable] internal sealed class RecordsDto { public RecDto streak, games, mafiaWins, sheriffWins, survived, hours; }
@@ -87,6 +93,7 @@ namespace MafiaNight.Services.Leaderboard
                 {
                     r.Ok = true; r.ResetInSeconds = d.resetIn;
                     if (d.top != null) foreach (var x in d.top) r.Top.Add(new BoardRow { Pf = x.pf, Name = x.name, Rank = x.rank, Level = x.level, Value = x.value, Me = x.me });
+                    if (d.prizes != null) foreach (var p in d.prizes) r.Prizes.Add(new BoardPrize { From = p.from, To = p.to, Coins = p.coins, Gems = p.gems, Items = p.items ?? new string[0], Name = p.name });
                     if (d.me != null) { r.Me = new BoardRow { Name = d.me.name, Rank = d.me.rank, Level = d.me.level, Value = d.me.value, Me = true }; r.MePosition = d.me.position; r.Tenth = d.me.tenth; r.Need = d.me.need; }
                 }
                 done?.Invoke(r);

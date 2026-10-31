@@ -159,7 +159,11 @@ namespace MafiaNight.UI.Kit
                 if (view.mePosition == 0) meGo.GetComponent<LeaderRowView>().ShowNoPosition();
                 KitEnterAnim.Play(meGo, Mathf.Max(0, list.Count - 3) * 0.04f, 38f, 0.4f, 0.4f);
             }
-            rewardLabel.Text = view.failed ? "تعذّر تحميل الترتيب. حاول لاحقاً" : list.Count == 0 ? "السبورة فاضية. أول مباراة بتكتب اسمك عليها" : "الترتيب يتجدّد بعد كل مباراة. الجوائز قريباً";
+            bool prized = !string.IsNullOrEmpty(view.prizeText);
+            string reward = view.failed ? "تعذّر تحميل الترتيب. حاول لاحقاً"
+                : list.Count == 0 ? (prized ? "السبورة فاضية. " + view.prizeText : "السبورة فاضية. أول مباراة بتكتب اسمك عليها")
+                : prized ? view.prizeText : "الترتيب يتجدّد بعد كل مباراة";
+            KitText.Fit(rewardLabel, reward, 80, 20f);          // a long prize line (several places, a package name) shrinks to stay on its line
             resetSeconds = view.resetInSeconds > 0 ? view.resetInSeconds : resetSeconds; resetTick = 0f; ShowReset();
             bool ranked = view.mePosition > 0;
             KitText.Fit(mineRank, ranked ? "#" + CoinPill.Format(view.mePosition) : "—", 24, 22f);

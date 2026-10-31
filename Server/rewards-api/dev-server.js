@@ -78,6 +78,9 @@ const mail = createMail({ cfg, playfab, notify: pfs => { for (const pf of (pfs |
 adminStore.packs = [{ id: 'pk-gold', name: { ar: 'جائزة ذهبية', en: 'Gold prize' }, coins: 5000, gems: 0, items: [] }, { id: 'pk-silver', name: { ar: 'جائزة فضية', en: 'Silver prize' }, coins: 3000, gems: 0, items: [] }, { id: 'pk-small', name: { ar: 'تشجيعية', en: 'Encouragement' }, coins: 1000, gems: 2, items: [] }];
 adminStore.codes = [{ code: 'MAFIA2026', packId: 'pk-gold', maxUses: 1000, uses: 312, until: '', enabled: true, by: {} }, { code: 'INSTA50', packId: 'pk-small', maxUses: 0, uses: 48, until: '', enabled: true, by: {} }];
 const codes = createCodes({ store: adminStore, mail, packs: () => adminStore.packs });
+const { createLeaderPrizes } = require('./src/lbprizes');
+const lbPrizes = createLeaderPrizes({ leaderboard, mail, store: adminStore, packs: () => adminStore.packs, cfg });
+leaderboard.setPrizes(lbPrizes);
 const events = createEvents({ cfg, playfab, mail, packs: () => adminStore.packs, nameOf: async pf => (await chat.who(pf)).name, source: () => (adminStore.events !== null ? adminStore.events : cfg.events) });
 const offers = createOffers({ cfg, source: () => (adminStore.offers !== null ? adminStore.offers : cfg.offers) });
 cfg.offers = [{ adId: 'ad_ember', stamp: '−٣٠٪', until: iso(2) }, { itemId: 'chat_port', mast: 'وصل حديثاً', headline: 'خلفية الميناء\nسفن وليل أسود', stamp: 'جديد' }];
@@ -89,7 +92,7 @@ fs.writeFileSync(reportsFile, [
 const recovery = createRecovery({ store: adminStore, playfab });
 const images = createImages({ dir: path.join(devDir, 'images') });
 const accounts = createAccounts({ cfg, mail: null, playfab, recovery });
-const admin = createAdmin({ cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, images, accounts, reportsFile, adminCfg: { passwordHash: hashPassword('dev-password-123'), path: '/admin' } });
+const admin = createAdmin({ lbPrizes, cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, images, accounts, reportsFile, adminCfg: { passwordHash: hashPassword('dev-password-123'), path: '/admin' } });
 for (let i = 0; i < 40; i++) adminStore.noteMatch('dev-m' + i, leaderboard.dayKey(Date.now() - (i % 7) * 86400000));
 for (const [pf, n] of [['OTHER0001', 9], ['OTHER0002', 7], ['OTHER0003', 5], ['OTHER0004', 2]]) for (let i = 0; i < n; i++) events.record(pf, { won: true, points: 50, secs: 600 });
 const { server } = createApp({ cfg, playfab, store: createStore(null), chat, friends, leaderboard, events, offers, mail, codes, recovery, images, accounts, admin });

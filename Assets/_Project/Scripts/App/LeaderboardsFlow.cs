@@ -39,8 +39,40 @@ namespace MafiaNight.App
                 foreach (var x in r.Top) v.list.Add(new LeaderEntry { name = x.Name, rank = x.Rank, value = x.Value, me = x.Me });
                 if (r.Me != null) v.me = new LeaderEntry { name = r.Me.Name + " (أنت)", rank = r.Me.Rank, value = r.Me.Value, me = true };
                 v.fill = r.Need == 0 ? 1f : (r.Tenth > 0 && r.Me != null ? (float)r.Me.Value / r.Tenth : 0.05f);
+                v.prizeText = PrizeText(period, r.Prizes);
                 screen.ShowBoard(period, cat, v);
             });
+        }
+
+        /// <summary>The prize line above the board, as in the mockup: "جائزة الليلة · ٣٠٠ كوينز للأول" or "جوائز الأسبوع · ١: ٥٬٠٠٠ كوينز · ٢: …". Null without prizes.</summary>
+        private static string PrizeText(int period, System.Collections.Generic.List<MafiaNight.Services.Leaderboard.BoardPrize> prizes)
+        {
+            if (prizes == null || prizes.Count == 0) return null;
+            string Value(MafiaNight.Services.Leaderboard.BoardPrize p)
+            {
+                var parts = new System.Collections.Generic.List<string>();
+                if (p.Coins > 0) parts.Add(CoinPill.Format(p.Coins) + " كوينز");
+                if (p.Gems > 0) parts.Add(CoinPill.Format(p.Gems) + " جوهرة");
+                if (p.Items != null && p.Items.Length > 0) parts.Add(!string.IsNullOrEmpty(p.Name) ? p.Name : "غرض من المتجر");
+                return string.Join(" + ", parts);
+            }
+            bool one = prizes.Count == 1 && prizes[0].From == 1 && prizes[0].To == 1;
+            string title = (period == 0 ? (one ? "جائزة الليلة" : "جوائز الليلة") : (one ? "جائزة الأسبوع" : "جوائز الأسبوع"));
+            if (one) return title + " · " + Value(prizes[0]) + " للأول";
+            // places as words ("الأول ٥٬٠٠٠"), never "1: 5,000": a colon between two numbers is reordered by the right-to-left text
+            bool coinsOnly = true;
+            foreach (var p in prizes) if (p.Gems > 0 || (p.Items != null && p.Items.Length > 0)) coinsOnly = false;
+            var rows = new System.Collections.Generic.List<string>();
+            foreach (var p in prizes) rows.Add(Place(p.From, p.To) + " " + (coinsOnly ? CoinPill.Format(p.Coins) : Value(p)));
+            return title + " · " + string.Join(" · ", rows) + (coinsOnly ? " كوينز" : "");
+        }
+
+        private static readonly string[] Ordinals = { "الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن", "التاسع", "العاشر" };
+
+        private static string Place(int from, int to)
+        {
+            if (from == to) return from <= Ordinals.Length ? Ordinals[from - 1] : "المركز " + CoinPill.Format(from);
+            return "المراكز " + CoinPill.Format(from) + "–" + CoinPill.Format(to);
         }
 
         private void LoadWall()

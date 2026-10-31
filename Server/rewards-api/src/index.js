@@ -41,6 +41,9 @@ const leaderboard = createLeaderboard({ chat, cfg, file: dataDir + '/leaderboard
 const offers = createOffers({ cfg, source: () => (adminStore.offers !== null ? adminStore.offers : cfg.offers) });
 // new mail is announced on the chat poll at once (the game fetches the mail when it hears it)
 const mail = createMail({ cfg, playfab, file: dataDir + '/mail.json', notify: pfs => { for (const pf of (pfs || chat.onlinePlayers())) chat.pushEvent(pf, { type: 'mail' }); } });
+const { createLeaderPrizes } = require('./lbprizes');
+const lbPrizes = createLeaderPrizes({ leaderboard, mail, store: adminStore, packs: () => adminStore.packs, cfg, file: dataDir + '/lbprizes.json' });
+leaderboard.setPrizes(lbPrizes);
 const events = createEvents({ cfg, playfab, mail, packs: () => adminStore.packs, nameOf: async pf => (await chat.who(pf)).name, source: () => (adminStore.events !== null ? adminStore.events : cfg.events), file: dataDir + '/events.json' });
 const codes = createCodes({ store: adminStore, mail, packs: () => adminStore.packs });
 const recovery = createRecovery({ store: adminStore, playfab });
@@ -51,7 +54,7 @@ const identity = createIdentity({ accounts, playfab, chat, providers: {
   facebook: createFacebook({ appId: cfg.facebookAppId || FACEBOOK_APP_ID, appSecret: process.env.FACEBOOK_APP_SECRET || '' }),
 } });
 // the admin board: needs ADMIN_PASSWORD_HASH (made by set-admin.sh); without it the board does not exist
-const admin = createAdmin({
+const admin = createAdmin({ lbPrizes,
   cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, images, accounts, reportsFile: dataDir + '/chat-reports.jsonl',
   adminCfg: Object.assign({}, cfg.admin, process.env.ADMIN_PASSWORD_HASH ? { passwordHash: process.env.ADMIN_PASSWORD_HASH } : {}, process.env.ADMIN_PATH ? { path: process.env.ADMIN_PATH } : {}),
 });
@@ -60,6 +63,7 @@ if (admin.enabled) console.log('admin board on ' + admin.base); else console.log
 
 setInterval(() => { accounts.sweep().then(r => { if (r.warned || r.deleted || r.failed) console.log('guests', JSON.stringify(r)); }).catch(() => {}); }, 6 * 3600 * 1000).unref();     // warns and (only when config guests.purge is true) deletes abandoned guests
 setInterval(() => { events.autoDistribute().catch(() => {}); }, 60 * 1000).unref();      // prizes of the events that ended
+setInterval(() => { lbPrizes.payDue(); }, 60 * 1000).unref();                            // prizes of the day and the week that ended
 setInterval(() => { chat.purge(); friends.purge(); leaderboard.purge(); events.purge(); mail.purge(); }, 3600 * 1000).unref();
 setInterval(() => store.purge(Date.now(), 48 * 3600 * 1000, new Date().toISOString().slice(0, 10)), 3600 * 1000).unref();
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); mail.flushNow(); adminStore.flushNow(); accounts.flushNow(); } finally { process.exit(0); } });

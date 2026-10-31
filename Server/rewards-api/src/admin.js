@@ -111,7 +111,7 @@ function cleanPack(b, id) {
   return { id, name, coins, gems, items };
 }
 
-function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, accounts = null, htmlFile = null, now = () => Date.now(), log = console }) {
+function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, accounts = null, lbPrizes = null, htmlFile = null, now = () => Date.now(), log = console }) {
   const base = '/' + String(adminCfg.path || '/admin').replace(/^\/+|\/+$/g, '');
   const passwordHash = adminCfg.passwordHash || '';
   const sessionMs = (adminCfg.sessionHours || 12) * 3600 * 1000;
@@ -459,6 +459,18 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
     }
     // ---- packages
     if (rest === '/api/packs' && method === 'GET') return send(res, 200, { ok: true, packs: store.packs });
+    // ---- prizes of the leaderboards (day and week): set here, paid by the server by mail when the period is over
+    if (rest === '/api/lbprizes' && method === 'GET') {
+      if (!lbPrizes) throw new AdminError('no_lbprizes', 404);
+      return send(res, 200, Object.assign(lbPrizes.admin(), { packs: store.packs }));
+    }
+    if (rest === '/api/lbprizes/save' && method === 'POST') {
+      if (!lbPrizes) throw new AdminError('no_lbprizes', 404);
+      const b = await readJson(req);
+      store.lbPrizes = b.reset ? null : lbPrizes.clean(b.config);
+      store.audit('lbprizes_save', b.reset ? 'default' : Object.entries(store.lbPrizes).map(([p, cats]) => p + ':' + Object.keys(cats).join(',')).join(' '));
+      return send(res, 200, lbPrizes.admin());
+    }
     if (rest === '/api/packs/save' && method === 'POST') {
       const b = await readJson(req); const list = store.packs.slice();
       if (b.id && !ID_RE.test(String(b.id))) throw new AdminError('bad_id');

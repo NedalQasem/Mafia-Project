@@ -213,6 +213,7 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
 @media(max-width:1100px){aside .brand b{font-size:.58rem;letter-spacing:.5px;overflow:hidden}aside{padding:14px 8px}}
 /* phones */
 .card{overflow-x:auto}
+#v-lbprizes .tbl{min-width:0}.lbadd .f,.lbadd select{min-width:0}.lbadd select{width:100%}.lbadd .rowin input{min-width:0;flex:1;width:100%}
 .tbl{min-width:560px}
 @media(max-width:720px){
   main{padding:16px 14px 30px}
@@ -255,6 +256,7 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
     <button class="nav" data-v="mail"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/></svg><span>البريد</span></button>
 
     <button class="nav" data-v="codes"><svg viewBox="0 0 24 24"><path d="M4 8h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4V8zM10 8v10" stroke-dasharray="2 2"/></svg><span>الأكواد</span></button>
+    <button class="nav" data-v="lbprizes"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg><span>جوائز التصنيفات</span></button>
     <button class="nav" data-v="words"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span>الكلمات الممنوعة</span></button>
     <button class="nav" data-v="reports"><svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg><span>البلاغات</span><i class="n hide" id="nReports"></i></button>
     <button class="nav" data-v="players"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-4 3.2-6 6.5-6s5.9 2 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .6 3.3 2.5 3.5 6"/></svg><span>اللاعبون</span></button>
@@ -321,6 +323,33 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
       <div class="top"><h1>أكواد الترويج<small>عروض برا اللعبة: انشر الكود (انستغرام، واتساب…) واللاعب بيكتبه بالبريد</small></h1><button class="btn red sp" id="newCode">+ كود جديد</button></div>
       <div class="paper card"><div class="empty hide" id="cdEmpty">ما في أكواد. اضغط «كود جديد».</div><table class="tbl" id="cdTable"></table>
         <p class="hint">كل لاعب بيستخدم الكود مرة وحدة. اللعبة بتقفل اللاعب ١٠ دقايق بعد ٥ محاولات غلط ورا بعض عشان ما حدا يخمّن الأكواد.</p></div>
+    </section>
+
+    <section class="view" id="v-lbprizes">
+      <div class="top"><h1>جوائز التصنيفات<small>أول المراكز بسبورة الليلة وجريدة الأسبوع بتوصلهم الجائزة هدية بالبريد لحالها لما يخلص اليوم أو الأسبوع</small></h1>
+        <div class="act"><button class="btn ghost sp" id="lbReset">رجّع الافتراضي</button><button class="btn red sp" id="lbSave">احفظ</button></div></div>
+      <div class="warn hide" id="lbDirty" style="margin-bottom:12px">في تغييرات ما انحفظت.</div>
+      <div class="err" id="lbErr" role="alert"></div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(420px,1fr))">
+        <div class="paper card"><h3>سبورة الليلة<small>بتتوزّع كل يوم بعد نص الليل</small></h3>
+          <div class="empty hide" id="lb-day-empty">ما في جوائز.</div><table class="tbl" id="lb-day-table"></table>
+          <form class="lbadd" data-p="day" autocomplete="off">
+            <div class="row2"><div class="f"><label>الفئة</label><select data-k="cat"></select></div><div class="f"><label>المراكز (من – لـ)</label><div class="rowin"><input data-k="from" type="number" min="1" max="50" value="1"><input data-k="to" type="number" min="1" max="50" value="1"></div></div></div>
+            <div class="row2"><div class="f"><label>الجائزة</label><select data-k="pack"></select></div><div class="f lbcustom"><label>كوينز / جواهر</label><div class="rowin"><input data-k="coins" type="number" min="0" value="0"><input data-k="gems" type="number" min="0" value="0"></div></div></div>
+            <div class="foot-act"><button class="btn ghost sm" type="submit">+ أضف الجائزة</button></div>
+          </form>
+        </div>
+        <div class="paper card"><h3>جريدة الأسبوع<small>بتتوزّع بآخر الأسبوع (السبت)</small></h3>
+          <div class="empty hide" id="lb-week-empty">ما في جوائز.</div><table class="tbl" id="lb-week-table"></table>
+          <form class="lbadd" data-p="week" autocomplete="off">
+            <div class="row2"><div class="f"><label>الفئة</label><select data-k="cat"></select></div><div class="f"><label>المراكز (من – لـ)</label><div class="rowin"><input data-k="from" type="number" min="1" max="50" value="1"><input data-k="to" type="number" min="1" max="50" value="1"></div></div></div>
+            <div class="row2"><div class="f"><label>الجائزة</label><select data-k="pack"></select></div><div class="f lbcustom"><label>كوينز / جواهر</label><div class="rowin"><input data-k="coins" type="number" min="0" value="0"><input data-k="gems" type="number" min="0" value="0"></div></div></div>
+            <div class="foot-act"><button class="btn ghost sm" type="submit">+ أضف الجائزة</button></div>
+          </form>
+        </div>
+      </div>
+      <div class="paper card" style="margin-top:16px"><h3>آخر التوزيعات<small>كل فترة بتنعطى مرة وحدة بس</small></h3><div class="empty hide" id="lbHistEmpty">لسا ما انوزّعت جوائز.</div><table class="tbl" id="lbHist"></table>
+        <p class="hint">الجائزة بتنحسب للفئة نفسها: مثلاً «الانتصارات» المركز ١ بياخدها صاحب أكتر انتصارات بهداك اليوم. اللي ما لعب ما بياخد شي، وإذا لعبوا أقل من عدد المراكز بتنعطى بس للي طلعوا.</p></div>
     </section>
 
     <section class="view" id="v-words">
@@ -935,6 +964,55 @@ document.addEventListener('click', async e => {
   if (t) { e.stopPropagation(); try { await api('/codes/toggle', { code: t.dataset.tog, enabled: !t.classList.contains('on') }); toast(t.classList.contains('on') ? 'اتعطّل' : 'تفعّل'); loadCodes(); } catch (x) { toast(errText(x.code)); } }
 }, true);
 loaders.codes = loadCodes;
+
+// ------------------------------------------------------------------ live ops: leaderboard prizes
+ERR.bad_category = 'فئة غير معروفة'; ERR.bad_ranks = 'المراكز بين ١ و٥٠، و«لـ» مش أقل من «من»'; ERR.bad_prize = 'حط كوينز أو جواهر أو اختار حزمة'; ERR.overlap = 'في مراكز متداخلة بنفس الفئة'; ERR.too_many_rows = 'أكتر من ١٠ صفوف بالفئة';
+let LB = null, LBC = null, LBCATS = [];
+const lbCatName = id => (LBCATS.find(c => c.id === id) || { ar: id }).ar;
+const lbRanks = r => r.from === r.to ? ar(r.from) : ar(r.from) + ' – ' + ar(r.to);
+function lbGives(r) {
+  if (r.packId) { const k = PACKS.find(x => x.id === r.packId); return k ? esc(k.name.ar || k.name.en) + ' ' + pills(k) : '<span class="m">حزمة محذوفة</span>'; }
+  return pills({ coins: r.coins || 0, gems: r.gems || 0, items: [] });
+}
+function lbRender() {
+  for (const period of ['day', 'week']) {
+    const rows = [];
+    for (const [cat, list] of Object.entries(LBC[period] || {})) list.forEach((r, i) => rows.push({ cat, i, r }));
+    $('#lb-' + period + '-empty').classList.toggle('hide', rows.length > 0);
+    $('#lb-' + period + '-table').innerHTML = rows.length ? '<tr><th>الفئة</th><th>المراكز</th><th>الجائزة</th><th></th></tr>' + rows.map(x =>
+      `<tr><td>${esc(lbCatName(x.cat))}</td><td>${lbRanks(x.r)}</td><td>${lbGives(x.r)}</td><td><button class="btn ghost sm del" data-lb-del="${period}|${x.cat}|${x.i}">احذف</button></td></tr>`).join('') : '';
+    const f = document.querySelector('.lbadd[data-p="' + period + '"]');
+    f.querySelector('[data-k=cat]').innerHTML = LBCATS.map(c => `<option value="${c.id}">${esc(c.ar)}</option>`).join('');
+    f.querySelector('[data-k=pack]').innerHTML = '<option value="">كوينز / جواهر (اكتبهم جنب)</option>' + PACKS.map(k => `<option value="${esc(k.id)}">${esc(k.name.ar || k.name.en)}</option>`).join('');
+  }
+  $('#lbHistEmpty').classList.toggle('hide', LB.history.length > 0);
+  $('#lbHist').innerHTML = LB.history.length ? '<tr><th>الفترة</th><th>متى</th><th>جوائز انبعتت</th></tr>' + LB.history.map(h => {
+    const [p, key] = h.id.split(':'); return `<tr><td>${p === 'day' ? 'سبورة الليلة' : 'جريدة الأسبوع'} · <span class="mono">${esc(key)}</span></td><td>${ago(h.at)}</td><td>${ar(h.count)}</td></tr>`; }).join('') : '';
+}
+const lbDirty = on => $('#lbDirty').classList.toggle('hide', !on);
+async function loadLb() {
+  LB = await api('/lbprizes'); PACKS = LB.packs || []; LBCATS = LB.cats || [];
+  LBC = { day: {}, week: {} };
+  for (const period of ['day', 'week']) for (const [cat, list] of Object.entries(LB.config[period] || {})) LBC[period][cat] = list.map(r => r.packId ? { from: r.from, to: r.to, packId: r.packId } : { from: r.from, to: r.to, coins: r.coins || 0, gems: r.gems || 0 });
+  $('#lbErr').textContent = ''; lbDirty(false); lbRender();
+}
+document.addEventListener('submit', e => {
+  const f = e.target.closest('.lbadd'); if (!f) return;
+  e.preventDefault();
+  const v = k => f.querySelector('[data-k=' + k + ']').value, period = f.dataset.p, cat = v('cat');
+  const row = v('pack') ? { from: +v('from'), to: +v('to'), packId: v('pack') } : { from: +v('from'), to: +v('to'), coins: +v('coins'), gems: +v('gems') };
+  if (!row.packId && !row.coins && !row.gems) { toast(ERR.bad_prize); return; }
+  (LBC[period][cat] = LBC[period][cat] || []).push(row); LBC[period][cat].sort((a, b) => a.from - b.from);
+  lbDirty(true); lbRender();
+});
+document.addEventListener('click', async e => {
+  const d = e.target.closest('[data-lb-del]');
+  if (d) { const [period, cat, i] = d.dataset.lbDel.split('|'); LBC[period][cat].splice(+i, 1); if (!LBC[period][cat].length) delete LBC[period][cat]; lbDirty(true); lbRender(); return; }
+  if (e.target.closest('#lbSave')) { $('#lbErr').textContent = ''; try { await api('/lbprizes/save', { config: LBC }); toast('انحفظت الجوائز'); loadLb(); } catch (x) { $('#lbErr').textContent = errText(x.code); } return; }
+  if (e.target.closest('#lbReset')) { if (!confirm('ترجع الجوائز الافتراضية؟ (الأول بالليلة ٣٠٠، وأول ٣ بالأسبوع ٥٬٠٠٠ / ٢٬٥٠٠ / ١٬٠٠٠ بنقاط الرتبة)')) return; try { await api('/lbprizes/save', { reset: true }); toast('رجعت الافتراضية'); loadLb(); } catch (x) { toast(errText(x.code)); } }
+});
+loaders.lbprizes = loadLb;
+Object.assign(ACT, { lbprizes_save: 'حفظ جوائز التصنيفات' });
 
 // ------------------------------------------------------------------ start: a valid cookie goes straight in
 api('/overview').then(() => showApp()).catch(() => showLogin());

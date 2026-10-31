@@ -23,6 +23,7 @@ namespace MafiaNight.UI.Kit
         public float fill;                                        // 0..1 progress towards the tenth place
         public int resetInSeconds;
         public bool failed;                                       // the server could not be reached
+        public string prizeText;                                  // what the first places win when the period is over (null: no prizes)
     }
 
     /// <summary>One plaque or record card of the hall of fame; Name == null means nobody holds it yet.</summary>

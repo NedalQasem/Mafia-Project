@@ -15,6 +15,7 @@ function createLeaderboard({ chat, cfg = {}, now = () => Date.now(), log = conso
   let state = { days: {}, weeks: {}, streak: {}, all: {} };
   try { if (file) state = Object.assign(state, JSON.parse(fs.readFileSync(file, 'utf8'))); } catch { /* first run */ }
   let timer = null;
+  let prizes = null;                // the prizes of the boards (lbprizes.js), set after both exist
 
   function save() {
     if (!file || timer) return;
@@ -72,9 +73,10 @@ function createLeaderboard({ chat, cfg = {}, now = () => Date.now(), log = conso
 
   // ---------------------------------------------------------------- reading
 
-  function table(period) {
-    if (period === 'day') return state.days[dayKey()] || {};
-    if (period === 'week') return state.weeks[weekKey()] || {};
+  // key: a finished day or week (its dayKey / weekKey); without it the current one
+  function table(period, key) {
+    if (period === 'day') return state.days[key || dayKey()] || {};
+    if (period === 'week') return state.weeks[key || weekKey()] || {};
     throw new ChatError('bad_period');
   }
 
@@ -84,8 +86,8 @@ function createLeaderboard({ chat, cfg = {}, now = () => Date.now(), log = conso
     return Math.max(0, cat === 4 ? Math.floor(v / 60) : v);
   }
 
-  function ranked(period, cat) {
-    const t = table(period);
+  function ranked(period, cat, key) {
+    const t = table(period, key);
     const list = [];
     for (const [pf, e] of Object.entries(t)) { const v = shown(cat, e); if (v > 0) list.push({ pf, value: v, games: e.games }); }
     list.sort((a, b) => b.value - a.value || a.games - b.games || (a.pf < b.pf ? -1 : 1));
@@ -106,7 +108,7 @@ function createLeaderboard({ chat, cfg = {}, now = () => Date.now(), log = conso
     const myValue = mine >= 0 ? all[mine].value : 0;
     const p = await chat.who(pf);
     return {
-      ok: true, period, cat, resetIn: secondsToReset(period), top,
+      ok: true, period, cat, resetIn: secondsToReset(period), top, prizes: prizes ? prizes.forBoard(period, cat) : [],
       me: { name: p.name, rank: p.rank, level: p.level, value: myValue, position: mine >= 0 ? mine + 1 : 0, tenth, need: mine >= 0 && mine < 10 ? 0 : Math.max(1, tenth - myValue + 1) },
     };
   }
@@ -153,7 +155,10 @@ function createLeaderboard({ chat, cfg = {}, now = () => Date.now(), log = conso
     for (let i = 0; i < days; i++) { const t = state.days[dayKey(now() - i * DAY_MS)]; if (t) for (const pf of Object.keys(t)) out.add(pf); }
     return [...out];
   }
-  return { record, board, wall, purge, flushNow, playerStats, playerCount, activePlayers, secondsToReset, dayKey, weekKey, CATS, _state: () => state };
+  /** The ranking of a finished day or week in one category (for its prizes): [{ pf, value }] best first, only players above zero. */
+  function rankedAt(period, key, cat) { return ranked(period, cat, key).map(r => ({ pf: r.pf, value: r.value })); }
+  function setPrizes(p) { prizes = p; }
+  return { record, board, wall, purge, flushNow, playerStats, playerCount, activePlayers, secondsToReset, dayKey, weekKey, rankedAt, setPrizes, CATS, _state: () => state };
 }
 
 module.exports = { createLeaderboard, CATS };
