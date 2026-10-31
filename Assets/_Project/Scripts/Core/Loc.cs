@@ -55,9 +55,28 @@ namespace MafiaNight.Core
             return new Regex(sb.ToString(), RegexOptions.Singleline | RegexOptions.CultureInvariant);
         }
 
-        private static string FromPatterns(string ar)
+        // a part of a line: its own English line (a whole text or a pattern), or a list of such parts ("٥٠٠ كوينز، ٢ جوهرة")
+        private static string TranslatePart(string part, int depth)
         {
-            if (cache.TryGetValue(ar, out var done)) return done;
+            string key = part.Trim();
+            if (table.TryGetValue(key, out var en)) return en;
+            if (depth < 3)
+            {
+                var own = FromPatterns(key, depth);
+                if (own != null) return own;
+                if (key.Contains("، "))
+                {
+                    var items = key.Split(new[] { "، " }, System.StringSplitOptions.None);
+                    for (int i = 0; i < items.Length; i++) items[i] = TranslatePart(items[i], depth + 1);
+                    return string.Join(", ", items);
+                }
+            }
+            return part;
+        }
+
+        private static string FromPatterns(string ar, int depth = 0)
+        {
+            if (depth == 0 && cache.TryGetValue(ar, out var done)) return done;
             string result = null;
             foreach (var p in patterns)
             {
@@ -68,12 +87,11 @@ namespace MafiaNight.Core
                     var grp = m.Groups["g" + g.Groups[1].Value];
                     if (!grp.Success) return g.Value;
                     string part = grp.Value;
-                    return LatinDigits(table.TryGetValue(part.Trim(), out var en) ? en : part);
+                    return LatinDigits(TranslatePart(part, depth + 1));
                 });
                 break;
             }
-            if (cache.Count > 4000) cache.Clear();
-            cache[ar] = result;
+            if (depth == 0) { if (cache.Count > 4000) cache.Clear(); cache[ar] = result; }
             return result;
         }
 
