@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace MafiaNight.Core
@@ -13,11 +14,13 @@ namespace MafiaNight.Core
         public static bool English => PlayerPrefs.GetString(GameConstants.PREF_LANGUAGE, "ar") == "en";
 
         private static Dictionary<string, string> table;
+        private static List<KeyValuePair<Regex, string>> patterns;                 // texts with {0}, {1}... in the table: numbers, names, any part of the line
+        private static readonly Dictionary<string, string> cache = new Dictionary<string, string>();
 
         private static void Load()
         {
             if (table != null) return;
-            table = new Dictionary<string, string>();
+            table = new Dictionary<string, string>(); patterns = new List<KeyValuePair<Regex, string>>(); cache.Clear();
             var asset = Resources.Load<TextAsset>("Kit/lang_en");
             if (asset == null) return;
             foreach (var raw in asset.text.Split('\n'))
@@ -27,8 +30,51 @@ namespace MafiaNight.Core
                 int tab = line.IndexOf('\t');
                 if (tab <= 0) continue;
                 string ar = line.Substring(0, tab).Trim(), en = line.Substring(tab + 1).Trim();
-                if (ar.Length > 0 && en.Length > 0) table[ar] = en.Replace("\\n", "\n");
+                if (ar.Length == 0 || en.Length == 0) continue;
+                ar = ar.Replace("\\n", "\n");
+                en = en.Replace("\\n", "\n");
+                if (ar.Contains("{")) patterns.Add(new KeyValuePair<Regex, string>(ToRegex(ar), en)); else table[ar] = en;
             }
+        }
+
+        // "قبل {0} دقيقة" matches "قبل ٥ دقيقة": {0} is a number, {*0} any part of the line; each arrives in the English line as {0} (Arabic digits turned Latin,
+        // and a part that is itself a translated text translated)
+        private static Regex ToRegex(string key)
+        {
+            var sb = new System.Text.StringBuilder("^");
+            int i = 0;
+            foreach (Match m in Regex.Matches(key, @"\{(\*?)(\d)\}"))
+            {
+                sb.Append(Regex.Escape(key.Substring(i, m.Index - i)));
+                // {0} is a number (digits, separators, a clock time); {*0} is any part of the line (a name, a time phrase)
+                sb.Append("(?<g" + m.Groups[2].Value + ">" + (m.Groups[1].Value == "*" ? ".+?" : @"[0-9٠-٩][0-9٠-٩٬٫.,:/\-]*") + ")");
+
+                i = m.Index + m.Length;
+            }
+            sb.Append(Regex.Escape(key.Substring(i))).Append("$");
+            return new Regex(sb.ToString(), RegexOptions.Singleline | RegexOptions.CultureInvariant);
+        }
+
+        private static string FromPatterns(string ar)
+        {
+            if (cache.TryGetValue(ar, out var done)) return done;
+            string result = null;
+            foreach (var p in patterns)
+            {
+                var m = p.Key.Match(ar);
+                if (!m.Success) continue;
+                result = Regex.Replace(p.Value, @"\{(\d)\}", g =>
+                {
+                    var grp = m.Groups["g" + g.Groups[1].Value];
+                    if (!grp.Success) return g.Value;
+                    string part = grp.Value;
+                    return LatinDigits(table.TryGetValue(part.Trim(), out var en) ? en : part);
+                });
+                break;
+            }
+            if (cache.Count > 4000) cache.Clear();
+            cache[ar] = result;
+            return result;
         }
 
         /// <summary>Reloads the table (after the file changed in the editor).</summary>
@@ -39,7 +85,9 @@ namespace MafiaNight.Core
         {
             if (!English || string.IsNullOrEmpty(ar)) return ar;
             Load();
-            return table.TryGetValue(ar.Trim(), out var en) ? en : ar;
+            string key = ar.Trim();
+            if (table.TryGetValue(key, out var en)) return en;
+            return patterns.Count > 0 ? (FromPatterns(key) ?? ar) : ar;
         }
 
         /// <summary>An Arabic text with its English twin written in the code.</summary>
@@ -47,6 +95,9 @@ namespace MafiaNight.Core
 
         /// <summary>A text with numbers or names: both formats take the same arguments ({0}, {1}...). Digits come out as the language's own.</summary>
         public static string F(string arFormat, string enFormat, params object[] args) => string.Format(English ? enFormat : arFormat, args);
+
+        /// <summary>Arabic texts the screens asked for in English that the table does not have (collected while the game runs in English; for finding what is left to translate).</summary>
+        public static readonly HashSet<string> Missing = new HashSet<string>();
 
         /// <summary>True when the table has this Arabic text.</summary>
         public static bool Has(string ar) { if (string.IsNullOrEmpty(ar)) return false; Load(); return table.ContainsKey(ar.Trim()); }

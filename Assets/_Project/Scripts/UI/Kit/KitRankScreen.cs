@@ -69,6 +69,28 @@ namespace MafiaNight.UI.Kit
             if (sheetLayer != null) sheetLayer.SetActive(false);
         }
 
+        private ArabicText nameEn;
+
+        // the rank's name on the membership card is a picture of Arabic calligraphy: in English a live text takes its place
+        private void ShowEnglishRankName(int rank)
+        {
+            bool en = MafiaNight.Core.Loc.English;
+            nameImg.enabled = !en;
+            if (!en) { if (nameEn != null) nameEn.gameObject.SetActive(false); return; }
+            if (nameEn == null)
+            {
+                var go = new GameObject("RankNameEn", typeof(RectTransform));
+                var r = (RectTransform)go.transform; r.SetParent(nameImg.transform.parent, false);
+                var src = nameImg.rectTransform;
+                r.anchorMin = src.anchorMin; r.anchorMax = src.anchorMax; r.pivot = src.pivot; r.anchoredPosition = src.anchoredPosition; r.sizeDelta = new Vector2(300f * K, 40f * K);
+                var tm = go.AddComponent<TMPro.TextMeshProUGUI>(); tm.font = playerName.font; tm.fontStyle = TMPro.FontStyles.Bold; tm.fontSize = 22f * K; tm.color = nameImg.color; tm.raycastTarget = false;
+                tm.alignment = TMPro.TextAlignmentOptions.MidlineRight;       // as the Arabic one sits: the mirror turns it to the left
+                nameEn = go.AddComponent<ArabicText>();
+            }
+            nameEn.gameObject.SetActive(true);
+            nameEn.Text = KitTheme.RankNames[rank];
+        }
+
         /// <summary>Draws everything for a player with this many rank points. number = his account number ("" hides it).</summary>
         public void Show(string player, string number, int rankPoints)
         {
@@ -79,6 +101,7 @@ namespace MafiaNight.UI.Kit
 
             medal.sprite = medals[rank];
             nameImg.sprite = names[rank]; nameImg.SetNativeSize();
+            ShowEnglishRankName(rank);
             KitBagScreen.SetText(cardNumber, string.IsNullOrEmpty(number) ? "" : "رقم " + number, 0f);
             KitBagScreen.SetText(playerName, player ?? "", 230f);
             for (int i = 0; i < 3; i++) { bullets[i].sprite = bulletOn; bullets[i].color = i <= st.Tier - 1 ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.3f); }    // the empty ones are the same bullet, dim

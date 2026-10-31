@@ -43,7 +43,7 @@ namespace MafiaNight.UI.Kit
         private bool mirroredNow;
 
         /// <summary>
-        /// English mode draws the canvas in a mirror (<see cref="KitLocale"/>): this text is flipped back so its letters read normally, and aligned the
+        /// English mode draws the canvas in a mirror (<see cref="KitLocale"/>): the letters of this text are flipped back so they read normally, and it is aligned the
         /// other way (what was at the right of its box in Arabic sits at the left of the mirrored box).
         /// </summary>
         public void SetMirrored(bool on)
@@ -57,8 +57,22 @@ namespace MafiaNight.UI.Kit
                 if (h == HorizontalAlignmentOptions.Left) tmp.horizontalAlignment = HorizontalAlignmentOptions.Right;
                 else if (h == HorizontalAlignmentOptions.Right) tmp.horizontalAlignment = HorizontalAlignmentOptions.Left;
             }
-            transform.localRotation = transform.localRotation * Quaternion.Euler(0f, 180f, 0f);      // turned back: the letters read normally in the mirror
+            // the letters are mirrored back where they are drawn (about the middle of the box), so a text keeps its box and nothing needs the pivot to be in the middle
+            if (tmp != null) { tmp.OnPreRenderText -= FlipLetters; if (on) tmp.OnPreRenderText += FlipLetters; }
             Refresh();
+            if (tmp != null) tmp.ForceMeshUpdate();
+        }
+
+        private void FlipLetters(TMP_TextInfo info)
+        {
+            float cx = tmp.rectTransform.rect.center.x;
+            var meshes = info.meshInfo;
+            for (int m = 0; m < meshes.Length; m++)
+            {
+                var v = meshes[m].vertices; if (v == null) continue;
+                int n = Mathf.Min(meshes[m].vertexCount, v.Length);
+                for (int i = 0; i < n; i++) v[i].x = 2f * cx - v[i].x;
+            }
         }
         protected override void OnRectTransformDimensionsChange() { base.OnRectTransformDimensionsChange(); if (wrap) Refresh(); }
 #if UNITY_EDITOR
@@ -88,9 +102,13 @@ namespace MafiaNight.UI.Kit
                     if (!ArabicShaper.ContainsArabic(en))
                     {
                         tmp.textWrappingMode = wrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+                        tmp.textWrappingMode = wrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+                        // English is usually longer than the Arabic the boxes were drawn for: a one-line text shrinks (down to half) rather than run into its neighbour
+                        if (!wrap && !tmp.enableAutoSizing) { tmp.fontSizeMax = tmp.fontSize; tmp.fontSizeMin = tmp.fontSize * 0.5f; tmp.enableAutoSizing = true; }
                         tmp.text = en;
                         return;
                     }
+                    if (!string.IsNullOrWhiteSpace(text)) Loc.Missing.Add(text.Trim());
                 }
                 if (!ArabicShaper.ContainsArabic(text)) { tmp.text = text; return; }
                 tmp.text = wrap ? WrapShaped() : Shape(text);
