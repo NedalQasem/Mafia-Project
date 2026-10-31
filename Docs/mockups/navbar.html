@@ -266,14 +266,14 @@ body.wide .phone{height:470px;border-radius:22px}
 </defs></svg>
 
 <h1>الشريط السفلي: خمس أفكار</h1>
-<p class="sub">نفس التبويبات الخمسة بكل الأفكار. الأيقونات رسومات مافيا: محل للسوق، رجال العيلة للعائلة، البيت للغرف، مسدسين للرتب، والسيارة (أو الخزنة) للإعدادات. فيك تقلبها لأيقونات خطوط من الأزرار. اضغط على أي تبويب لتجرّب. الأرقام: ٣ على العائلة، نقطة على الرتب، وعدد المتصلين على الغرف.</p>
+<p class="sub">نفس التبويبات الخمسة بكل الأفكار. الأيقونات رسومات مافيا: محل للسوق، رجال العيلة للعائلة، البيت للغرف، مسدسين للرتب، والخزنة للإعدادات (اختيار صاحب المشروع). فيك تقلبها لأيقونات خطوط من الأزرار. اضغط على أي تبويب لتجرّب. الأرقام: ٣ على العائلة، نقطة على الرتب، وعدد المتصلين على الغرف.</p>
 <div class="ctl">
   <button data-lang="ar" class="on">عربي</button><button data-lang="en">English</button>
   <span style="width:12px"></span>
   <span style="width:12px"></span>
   <button data-set="mafia" class="on">أيقونات مافيا</button><button data-set="line">أيقونات خطوط</button>
   <span style="width:12px"></span>
-  <button data-st="car" class="on">الإعدادات: سيارة</button><button data-st="safe">الإعدادات: خزنة</button>
+  <button data-st="safe" class="on">الإعدادات: خزنة</button><button data-st="car">الإعدادات: سيارة</button>
   <span style="width:12px"></span>
   <button data-w="" class="on">موبايل</button><button data-w="narrow">موبايل صغير</button><button data-w="wide">تابلت</button>
 </div>
@@ -296,7 +296,7 @@ const IDEAS = [
   { c: 'E', name: 'هـ · ختم الدون', cap: 'جلد غامق والأيقونات محفورة فيه. لما تختار تبويب بينطبع عليه ختم شمع أحمر بنقطة شمع سايلة، والاسم بخط الرقعة، كأنه الدون وقّع.' },
 ];
 const ar = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
-let lang = 'ar', iconSet = 'mafia', settingsIcon = 'car';
+let lang = 'ar', iconSet = 'mafia', settingsIcon = 'safe';
 const state = { A: 'rooms', B: 'rooms', C: 'rooms', D: 'rooms', E: 'rooms' };
 
 function tabHtml(c, t) {
