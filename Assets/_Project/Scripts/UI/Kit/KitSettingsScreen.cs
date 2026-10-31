@@ -168,6 +168,7 @@ namespace MafiaNight.UI.Kit
             for (int i = 0; i < meter.Length; i++)
             {
                 if (meter[i] == null) continue;
+                var br = meter[i].rectTransform; br.sizeDelta = new Vector2(br.sizeDelta.x, i < n ? 18f * 1080f / 390f : 18f * 1080f / 390f * 0.3f);      // lit bars stand tall, the others are short dashes (settings.html ".vu i")
                 meter[i].color = i < n ? (i > 17 ? new Color32(0xE0, 0x43, 0x4B, 255) : i > 12 ? new Color32(0xE0, 0xB0, 0x40, 255) : new Color32(0x43, 0xC0, 0x8A, 255)) : new Color32(0x22, 0x22, 0x22, 255);
             }
         }

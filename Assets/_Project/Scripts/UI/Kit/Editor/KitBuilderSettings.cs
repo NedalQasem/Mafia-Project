@@ -9,6 +9,36 @@ namespace MafiaNight.UI.Kit.Editor
     {
         private const string SettingsScenePath = "Assets/_Project/Scenes/UIKitSettings.unity";
 
+        private const string SettingsArt = "Assets/_Project/Art/UI/Settings/";
+
+        /// <summary>Imports a settings sprite exported by Docs/mockups/export-settings.js: texels per CSS px; border (CSS px, padding included) for sliced ones.</summary>
+        private static Sprite SetSpr(string name, float texPerCss, float l = 0f, float b = 0f, float r = 0f, float t = 0f)
+        {
+            string path = SettingsArt + name + ".png";
+            AssetDatabase.ImportAsset(path);
+            var ti = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (ti != null)
+            {
+                ti.textureType = TextureImporterType.Sprite; ti.spriteImportMode = SpriteImportMode.Single; ti.mipmapEnabled = false;
+                ti.alphaIsTransparency = true; ti.filterMode = FilterMode.Bilinear; ti.wrapMode = TextureWrapMode.Clamp;
+                ti.textureCompression = TextureImporterCompression.Uncompressed; ti.maxTextureSize = 4096; ti.npotScale = TextureImporterNPOTScale.None;
+                ti.spritePixelsPerUnit = 100f * texPerCss / NK;
+                ti.spriteBorder = new Vector4(l, b, r, t) * texPerCss;
+                ti.SaveAndReimport();
+            }
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        /// <summary>A sprite image behind something, sticking out by <paramref name="grow"/> CSS px on every side (the shadow room of the sprite).</summary>
+        private static Image Backing(Transform parent, string name, Sprite s, float growCss, bool sliced = true)
+        {
+            var g = Go(name, parent); g.transform.SetAsFirstSibling();
+            g.AddComponent<LayoutElement>().ignoreLayout = true;
+            float e = -growCss * NK; Stretch(Rt(g), e, e, e, e);
+            var i = g.AddComponent<Image>(); i.sprite = s; i.type = sliced ? Image.Type.Sliced : Image.Type.Simple; i.raycastTarget = false; i.color = Color.white;
+            return i;
+        }
+
         private static void BuildSettings(KitTheme th)
         {
             var arrow = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/DropdownArrow.psd");
@@ -16,6 +46,8 @@ namespace MafiaNight.UI.Kit.Editor
             var amber = new Color32(0xFF, 0xB3, 0x5A, 255);
 
             var canvasGo = NewAppCanvas(th, new Color(0.075f, 0.055f, 0.045f));
+            var pageBg = canvasGo.transform.Find("Background");
+            if (pageBg != null) { var pbi = pageBg.GetComponent<Image>(); if (pbi != null) { pbi.sprite = SetSpr("set_bg", 2f); pbi.color = Color.white; pbi.type = Image.Type.Simple; } }
             var screen = Go("SettingsScreen", canvasGo.transform); Stretch(Rt(screen));
             var scrollGo = Go("Scroll", screen.transform);
             var sr = Rt(scrollGo); sr.anchorMin = Vector2.zero; sr.anchorMax = Vector2.one; sr.offsetMin = new Vector2(0, 0); sr.offsetMax = new Vector2(0, -150);
@@ -23,18 +55,25 @@ namespace MafiaNight.UI.Kit.Editor
             var vp = Go("Viewport", scrollGo.transform); Stretch(Rt(vp)); vp.AddComponent<RectMask2D>(); vp.AddComponent<Image>().color = Color.clear;
             var content = Go("Content", vp.transform);
             var cRt = Rt(content); cRt.anchorMin = new Vector2(0, 1); cRt.anchorMax = new Vector2(1, 1); cRt.pivot = new Vector2(0.5f, 1); cRt.anchoredPosition = Vector2.zero; cRt.sizeDelta = Vector2.zero;
-            var vlg = content.AddComponent<VerticalLayoutGroup>(); vlg.spacing = 20; vlg.padding = new RectOffset(0, 0, 26, 90); vlg.childAlignment = TextAnchor.UpperCenter;
+            var vlg = content.AddComponent<VerticalLayoutGroup>(); vlg.spacing = 33; vlg.padding = new RectOffset(0, 0, 26, 90); vlg.childAlignment = TextAnchor.UpperCenter;
             vlg.childControlWidth = false; vlg.childControlHeight = true; vlg.childForceExpandWidth = false; vlg.childForceExpandHeight = false;
             content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             scroll.viewport = Rt(vp); scroll.content = cRt;
 
-            // ---- player ID strip (name, level and avatar are already in the top bar)
+            // ---- the ID card (settings.html ".me"): paper, ribbon, avatar, name and rank, the id number pill. The live values come from AccountIdFlow.
             {
-                var me = Go("IdStrip", content.transform); Rt(me).sizeDelta = new Vector2(1000, 110);
-                me.AddComponent<LayoutElement>().preferredHeight = 110;
-                Img(me, th.slotDark, true, 2f);
-                var idl = Txt(me.transform, "L", "رقم الهوية", th.fontBody, 34, th.ivoryDim, TextAlignmentOptions.MidlineRight); Place(Rt(idl.gameObject), new Vector2(1, 0.5f), new Vector2(-230, 0), new Vector2(380, 60));
-                var idv = Txt(me.transform, "V", "٠٤٢٧٧١", th.fontHeading, 52, th.brassLight, TextAlignmentOptions.MidlineLeft); Place(Rt(idv.gameObject), new Vector2(0, 0.5f), new Vector2(230, 0), new Vector2(380, 70));
+                var me = Go("IdStrip", content.transform); Rt(me).sizeDelta = new Vector2(1000, 76 * NK);
+                me.AddComponent<LayoutElement>().preferredHeight = 76 * NK;
+                me.transform.localRotation = Quaternion.Euler(0f, 0f, 0.8f);
+                Backing(me.transform, "Paper", SetSpr("set_me", 4f, 30, 36, 56, 36), 16f);
+                var av = InstChild("AvatarFrame", me.transform, "Avatar"); Place(Rt(av), new Vector2(1, 0.5f), new Vector2(-(12f + 27.4f) * NK, 0), new Vector2(54.75f * NK, 54.75f * NK));
+                var ink = new Color32(0x1C, 0x17, 0x0F, 255); var inkSoft = new Color32(0x6A, 0x5A, 0x3A, 255);
+                var nm = Txt(me.transform, "Name", "لاعب", FindFont("amiri") ?? th.fontBody, 58, ink, TextAlignmentOptions.MidlineRight); Place(Rt(nm.gameObject), new Vector2(1, 0.5f), new Vector2(-(80f * NK) - 260f, 12f * NK), new Vector2(520, 70));
+                var sb = Txt(me.transform, "Sub", "", th.fontBody, 28, inkSoft, TextAlignmentOptions.MidlineRight); sb.fontStyle = FontStyles.Bold; Place(Rt(sb.gameObject), new Vector2(1, 0.5f), new Vector2(-(80f * NK) - 260f, -16f * NK), new Vector2(520, 44));
+                var idl = Txt(me.transform, "L", "رقم الهوية", th.fontBody, 24, inkSoft, TextAlignmentOptions.Center); idl.fontStyle = FontStyles.Bold; Place(Rt(idl.gameObject), new Vector2(0, 0.5f), new Vector2(41.6f * NK, 8.4f * NK), new Vector2(200, 40));
+                var pill = Go("Pill", me.transform); Place(Rt(pill), new Vector2(0, 0.5f), new Vector2(41.6f * NK, -15f * NK), new Vector2(54.3f * NK, 27.8f * NK));
+                var pi2 = pill.AddComponent<Image>(); pi2.sprite = SetSpr("set_idc", 6f, 16, 16, 16, 16); pi2.type = Image.Type.Sliced; pi2.raycastTarget = false;
+                var idv = Txt(me.transform, "V", "٠٤٢٧٧١", th.fontHeading, 38, ink, TextAlignmentOptions.Center); Place(Rt(idv.gameObject), new Vector2(0, 0.5f), new Vector2(41.6f * NK, -15f * NK), new Vector2(54.3f * NK, 60));
             }
 
             var sections = new System.Collections.Generic.List<KitSettingsSection>();
@@ -44,23 +83,26 @@ namespace MafiaNight.UI.Kit.Editor
             {
                 var root = Go("Section_" + title, content.transform); Rt(root).sizeDelta = new Vector2(1000, 140);
                 var rv = root.AddComponent<VerticalLayoutGroup>(); rv.childControlWidth = false; rv.childControlHeight = true; rv.childForceExpandWidth = false; rv.childForceExpandHeight = false; rv.spacing = 0;
-                var hd = Go("Header", root.transform); Rt(hd).sizeDelta = new Vector2(1000, 140);
-                hd.AddComponent<LayoutElement>().preferredHeight = 140;
-                var hi = Img(hd, th.leatherDark, true, 1f, true);
+                Backing(root.transform, "Leather", SetSpr("set_sec", 4f, 28, 28, 28, 28), 14f);
+                var hd = Go("Header", root.transform); Rt(hd).sizeDelta = new Vector2(1000, 54 * NK);
+                hd.AddComponent<LayoutElement>().preferredHeight = 54 * NK;
+                var hi = hd.AddComponent<Image>(); hi.color = Color.clear;
                 var hb = hd.AddComponent<Button>(); hb.targetGraphic = hi; hb.transition = Selectable.Transition.None;
-                var ic = Go("Icon", hd.transform); Place(Rt(ic), new Vector2(1, 0.5f), new Vector2(-84, 4), new Vector2(84, 84)); Img(ic, icon);
-                var tt = Txt(hd.transform, "Title", title, th.fontHeading, 46, th.leatherText, TextAlignmentOptions.MidlineRight); Place(Rt(tt.gameObject), new Vector2(1, 0.5f), new Vector2(-520, 26), new Vector2(620, 60));
-                var ss = Txt(hd.transform, "Sub", sub, th.fontBody, 26, th.ivoryDim, TextAlignmentOptions.MidlineRight); Place(Rt(ss.gameObject), new Vector2(1, 0.5f), new Vector2(-520, -26), new Vector2(620, 40));
-                var chev = Go("Chevron", hd.transform); Place(Rt(chev), new Vector2(0, 0.5f), new Vector2(64, 6), new Vector2(46, 46)); var ci = Img(chev, arrow); ci.color = th.brass;
+                var ic = Go("Icon", hd.transform); Place(Rt(ic), new Vector2(1, 0.5f), new Vector2(-(14f + 15f) * NK, 0), new Vector2(30 * NK, 30 * NK)); Img(ic, icon);
+                var tt = Txt(hd.transform, "Title", title, th.fontHeading, 46, th.leatherText, TextAlignmentOptions.MidlineRight); Place(Rt(tt.gameObject), new Vector2(1, 0.5f), new Vector2(-(14f + 30f + 10f) * NK - 310f, 8f), new Vector2(620, 60));
+                var ss = Txt(hd.transform, "Sub", sub, th.fontBody, 26, th.ivoryDim, TextAlignmentOptions.MidlineRight); Place(Rt(ss.gameObject), new Vector2(1, 0.5f), new Vector2(-(14f + 30f + 10f) * NK - 310f, -34f), new Vector2(620, 40));
+                var chev = Go("Chevron", hd.transform); Place(Rt(chev), new Vector2(0, 0.5f), new Vector2((14f + 9f) * NK, 0), new Vector2(18 * NK, 18 * NK)); var ci = Img(chev, arrow); ci.color = th.brass;
                 var body = Go("Body", root.transform); Rt(body).sizeDelta = new Vector2(1000, 0);
                 var bl = body.AddComponent<LayoutElement>(); bl.preferredHeight = 0;
                 body.AddComponent<RectMask2D>();
-                var bg = body.AddComponent<Image>(); bg.color = new Color(0, 0, 0, 0.28f); bg.raycastTarget = false;
                 var ct = Go("Content", body.transform); contentRt = Rt(ct);
                 contentRt.anchorMin = new Vector2(0, 1); contentRt.anchorMax = new Vector2(1, 1); contentRt.pivot = new Vector2(0.5f, 1); contentRt.anchoredPosition = Vector2.zero; contentRt.sizeDelta = new Vector2(0, 100);
                 var cv = ct.AddComponent<VerticalLayoutGroup>(); cv.padding = new RectOffset(30, 30, 22, 26); cv.spacing = 10; cv.childControlWidth = true; cv.childControlHeight = true; cv.childForceExpandWidth = true; cv.childForceExpandHeight = false;
                 ct.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                var lineGo = Go("OpenLine", hd.transform); var lr = Rt(lineGo); lr.anchorMin = new Vector2(0, 0); lr.anchorMax = new Vector2(1, 0); lr.pivot = new Vector2(0.5f, 0); lr.offsetMin = new Vector2(14 * NK, 0); lr.offsetMax = new Vector2(-14 * NK, 3);
+                var lineImg = lineGo.AddComponent<Image>(); lineImg.sprite = SetSpr("set_secline", 6f); lineImg.type = Image.Type.Simple; lineImg.preserveAspect = false; lineImg.raycastTarget = false;
                 var sec = root.AddComponent<KitSettingsSection>();
+                SetRef(sec, "openLine", lineGo);
                 SetRef(sec, "header", hb); SetRef(sec, "body", Rt(body)); SetRef(sec, "content", contentRt); SetRef(sec, "chevron", Rt(chev)); SetRef(sec, "bodyLayout", bl);
                 var so = new SerializedObject(sec); so.FindProperty("openAtStart").boolValue = open; so.ApplyModifiedPropertiesWithoutUndo();
                 sections.Add(sec);
@@ -71,7 +113,7 @@ namespace MafiaNight.UI.Kit.Editor
             {
                 var row = Go("Toggle_" + title, parent); Rt(row).sizeDelta = new Vector2(940, sub == null ? 100 : 118);
                 row.AddComponent<LayoutElement>().preferredHeight = sub == null ? 100 : 118;
-                var t = Txt(row.transform, "T", title, th.fontBody, 36, th.leatherText, TextAlignmentOptions.MidlineRight); Place(Rt(t.gameObject), new Vector2(1, 0.5f), new Vector2(-330, sub == null ? 0 : 22), new Vector2(620, 50));
+                var t = Txt(row.transform, "T", title, th.fontBody, 36, th.leatherText, TextAlignmentOptions.MidlineRight); t.fontStyle = FontStyles.Bold; Place(Rt(t.gameObject), new Vector2(1, 0.5f), new Vector2(-330, sub == null ? 0 : 22), new Vector2(620, 50));
                 if (sub != null) { var s2 = Txt(row.transform, "S", sub, th.fontBody, 26, th.ivoryDim, TextAlignmentOptions.MidlineRight); Place(Rt(s2.gameObject), new Vector2(1, 0.5f), new Vector2(-330, -26), new Vector2(620, 36)); }
                 var tg = Go("Toggle", row.transform); Place(Rt(tg), new Vector2(0, 0.5f), new Vector2(90, 0), new Vector2(140, 74));
                 var ti = Img(tg, th.togOff, false, 1f, true); ti.preserveAspect = false;
@@ -114,7 +156,7 @@ namespace MafiaNight.UI.Kit.Editor
                 var row = Go("Link_" + title, parent); Rt(row).sizeDelta = new Vector2(940, 96);
                 row.AddComponent<LayoutElement>().preferredHeight = 96;
                 var img = row.AddComponent<Image>(); img.color = new Color(1, 1, 1, 0.04f);
-                var t = Txt(row.transform, "T", title, th.fontBody, 36, th.leatherText, TextAlignmentOptions.MidlineRight); Place(Rt(t.gameObject), new Vector2(1, 0.5f), new Vector2(-320, 0), new Vector2(600, 56));
+                var t = Txt(row.transform, "T", title, th.fontBody, 36, th.leatherText, TextAlignmentOptions.MidlineRight); t.fontStyle = FontStyles.Bold; Place(Rt(t.gameObject), new Vector2(1, 0.5f), new Vector2(-320, 0), new Vector2(600, 56));
                 if (extra != null) { var e = Txt(row.transform, "E", extra, th.fontBody, 26, th.ivoryDim, TextAlignmentOptions.MidlineLeft); Place(Rt(e.gameObject), new Vector2(0, 0.5f), new Vector2(190, 0), new Vector2(300, 40)); }
                 var ch = Go("Arrow", row.transform); Place(Rt(ch), new Vector2(0, 0.5f), new Vector2(36, 0), new Vector2(36, 36)); var chi = Img(ch, arrow); chi.color = th.ivoryDim; ch.transform.localRotation = Quaternion.Euler(0, 0, 90f);
                 return row;
@@ -124,38 +166,46 @@ namespace MafiaNight.UI.Kit.Editor
             // ---- voice (radio panel)
             MakeSection("الصوت", "المايك والسماعة والكتم", th.iconMic, true, out c);
             {
-                var panel = Go("RadioPanel", c); Rt(panel).sizeDelta = new Vector2(940, 700);
-                panel.AddComponent<LayoutElement>().preferredHeight = 700;
-                var pi = Img(panel, th.leatherDark, true, 1f); pi.color = new Color(1.25f, 0.95f, 0.8f, 1f);
+                var panel = Go("RadioPanel", c); Rt(panel).sizeDelta = new Vector2(940, 283 * NK);
+                panel.AddComponent<LayoutElement>().preferredHeight = 283 * NK;
+                Backing(panel.transform, "Body", SetSpr("set_radio", 4f, 30, 30, 30, 30), 14f);
                 KitKnob MakeKnob(string name, string label, float x, int start, out ArabicText val)
                 {
-                    var d = Go("Dial_" + name, panel.transform); Place(Rt(d), new Vector2(0.5f, 1), new Vector2(x, -170), new Vector2(250, 250));
+                    var d = Go("Dial_" + name, panel.transform); PlaceTop(Rt(d), x, -14f * NK, 104f * NK, 104f * NK);
                     var hit = d.AddComponent<Image>(); hit.color = Color.clear; hit.raycastTarget = true;
-                    var tk = Go("Ticks", d.transform); Stretch(Rt(tk)); Img(tk, th.dialTicks);
-                    var fc = Go("Face", d.transform); Stretch(Rt(fc)); Img(fc, th.knobFace);
-                    var pt = Go("Pointer", fc.transform); var pr = Rt(pt); pr.anchorMin = pr.anchorMax = new Vector2(0.5f, 0.5f); pr.pivot = new Vector2(0.5f, 0f); pr.sizeDelta = new Vector2(12, 74); pr.anchoredPosition = Vector2.zero;
-                    var pim = pt.AddComponent<Image>(); pim.color = new Color32(0x1A, 0x0F, 0x08, 255); pim.raycastTarget = false;
-                    var vb = Go("ValueBox", panel.transform); PlaceTop(Rt(vb), x, -320, 190, 72); Img(vb, th.slotDark, true, 2f);
-                    var vt = Txt(vb.transform, "V", "٧٠٪", th.fontHeading, 46, amber); Stretch(Rt(vt.gameObject), 4, 4, 4, 8);
-                    var lt = Txt(panel.transform, "L", label, th.fontHeading, 34, th.leatherText); PlaceTop(Rt(lt.gameObject), x, -398, 260, 46);
+                    var art = Go("Art", d.transform); var ar = Rt(art); ar.anchorMin = Vector2.zero; ar.anchorMax = Vector2.one; ar.offsetMin = new Vector2(-12f * NK, -14f * NK); ar.offsetMax = new Vector2(12f * NK, 10f * NK);
+                    var ai = art.AddComponent<Image>(); ai.sprite = SetSpr("set_dial", 5f); ai.type = Image.Type.Simple; ai.preserveAspect = false; ai.raycastTarget = false;
+                    var pt = Go("Pointer", d.transform); var pr = Rt(pt); pr.anchorMin = pr.anchorMax = new Vector2(0.5f, 0.5f); pr.pivot = new Vector2(0.5f, 0.5f); pr.sizeDelta = Vector2.zero; pr.anchoredPosition = Vector2.zero;
+                    var pb = Go("Bar", pt.transform); Place(Rt(pb), new Vector2(0.5f, 0.5f), new Vector2(0, 23f * NK), new Vector2(10f * NK, 26f * NK));
+                    var pim = pb.AddComponent<Image>(); pim.sprite = SetSpr("set_ptr", 12f); pim.type = Image.Type.Simple; pim.raycastTarget = false;
+                    var vb = Go("ValueBox", panel.transform); PlaceTop(Rt(vb), x, -124f * NK, 56f * NK, 26f * NK);
+                    var vbg = Go("Bg", vb.transform); Stretch(Rt(vbg), -4f * NK, -4f * NK, -4f * NK, -4f * NK); var vbi = vbg.AddComponent<Image>(); vbi.sprite = SetSpr("set_val", 6f, 10, 10, 10, 10); vbi.type = Image.Type.Sliced; vbi.raycastTarget = false;
+                    var vt = Txt(vb.transform, "V", "٧٠٪", th.fontHeading, 46, amber); Stretch(Rt(vt.gameObject), 4, 0, 4, 6);
+                    var lt = Txt(panel.transform, "L", label, th.fontHeading, 34, th.leatherText); PlaceTop(Rt(lt.gameObject), x, -154f * NK, 260, 22f * NK);
                     var k = d.AddComponent<KitKnob>(); SetRef(k, "pointer", pr); SetRef(k, "valueLabel", vt.GetComponent<ArabicText>());
                     var so = new SerializedObject(k); so.FindProperty("value").intValue = start; so.ApplyModifiedPropertiesWithoutUndo(); k.Set(start);
                     val = vt.GetComponent<ArabicText>();
                     return k;
                 }
-                micKnob = MakeKnob("Mic", "المايك", 230, 50, out _);
-                spkKnob = MakeKnob("Speaker", "السماعة", -230, 50, out _);
-                var vu = Go("Meter", panel.transform); PlaceTop(Rt(vu), 0, -470, 880, 76); Img(vu, th.slotDark, true, 2f);
+                micKnob = MakeKnob("Mic", "المايك", 80f * NK, 50, out _);
+                spkKnob = MakeKnob("Speaker", "السماعة", -80f * NK, 50, out _);
+                var vu = Go("Meter", panel.transform); PlaceTop(Rt(vu), 0, -188f * NK, 314f * NK, 30f * NK);
+                var vug = Go("Bg", vu.transform); Stretch(Rt(vug), -4f * NK, -4f * NK, -4f * NK, -4f * NK); var vui = vug.AddComponent<Image>(); vui.sprite = SetSpr("set_vu", 5f, 12, 12, 12, 12); vui.type = Image.Type.Sliced; vui.raycastTarget = false;
                 meter = new Image[24];
+                float barW = 26f, step = (314f * NK - 16f * NK) / 24f;
                 for (int i = 0; i < 24; i++)
                 {
-                    var b = Go("Bar" + i, vu.transform); Place(Rt(b), new Vector2(0.5f, 0.5f), new Vector2(-(11.5f - i) * 34.5f, 0), new Vector2(24, 40));
+                    var b = Go("Bar" + i, vu.transform); var br = Rt(b);
+                    br.anchorMin = br.anchorMax = new Vector2(0.5f, 0f); br.pivot = new Vector2(0.5f, 0f);
+                    br.anchoredPosition = new Vector2((i - 11.5f) * step, 6f * NK); br.sizeDelta = new Vector2(barW, 18f * NK * 0.3f);
                     var bi = b.AddComponent<Image>(); bi.color = new Color32(0x22, 0x22, 0x22, 255); bi.raycastTarget = false; meter[i] = bi;
                 }
-                var mt = InstChild("KitButton_Brass", panel.transform, "MicTest");
-                Place(Rt(mt), new Vector2(0.5f, 1), new Vector2(0, -610), new Vector2(520, 160)); mt.transform.localScale = Vector3.one * 0.8f;
-                micTest = mt.GetComponent<Button>(); micTestLbl = mt.GetComponentInChildren<ArabicText>(); micTestLbl.Text = "جرّب المايك";
-                micTestLbl.GetComponent<TextMeshProUGUI>().fontSize = 48;
+                var mt = Go("MicTest", panel.transform); PlaceTop(Rt(mt), 0, -222f * NK, 314f * NK, 49f * NK);
+                var mbg = Go("Bg", mt.transform); Stretch(Rt(mbg), -6f * NK, -6f * NK, -6f * NK, -6f * NK); var mbi = mbg.AddComponent<Image>(); mbi.sprite = SetSpr("set_mic", 5f, 20, 20, 20, 20); mbi.type = Image.Type.Sliced; mbi.raycastTarget = false;
+                var mhit = mt.AddComponent<Image>(); mhit.color = Color.clear;
+                micTest = mt.AddComponent<Button>(); micTest.targetGraphic = mhit; micTest.transition = Selectable.Transition.None;
+                var mlt = Txt(mt.transform, "L", "جرّب المايك", th.fontBody, 44, new Color32(0x2A, 0x1A, 0x08, 255)); mlt.fontStyle = FontStyles.Bold; Stretch(Rt(mlt.gameObject), 6, 0, 6, 6);
+                micTestLbl = mlt.GetComponent<ArabicText>();
             }
             var sensSeg = SegRow(c, "حساسية المايك", new[] { "عالية", "متوسطة", "منخفضة" }, 1);
             var noiseTg = ToggleRow(c, "عزل الضجيج", "يخفف أصوات الخلفية", true);

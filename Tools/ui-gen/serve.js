@@ -4,7 +4,7 @@ const http = require("http"), fs = require("fs"), path = require("path");
 const root = path.resolve(__dirname, "../../Docs/mockups");
 const out = path.resolve(__dirname, "../../Assets/_Project/Art/UI/Match");
 const port = Number(process.argv[2]) || 8765;
-const types = { ".html": "text/html; charset=utf-8", ".png": "image/png", ".js": "text/javascript", ".json": "application/json" };
+const types = { ".html": "text/html; charset=utf-8", ".png": "image/png", ".js": "text/javascript", ".json": "application/json", ".jpg": "image/jpeg", ".svg": "image/svg+xml" };
 http.createServer((q, r) => {
   const u = new URL(q.url, "http://x");
   if (q.method === "POST" && u.pathname === "/save") {
@@ -12,7 +12,7 @@ http.createServer((q, r) => {
     const chunks = [];
     q.on("data", c => chunks.push(c));
     q.on("end", () => {
-      const dp = u.searchParams.get("dir"); const dir = dp === "shots" ? path.resolve(__dirname, "../../Assets/Screenshots") : dp === "family" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Family") : dp === "reward" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Reward") : dp === "notice" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/QuickNotice") : dp === "nav" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Nav") : dp === "bag" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Bag") : dp === "rank" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Rank") : dp === "mimg" ? path.resolve(__dirname, "../../Docs/mockups/img") : out;   // shots = comparison images, not sprites
+      const dp = u.searchParams.get("dir"); const dir = dp === "shots" ? path.resolve(__dirname, "../../Assets/Screenshots") : dp === "family" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Family") : dp === "reward" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Reward") : dp === "notice" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/QuickNotice") : dp === "nav" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Nav") : dp === "bag" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Bag") : dp === "rank" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Rank") : dp === "settings" ? path.resolve(__dirname, "../../Assets/_Project/Art/UI/Settings") : dp === "mimg" ? path.resolve(__dirname, "../../Docs/mockups/img") : out;   // shots = comparison images, not sprites
       fs.mkdirSync(dir, { recursive: true });
       const body = Buffer.concat(chunks).toString();
       const data = body.startsWith("data:") ? Buffer.from(body.split(",")[1], "base64") : Buffer.from(body);

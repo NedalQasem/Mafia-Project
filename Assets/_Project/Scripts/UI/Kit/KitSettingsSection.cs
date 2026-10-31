@@ -11,6 +11,7 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private RectTransform body, content, chevron;
         [SerializeField] private LayoutElement bodyLayout;
         [SerializeField] private bool openAtStart;
+        [SerializeField] private GameObject openLine;     // the gold line under the header while the drawer is open
 
         public bool IsOpen { get; private set; }
         public event System.Action<KitSettingsSection> OnHeaderClicked;
@@ -24,6 +25,7 @@ namespace MafiaNight.UI.Kit
         public void SetOpen(bool open, bool animate = true)
         {
             IsOpen = open;
+            if (openLine != null) openLine.SetActive(open);
             if (chevron != null) chevron.localRotation = Quaternion.Euler(0, 0, open ? 0f : 90f);
             float to = open ? TargetHeight() : 0f;
             if (!animate || !isActiveAndEnabled) { Apply(to); return; }
