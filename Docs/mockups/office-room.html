@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>غرفة مكتب المافيا</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+--crimson:#8a1c24;--crim:#c0323a;--brass:#b99048;--ivory:#d9d0bd;--teal:#4fa58b;--green:#1d4a3c;--paper:#d9cfb4;--ink:#1c170f;--soft:#4a3c24}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:26px 16px 80px;background:radial-gradient(ellipse at 50% 0,#1d1511,#070605 70%);color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 4px;font-size:2rem}
+.sub{text-align:center;color:#8f8777;margin:0 0 22px;font-size:.9rem}
+.wrap{max-width:1180px;margin:auto;display:grid;gap:34px}
+h2{font-family:Lalezar;font-weight:400;font-size:1.3rem;color:#a98f62;margin:0 0 14px;padding-bottom:6px;border-bottom:1px solid #ffffff12}
+.note{color:#7d756a;font-size:.78rem;margin:8px 2px 0;line-height:1.7}
+.phones{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.cap{text-align:center;color:#a98f62;font-weight:800;font-size:.85rem;margin-bottom:8px}
+.phone{width:390px;min-height:760px;border-radius:26px;padding:14px 14px 20px;background:#0d0907;box-shadow:0 0 0 2px #000,0 0 0 5px #2a2018,0 20px 40px #000c;position:relative;overflow:hidden}
+.phone.short{min-height:0}
+.ph-top{display:flex;align-items:center;gap:10px;margin:4px 2px 14px}
+.ph-top b{font-family:Lalezar;font-weight:400;font-size:1.5rem;line-height:1.1}
+.ph-top small{display:block;font-family:Cairo;color:#8d744a;font-size:.7rem;font-weight:700}
+.back{width:34px;height:34px;border-radius:50%;background:#0008;box-shadow:inset 0 0 0 1.5px #6b5a3f;display:grid;place-items:center;color:#cfc6b2;flex:none}
+.back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.lbl{font-family:Lalezar;color:#a98f62;font-size:1rem;margin:16px 2px 8px;display:flex;align-items:center;gap:8px}
+.lbl small{font-family:Cairo;font-weight:700;color:#7d756a;font-size:.7rem;margin-inline-start:auto}
+
+/* ---- the pinned official card: dark green felt, brass plate, wax-seal "official" ---- */
+.office{position:relative;padding:20px 16px 14px;border-radius:12px;cursor:pointer;display:grid;gap:11px;isolation:isolate;margin-top:10px;
+ background:radial-gradient(ellipse at 70% 0,#3d7d6a55,transparent 60%),var(--grain),linear-gradient(180deg,#255d4b,#1a3f33 55%,#0f261f);background-blend-mode:normal,multiply,normal;
+ box-shadow:inset 0 1px 0 #ffffff25,0 0 0 2px #000,0 0 0 4px var(--brass),0 0 0 5px #3a2a0c,0 14px 26px #000c}
+.office::after{content:"";position:absolute;inset:6px;border:1.5px dashed #e6c9a0;opacity:.35;border-radius:8px;pointer-events:none}
+.pin{position:absolute;top:-13px;right:18px;display:flex;align-items:center;gap:6px;padding:1px 12px 2px 10px;border-radius:5px;font-family:Lalezar;font-size:.8rem;color:#2a1a08;background:linear-gradient(180deg,#e8cc8c,#9a7632);box-shadow:0 2px 3px #000a;z-index:2}
+.pin svg{width:12px;height:12px;fill:#2a1a08}
+.seal{position:absolute;top:-16px;left:16px;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-family:Lalezar;font-size:.85rem;line-height:1;text-align:center;color:#f3c9cc;background:radial-gradient(circle at 35% 30%,#d8434b,#8a1c24 60%,#4a0b10);box-shadow:0 0 0 2px #000,0 3px 6px #000a;rotate:-10deg;z-index:2}
+.seal::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1.5px dashed #f3c9cc66}
+.o1{display:flex;align-items:center;gap:11px}
+.avatar{width:46px;height:46px;border-radius:50%;flex:none;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);box-shadow:0 0 0 2px #000,0 0 0 3px var(--brass);display:grid;place-items:center;color:#d9c48a}
+.avatar svg{width:33px;height:33px}
+.nm{flex:1;min-width:0}
+.nm b{display:block;font-family:"Aref Ruqaa";font-size:1.32rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:transparent;background:linear-gradient(180deg,#f5e2a8,#b99048 60%,#8a6a30);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1px 0 #000)}
+.nm small{color:#b6c9bd;font-size:.74rem;font-weight:700}
+.cnt{font-family:Lalezar;font-size:1.25rem;text-align:center;line-height:1;padding:6px 10px;border-radius:6px;background:#0008;box-shadow:inset 0 0 0 1px #ffffff18}
+.cnt small{display:block;font-family:Cairo;font-size:.58rem;color:#8f8777;margin-top:2px}
+.bar{height:8px;border-radius:4px;background:#0009;box-shadow:inset 0 0 0 1px #ffffff1a;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#2c8d73,#6fd4b3);box-shadow:0 0 8px #4fa58b99}
+.o3{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.72rem}
+.chip{padding:2px 9px;border-radius:3px;font-weight:800;background:#0009;box-shadow:inset 0 0 0 1px #ffffff1c;color:#cfc6b2}
+.chip.adm{color:#f5e2a8;box-shadow:inset 0 0 0 1px #b99048}
+.chip.off{color:#e6b3b6;box-shadow:inset 0 0 0 1px #8a1c24}
+.chip i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4fd49b;margin-inline-end:5px;box-shadow:0 0 6px #4fd49b}
+.chip.off i{background:#c0323a;box-shadow:none}
+.go{margin-inline-start:auto;padding:8px 22px;border-radius:6px;font-family:inherit;font-weight:800;font-size:.95rem;border:0;cursor:pointer;color:#2a1a08;background:linear-gradient(180deg,#e8cc8c,#b99048 55%,#6e5224);box-shadow:inset 0 1px 0 #fff9,0 3px 0 #2a1c08}
+.hint{font-size:.72rem;color:#c6d6cc;background:#0006;border-radius:6px;padding:6px 10px;line-height:1.6}
+.hint b{color:#f5e2a8}
+.first{animation:ring 1.8s ease-in-out infinite}
+@keyframes ring{50%{box-shadow:inset 0 1px 0 #ffffff25,0 0 0 2px #000,0 0 0 4px var(--brass),0 0 0 5px #3a2a0c,0 0 0 9px #b9904833,0 14px 26px #000c}}
+.office.full{filter:saturate(.45) brightness(.8);cursor:not-allowed}
+.office.full .go{background:#2a2523;color:#7d746a;box-shadow:0 3px 0 #000}
+.fstamp{position:absolute;left:50%;top:48%;translate:-50% -50%;rotate:-8deg;padding:0 16px;font-family:Lalezar;font-size:1.6rem;color:#e0525a;border:3px solid #e0525a;border-radius:4px;background:#0006;z-index:3;pointer-events:none}
+/* ordinary rooms under it (same look as rooms.html) */
+.room{position:relative;padding:14px 16px;border-radius:12px;display:grid;gap:10px;margin-top:14px;background:var(--grain),linear-gradient(180deg,#3b2a20,#2b1e17 55%,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 4px 0 #000,0 14px 24px #000b}
+.room::after{content:"";position:absolute;inset:6px;border:1.5px dashed #a98f62;opacity:.5;border-radius:8px;pointer-events:none}
+.room .avatar{box-shadow:0 0 0 2px #000,0 0 0 3px #6b5a3f;color:#9a8e78;width:40px;height:40px}
+.room .nm b{font-size:1.1rem;background:none;color:var(--ivory);-webkit-background-clip:initial;filter:none}
+.room .nm small{color:#a79d88}
+.quick{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 16px;border-radius:12px;margin-top:16px;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000}
+.quick b{font-family:Lalezar;font-weight:400;font-size:1.25rem;display:block;line-height:1.1}
+.quick small{color:#f0c9c4;font-size:.74rem}
+.quick span{font-family:Lalezar;font-size:1.8rem}
+.go.red{color:#f0dcd8;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000}
+
+/* ---- inside the room ---- */
+.stage{display:flex;gap:10px;justify-content:center;padding:14px 8px 12px;border-radius:12px;background:radial-gradient(ellipse at 50% 0,#e8c27a22,transparent 70%),#120d0a;box-shadow:inset 0 0 0 1px #2a2018}
+.sp{display:grid;justify-items:center;gap:4px;width:88px;text-align:center}
+.sp .av{width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);display:grid;place-items:center;color:#9a8e78;box-shadow:0 0 0 2px #000,0 0 0 3px #6b5a3f;position:relative}
+.sp .av svg{width:44px;height:44px}
+.sp.adm .av{box-shadow:0 0 0 2px #000,0 0 0 4px var(--brass);color:#d9c48a}
+.sp.live .av{box-shadow:0 0 0 2px #000,0 0 0 4px var(--teal),0 0 16px 3px #4fa58b99;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 2px #000,0 0 0 4px var(--teal),0 0 5px 1px #4fa58b66}}
+.sp b{font-size:.8rem;font-weight:800;line-height:1.2;white-space:nowrap;max-width:88px;overflow:hidden;text-overflow:ellipsis}
+.sp small{font-size:.62rem;font-weight:800;color:#8f8777}
+.tag{position:absolute;bottom:-5px;left:50%;translate:-50% 0;font-family:Lalezar;font-size:.62rem;padding:0 7px 1px;border-radius:3px;background:linear-gradient(180deg,#e8cc8c,#9a7632);color:#2a1a08;white-space:nowrap;box-shadow:0 1px 2px #000a}
+.tag.g{background:linear-gradient(180deg,#6fd4b3,#2c8d73);color:#06231a}
+.crowd{display:grid;grid-template-columns:repeat(8,1fr);gap:7px 4px;padding:10px 6px;border-radius:12px;background:#120d0a;box-shadow:inset 0 0 0 1px #2a2018}
+.c{display:grid;justify-items:center;gap:2px;position:relative}
+.c i{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);box-shadow:0 0 0 1.5px #000,0 0 0 2.5px #4a3c28;display:grid;place-items:center;color:#8d8372}
+.c i svg{width:24px;height:24px}
+.c small{font-size:.5rem;font-weight:800;color:#8f8777;max-width:42px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c.hand i{box-shadow:0 0 0 1.5px #000,0 0 0 2.5px #e8c27a,0 0 8px #e8c27a99}
+.c.hand::after{content:"✋";position:absolute;top:-6px;right:-2px;font-size:.78rem;filter:drop-shadow(0 1px 1px #000)}
+.c.new i{box-shadow:0 0 0 1.5px #000,0 0 0 2.5px #4fa58b}
+.c.me i{box-shadow:0 0 0 1.5px #000,0 0 0 2.5px #e0525a}
+.more{grid-column:1/-1;text-align:center;font-size:.7rem;font-weight:800;color:#7d756a;margin-top:2px}
+.queue{display:grid;gap:6px}
+.q{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;background:#0008;box-shadow:inset 0 0 0 1px #ffffff14;font-weight:800;font-size:.82rem}
+.q .n{font-family:Lalezar;font-size:1rem;width:22px;height:22px;border-radius:50%;background:#e8c27a;color:#2a1a08;display:grid;place-items:center;flex:none}
+.q small{color:#8f8777;font-size:.68rem;margin-inline-start:auto}
+.q .btn{padding:3px 12px;border-radius:6px;font-family:Lalezar;font-size:.85rem;color:#06231a;background:linear-gradient(180deg,#6fd4b3,#2c8d73);box-shadow:0 2px 0 #000}
+.dock{position:absolute;right:12px;left:12px;bottom:14px;display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 1px #000,0 8px 18px #000c}
+.dock .big{flex:1;padding:11px;border-radius:9px;font-family:Lalezar;font-size:1.15rem;border:0;color:#f0dcd8;text-align:center;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal}
+.dock .big.hand{color:#2a1a08;background:linear-gradient(180deg,#f0d78f,#c99a3c 55%,#7d5a1c)}
+.dock .big.mic{color:#06231a;background:linear-gradient(180deg,#8fe0c6,#2c8d73 55%,#14463a);box-shadow:inset 0 1px 0 #fff6,0 3px 0 #000,0 0 18px 2px #4fa58b88}
+.dock .sm{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:#0009;box-shadow:inset 0 0 0 1.5px #6b5a3f;color:#cfc6b2;flex:none;font-size:.6rem;font-weight:800;text-align:center;line-height:1.1}
+.dock .sm svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dock .sm.off{color:#e6b3b6;box-shadow:inset 0 0 0 1.5px #8a1c24}
+.status{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;background:#0008;box-shadow:inset 0 0 0 1px #ffffff14;font-size:.8rem;font-weight:700;color:#cfc6b2;margin-top:12px;line-height:1.5}
+.status b{color:#f5e2a8}
+.status.g{box-shadow:inset 0 0 0 1px #4fa58b;color:#bfe9d8}
+.sheet{position:absolute;right:0;left:0;bottom:0;padding:18px 16px 18px;border-radius:18px 18px 0 0;background:var(--paper);color:var(--ink);box-shadow:0 -10px 24px #000c,inset 0 0 40px #8a7a5a88}
+.sheet::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.1;mix-blend-mode:multiply;pointer-events:none;border-radius:inherit}
+.sheet>*{position:relative}
+.sheet h4{margin:0;font-family:Lalezar;font-weight:400;font-size:1.3rem;display:flex;align-items:center;gap:8px}
+.sheet h4 small{font-family:Cairo;font-weight:800;font-size:.72rem;color:var(--soft);margin-inline-start:auto}
+.sheet .acts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.sheet .acts button{padding:9px 4px;border-radius:8px;font-family:Lalezar;font-size:.95rem;border:0;color:#f0dcd8;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:0 3px 0 #000}
+.sheet .acts button.g{background:var(--grain),linear-gradient(180deg,#2c6a55,#1d4a3c);background-blend-mode:multiply,normal}
+.sheet .acts button.r{background:var(--grain),linear-gradient(180deg,#a2262f,#561016);background-blend-mode:multiply,normal}
+
+/* ---- the admin board page ---- */
+.board{border-radius:12px;overflow:hidden;box-shadow:0 0 0 2px #000,0 0 0 4px #2a2018;display:grid;grid-template-columns:200px 1fr;min-height:760px;background:#0d0907}
+.board aside{padding:16px 12px;display:flex;flex-direction:column;gap:5px;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset -1px 0 0 #000,inset -3px 0 0 #6e5224}
+.board aside .brand{text-align:center;margin-bottom:12px}
+.board aside .brand b{display:block;font-family:Lalezar;font-weight:400;font-size:1.2rem;letter-spacing:2px;color:#f5e2a8}
+.board aside .brand small{font-weight:700;font-size:.62rem;color:#8d744a}
+.nv{padding:8px 12px;border-radius:8px;font-weight:800;color:#b9a98a;font-size:.85rem;display:flex;gap:8px;align-items:center}
+.nv.on{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 14px #8a7a5a88,0 0 0 1px #000}
+.nv .n{margin-inline-start:auto;min-width:20px;height:20px;border-radius:10px;padding:0 6px;background:radial-gradient(circle at 35% 30%,#e0525a,#8a1c24);color:#fff;font-size:.7rem;line-height:20px;text-align:center}
+.board main{padding:20px 22px 26px;background:radial-gradient(ellipse 80% 30% at 50% 0,#e8c27a14,transparent 70%),#0d0907}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.top h3{margin:0;font-family:Lalezar;font-weight:400;font-size:1.8rem;line-height:1.1}
+.top h3 small{display:block;font-family:Cairo;font-weight:700;font-size:.74rem;color:#8d744a}
+.top .sp2{margin-inline-start:auto}
+.livep{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:7px;background:#0b080899;box-shadow:inset 0 0 0 1px #6e5224;font-weight:800;font-size:.78rem}
+.livep i{width:8px;height:8px;border-radius:50%;background:#4fd49b;animation:bl 1.6s infinite}
+@keyframes bl{50%{opacity:.3}}
+.paperb{position:relative;background:var(--paper);color:var(--ink);border-radius:3px;box-shadow:inset 0 0 40px #8a7a5a88,0 10px 20px #000c}
+.paperb::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.1;mix-blend-mode:multiply;pointer-events:none;border-radius:inherit}
+.paperb>*{position:relative}
+.rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:16px}
+.rc{padding:12px 14px;cursor:pointer;display:grid;gap:4px}
+.rc.on{outline:3px solid var(--crim);outline-offset:2px}
+.rc b{font-family:Lalezar;font-weight:400;font-size:1.15rem;display:flex;align-items:center;gap:7px}
+.rc small{font-weight:800;font-size:.72rem;color:var(--soft)}
+.rc.add{border:2px dashed #a98f6288;background:#ffffff06;color:#a98f62;box-shadow:none;place-items:center;text-align:center;min-height:78px}
+.rc.add::before{display:none}
+.pinb{font-family:Cairo;font-weight:800;font-size:.62rem;padding:0 7px;border-radius:4px;background:#b99048;color:#2a1a08}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat{padding:12px 14px}
+.stat b{display:block;font-family:Lalezar;font-weight:400;font-size:2rem;line-height:1}
+.stat span{font-weight:800;font-size:.78rem;color:var(--soft)}
+.two{display:grid;grid-template-columns:1.5fr 1fr;gap:14px}
+.card{padding:14px 16px;margin-bottom:14px}
+.card h5{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1.15rem;border-bottom:3px double var(--ink);padding-bottom:2px;display:flex;gap:8px;align-items:baseline}
+.card h5 small{font-family:Cairo;font-weight:800;font-size:.68rem;color:#8a1c24;margin-inline-start:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.tbl th{font-family:Lalezar;font-weight:400;font-size:.9rem;text-align:right;padding:4px 8px;border-bottom:2px solid var(--ink)}
+.tbl td{padding:7px 8px;border-bottom:1px dashed #1c170f55;font-weight:700}
+.tbl tr:last-child td{border:0}
+.tbl .m{font-size:.68rem;color:var(--soft)}
+.tbl td .mini{white-space:nowrap;margin:1px 0}
+.tbl td:last-child{white-space:nowrap}
+.pill{display:inline-block;white-space:nowrap;padding:0 8px;border-radius:5px;font-weight:800;font-size:.66rem;color:#f0dcd8;background:#8a1c24}
+.pill.g{background:#1d4a3c}.pill.b{background:#6e4b1c}.pill.y{background:#b99048;color:#2a1a08}
+.mini{padding:2px 10px;border-radius:6px;font-family:Lalezar;font-size:.82rem;color:#f0dcd8;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:0 2px 0 #000;border:0}
+.mini.r{background:var(--grain),linear-gradient(180deg,#a2262f,#561016);background-blend-mode:multiply,normal}
+.feed{list-style:none;margin:0;padding:0}
+.feed li{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed #1c170f55;font-weight:700;font-size:.78rem}
+.feed li:last-child{border:0}
+.feed time{margin-inline-start:auto;font-size:.68rem;color:var(--soft);font-weight:800}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:#c0323a}.dot.g{background:#1d4a3c}.dot.b{background:#b99048}
+.frm{display:grid;gap:9px}
+.frm label{font-weight:800;font-size:.78rem;color:var(--soft);display:grid;gap:3px}
+.frm input,.frm select,.frm textarea{padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-family:Cairo;font-weight:700;font-size:.85rem}
+.tog{display:flex;align-items:center;gap:10px;font-weight:800;font-size:.8rem}
+.tog i{width:40px;height:22px;border-radius:11px;background:#1c170f44;box-shadow:inset 0 0 0 1px #1c170f66;position:relative;flex:none}
+.tog i::after{content:"";position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:#f0e8d2;box-shadow:0 1px 2px #0008}
+.tog.on i{background:#1d4a3c}.tog.on i::after{right:auto;left:3px}
+.btnb{padding:7px 18px;border-radius:8px;font-family:Lalezar;font-size:1rem;color:#f0dcd8;border:0;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal}
+.warn{font-size:.72rem;font-weight:700;color:#6a3a14;background:#e8c27a55;border-radius:5px;padding:6px 9px;line-height:1.6}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+@media (max-width:900px){.board{grid-template-columns:1fr}.board aside{display:none}.two{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="fed" viewBox="0 0 48 48"><path d="M16 17c0-6 3-10 8-10s8 4 8 10z" fill="currentColor"/><path d="M6 19c4 2 10 3 18 3s14-1 18-3c-1 4-8 6-18 6S7 23 6 19z" fill="currentColor"/><path d="M14 29c0-3 4-5 10-5s10 2 10 5v4H14z" fill="currentColor" opacity=".55"/><path d="M6 46c0-8 7-12 18-12s18 4 18 12z" fill="currentColor" opacity=".8"/></symbol>
+<symbol id="pinI" viewBox="0 0 24 24"><path d="M14 3l7 7-3 1-3 3 .5 5-1.5 1.5-4.5-4.5L5 21l-1-1 5-4.5L4.5 11 6 9.5l5 .5 3-3z"/></symbol>
+<symbol id="arrow" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+<symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></symbol>
+<symbol id="out" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></symbol>
+</defs></svg>
+
+<h1>غرفة مكتب المافيا</h1>
+<p class="sub">غرفة رسمية دائمة للاعبين الجدد · صوت فقط · لحد ٦٤ لاعب · أدمن من فريقنا بيجاوب على الأسئلة</p>
+
+<div class="wrap">
+
+<section>
+<h2>١ · قائمة الغرف: البطاقة مثبّتة دائماً فوق كل شي</h2>
+<div class="phones">
+
+<div><div class="cap">مفتوحة وفيها أدمن · لاعب جديد (البطاقة بتنبض)</div>
+<div class="phone short" style="padding-bottom:26px">
+ <div class="ph-top"><div><b>الغرف</b><small>سهرة وحكي ومباريات</small></div></div>
+ <div class="office first">
+  <div class="pin"><svg><use href="#pinI"/></svg>مثبّتة</div><div class="seal">رسمية</div>
+  <div class="o1"><div class="avatar"><svg><use href="#fed"/></svg></div>
+   <div class="nm"><b>غرفة مكتب المافيا</b><small>للاعبين الجدد · اسأل وتعلّم اللعبة</small></div>
+   <div class="cnt">٢٣<small>من ٦٤</small></div></div>
+  <div class="bar"><i style="width:36%"></i></div>
+  <div class="o3"><span class="chip adm"><i></i>٢ أدمن حاضرين</span><span class="chip">صوت فقط</span><button class="go">ادخل</button></div>
+  <div class="hint"><b>أول مرة؟</b> ادخل وارفع إيدك بزر ✋ ليعطيك الأدمن المايك.</div>
+ </div>
+ <div class="quick"><div><b>انضم سريع</b><small>أقرب غرفة فيها مكان</small></div><span>⟵</span></div>
+ <div class="room"><div class="o1"><div class="avatar"><svg><use href="#fed"/></svg></div><div class="nm"><b>سهرة أبو فارس</b><small>أبو فارس · الجندي · م٧</small></div><div class="cnt">٥<small>من ١٢</small></div></div>
+  <div class="o3"><span class="chip">سهرة وحكي</span><button class="go red">ادخل</button></div></div>
+</div></div>
+
+<div><div class="cap">لا يوجد أدمن هلأ (الغرفة بتضل مفتوحة)</div>
+<div class="phone short" style="padding-bottom:26px">
+ <div class="ph-top"><div><b>الغرف</b><small>سهرة وحكي ومباريات</small></div></div>
+ <div class="office">
+  <div class="pin"><svg><use href="#pinI"/></svg>مثبّتة</div><div class="seal">رسمية</div>
+  <div class="o1"><div class="avatar"><svg><use href="#fed"/></svg></div>
+   <div class="nm"><b>غرفة مكتب المافيا</b><small>للاعبين الجدد · اسأل وتعلّم اللعبة</small></div>
+   <div class="cnt">٣<small>من ٦٤</small></div></div>
+  <div class="bar"><i style="width:5%"></i></div>
+  <div class="o3"><span class="chip off"><i></i>ما في أدمن هلأ</span><span class="chip">صوت فقط</span><button class="go">ادخل</button></div>
+  <div class="hint">الأدمن مش موجود هلأ. تقدر تدخل وتسمع، والأدمن بيرجع بوقت الدوام.</div>
+ </div>
+ <div class="cap" style="margin-top:22px">ممتلئة ٦٤ من ٦٤</div>
+ <div class="office full">
+  <div class="pin"><svg><use href="#pinI"/></svg>مثبّتة</div><div class="seal">رسمية</div><div class="fstamp">ممتلئة</div>
+  <div class="o1"><div class="avatar"><svg><use href="#fed"/></svg></div>
+   <div class="nm"><b>غرفة مكتب المافيا</b><small>للاعبين الجدد · اسأل وتعلّم اللعبة</small></div>
+   <div class="cnt">٦٤<small>من ٦٤</small></div></div>
+  <div class="bar"><i style="width:100%"></i></div>
+  <div class="o3"><span class="chip adm"><i></i>٣ أدمن حاضرين</span><span class="chip">صوت فقط</span><button class="go">ممتلئة</button></div>
+ </div>
+ <p class="note" style="padding:0 6px">الغرفة بتبين دايماً حتى لو فاضية أو ممتلئة. ما في تأثير على «انضم سريع»: ما بيرميك فيها.</p>
+</div></div>
+
+</div>
+<p class="note">البطاقة خضراء بإطار نحاسي وختم «رسمية» ودبوس «مثبّتة» حتى ما تنخلط مع غرف اللاعبين. بتبقى ثابتة بأول القائمة (قبل «انضم سريع» وقبل الغرف المميزة). اسم الغرفة ونصها الفرعي بيجوا من لوحة الإدارة (عربي/إنجليزي) والعدّاد من لوبي EOS الحقيقي. لو فيه أكتر من غرفة رسمية بتنرصّ تحت بعض بنفس الشكل.</p>
+</section>
+
+<section>
+<h2>٢ · جوّا الغرفة: اللاعب يدخل مكتوم، والأدمن بيعطيه المايك</h2>
+<div class="phones">
+
+<div><div class="cap">لاعب جديد · مكتوم ورافع إيده</div>
+<div class="phone">
+ <div class="ph-top"><div class="back"><svg><use href="#arrow"/></svg></div><div class="nm" style="flex:1"><b style="font-family:Lalezar;font-weight:400;font-size:1.3rem;background:none;color:var(--ivory);filter:none;-webkit-background-clip:initial">غرفة مكتب المافيا</b><small style="color:#8d744a">رسمية · ٢٣ من ٦٤</small></div></div>
+ <div class="lbl">على المنصة<small>الأدمن والمتكلم الحالي</small></div>
+ <div class="stage">
+  <div class="sp adm live"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>أبو سامر</b><small>عم يحكي</small></div>
+  <div class="sp adm"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>ريما</b><small>مكتومة</small></div>
+  <div class="sp"><div class="av" style="box-shadow:0 0 0 2px #000,0 0 0 3px #3a3128;opacity:.5"><svg><use href="#fed"/></svg></div><b style="color:#7d756a">المنصة فاضية</b><small>للضيف</small></div>
+ </div>
+ <div class="lbl">الأيدي المرفوعة<small>٣</small></div>
+ <div class="queue">
+  <div class="q"><span class="n">١</span>نور<small>قبل دقيقة</small></div>
+  <div class="q" style="box-shadow:inset 0 0 0 1.5px #e0525a"><span class="n">٢</span>أنت<small>دورك رقم ٢</small></div>
+  <div class="q"><span class="n">٣</span>سامر<small>قبل ٣ د</small></div>
+ </div>
+ <div class="lbl">الحضور<small>٢٣</small></div>
+ <div class="crowd">
+  <div class="c hand"><i><svg><use href="#fed"/></svg></i><small>نور</small></div>
+  <div class="c hand me"><i><svg><use href="#fed"/></svg></i><small>أنت</small></div>
+  <div class="c hand"><i><svg><use href="#fed"/></svg></i><small>سامر</small></div>
+  <div class="c new"><i><svg><use href="#fed"/></svg></i><small>يزن</small></div>
+  <div class="c new"><i><svg><use href="#fed"/></svg></i><small>هديل</small></div>
+  <div class="c"><i><svg><use href="#fed"/></svg></i><small>خالد</small></div>
+  <div class="c"><i><svg><use href="#fed"/></svg></i><small>رنا</small></div>
+  <div class="c"><i><svg><use href="#fed"/></svg></i><small>مازن</small></div>
+  <div class="c"><i><svg><use href="#fed"/></svg></i><small>عادل</small></div>
+  <div class="c"><i><svg><use href="#fed"/></svg></i><small>ريم</small></div>
+  <div class="c new"><i><svg><use href="#fed"/></svg></i><small>لينا</small></div>
+  <div class="c"><i><svg><use href="#fed"/></svg></i><small>جود</small></div>
+  <div class="more">… وحوالي ١١ كمان · بتتمرّر</div>
+ </div>
+ <div class="status"><span>🔇</span><span>إنت مكتوم. <b>ارفع إيدك</b> ليعطيك الأدمن المايك.</span></div>
+ <div style="height:78px"></div>
+ <div class="dock"><div class="sm off"><svg><use href="#mic"/></svg></div><button class="big hand">✋ ارفع إيدك</button><div class="sm"><svg><use href="#out"/></svg></div></div>
+</div></div>
+
+<div><div class="cap">لاعب أخد المايك (دوره)</div>
+<div class="phone">
+ <div class="ph-top"><div class="back"><svg><use href="#arrow"/></svg></div><div class="nm" style="flex:1"><b style="font-family:Lalezar;font-weight:400;font-size:1.3rem;background:none;color:var(--ivory);filter:none;-webkit-background-clip:initial">غرفة مكتب المافيا</b><small style="color:#8d744a">رسمية · ٢٣ من ٦٤</small></div></div>
+ <div class="lbl">على المنصة<small>الأدمن والمتكلم الحالي</small></div>
+ <div class="stage">
+  <div class="sp adm"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>أبو سامر</b><small>يسمع</small></div>
+  <div class="sp live"><div class="av"><svg><use href="#fed"/></svg><span class="tag g">دورك</span></div><b>أنت</b><small>٠:٤٢ باقي</small></div>
+  <div class="sp adm"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>ريما</b><small>يسمع</small></div>
+ </div>
+ <div class="status g"><span>🎙️</span><span>الميك معك <b>دقيقة وحدة</b>. اسأل سؤالك والأدمن بيجاوبك. بعدها بيرجع مكتوم لحاله.</span></div>
+ <div class="lbl">الأيدي المرفوعة<small>٢</small></div>
+ <div class="queue">
+  <div class="q"><span class="n">١</span>سامر<small>قبل ٣ د</small></div>
+  <div class="q"><span class="n">٢</span>يزن<small>قبل دقيقتين</small></div>
+ </div>
+ <div style="height:150px"></div>
+ <div class="dock"><div class="sm"><svg><use href="#mic"/></svg></div><button class="big mic">🎙️ عم تحكي · خلّصت</button><div class="sm"><svg><use href="#out"/></svg></div></div>
+</div></div>
+
+<div><div class="cap">أدمن · نفس الغرفة مع أدوات الإدارة</div>
+<div class="phone">
+ <div class="ph-top"><div class="back"><svg><use href="#arrow"/></svg></div><div class="nm" style="flex:1"><b style="font-family:Lalezar;font-weight:400;font-size:1.3rem;background:none;color:var(--ivory);filter:none;-webkit-background-clip:initial">غرفة مكتب المافيا</b><small style="color:#8d744a">رسمية · أنت أدمن · ٢٣ من ٦٤</small></div></div>
+ <div class="lbl">على المنصة</div>
+ <div class="stage">
+  <div class="sp adm live"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أنت</span></div><b>أبو سامر</b><small>عم يحكي</small></div>
+  <div class="sp adm"><div class="av"><svg><use href="#fed"/></svg><span class="tag">أدمن</span></div><b>ريما</b><small>يسمع</small></div>
+  <div class="sp"><div class="av" style="box-shadow:0 0 0 2px #000,0 0 0 3px #3a3128;opacity:.5"><svg><use href="#fed"/></svg></div><b style="color:#7d756a">المنصة فاضية</b><small>أعطِ الميك لحدا</small></div>
+ </div>
+ <div class="lbl">الأيدي المرفوعة<small>٣ · الأقدم أول</small></div>
+ <div class="queue">
+  <div class="q"><span class="n">١</span>نور · م٢<small>قبل دقيقة</small><button class="btn">أعطِ الميك</button></div>
+  <div class="q"><span class="n">٢</span>أحمد · م١<small>قبل ٣ د</small><button class="btn">أعطِ الميك</button></div>
+ </div>
+ <div class="lbl">الحضور<small>اضغط على لاعب</small></div>
+ <div class="crowd">
+  <div class="c hand"><i><svg><use href="#fed"/></svg></i><small>نور</small></div>
+  <div class="c hand"><i><svg><use href="#fed"/></svg></i><small>أحمد</small></div>
+  <div class="c new"><i><svg><use href="#fed"/></svg></i><small>يزن</small></div>
+  <div class="c new"><i><svg><use href="#fed"/></svg></i><small>هديل</small></div>
+  <div class="c"><i><svg><use href="#fed"/></svg></i><small>خالد</small></div>
+  <div class="c"><i><svg><use href="#fed"/></svg></i><small>رنا</small></div>
+  <div class="c"><i><svg><use href="#fed"/></svg></i><small>مازن</small></div>
+  <div class="c"><i><svg><use href="#fed"/></svg></i><small>ريم</small></div>
+ </div>
+ <div style="height:240px"></div>
+ <div class="sheet" style="bottom:78px">
+  <h4>نور <small>م٢ · لاعبة جديدة · دخلت قبل ٤ د</small></h4>
+  <div class="acts"><button class="g">أعطِ الميك</button><button>اكتمها</button><button class="r">اطردها</button></div>
+ </div>
+ <div class="dock"><div class="sm"><svg><use href="#mic"/></svg></div><button class="big mic" style="font-size:.95rem">أعطِ الميك للأول بالدور</button><div class="sm" style="font-size:.55rem">اكتم<br>الكل</div></div>
+</div></div>
+
+</div>
+<p class="note">• اللاعب بيدخل مكتوم دايماً ما يقدر يفتح مايكه لحاله. الأدمنز بيحكوا وبيسمعوا بحرية. زر «ارفع إيدك» بيحطه بالدور، والأدمن بيعطيه المايك فيصير على المنصة بوقت محدّد (الافتراضي دقيقة، بيتغيّر من اللوحة) وبعدها بيرجع مكتوم لحاله. <br>
+• اللاعبين الجدد (أول ٧ أيام) بيظهروا بإطار أخضر ليعرف الأدمن مين محتاج مساعدة. المنصة بتتسع لحد ٦ متكلمين (أدمنز + ضيوف). الحضور شبكة صغيرة بتتمرّر لأنه ٦٤ ما بتتسع على الشاشة.<br>
+• ضبط المايك بيتم من اللعبة نفسها (مش من سيرفر الصوت)، فلاعب معدّل ممكن يتحايل عليه، بس الأدمن بيقدر يطرده. مقبول لغرفة أسئلة وأجوبة.</p>
+</section>
+
+<section>
+<h2>٣ · لوحة الإدارة: صفحة جديدة «الغرف الرسمية»</h2>
+<div class="board">
+ <aside>
+  <div class="brand"><b>MAFIA ADMIN</b><small>لوحة الإدارة</small></div>
+  <div class="nv">نظرة عامة</div><div class="nv">اللاعبين</div><div class="nv">العروض</div><div class="nv">الأحداث</div>
+  <div class="nv on">الغرف الرسمية<span class="n">٢٣</span></div>
+  <div class="nv">البريد</div><div class="nv">البلاغات</div>
+ </aside>
+ <main>
+  <div class="top"><h3>الغرف الرسمية<small>غرف ثابتة تابعة لنا · أدمنزنا بيديروها</small></h3><div class="sp2 livep"><i></i>البوت شغّال · نبضة قبل ٣ ثواني</div></div>
+
+  <div class="rooms">
+   <div class="paperb rc on"><b>غرفة مكتب المافيا <span class="pinb">مثبّتة</span></b><small>٢٣ من ٦٤ · ٢ أدمن حاضرين</small></div>
+   <div class="paperb rc"><b>قاعة الدعم الفني</b><small>٠ من ١٦ · للإدارة فقط · غير ظاهرة للاعبين</small></div>
+   <div class="paperb rc add"><b style="font-size:1.05rem">+ غرفة رسمية جديدة</b><small>اسم، سعة، من يديرها</small></div>
+  </div>
+
+  <div class="stats">
+   <div class="paperb stat"><b>٢٣</b><span>موجودين هلأ</span></div>
+   <div class="paperb stat"><b>٢</b><span>أدمن حاضرين</span></div>
+   <div class="paperb stat"><b>٤١</b><span>لاعب جديد دخلوا اليوم</span></div>
+   <div class="paperb stat"><b>٦ د</b><span>متوسط المكوث</span></div>
+  </div>
+
+  <div class="two">
+   <div>
+    <div class="paperb card"><h5>الموجودين هلأ<small>بيتحدّث كل ٥ ثواني</small></h5>
+     <table class="tbl"><tr><th>اللاعب</th><th>المستوى</th><th>دخل</th><th>الحالة</th><th></th></tr>
+      <tr><td>أبو سامر<div class="m">فريقنا</div></td><td>م٢٠</td><td>٢:١٠ ظ</td><td><span class="pill y">أدمن · عم يحكي</span></td><td></td></tr>
+      <tr><td>ريما<div class="m">فريقنا</div></td><td>م١٨</td><td>٢:١٥ ظ</td><td><span class="pill y">أدمن</span></td><td></td></tr>
+      <tr><td>نور <span class="pill g">جديدة</span><div class="m">#4821907</div></td><td>م٢</td><td>قبل ٤ د</td><td><span class="pill b">✋ رافعة إيدها</span></td><td><button class="mini">رسالة</button> <button class="mini r">اطرد</button></td></tr>
+      <tr><td>أحمد <span class="pill g">جديد</span><div class="m">#4821944</div></td><td>م١</td><td>قبل ٣ د</td><td><span class="pill b">✋ رافع إيده</span></td><td><button class="mini">رسالة</button> <button class="mini r">اطرد</button></td></tr>
+      <tr><td>يزن <span class="pill g">جديد</span><div class="m">#4821950</div></td><td>م١</td><td>قبل دقيقتين</td><td>يسمع</td><td><button class="mini">رسالة</button> <button class="mini r">اطرد</button></td></tr>
+     </table>
+     <p class="note" style="color:#4a3c24">«رسالة» بتبعت رسالة خاصة بالبريد (نفس نظام الرسائل الخاصة). «اطرد» بتخرجه من الغرفة وبتنسجل بالسجل.</p>
+    </div>
+    <div class="paperb card"><h5>سجل الغرفة<small>اليوم</small></h5>
+     <ul class="feed">
+      <li><span class="dot g"></span>نور دخلت الغرفة (لاعبة جديدة، م٢)<time>٢:٣١ ظ</time></li>
+      <li><span class="dot b"></span>أبو سامر أعطى الميك لسامر<time>٢:٢٨ ظ</time></li>
+      <li><span class="dot"></span>ريما طردت «مزعج٩» (إزعاج)<time>٢:٢٠ ظ</time></li>
+      <li><span class="dot g"></span>ريما دخلت كأدمن<time>٢:١٥ ظ</time></li>
+      <li><span class="dot g"></span>بدأ المكتب (فتحه البوت)<time>١٢:٠٠ ص</time></li>
+     </ul>
+    </div>
+   </div>
+
+   <div>
+    <div class="paperb card"><h5>إعدادات الغرفة</h5>
+     <div class="frm">
+      <label>اسم الغرفة (عربي)<input value="غرفة مكتب المافيا"></label>
+      <label>الاسم بالإنجليزي<input value="Mafia Office Room"></label>
+      <label>السطر الفرعي<input value="للاعبين الجدد · اسأل وتعلّم اللعبة"></label>
+      <label>السعة<select><option>٦٤ لاعب</option></select></label>
+      <label>مدة المايك للضيف<select><option>دقيقة وحدة</option></select></label>
+      <div class="tog on"><i></i>تثبيت أول القائمة</div>
+      <div class="tog on"><i></i>اللاعب يدخل مكتوم</div>
+      <div class="tog"><i></i>مخفية عن اللاعبين (للإدارة بس)</div>
+      <div class="warn">رفع السعة فوق ١٦ ما اتجرّب بعد على الأجهزة؛ بيتأكد بجلسة اختبار الصوت.</div>
+      <button class="btnb">حفظ</button>
+     </div>
+    </div>
+    <div class="paperb card"><h5>الأدمنز<small>يديروا هالغرفة</small></h5>
+     <table class="tbl">
+      <tr><td>أبو سامر<div class="m">#4800012</div></td><td><span class="pill g">حاضر</span></td><td><button class="mini r">شيل</button></td></tr>
+      <tr><td>ريما<div class="m">#4800077</div></td><td><span class="pill g">حاضرة</span></td><td><button class="mini r">شيل</button></td></tr>
+      <tr><td>خالد<div class="m">#4800103</div></td><td><span class="pill">مش موجود</span></td><td><button class="mini r">شيل</button></td></tr>
+     </table>
+     <div class="frm" style="margin-top:10px"><label>إضافة أدمن برقم الهوية<input placeholder="#4800000"></label><button class="btnb" style="justify-self:start">أضف</button></div>
+     <p class="note" style="color:#4a3c24">الأدمن بيعتمد على حسابه باللعبة: بيدخل كلاعب عادي وأول ما يفتح الغرفة بتظهر له أدوات الإدارة. لو شلته بتروح منه فوراً.</p>
+    </div>
+   </div>
+  </div>
+ </main>
+</div>
+<p class="note">• كل غرفة رسمية = تعريف عند السيرفر (اسم، سعة، تثبيت، مخفية أو ظاهرة، قائمة أدمنز). «قاعة الدعم الفني» مثال لغرفة مخصصة للإدارة بس (مخفية، بتدخلها بالكود/الدعوة) لما تتعب الأولى.<br>
+• بوت دايم على سيرفرنا بيفتح الغرفة ويضل جواها، فالبطاقة موجودة 24 ساعة حتى لو ما في ولا أدمن. اللوحة بتبين إذا البوت شغّال.<br>
+• اللي بتشوفه اللوحة: مين موجود، متى دخل وطلع، مين رفع إيده ومين أخد الميك، ومين انطرد ومن مين. <b>الصوت نفسه ما بنسمعه ولا بنسجّله</b> (ما بتدعمه مكتبة الصوت).</p>
+</section>
+
+</div>
+</body>
+</html>
