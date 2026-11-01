@@ -242,6 +242,14 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
             if (botFarm) out.farm = botFarm.beat(body);
             return send(res, 200, out);
           }
+          if (req.method === 'POST' && url.pathname === '/v1/bot/say') {
+            const body = await readJson(req, res, 4096);
+            if (body === undefined) return;
+            const id = String((body && body.room) || '');
+            if (!chat || !officialRooms || !officialRooms.room(id) || !officialRooms.chatOpen(id)) return send(res, 200, { ok: false, error: 'closed' });
+            const m = chat.botSay('room:' + id, body.bot, body.text);
+            return send(res, 200, { ok: !!m, id: m ? m.id : 0 });
+          }
           return send(res, 404, { ok: false, error: 'not found' });
         } catch (e) { fail(res, e, url.pathname); }
       })();

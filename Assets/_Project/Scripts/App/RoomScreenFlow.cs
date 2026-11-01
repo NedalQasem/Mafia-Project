@@ -39,7 +39,16 @@ namespace MafiaNight.App
 
         private bool IsOfficial => !string.IsNullOrEmpty(officialId);
         private string ChatChannel => "room:" + officialId;
-        private IEnumerable<RoomMember> People => rooms.Members.Where(m => !m.IsKeeper);   // the room bot that keeps an official room open is not a person
+        /// <summary>Everybody in the room: the real members (not the room bot that keeps an official room open) and the made-up ones the host listed.</summary>
+        private IEnumerable<RoomMember> People
+        {
+            get
+            {
+                foreach (var m in rooms.Members) if (!m.IsKeeper) yield return m;
+                if (Stage != null) foreach (var v in Stage.Virtuals) yield return new RoomMember { Puid = v.Id, PlayFabId = v.Id, Name = v.Name, Rank = v.Rank, Level = v.Level };
+            }
+        }
+        private RoomMember Find(string puid) => puid == null ? null : People.FirstOrDefault(m => m.Puid == puid);
 
         /// <summary>The player left the room with the back button.</summary>
         public event Action Left;
@@ -190,7 +199,7 @@ namespace MafiaNight.App
 
             if (room.Mode == RoomMode.Mafia)
             {
-                int n = rooms.Members.Count;
+                int n = People.Count();
                 if (!rooms.IAmHost) { v.StartLabel = "بانتظار المضيف"; v.StartEnabled = false; }
                 else { v.StartEnabled = n >= MatchMinPlayers; v.StartLabel = v.StartEnabled ? "ابدأ المباراة" : "تحتاج " + MatchMinPlayers + " لاعبين"; }
             }
@@ -201,7 +210,7 @@ namespace MafiaNight.App
 
         private KitRoomScreen.SeatVm SeatOf(string puid, bool head)
         {
-            var m = puid != null ? rooms.Members.FirstOrDefault(x => x.Puid == puid) : null;
+            var m = Find(puid);
             if (m == null || m.IsKeeper) return new KitRoomScreen.SeatVm { Kind = KitRoomScreen.SeatKind.Empty };
             bool silent = audio != null && (m.IsMe ? !audio.MicOn : audio.IsRemoteMicOff(m.Puid) || audio.IsPlayerMuted(m.Puid));
             return new KitRoomScreen.SeatVm
@@ -256,14 +265,14 @@ namespace MafiaNight.App
             if (holder != null)
             {
                 if (holder == me.Puid) { ToggleMyMic(); return; }
-                MemberMenu(rooms.Members.FirstOrDefault(m => m.Puid == holder));
+                MemberMenu(Find(holder));
                 return;
             }
             if (index < 0) { if (staff) stage.Sit(RoomStage.Head); return; }
             if (st.IsLocked(index)) { if (staff) KitActionSheet.Show(canvas, "مقعد مقفل", new KitActionSheet.Choice("افتح المقعد", () => stage.Lock(index, false)), new KitActionSheet.Choice("إلغاء", null, false, true)); return; }
             if (staff)
             {
-                var queue = st.Queue.Select(id => rooms.Members.FirstOrDefault(m => m.Puid == id)).Where(m => m != null).Take(6).ToList();
+                var queue = st.Queue.Select(id => Find(id)).Where(m => m != null).Take(6).ToList();
                 var choices = new List<KitActionSheet.Choice>();
                 foreach (var m in queue) { var who = m; choices.Add(new KitActionSheet.Choice("طلّع " + who.Name, () => stage.Bring(who.Puid, index))); }
                 if (st.Mode == MicMode.Free || queue.Count == 0) choices.Add(new KitActionSheet.Choice("اقعد إنت هون", () => stage.Sit(index)));
@@ -319,14 +328,14 @@ namespace MafiaNight.App
             KitMembersSheet.Show(canvas, "الحضور", People.Count() + " من " + rooms.CurrentRoom.Capacity, rows, r =>
             {
                 KitMembersSheet.CloseCurrent();
-                MemberMenu(rooms.Members.FirstOrDefault(m => m.Puid == r.Id));
+                MemberMenu(Find(r.Id));
             });
         }
 
         private void OnMessage(KitRoomScreen.ChatVm m)
         {
             if (string.IsNullOrEmpty(m.Id) || Me == null || m.Id == Me.Puid) return;
-            MemberMenu(rooms.Members.FirstOrDefault(x => x.Puid == m.Id));
+            MemberMenu(Find(m.Id));
         }
 
         // ------------------------------------------------------------------------------------------ room menu (title)

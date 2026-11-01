@@ -356,6 +356,13 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     return false;
   }
   /** Posts a line in a room's channel as the game itself (a welcome or a notice). */
+  /** A made-up player (a bot of the room bot) says something in a room's channel. Its sender id is "bot:<id>", never a PlayFab id, so it can't be messaged, blocked into a list or paid. */
+  function botSay(ch, bot, text) {
+    const t = String(text || '').trim().slice(0, c.maxLen);
+    const id = String((bot && bot.id) || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 20);
+    if (!t || !id || !ch.startsWith('room:')) return null;
+    return addMessage(ch, 'bot:' + id, String(bot.name || '').trim().slice(0, 24) || 'لاعب', Math.max(0, Math.min(7, Number(bot.rank) || 0)), t, false);
+  }
   function systemLine(ch, text) { return addMessage(ch, '', 'المكتب', 0, String(text).slice(0, c.maxLen), true); }
 
   /** Forget reports and sends that are old (called now and then). */
@@ -394,7 +401,7 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     return out.slice(0, 20);
   }
 
-  return { setRooms: r => { rooms = r; }, history, countSince, removeMessage, systemLine, who, pushEvent, isOnline, onlineCount, onlinePlayers, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, adminMute, muteUntil, searchPeople, forgetPerson, ChatError, _state: () => state };
+  return { setRooms: r => { rooms = r; }, history, countSince, removeMessage, systemLine, botSay, who, pushEvent, isOnline, onlineCount, onlinePlayers, seenAt, touch, send, poll, inbox, markRead, createGroup, leaveGroup, block, blockedList, report, purge, flushNow, adminMute, muteUntil, searchPeople, forgetPerson, ChatError, _state: () => state };
 }
 
 module.exports = { createChat, ChatError, normalize, rankIndex, dmChannel, PUBLIC };

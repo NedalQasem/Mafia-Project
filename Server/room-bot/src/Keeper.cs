@@ -18,6 +18,7 @@ namespace MafiaNight.RoomBot
     /// Keeps the official rooms open. The rewards service says which rooms exist (its answer to every report); for each one the keeper owns an EOS lobby
     /// (no voice room: the voice is LiveKit), runs the mic seats of the room with the game's own <see cref="StageSync"/> (the keeper is the host), and tells the
     /// service every few seconds who is inside and how the stage looks. Orders from the admin board (kick, take down from the mic) arrive in the same answer.
+    /// The bots the board orders for a room are made-up members run here by a <see cref="BotCrew"/>: they sit on a few mic seats and write in the room's chat.
     /// </summary>
     internal sealed class Keeper
     {
@@ -36,6 +37,7 @@ namespace MafiaNight.RoomBot
             public DateTime NextTry = DateTime.MinValue;
             public List<Eos.Member> Members = new List<Eos.Member>();
             public StageSync Stage;
+            public BotCrew Crew;
             public readonly HashSet<string> Known = new HashSet<string>();
             public string PfOf(string puid) => Members.FirstOrDefault(m => m.Puid == puid)?.Pf ?? "";
         }
@@ -54,6 +56,9 @@ namespace MafiaNight.RoomBot
         private DateTime nextBeat = DateTime.MinValue, nextUpdate = DateTime.MinValue;
         private ulong requestNotif, closedNotif;
         private bool running = true;
+        private readonly Random rng = new Random();
+        private List<BotProfile> farmProfiles = new List<BotProfile>();
+        private readonly Dictionary<string, (int count, bool sit, bool chat)> farmOrders = new Dictionary<string, (int, bool, bool)>();   // "official:1001" -> what the board wants
 
         public Keeper(Eos eos, string apiUrl, string botKey) { this.eos = eos; this.apiUrl = apiUrl.TrimEnd('/'); this.botKey = botKey; }
 
@@ -87,10 +92,12 @@ namespace MafiaNight.RoomBot
                 rooms = rooms.Values.Where(r => r.LobbyId != null && r.Stage != null).Select(r => new
                 {
                     id = r.Def.Id, lobbyId = r.LobbyId,
-                    members = r.Members.Where(m => !m.Keeper).Select(m => new { puid = m.Puid, pf = m.Pf, name = m.Name }).ToArray(),
+                    members = r.Members.Where(m => !m.Keeper).Select(m => new { puid = m.Puid, pf = m.Pf, name = m.Name, bot = false })
+                        .Concat(r.Stage.Virtuals.Select(v => new { puid = v.Id, pf = "", name = v.Name, bot = true })).ToArray(),
                     stage = new { head = r.Stage.Stage.HeadHolder ?? "", seats = Enumerable.Range(0, r.Stage.Stage.SeatCount).Select(i => r.Stage.Stage.SeatHolder(i)).Where(s => s != null).ToArray(), queue = r.Stage.Stage.Queue.ToArray() },
                 }).ToArray(),
                 real = rooms.Values.Sum(r => r.Members.Count(m => !m.Keeper)),
+                bots = rooms.Values.Where(r => r.Stage != null).SelectMany(r => r.Stage.Virtuals.Select(v => new { id = v.Id.Substring(BotCrew.IdPrefix.Length), room = "official:" + r.Def.Id, status = r.Stage.Stage.IsSeated(v.Id) ? "seated" : "idle", role = "" })).ToArray(),
             };
             string body = JsonSerializer.Serialize(report);
             Task.Run(async () =>
@@ -132,15 +139,68 @@ namespace MafiaNight.RoomBot
                     }
                     foreach (var id in rooms.Keys.Where(k => !seen.Contains(k)).ToList()) { var gone = rooms[id]; if (gone.LobbyId != null) eos.Destroy(gone.LobbyId); rooms.Remove(id); Log.Info("Room " + id + " was removed"); }
                 }
+                if (root.TryGetProperty("farm", out var farm) && farm.ValueKind == JsonValueKind.Object) ApplyFarm(farm);
                 if (root.TryGetProperty("commands", out var cmds) && cmds.ValueKind == JsonValueKind.Array)
                     foreach (var c in cmds.EnumerateArray()) Command(Str(c, "room"), Str(c, "kind"), Str(c, "puid"));
             }
+        }
+
+        /// <summary>The board's bots: the profiles, and for each room how many of them it wants there (orders of the form "official:<id>").</summary>
+        private void ApplyFarm(JsonElement farm)
+        {
+            var profiles = new List<BotProfile>();
+            if (farm.TryGetProperty("profiles", out var ps) && ps.ValueKind == JsonValueKind.Array)
+                foreach (var p in ps.EnumerateArray())
+                {
+                    var bp = new BotProfile { Id = Str(p, "id"), Name = Str(p, "name"), Level = Int(p, "level", 1), Rank = Int(p, "rank", 0), Style = Str(p, "style") };
+                    if (p.TryGetProperty("lines", out var ls) && ls.ValueKind == JsonValueKind.Array) foreach (var l in ls.EnumerateArray()) if (l.ValueKind == JsonValueKind.String && l.GetString().Length > 0) bp.Lines.Add(l.GetString());
+                    if (bp.Id.Length > 0 && bp.Name.Length > 0) profiles.Add(bp);
+                }
+            farmProfiles = profiles;
+            farmOrders.Clear();
+            if (farm.TryGetProperty("orders", out var os) && os.ValueKind == JsonValueKind.Array)
+                foreach (var o in os.EnumerateArray())
+                {
+                    string room = Str(o, "room");
+                    if (!room.StartsWith("official:")) continue;      // the rooms of players are for the bots run by a player's device
+                    bool sit = !o.TryGetProperty("sit", out var s) || s.ValueKind != JsonValueKind.False, chat = !o.TryGetProperty("chat", out var c) || c.ValueKind != JsonValueKind.False;
+                    farmOrders.TryGetValue(room, out var old);
+                    farmOrders[room] = (old.count + Math.Max(0, Int(o, "count", 0)), old.sit || sit, old.chat || chat);
+                }
+        }
+
+        private void RunCrew(Kept r)
+        {
+            if (r.Crew == null)
+                r.Crew = new BotCrew(r.Stage, () => DateTime.UtcNow, rng, (who, text) => Say(r.Def.Id, who, text), () => r.Members.Count(m => !m.Keeper));
+            farmOrders.TryGetValue("official:" + r.Def.Id, out var want);
+            var elsewhere = new HashSet<string>(rooms.Values.Where(o => o != r && o.Crew != null).SelectMany(o => o.Crew.Ids));
+            int room = Math.Max(0, r.Def.Capacity - r.Members.Count(m => !m.Keeper));
+            r.Crew.Configure(farmProfiles.Where(p => !elsewhere.Contains(BotCrew.IdOf(p))), Math.Min(want.count, room), want.sit, want.chat && r.Def.ChatEnabled);
+            r.Crew.Tick();
+        }
+
+        private void Say(string roomId, VirtualMember who, string text)
+        {
+            string body = JsonSerializer.Serialize(new { room = roomId, bot = new { id = who.Id.Substring(BotCrew.IdPrefix.Length), name = who.Name, rank = who.Rank }, text });
+            Task.Run(async () =>
+            {
+                try
+                {
+                    using var req = new HttpRequestMessage(HttpMethod.Post, apiUrl + "/v1/bot/say") { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+                    req.Headers.Add("x-bot-key", botKey);
+                    using var res = await http.SendAsync(req);
+                    if (!res.IsSuccessStatusCode) Log.Warn("Say refused: " + (int)res.StatusCode);
+                }
+                catch (Exception e) { Log.Warn("Say failed: " + e.Message); }
+            });
         }
 
         private void Command(string roomId, string kind, string puid)
         {
             if (!rooms.TryGetValue(roomId, out var r) || r.LobbyId == null || puid.Length == 0) return;
             Log.Info("Order: " + kind + " " + puid + " in room " + roomId);
+            if (puid.StartsWith(BotCrew.IdPrefix)) { if (kind != "kick") r.Stage?.Down(puid); return; }       // a bot is not an EOS user: only the mic can be taken from it
             if (kind == "kick") eos.Kick(r.LobbyId, puid);
             else if (kind == "down") r.Stage?.Down(puid);
         }
@@ -169,11 +229,12 @@ namespace MafiaNight.RoomBot
                 return;
             }
             var members = eos.Members(r.LobbyId);
-            if (members == null) { Log.Warn("Room " + r.Def.Id + ": the lobby is gone, making it again"); r.LobbyId = null; r.Stage = null; r.Members.Clear(); r.NextTry = now.AddSeconds(3); return; }
+            if (members == null) { Log.Warn("Room " + r.Def.Id + ": the lobby is gone, making it again"); r.LobbyId = null; r.Stage = null; r.Crew = null; r.Members.Clear(); r.NextTry = now.AddSeconds(3); return; }
             r.Members = members;
             var present = new HashSet<string>(members.Select(m => m.Puid));
-            foreach (var m in members) if (r.Known.Add(m.Puid) && !m.Keeper) { Log.Info("Room " + r.Def.Id + ": " + m.Name + " joined"); r.Stage.MemberJoined(m.Puid); }
+            foreach (var m in members) if (r.Known.Add(m.Puid) && !m.Keeper) { Log.Info("Room " + r.Def.Id + ": " + m.Name + " joined"); r.Stage.MemberJoined(m.Puid); r.Crew?.Greet(); }
             foreach (var id in r.Known.Where(k => !present.Contains(k)).ToList()) { r.Known.Remove(id); r.Stage.MemberLeft(id); }
+            RunCrew(r);
             if (r.AppliedKey != r.Def.Key)
             {
                 r.AppliedKey = r.Def.Key;

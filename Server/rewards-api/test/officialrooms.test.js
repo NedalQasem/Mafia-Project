@@ -231,3 +231,23 @@ test('a room needs a name, sizes are kept in range, and a deleted room is gone',
     assert.equal((await b.player(P1, '/v1/rooms/official', {})).json.rooms.length, 0);
   } finally { b.close(); }
 });
+
+test('a bot says a line in the room chat; closed chat and unknown rooms refuse it', async () => {
+  const b = await boot2();
+  try {
+    const id = (await b.board('/api/office/save', { name: 'غرفة', capacity: 16 })).json.room.id;
+    await b.player(P1, '/v1/rooms/official/enter', { id });
+    const said = await b.bot('/v1/bot/say', { room: id, bot: { id: 'b3', name: 'سامر', rank: 2 }, text: 'مساء الخير' });
+    assert.equal(said.json.ok, true);
+    const hist = await b.player(P1, '/v1/rooms/official/enter', { id });
+    const line = hist.json.history.find(l => l.text === 'مساء الخير');
+    assert.ok(line);
+    assert.equal(line.from, 'bot:b3');
+    assert.equal(line.name, 'سامر');
+    assert.equal((await b.bot('/v1/bot/say', { room: '9999', bot: { id: 'b3', name: 'x' }, text: 'hi' })).json.ok, false);
+    assert.equal((await b.bot('/v1/bot/say', { room: id, bot: { id: '', name: 'x' }, text: 'hi' })).json.ok, false);
+    assert.equal((await b.bot('/v1/bot/say', { room: id, bot: { id: 'b3', name: 'x' }, text: 'hi' }, 'wrong')).status, 401);
+    await b.board('/api/office/save', { id, name: 'غرفة', capacity: 16, chatEnabled: false });
+    assert.equal((await b.bot('/v1/bot/say', { room: id, bot: { id: 'b3', name: 'x' }, text: 'hi' })).json.ok, false);
+  } finally { b.close(); }
+});

@@ -91,7 +91,7 @@ namespace MafiaNight.Services.Match
         private void OnReceived(string sender, WireMessage m)
         {
             if (m.Type == Msg.Chat) { RoomChat?.Invoke(sender, m.Arg(0)); return; }
-            if (m.Type == Msg.StageAct || m.Type == Msg.Stage) { Stage.Receive(sender, m); return; }
+            if (m.Type == Msg.StageAct || m.Type == Msg.Stage || m.Type == Msg.Roster) { Stage.Receive(sender, m); return; }
             if (m.Type == Msg.Act) { Host?.Receive(sender, m); return; }
             if (m.Type == Msg.Snapshot)
             {
