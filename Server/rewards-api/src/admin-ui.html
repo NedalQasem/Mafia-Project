@@ -285,6 +285,8 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
     <button class="nav" data-v="words"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span>الكلمات الممنوعة</span></button>
     <button class="nav" data-v="reports"><svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg><span>البلاغات</span><i class="n hide" id="nReports"></i></button>
     <button class="nav" data-v="players"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-4 3.2-6 6.5-6s5.9 2 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .6 3.3 2.5 3.5 6"/></svg><span>اللاعبون</span></button>
+    <button class="nav" data-v="office"><svg viewBox="0 0 24 24"><path d="M3 21V9l9-6 9 6v12M9 21v-6h6v6M3 21h18"/></svg><span>الغرف الرسمية</span><i class="n hide" id="nOffice"></i></button>
+    <button class="nav" data-v="bots"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01M9 16.5h6M3 12v3M21 12v3"/></svg><span>البوتات</span></button>
     <button class="nav out" id="out"><svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg><span>اخرج</span></button>
   </aside>
 
@@ -400,6 +402,72 @@ input.ltr,textarea.ltr{direction:ltr;text-align:left}
       <div class="paper card" style="margin-bottom:16px"><form class="addrow" id="pForm"><input id="pq" placeholder="رقم اللاعب أو معرّفه أو اسمه" aria-label="بحث"><button class="btn red sm" type="submit">ابحث</button></form>
         <small class="hint">البحث بالاسم بيلاقي بس اللاعبين اللي ظهروا من آخر مرة اشتغل فيها السيرفر.</small></div>
       <div id="pResult"></div>
+    </section>
+
+
+    <section class="view" id="v-office">
+      <div class="top"><h1>الغرف الرسمية<small>غرف ثابتة تابعة إلنا (مكتب المافيا للاعبين الجدد...): بتظهر مثبّتة أول قائمة الغرف، وأدمنزنا بيديروها</small></h1><button class="btn red sp" id="rmNew">+ غرفة رسمية</button></div>
+      <div class="warn" id="rmBot" style="margin-bottom:12px"></div>
+      <div class="paper card"><div class="empty hide" id="rmEmpty">ما في غرف رسمية. اضغط «غرفة رسمية» لتبدأ.</div><table class="tbl" id="rmTable"></table></div>
+      <div id="rmDetail" class="hide" style="margin-top:16px">
+        <div class="grid g2">
+          <div class="paper card"><h3 id="rmTitle">إعدادات الغرفة</h3><div class="err" id="rmErr" role="alert"></div>
+            <form id="rmForm" autocomplete="off">
+              <div class="row2"><div class="f"><label>الاسم (عربي)</label><input data-k="name" maxlength="40"></div><div class="f"><label>الاسم بالإنجليزي</label><input data-k="nameEn" maxlength="40"></div></div>
+              <div class="row2"><div class="f"><label>السطر الفرعي (عربي)</label><input data-k="sub" maxlength="70"></div><div class="f"><label>السطر الفرعي (إنجليزي)</label><input data-k="subEn" maxlength="70"></div></div>
+              <div class="row2"><div class="f"><label>السعة (٤–٦٤)</label><input data-k="capacity" type="number" min="4" max="64"></div><div class="f"><label>مقاعد المايك (٢–١٢)</label><input data-k="micSeats" type="number" min="2" max="12"></div></div>
+              <div class="row2"><div class="f"><label>المايك</label><select data-k="micMode"><option value="request">بالطلب: الأدمن بيطلّع</option><option value="free">حر: أي واحد يقعد</option></select></div><div class="f"><label>وضع بطيء (ثواني بين الرسائل)</label><input data-k="slowSeconds" type="number" min="0" max="60"></div></div>
+              <div class="row2"><div class="f"><label>رسالة ترحيب (عربي)</label><textarea data-k="welcome" rows="2" maxlength="220"></textarea></div><div class="f"><label>رسالة ترحيب (إنجليزي)</label><textarea data-k="welcomeEn" rows="2" maxlength="220"></textarea></div></div>
+              <div class="f"><label><input data-k="pinned" type="checkbox"> مثبّتة أول القائمة</label><label><input data-k="chatEnabled" type="checkbox"> الدردشة مفتوحة</label><label><input data-k="hidden" type="checkbox"> مخفية عن اللاعبين (للأدمنز بس)</label></div>
+              <div class="foot-act"><button class="btn red" type="submit">احفظ</button></div>
+            </form></div>
+          <div class="paper card"><h3>الأدمنز<small>بيديروا هالغرفة</small></h3><table class="tbl" id="rmAdmins"></table>
+            <form id="rmAdminAdd" class="addrow" autocomplete="off"><input placeholder="رقم اللاعب (٦ خانات) أو معرّف PlayFab" aria-label="أدمن جديد"><button class="btn red sm" type="submit">أضف أدمن</button></form>
+            <p class="hint">الأدمن بيدخل اللعبة كلاعب عادي، وأول ما يفتح الغرفة بتظهر له أدوات الإدارة (إعطاء المايك، إنزال، طرد). لو شلته بتروح منه فوراً.</p></div>
+        </div>
+        <div class="grid g2" style="margin-top:16px">
+          <div class="paper card"><h3>الموجودين هلأ<small id="rmCount"></small></h3><div class="empty hide" id="rmMEmpty">ما حدا بالغرفة (أو البوت مش شغّال).</div><table class="tbl" id="rmMembers"></table></div>
+          <div class="paper card"><h3>الدردشة مباشرة</h3><div class="empty hide" id="rmChatEmpty">لسا ما كتب حدا.</div><table class="tbl" id="rmChat"></table>
+            <form id="rmSay" class="addrow" autocomplete="off"><input placeholder="اكتب باسم المكتب…" maxlength="200" aria-label="رسالة من المكتب"><button class="btn red sm" type="submit">ارسل</button></form></div>
+        </div>
+        <div class="paper card" style="margin-top:16px"><h3>سجل الغرفة<small id="rmStats"></small></h3><div class="empty hide" id="rmLogEmpty">السجل فاضي.</div><ul class="feed" id="rmLog"></ul></div>
+      </div>
+    </section>
+
+    <section class="view" id="v-bots">
+      <div class="top"><h1>البوتات<small>لاعبين وهميين بتضيفهم لأي غرفة: لتجرّب اللعبة، ولما تنطلق ما تكون الغرف فاضية</small></h1></div>
+      <div class="warn" id="btStatus" style="margin-bottom:12px"></div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px">
+        <div class="paper stat"><b id="btTotal">–</b><span>بوت بالمخزن</span></div>
+        <div class="paper stat"><b id="btRun">–</b><span>شغّالين هلأ</span></div>
+        <div class="paper stat"><b id="btRooms">–</b><span>غرف فيها بوتات</span></div>
+        <div class="paper stat"><b id="btMatch">–</b><span>بمباراة</span></div>
+        <div class="paper stat"><b id="btReal">–</b><span>لاعبين حقيقيين</span></div>
+      </div>
+      <div class="grid g2">
+        <div class="paper card"><h3>أضف بوتات لغرفة</h3><div class="err" id="btErr" role="alert"></div>
+          <form id="btOrder" autocomplete="off">
+            <div class="f"><label>الغرفة</label><select data-k="room"></select></div>
+            <div class="row2"><div class="f"><label>كم بوت</label><input data-k="count" type="number" min="1" max="30" value="3"></div><div class="f"><label>تكمّل الغرفة لـ (٠ = بدون)</label><input data-k="fillTo" type="number" min="0" max="16" value="0"></div></div>
+            <div class="f"><label><input data-k="sit" type="checkbox" checked> يقعدوا على مقاعد المايك (مكتومين)</label><label><input data-k="chat" type="checkbox" checked> يكتبوا بالدردشة بين فترة وفترة</label><label><input data-k="play" type="checkbox" checked> يلعبوا المباراة لما تبدأ</label></div>
+            <div class="foot-act"><button class="btn red" type="submit">أضف</button></div>
+          </form>
+          <p class="hint">البوتات ما بتحكي صوت، وما بتكسب كوينز ولا جوائز ولا نقاط رتبة، وما بتظهر بالتصنيفات ولا بعدّاد المتصلين، وما بتبعت بريد ولا طلبات صداقة. وبتظهر باللعبة مثل أي لاعب (بدون شارة).</p>
+          <h3 style="margin-top:14px">التكليفات الحالية</h3><div class="empty hide" id="btOrdEmpty">ما في تكليفات.</div><table class="tbl" id="btOrders"></table></div>
+        <div class="paper card"><h3>وضع الإطلاق<small>بدل ما تضيف يدوي</small></h3>
+          <form id="btLaunch" autocomplete="off">
+            <div class="f"><label><input data-k="enabled" type="checkbox"> املأ الغرف العامة تلقائياً</label><label><input data-k="leaveWhenReal" type="checkbox"> البوت بيطلع لما يدخل لاعب حقيقي مكانه</label></div>
+            <div class="row2"><div class="f"><label>الحد الأدنى بكل غرفة عامة</label><input data-k="minPerRoom" type="number" min="1" max="16"></div><div class="f"><label>أقصى عدد بوتات بنفس الوقت</label><input data-k="maxBots" type="number" min="0" max="60"></div></div>
+            <div class="row2"><div class="f"><label>من الساعة</label><input data-k="fromHour" type="number" min="0" max="23"></div><div class="f"><label>إلى الساعة</label><input data-k="toHour" type="number" min="0" max="23"></div></div>
+            <div class="foot-act"><button class="btn red" type="submit">احفظ</button></div>
+          </form></div>
+      </div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="paper card"><h3>البوتات الشغّالة<small>بيتحدّث كل ٥ ثواني</small></h3><div class="empty hide" id="btRunEmpty">ما في بوتات شغّالة.</div><table class="tbl" id="btRunning"></table></div>
+        <div class="paper card"><h3>شخصيات البوتات</h3>
+          <form id="btGen" class="row2" autocomplete="off"><div class="f"><label>عدد</label><input data-k="count" type="number" min="1" max="40" value="20"></div><div class="f"><label>مستوى من – إلى</label><div class="rowin"><input data-k="levelFrom" type="number" min="1" max="40" value="2"><input data-k="levelTo" type="number" min="1" max="40" value="15"></div></div><div class="foot-act"><button class="btn ghost sm" type="submit">ولّد بوتات بأسماء عربية</button></div></form>
+          <div class="empty hide" id="btProfEmpty">ما في بوتات. ولّد بوتات أول.</div><table class="tbl" id="btProfiles"></table></div>
+      </div>
     </section>
 
     <p class="note"><b>ملاحظة:</b> أي تعديل بيتحفظ على السيرفر وبيطبّق فوراً بدون إعادة تشغيل ولا نسخة جديدة من اللعبة. كل إجراء بيتسجّل بسجلّ النشاط.</p>
@@ -1105,6 +1173,100 @@ Object.assign(ACT, { lbprizes_save: 'حفظ جوائز التصنيفات' });
 
 // ------------------------------------------------------------------ start: a valid cookie goes straight in
 api('/overview').then(() => showApp()).catch(() => showLogin());
+
+// ------------------------------------------------------------------ official rooms
+const OFERR = { name_required: 'الاسم مطلوب', bad_room: 'بيانات الغرفة غير صحيحة', bad_player: 'اللاعب غير صحيح', unknown_player: 'ما انوجد لاعب بهالرقم أو المعرّف', not_found: 'ما انوجدت الغرفة', bad_command: 'أمر غير صحيح' };
+let rmSel = '', rmData = null, rmTimer = null;
+const rmRoom = () => rmData && rmData.rooms.find(r => r.id === rmSel);
+function rmFmtTime(ts) { const d = new Date(ts); return ar(String(d.getHours()).padStart(2, '0')) + ':' + ar(String(d.getMinutes()).padStart(2, '0')); }
+async function loadOffice() {
+  clearTimeout(rmTimer);
+  rmData = await api('/office');
+  setBadge($('#nOffice'), rmData.rooms.reduce((n, r) => n + r.online, 0));
+  $('#rmBot').textContent = rmData.botAlive ? 'برنامج الحارس شغّال: الغرف المفتوحة بتظهر للاعبين.' : 'برنامج الحارس (البوت) مش شغّال: التعريفات بتنحفظ، لكن الغرف ما بتنفتح للاعبين لحد ما يشتغل.';
+  $('#rmBot').classList.toggle('hide', rmData.botAlive);
+  $('#rmEmpty').classList.toggle('hide', rmData.rooms.length > 0);
+  $('#rmTable').innerHTML = rmData.rooms.length ? '<tr><th>الغرفة</th><th>الرقم</th><th>السعة</th><th>الحالة</th><th>الموجودين</th><th></th></tr>' + rmData.rooms.map(r =>
+    '<tr><td><b>' + esc(r.name) + '</b>' + (r.pinned ? ' <span class="kind">مثبّتة</span>' : '') + (r.hidden ? ' <span class="kind i">مخفية</span>' : '') + '</td><td>' + ar(r.id) + '</td><td>' + ar(r.capacity) + ' · ' + ar(r.micSeats) + ' مقاعد</td><td>' + (r.open ? '<span class="kind c">مفتوحة</span>' : '<span class="kind">مسكّرة</span>') + '</td><td>' + ar(r.online) + ' · ' + ar(r.adminsOnline) + ' أدمن</td><td class="act"><button class="btn ghost sm" data-rm-sel="' + esc(r.id) + '">إدارة</button><button class="btn ghost sm" data-rm-del="' + esc(r.id) + '">حذف</button></td></tr>').join('') : '';
+  $$('[data-rm-sel]').forEach(b => b.onclick = () => { rmSel = b.dataset.rmSel; rmFill(); loadOfficeLive(); });
+  $$('[data-rm-del]').forEach(b => b.onclick = async () => { if (!confirm('تحذف هالغرفة نهائياً؟')) return; try { await api('/office/delete', { id: b.dataset.rmDel }); if (rmSel === b.dataset.rmDel) { rmSel = ''; } toast('انحذفت الغرفة'); loadOffice(); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } });
+  if (!rmRoom()) rmSel = '';
+  $('#rmDetail').classList.toggle('hide', !rmSel);
+  if (rmSel) { rmAdmins(); loadOfficeLive(); }
+  if ($('#v-office').classList.contains('on')) rmTimer = setTimeout(() => loadOffice().catch(() => {}), 5000);
+}
+function rmFill() {
+  const r = rmRoom(); const f = $('#rmForm');
+  if (!r) return;
+  $('#rmTitle').textContent = 'إعدادات: ' + r.name;
+  f.querySelectorAll('[data-k]').forEach(i => { const k = i.dataset.k; i.type === 'checkbox' ? i.checked = !!r[k] : i.value = k === 'slowSeconds' ? Math.round(r.slowMs / 1000) : (r[k] == null ? '' : r[k]); });
+  $('#rmDetail').classList.remove('hide');
+}
+function rmAdmins() {
+  const r = rmRoom(); if (!r) return;
+  $('#rmAdmins').innerHTML = r.adminList.length ? '<tr><th>الأدمن</th><th>الرقم</th><th>الحالة</th><th></th></tr>' + r.adminList.map(a => '<tr><td>' + esc(a.name) + '<div class="m">' + esc(a.pf) + '</div></td><td>' + (a.num ? ar(a.num) : '–') + '</td><td>' + (a.online ? '<span class="kind c">حاضر</span>' : '<span class="kind">مش موجود</span>') + '</td><td class="act"><button class="btn ghost sm" data-rm-rm="' + esc(a.pf) + '">شيل</button></td></tr>').join('') : '<tr><td>ما في أدمنز. أضف واحد.</td></tr>';
+  $$('[data-rm-rm]').forEach(b => b.onclick = async () => { try { await api('/office/admin', { room: rmSel, player: b.dataset.rmRm, on: false }); toast('انشال الأدمن'); loadOffice(); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } });
+}
+async function loadOfficeLive() {
+  const r = rmRoom(); if (!r) return;
+  const [lg, ch] = await Promise.all([api('/office/log?room=' + encodeURIComponent(rmSel)), api('/office/chat?room=' + encodeURIComponent(rmSel))]);
+  $('#rmCount').textContent = ar(r.online) + ' من ' + ar(r.capacity);
+  $('#rmMEmpty').classList.toggle('hide', r.members.length > 0);
+  $('#rmMembers').innerHTML = r.members.length ? '<tr><th>اللاعب</th><th>الحالة</th><th></th></tr>' + r.members.map(m => {
+    const onMic = r.stage.seats.includes(m.puid) || r.stage.head === m.puid, hand = r.stage.queue.includes(m.puid);
+    return '<tr><td>' + esc(m.name) + (m.staff ? ' <span class="kind">أدمن</span>' : '') + (m.isNew ? ' <span class="kind c">جديد</span>' : '') + (m.bot ? ' <span class="kind i">بوت</span>' : '') + '<div class="m">' + esc(m.pf) + '</div></td><td>' + (onMic ? 'على المايك' : hand ? '✋ رافع إيده' : 'يسمع') + '</td><td class="act">' + (m.staff || m.bot ? '' : '<button class="btn ghost sm" data-rm-cmd="down" data-puid="' + esc(m.puid) + '" data-pf="' + esc(m.pf) + '">نزّل</button><button class="btn ghost sm" data-rm-cmd="kick" data-puid="' + esc(m.puid) + '" data-pf="' + esc(m.pf) + '">اطرد</button>') + '</td></tr>'; }).join('') : '';
+  $$('[data-rm-cmd]').forEach(b => b.onclick = async () => { try { await api('/office/command', { room: rmSel, kind: b.dataset.rmCmd, puid: b.dataset.puid, pf: b.dataset.pf }); toast('انبعت الأمر للبوت'); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } });
+  $('#rmChatEmpty').classList.toggle('hide', ch.messages.length > 0);
+  $('#rmChat').innerHTML = ch.messages.length ? ch.messages.map(m => '<tr><td>' + esc(m.name) + '<div class="m">' + rmFmtTime(m.ts) + '</div></td><td>' + esc(m.text) + '</td><td class="act"><button class="btn ghost sm" data-rm-mdel="' + m.id + '">احذف</button>' + (m.from ? '<button class="btn ghost sm" data-rm-mute="' + esc(m.from) + '">اكتم ١٠ د</button>' : '') + '</td></tr>').join('') : '';
+  $$('[data-rm-mdel]').forEach(b => b.onclick = async () => { try { await api('/office/chat/delete', { id: Number(b.dataset.rmMdel) }); loadOfficeLive(); } catch (x) { toast(errText(x.code)); } });
+  $$('[data-rm-mute]').forEach(b => b.onclick = async () => { try { await api('/players/mute', { pf: b.dataset.rmMute, minutes: 10 }); toast('انكتم ١٠ دقايق'); } catch (x) { toast(errText(x.code)); } });
+  $('#rmStats').textContent = 'دخول اليوم ' + ar(lg.stats.joinsToday) + ' · رسائل اليوم ' + ar(lg.stats.chatToday);
+  $('#rmLogEmpty').classList.toggle('hide', lg.log.length > 0);
+  const KIND = { join: 'g', leave: '', hand: 'b', mic: 'b', admin: '', room: 'b' };
+  $('#rmLog').innerHTML = lg.log.map(l => '<li><span class="dot ' + (KIND[l.kind] || '') + '"></span>' + esc(l.name ? l.name + ' · ' : '') + esc(l.text) + '<time>' + rmFmtTime(l.ts) + '</time></li>').join('');
+}
+$('#rmNew').onclick = async () => { try { const r = await api('/office/save', { name: 'غرفة رسمية جديدة', capacity: 64, micSeats: 8, micMode: 'request' }); rmSel = r.room.id; toast('انعملت الغرفة'); await loadOffice(); rmFill(); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } };
+$('#rmForm').onsubmit = async e => {
+  e.preventDefault(); $('#rmErr').textContent = '';
+  const body = { id: rmSel }; e.target.querySelectorAll('[data-k]').forEach(i => body[i.dataset.k] = i.type === 'checkbox' ? i.checked : i.value);
+  try { await api('/office/save', body); toast('انحفظت'); loadOffice(); } catch (x) { $('#rmErr').textContent = OFERR[x.code] || errText(x.code); }
+};
+$('#rmAdminAdd').onsubmit = async e => { e.preventDefault(); const i = e.target.querySelector('input'); try { await api('/office/admin', { room: rmSel, player: i.value.trim() }); i.value = ''; toast('انضاف الأدمن'); loadOffice(); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } };
+$('#rmSay').onsubmit = async e => { e.preventDefault(); const i = e.target.querySelector('input'); if (!i.value.trim()) return; try { await api('/office/chat/say', { room: rmSel, text: i.value.trim() }); i.value = ''; loadOfficeLive(); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } };
+loaders.office = loadOffice;
+
+// ------------------------------------------------------------------ bots
+const BTERR = { bad_room: 'اختر غرفة', bad_profile: 'بيانات البوت غير صحيحة', name_required: 'الاسم مطلوب', name_taken: 'الاسم مستخدم', too_many: 'كتير بوتات', not_found: 'ما انوجد' };
+let btTimer = null;
+const STYLE = { quiet: 'هادي', normal: 'عادي', chatty: 'حكّي' };
+async function loadBots() {
+  clearTimeout(btTimer);
+  const [v, o] = await Promise.all([api('/bots'), api('/office').catch(() => ({ rooms: [] }))]);
+  $('#btStatus').textContent = v.alive ? 'برنامج البوتات شغّال.' : 'برنامج البوتات مش شغّال: التكليفات والشخصيات بتنحفظ، وبتتنفّذ لما يشتغل.';
+  $('#btStatus').classList.toggle('hide', v.alive);
+  $('#btTotal').textContent = ar(v.stats.total); $('#btRun').textContent = ar(v.stats.running); $('#btRooms').textContent = ar(v.stats.rooms); $('#btMatch').textContent = ar(v.stats.matches); $('#btReal').textContent = ar(v.real);
+  const sel = $('#btOrder [data-k=room]'), keep = sel.value;
+  sel.innerHTML = o.rooms.map(r => '<option value="official:' + esc(r.id) + '">' + esc(r.name) + ' (رسمية)</option>').join('') + v.lobbies.map(l => '<option value="lobby:' + esc(l.id) + '">' + esc(l.name) + ' · ' + ar(l.count) + ' من ' + ar(l.capacity) + (l.mafia ? ' · مافيا' : '') + '</option>').join('');
+  if (keep) sel.value = keep;
+  const roomName = ref => { const f = [...sel.options].find(x => x.value === ref); return f ? f.textContent : ref; };
+  $('#btOrdEmpty').classList.toggle('hide', v.orders.length > 0);
+  $('#btOrders').innerHTML = v.orders.length ? '<tr><th>الغرفة</th><th>العدد</th><th>بيعملوا</th><th></th></tr>' + v.orders.map(x => '<tr><td>' + esc(roomName(x.room)) + '</td><td>' + ar(x.count) + (x.fillTo ? ' · تكمّل لـ' + ar(x.fillTo) : '') + '</td><td>' + [x.sit ? 'مقاعد' : '', x.chat ? 'دردشة' : '', x.play ? 'مباراة' : ''].filter(Boolean).join(' · ') + '</td><td class="act"><button class="btn ghost sm" data-bt-od="' + esc(x.id) + '">شيل</button></td></tr>').join('') : '';
+  $$('[data-bt-od]').forEach(b => b.onclick = async () => { try { await api('/bots/order/delete', { id: b.dataset.btOd }); loadBots(); } catch (x) { toast(BTERR[x.code] || errText(x.code)); } });
+  $('#btRunEmpty').classList.toggle('hide', v.running.length > 0);
+  const pname = id => { const p = v.profiles.find(z => z.id === id); return p ? p.name : id; };
+  $('#btRunning').innerHTML = v.running.length ? '<tr><th>البوت</th><th>الغرفة</th><th>الحالة</th></tr>' + v.running.map(b => '<tr><td>' + esc(pname(b.id)) + '</td><td>' + esc(roomName(b.room)) + '</td><td>' + esc({ seat: 'على مقعد', listen: 'يسمع', match: 'بمباراة' }[b.status] || b.status) + (b.role ? ' · ' + esc(b.role) : '') + '</td></tr>').join('') : '';
+  $('#btProfEmpty').classList.toggle('hide', v.profiles.length > 0);
+  $('#btProfiles').innerHTML = v.profiles.length ? '<tr><th>الاسم</th><th>المستوى</th><th>الأسلوب</th><th></th></tr>' + v.profiles.map(p => '<tr><td>' + esc(p.name) + '</td><td>م' + ar(p.level) + '</td><td>' + (STYLE[p.style] || p.style) + '</td><td class="act"><button class="btn ghost sm" data-bt-pd="' + esc(p.id) + '">احذف</button></td></tr>').join('') : '';
+  $$('[data-bt-pd]').forEach(b => b.onclick = async () => { try { await api('/bots/profile/delete', { id: b.dataset.btPd }); loadBots(); } catch (x) { toast(BTERR[x.code] || errText(x.code)); } });
+  const L = $('#btLaunch'); if (!L.dataset.filled) { L.dataset.filled = '1'; L.querySelectorAll('[data-k]').forEach(i => { i.type === 'checkbox' ? i.checked = !!v.launch[i.dataset.k] : i.value = v.launch[i.dataset.k]; }); }
+  if ($('#v-bots').classList.contains('on')) btTimer = setTimeout(() => loadBots().catch(() => {}), 5000);
+}
+const formBody = f => { const b = {}; f.querySelectorAll('[data-k]').forEach(i => b[i.dataset.k] = i.type === 'checkbox' ? i.checked : i.value); return b; };
+$('#btOrder').onsubmit = async e => { e.preventDefault(); $('#btErr').textContent = ''; try { await api('/bots/order', formBody(e.target)); toast('انضاف التكليف'); loadBots(); } catch (x) { $('#btErr').textContent = BTERR[x.code] || errText(x.code); } };
+$('#btGen').onsubmit = async e => { e.preventDefault(); try { const r = await api('/bots/generate', formBody(e.target)); toast('انعمل ' + ar(r.made.length) + ' بوت'); loadBots(); } catch (x) { toast(BTERR[x.code] || errText(x.code)); } };
+$('#btLaunch').onsubmit = async e => { e.preventDefault(); try { await api('/bots/launch', formBody(e.target)); toast('انحفظ وضع الإطلاق'); } catch (x) { toast(BTERR[x.code] || errText(x.code)); } };
+loaders.bots = loadBots;
+Object.assign(ACT, { office_create: 'غرفة رسمية جديدة', office_update: 'تعديل غرفة رسمية', office_delete: 'حذف غرفة رسمية', office_admin_add: 'إضافة أدمن لغرفة', office_admin_remove: 'شيل أدمن من غرفة', office_kick: 'طرد من غرفة رسمية', office_down: 'إنزال عن المايك', office_mute: 'كتم بغرفة رسمية', office_chat_delete: 'حذف رسالة غرفة', office_say: 'رسالة باسم المكتب', bots_generate: 'توليد بوتات', bot_save: 'حفظ بوت', bot_delete: 'حذف بوت', bots_order: 'تكليف بوتات لغرفة', bots_order_delete: 'شيل تكليف بوتات', bots_launch: 'وضع إطلاق البوتات' });
 </script>
 </body>
 </html>
