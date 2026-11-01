@@ -61,9 +61,21 @@ namespace MafiaNight.Services.Match
             lastHostId = HostId;
 
             var room = rooms.CurrentRoom;
-            Stage = new StageSync(myId, () => HostId, () => rooms.Members.Select(m => m.Puid), net.Send, null,
+            Stage = new StageSync(myId, () => HostId, () => rooms.Members.Select(m => m.Puid), net.Send, IsOfficialAdmin,
                 room != null ? room.MicSeats : 8, room != null && room.MicByRequest ? MicMode.Request : MicMode.Free);
-            if (rooms.IAmHost) Stage.Sit(RoomStage.Head);          // the host takes the big seat
+            if (rooms.IAmHost && !IsOfficial) Stage.Sit(RoomStage.Head);          // the host takes the big seat (an official room's host is the room bot: its big seat is for the admins)
+        }
+
+        private bool IsOfficial => !string.IsNullOrEmpty(rooms.CurrentRoom?.OfficialId);
+
+        /// <summary>The admins of an official room (named in the admin board by PlayFab id) run its stage like a host does.</summary>
+        private bool IsOfficialAdmin(string puid)
+        {
+            var room = rooms.CurrentRoom;
+            if (room == null || string.IsNullOrEmpty(room.OfficialId)) return false;
+            var def = OfficialRooms.Find(room.OfficialId);
+            var m = rooms.Members.FirstOrDefault(x => x.Puid == puid);
+            return def != null && m != null && !string.IsNullOrEmpty(m.PlayFabId) && def.Admins.Contains(m.PlayFabId);
         }
 
         private string HostId => rooms.Members.FirstOrDefault(m => m.IsHost)?.Puid;
@@ -188,7 +200,7 @@ namespace MafiaNight.Services.Match
             if (host != null && host != lastHostId)
             {
                 lastHostId = host;
-                if (host == myId) { Stage.HostChanged(); if (Stage.Stage.HeadHolder == null) Stage.Sit(RoomStage.Head); }
+                if (host == myId) { Stage.HostChanged(); if (Stage.Stage.HeadHolder == null && !IsOfficial) Stage.Sit(RoomStage.Head); }
                 if (host == myId) BecameHost();
                 else if (held != null && !gaveSnapshotToNewHost && MatchActive)
                 {

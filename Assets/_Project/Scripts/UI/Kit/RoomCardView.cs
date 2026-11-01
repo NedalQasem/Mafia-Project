@@ -21,6 +21,8 @@ namespace MafiaNight.UI.Kit
         public bool mafiaMode;             // a mafia round is running inside the room
         public bool isNew;
         public string code = "";           // private rooms
+        public bool official;              // kept open by the game's team (the Mafia Office room): gold card, pinned first
+        public string sub = "";            // official rooms: the line under the name (instead of the owner)
         public bool IsFull => count >= capacity;
     }
 
@@ -57,7 +59,7 @@ namespace MafiaNight.UI.Kit
             background.sprite = info.type == RoomType.Private ? th.steelPlate : info.type == RoomType.Vip ? th.vipFrame : th.leatherDark;
             avatar.Set(info.ownerRank);
             nameLabel.Text = info.name;
-            ownerLabel.Text = info.owner + " · المستوى " + CoinPill.Format(info.ownerLevel);
+            ownerLabel.Text = info.official ? info.sub : info.owner + " · المستوى " + CoinPill.Format(info.ownerLevel);
             countLabel.Text = CoinPill.Format(info.count);
             var ofLabel = countLabel.transform.parent != null ? countLabel.transform.parent.Find("Of") : null;
             if (ofLabel != null) { var of = ofLabel.GetComponent<ArabicText>(); if (of != null) of.Text = "من " + CoinPill.Format(info.capacity); }
@@ -73,7 +75,7 @@ namespace MafiaNight.UI.Kit
                 d.gameObject.SetActive(i < info.capacity);
             }
 
-            chipLabel.Text = info.mafiaMode ? "مباراة مافيا" : "سهرة";
+            chipLabel.Text = info.official ? "رسمية" : info.mafiaMode ? "مباراة مافيا" : "سهرة";
             live.SetActive(info.speakingSeat >= 0 && !info.IsFull);
             codeBox.SetActive(info.type == RoomType.Private && !string.IsNullOrEmpty(info.code));
             codeLabel.Text = info.code;

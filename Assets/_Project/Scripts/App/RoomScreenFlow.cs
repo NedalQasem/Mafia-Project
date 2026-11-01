@@ -4,6 +4,7 @@ using System.Linq;
 using MafiaNight.Core;
 using MafiaNight.Data.Rooms;
 using MafiaNight.MatchRules.Stage;
+using MafiaNight.Services.Chat;
 using MafiaNight.Services.Match;
 using MafiaNight.Services.Rooms;
 using MafiaNight.Services.Voice;
@@ -33,6 +34,12 @@ namespace MafiaNight.App
         private readonly HashSet<string> talking = new HashSet<string>();
         private HashSet<string> known = new HashSet<string>();
         private bool wasSeated, active;
+        private string officialId = "";        // the room is an official one: its chat is the service's, its admins come from the admin board
+        private ChatService serverChat;
+
+        private bool IsOfficial => !string.IsNullOrEmpty(officialId);
+        private string ChatChannel => "room:" + officialId;
+        private IEnumerable<RoomMember> People => rooms.Members.Where(m => !m.IsKeeper);   // the room bot that keeps an official room open is not a person
 
         /// <summary>The player left the room with the back button.</summary>
         public event Action Left;
@@ -76,11 +83,13 @@ namespace MafiaNight.App
             var room = rooms.CurrentRoom;
             if (room == null || screen == null) return;
             active = true;
+            officialId = room.OfficialId ?? "";
             Bind();
             screen.ClearChat();
             var runner = MatchRunner.Instance;
-            if (runner != null) foreach (var line in runner.RoomChatHistory) screen.AddChat(ToChat(line));
-            known = new HashSet<string>(rooms.Members.Select(m => m.Puid));
+            if (IsOfficial) OpenServerChat();
+            else if (runner != null) foreach (var line in runner.RoomChatHistory) screen.AddChat(ToChat(line));
+            known = new HashSet<string>(People.Select(m => m.Puid));
             Redraw();
             JoinVoice();
         }
@@ -130,9 +139,9 @@ namespace MafiaNight.App
         private void OnRoomChanged()
         {
             if (!IsOpen || rooms.CurrentRoom == null) return;
-            var now = new HashSet<string>(rooms.Members.Select(m => m.Puid));
-            foreach (var m in rooms.Members)
-                if (!known.Contains(m.Puid) && !m.IsMe) screen.AddChat(new KitRoomScreen.ChatVm { System = true, Text = m.Name + " دخل الغرفة" });
+            var now = new HashSet<string>(People.Select(m => m.Puid));
+            foreach (var m in People)
+                if (!known.Contains(m.Puid) && !m.IsMe && !IsOfficial) screen.AddChat(new KitRoomScreen.ChatVm { System = true, Text = m.Name + " دخل الغرفة" });
             known = now;
             Redraw();
         }
@@ -140,6 +149,7 @@ namespace MafiaNight.App
         private void OnRoomLeft(string reason)
         {
             if (IsOpen && !string.IsNullOrEmpty(reason)) { screen.Hide(); active = false; }
+            CloseServerChat();
             talking.Clear(); wasSeated = false;
         }
 
@@ -156,8 +166,8 @@ namespace MafiaNight.App
 
             var v = new KitRoomScreen.ViewVm
             {
-                Name = room.Name, RoomId = ShortId(room.Id), Members = rooms.Members.Count, HeadLabel = "المضيف",
-                Badge = room.Mode == RoomMode.Mafia ? "مباراة مافيا" : room.Kind == RoomKind.Private ? "خاصة" : room.Kind == RoomKind.Vip ? "VIP" : "",
+                Name = IsOfficial ? OfficialName(room) : room.Name, RoomId = ShortId(room.Id), Members = People.Count(), HeadLabel = IsOfficial ? "الأدمن" : "المضيف",
+                Badge = IsOfficial ? "رسمية" : room.Mode == RoomMode.Mafia ? "مباراة مافيا" : room.Kind == RoomKind.Private ? "خاصة" : room.Kind == RoomKind.Vip ? "VIP" : "",
                 CanType = room.ChatEnabled, CanLeaveSeat = seated,
             };
             v.Head = SeatOf(stage.HeadHolder, true);
@@ -192,7 +202,7 @@ namespace MafiaNight.App
         private KitRoomScreen.SeatVm SeatOf(string puid, bool head)
         {
             var m = puid != null ? rooms.Members.FirstOrDefault(x => x.Puid == puid) : null;
-            if (m == null) return new KitRoomScreen.SeatVm { Kind = KitRoomScreen.SeatKind.Empty };
+            if (m == null || m.IsKeeper) return new KitRoomScreen.SeatVm { Kind = KitRoomScreen.SeatKind.Empty };
             bool silent = audio != null && (m.IsMe ? !audio.MicOn : audio.IsRemoteMicOff(m.Puid) || audio.IsPlayerMuted(m.Puid));
             return new KitRoomScreen.SeatVm
             {
@@ -297,16 +307,16 @@ namespace MafiaNight.App
             var stage = Stage; if (stage == null) return;
             var st = stage.Stage;
             var rows = new List<KitMembersSheet.Row>();
-            foreach (var m in rooms.Members.OrderByDescending(x => st.IsStaff(x.Puid)).ThenByDescending(x => st.IsSeated(x.Puid)))
+            foreach (var m in People.OrderByDescending(x => st.IsStaff(x.Puid)).ThenByDescending(x => st.IsSeated(x.Puid)))
             {
                 bool staffM = st.IsStaff(m.Puid);
                 rows.Add(new KitMembersSheet.Row
                 {
-                    Id = m.Puid, Name = m.Name ?? "", Me = m.IsMe, Staff = staffM, Tag = staffM ? (m.IsHost ? "المضيف" : "أدمن") : "",
+                    Id = m.Puid, Name = m.Name ?? "", Me = m.IsMe, Staff = staffM, Tag = staffM ? (m.IsHost && !IsOfficial ? "المضيف" : "أدمن") : "",
                     State = st.IsSeated(m.Puid) ? "على المايك" : st.HandRaised(m.Puid) ? "✋ ينتظر" : "",
                 });
             }
-            KitMembersSheet.Show(canvas, "الحضور", rooms.Members.Count + " من " + rooms.CurrentRoom.Capacity, rows, r =>
+            KitMembersSheet.Show(canvas, "الحضور", People.Count() + " من " + rooms.CurrentRoom.Capacity, rows, r =>
             {
                 KitMembersSheet.CloseCurrent();
                 MemberMenu(rooms.Members.FirstOrDefault(m => m.Puid == r.Id));
@@ -340,7 +350,7 @@ namespace MafiaNight.App
                 c.Add(new KitActionSheet.Choice(room.ChatEnabled ? "سكّر الدردشة" : "افتح الدردشة", () => rooms.SetChatEnabled(!room.ChatEnabled, ok => { Say(ok ? (room.ChatEnabled ? "فتحت الدردشة." : "سكّرت الدردشة.") : "تعذّر تغيير حالة الدردشة، حاول مرة ثانية."); Redraw(); })));
             }
             c.Add(new KitActionSheet.Choice("إلغاء", null, false, true));
-            KitActionSheet.Show(canvas, room.Name, c.ToArray());
+            KitActionSheet.Show(canvas, IsOfficial ? OfficialName(room) : room.Name, c.ToArray());
         }
 
         private void Invite()
@@ -355,6 +365,7 @@ namespace MafiaNight.App
 
         private void Send(string text)
         {
+            if (IsOfficial) { SendServerChat(text); return; }
             var runner = MatchRunner.Instance; if (runner == null) return;
             string refused = runner.SendRoomChat(text);
             if (!string.IsNullOrEmpty(refused)) Say(refused);
@@ -374,11 +385,85 @@ namespace MafiaNight.App
             };
         }
 
+        // ------------------------------------------------------------------------------------------ official room: chat of the service
+
+        private static string OfficialName(RoomListing room)
+        {
+            var def = OfficialRooms.Find(room.OfficialId);
+            return def != null && !string.IsNullOrEmpty(def.DisplayName) ? def.DisplayName : room.Name;
+        }
+
+        private bool IsRoomAdmin(string pf)
+        {
+            var def = OfficialRooms.Find(officialId);
+            return def != null && !string.IsNullOrEmpty(pf) && def.Admins.Contains(pf);
+        }
+
+        private void OpenServerChat()
+        {
+            serverChat = ChatService.Ensure();
+            serverChat.OnMessage += OnServerLine;
+            string id = officialId;
+            OfficialRooms.Enter(id, (ok, history) =>
+            {
+                if (this == null || !IsOfficial || officialId != id) return;
+                var def = OfficialRooms.Find(id);
+                if (def != null && !string.IsNullOrEmpty(def.DisplayWelcome)) screen.AddChat(new KitRoomScreen.ChatVm { System = true, Text = def.DisplayWelcome });
+                if (!ok) { Say("تعذّر تحميل دردشة الغرفة."); return; }
+                foreach (var l in history) screen.AddChat(ToChat(l));
+            });
+        }
+
+        private void CloseServerChat()
+        {
+            if (serverChat != null) serverChat.OnMessage -= OnServerLine;
+            serverChat = null;
+            if (IsOfficial) OfficialRooms.Leave();
+            officialId = "";
+        }
+
+        private void OnServerLine(ChatMsg m)
+        {
+            if (!IsOpen || !IsOfficial || m.Channel != ChatChannel) return;
+            screen.AddChat(ToChat(new OfficialChatLine { Id = m.Id, FromPf = m.FromPf, Name = m.Name, Text = m.Text, Ts = m.Ts, System = m.System }));
+        }
+
+        private void SendServerChat(string text)
+        {
+            if (serverChat == null) return;
+            serverChat.Send(ChatChannel, text, (r, retryMs) =>
+            {
+                if (this == null) return;
+                switch (r)
+                {
+                    case ChatSendResult.Ok: case ChatSendResult.Empty: break;
+                    case ChatSendResult.Slow: Say("على مهلك، انتظر ثانية وابعت."); break;
+                    case ChatSendResult.Muted: Say("أنت ممنوع من الدردشة."); break;
+                    case ChatSendResult.NotMember: Say("لازم تكون داخل الغرفة لتكتب."); break;
+                    default: Say("تعذّر إرسال الرسالة."); break;
+                }
+            });
+        }
+
+        private KitRoomScreen.ChatVm ToChat(OfficialChatLine l)
+        {
+            bool mine = !string.IsNullOrEmpty(l.FromPf) && l.FromPf == serverChat?.MyPf;
+            bool admin = IsRoomAdmin(l.FromPf);
+            var member = People.FirstOrDefault(x => !string.IsNullOrEmpty(x.PlayFabId) && x.PlayFabId == l.FromPf);
+            return new KitRoomScreen.ChatVm
+            {
+                Id = member != null ? member.Puid : "", Name = mine ? "أنت" : l.Name ?? "", Text = l.Text ?? "", Mine = mine, System = l.System, Staff = admin && !mine,
+                Tag = admin && !mine ? "أدمن" : "",
+                Time = DateTimeOffset.FromUnixTimeMilliseconds(l.Ts).ToLocalTime().ToString("h:mm"),
+            };
+        }
+
         // ------------------------------------------------------------------------------------------ leaving and the match
 
         private void Back()
         {
             screen.Hide(); active = false; wasSeated = false;
+            CloseServerChat();
             if (audio != null) audio.Leave();
             rooms.Leave(() => { Left?.Invoke(); });
         }

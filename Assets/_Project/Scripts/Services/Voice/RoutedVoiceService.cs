@@ -50,9 +50,25 @@ namespace MafiaNight.Services.Voice
             return rooms.CurrentRoom.Mode != RoomMode.Mafia;
         }
 
+        private static string OfficialRoomId()
+        {
+            if (!ServiceLocator.TryGet(out IRoomService rooms) || rooms.CurrentRoom == null) return null;
+            return string.IsNullOrEmpty(rooms.CurrentRoom.OfficialId) ? null : rooms.CurrentRoom.OfficialId;
+        }
+
         public void Join(bool micOn, Action<VoiceError> done = null)
         {
             if (current.IsConnected) { done?.Invoke(VoiceError.None); return; }
+            string official = OfficialRoomId();
+            if (official != null)
+            {
+                // an official room has no EOS voice (its lobby is too big for it): LiveKit or nothing
+                if (VoiceBackends.LiveKit == null) { done?.Invoke(VoiceError.Failed); return; }
+                if (lk == null) { lk = VoiceBackends.LiveKit(); Forward(lk); }
+                current = lk;
+                if (lk is INamedRoomVoice named) named.JoinNamed("official:" + official, micOn, done); else done?.Invoke(VoiceError.Failed);
+                return;
+            }
             if (!WantsLiveKit()) { current = eos; eos.Join(micOn, done); return; }
             if (lk == null) { lk = VoiceBackends.LiveKit(); Forward(lk); }
             current = lk;

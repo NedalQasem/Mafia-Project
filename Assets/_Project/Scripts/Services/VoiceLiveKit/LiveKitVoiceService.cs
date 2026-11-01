@@ -24,7 +24,7 @@ namespace MafiaNight.Voice.LiveKit
     /// A listener only subscribes. The microphone goes through libwebrtc's echo cancellation and noise suppression (the mix Unity plays is the echo reference).
     /// Players are told apart by their PlayFab id (the LiveKit identity); the game's events use the EOS id, so the room's member list translates.
     /// </summary>
-    public sealed class LiveKitVoiceService : IVoiceService
+    public sealed class LiveKitVoiceService : IVoiceService, INamedRoomVoice
     {
         private const string Tag = "LiveKit";
 
@@ -40,7 +40,7 @@ namespace MafiaNight.Voice.LiveKit
         private readonly HashSet<string> speaking = new HashSet<string>();                           // EOS ids
         private readonly HashSet<string> muted = new HashSet<string>();                              // EOS ids the player stopped hearing
         private readonly Dictionary<string, float> volumes = new Dictionary<string, float>();
-        private bool joining, canPublish, gameMicAllowed = true, wantMic = true;
+        private bool joining, canPublish, gameMicAllowed = true, wantMic = true, upgrading;
         private HashSet<string> hearOnly;
         private float master = 0.5f;
         private string roomName = "";
@@ -101,11 +101,8 @@ namespace MafiaNight.Voice.LiveKit
 
         [Serializable] private class TokenDto { public bool ok; public string error, url, token, room; public bool canPublish; }
 
-        private IEnumerator JoinRoutine(Action<VoiceError> done)
+        private IEnumerator FetchToken(Action<TokenDto> got)
         {
-            joining = true;
-            if (string.IsNullOrEmpty(Ticket) || string.IsNullOrEmpty(Base)) { joining = false; done?.Invoke(VoiceError.NotReady); yield break; }
-
             TokenDto dto = null;
             using (var req = new UnityWebRequest(Base + "/v1/voice/token", "POST"))
             {
@@ -118,6 +115,38 @@ namespace MafiaNight.Voice.LiveKit
                 if (req.result == UnityWebRequest.Result.Success) { try { dto = JsonUtility.FromJson<TokenDto>(req.downloadHandler.text); } catch { /* not json */ } }
                 else Log.Warning("Token request failed: " + req.responseCode + " " + req.error, Tag);
             }
+            got(dto);
+        }
+
+        /// <summary>
+        /// A listener was put on a mic seat: his token did not allow speaking. The service learns the seats from the room bot every few seconds, so ask again a few times,
+        /// and join the room again with the new token as soon as it allows him.
+        /// </summary>
+        private IEnumerator Upgrade()
+        {
+            upgrading = true;
+            for (int i = 0; i < 6 && wantMic && IsConnected && !canPublish; i++)
+            {
+                yield return new WaitForSecondsRealtime(i == 0 ? 1.5f : 2.5f);
+                TokenDto dto = null;
+                yield return FetchToken(d => dto = d);
+                if (dto == null || !dto.ok || !dto.canPublish) continue;
+                string name = roomName;
+                Leave();
+                yield return null;
+                JoinNamed(name, true);
+                break;
+            }
+            upgrading = false;
+        }
+
+        private IEnumerator JoinRoutine(Action<VoiceError> done)
+        {
+            joining = true;
+            if (string.IsNullOrEmpty(Ticket) || string.IsNullOrEmpty(Base)) { joining = false; done?.Invoke(VoiceError.NotReady); yield break; }
+
+            TokenDto dto = null;
+            yield return FetchToken(d => dto = d);
             if (dto == null || !dto.ok || string.IsNullOrEmpty(dto.token)) { joining = false; done?.Invoke(VoiceError.Failed); yield break; }
             canPublish = dto.canPublish;
 
@@ -191,6 +220,7 @@ namespace MafiaNight.Voice.LiveKit
             wantMic = on;
             if (!IsConnected) return;
             if (on && !gameMicAllowed) return;
+            if (on && !canPublish && roomName.StartsWith("official:") && runner != null) { if (!upgrading) runner.StartCoroutine(Upgrade()); return; }
             if (on && micTrack == null && runner != null) { runner.StartCoroutine(PublishMic(null)); return; }
             if (mic != null) { mic.SetMute(!on); MicOn = on; Touch(); }
         }

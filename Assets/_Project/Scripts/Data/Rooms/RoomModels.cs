@@ -48,6 +48,8 @@ namespace MafiaNight.Data.Rooms
         public int MicSeats = 8;          // the stage the host started with (the host's own copy of it is the live one)
         public bool MicByRequest;
         public string BackgroundId = "";
+        /// <summary>Set for an official room (kept open by the room bot): its id at the rewards service. The host is the bot, not a player.</summary>
+        public string OfficialId = "";
         public long CreatedUnix;
 
         public bool IsFull => Count >= Capacity;
@@ -65,6 +67,8 @@ namespace MafiaNight.Data.Rooms
         public int Level;
         public bool IsHost;
         public bool IsMe;
+        /// <summary>The room bot that keeps an official room open (it is the host and is not shown as a player).</summary>
+        public bool IsKeeper;
     }
 
     /// <summary>The rules from Docs/05-rooms-design.md in one place.</summary>

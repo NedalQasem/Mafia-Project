@@ -24,9 +24,9 @@ namespace MafiaNight.Services.Rooms
         // lobby attributes
         private const string KName = "name", KType = "room_type", KMode = "mode", KLang = "lang", KCode = "code";
         private const string KOwnerName = "owner_name", KOwnerLevel = "owner_level", KOwnerRank = "owner_rank", KOwnerPf = "owner_pf";
-        private const string KLocked = "locked", KInMatch = "in_match", KChat = "chat", KBackground = "bg", KCreated = "created", KMicSeats = "mic_seats", KMicMode = "mic_mode";
+        private const string KLocked = "locked", KInMatch = "in_match", KChat = "chat", KBackground = "bg", KCreated = "created", KMicSeats = "mic_seats", KMicMode = "mic_mode", KOfficial = "official";
         // member attributes
-        private const string MName = "name", MRank = "rank", MLevel = "level", MPf = "pf";
+        private const string MName = "name", MRank = "rank", MLevel = "level", MPf = "pf", MKeeper = "keeper";
 
         private IEosPlatform eos;
         private IPlayerProfileService profile;
@@ -156,6 +156,7 @@ namespace MafiaNight.Services.Rooms
                 MicSeats = (int)Int(d, KMicSeats, 8),
                 MicByRequest = Int(d, KMicMode) == 1,
                 BackgroundId = Str(d, KBackground) ?? "",
+                OfficialId = Str(d, KOfficial) ?? "",
                 CreatedUnix = Int(d, KCreated),
             };
         }
@@ -181,6 +182,7 @@ namespace MafiaNight.Services.Rooms
                     Level = (int)MemberInt(d, puid, MLevel, 1),
                     IsHost = id == hostPuid,
                     IsMe = id == mine,
+                    IsKeeper = MemberInt(d, puid, MKeeper, 0) == 1,
                 });
             }
             // host first, everybody else keeps the join order (a hand-over picks the next one in line)
