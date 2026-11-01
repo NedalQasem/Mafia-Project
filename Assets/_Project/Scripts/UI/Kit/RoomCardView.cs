@@ -25,6 +25,7 @@ namespace MafiaNight.UI.Kit
         public string sub = "";            // official rooms: the line under the name
         public int adminsOnline;           // official rooms: how many of the team are inside
         public bool pulse;                 // official rooms: the card breathes (a new player should see it)
+        public bool closed;                // official rooms: the room bot has not opened it (yet): shown, but nobody can go in
         public bool IsFull => count >= capacity;
     }
 

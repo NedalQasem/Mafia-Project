@@ -42,7 +42,8 @@ namespace MafiaNight.UI.Kit
             Info = info;
             var th = KitTheme.Current;
             float k = width / 362f;                       // the mockup's card is 362 CSS pixels wide
-            bool full = info.count >= info.capacity;
+            bool closed = info.closed;
+            bool full = closed || info.count >= info.capacity;
             bool hasAdmin = info.adminsOnline > 0;
             var root = (RectTransform)transform;
             root.anchorMin = root.anchorMax = new Vector2(0.5f, 1f); root.pivot = new Vector2(0.5f, 1f);
@@ -52,8 +53,8 @@ namespace MafiaNight.UI.Kit
             float inner = width - 2 * padS;
 
             // ---- the hint: its height is its text's
-            string lead = !hasAdmin ? "" : "أول مرة؟";
-            string body = hasAdmin ? "ادخل واضغط «ارفع إيدك» ليعطيك الأدمن المايك." : "الأدمن مش موجود هلأ. تقدر تدخل وتسمع، والأدمن بيرجع بوقت الدوام.";
+            string lead = closed || !hasAdmin ? "" : "أول مرة؟";
+            string body = closed ? "الغرفة بتفتح بعد لحظات، جرّب كمان شوي." : hasAdmin ? "ادخل واضغط «ارفع إيدك» ليعطيك الأدمن المايك." : "الأدمن مش موجود هلأ. تقدر تدخل وتسمع، والأدمن بيرجع بوقت الدوام.";
             var hintBox = Rect(root, "Hint", 0, 0);
             float hintPadX = 10 * k, hintPadY = 6 * k, leadW = 0f;
             var leadLabel = lead.Length > 0 ? Label(hintBox, "Lead", lead, th.fontBody, 11.5f * k, Gold, TextAlignmentOptions.TopRight, true) : null;
@@ -149,14 +150,14 @@ namespace MafiaNight.UI.Kit
 
             // ---- chips (right) and the way in (left)
             float cx = -padS;
-            string adm = !hasAdmin ? "ما في أدمن هلأ" : info.adminsOnline == 1 ? "أدمن واحد حاضر" : CoinPill.Format(info.adminsOnline) + " أدمن حاضرين";
+            string adm = closed ? "مغلقة مؤقتاً" : !hasAdmin ? "ما في أدمن هلأ" : info.adminsOnline == 1 ? "أدمن واحد حاضر" : CoinPill.Format(info.adminsOnline) + " أدمن حاضرين";
             cx = Chip(root, th, adm, y - (btnH - chipH) * 0.5f, cx, chipH, k, true, hasAdmin ? Gold : new Color32(0xE6, 0xB3, 0xB6, 255), hasAdmin ? Brass : new Color32(0x8A, 0x1C, 0x24, 255), hasAdmin ? new Color32(0x4F, 0xD4, 0x9B, 255) : new Color32(0xC0, 0x32, 0x3A, 255)) - 8 * k;
             Chip(root, th, "صوت فقط", y - (btnH - chipH) * 0.5f, cx, chipH, k, false, new Color32(0xCF, 0xC6, 0xB2, 255), new Color(1, 1, 1, 0.11f), Color.clear);
 
             float goW = 100 * k;
             var go = Img(root, "Go", KitProc.Paint("off-go" + Mathf.RoundToInt(100 * k) + (full ? "f" : "o"), GoSpec(100 * k, btnH, k, full)), Color.white);
             PlaceLeftTop(go.rectTransform, padS, y, goW, btnH);
-            var gl = Label(go.transform, "Label", full ? "ممتلئة" : "ادخل", th.fontBody, 15.2f * k, full ? new Color32(0x7D, 0x74, 0x6A, 255) : th.brassText, TextAlignmentOptions.Midline, true);
+            var gl = Label(go.transform, "Label", closed ? "قريباً" : full ? "ممتلئة" : "ادخل", th.fontBody, 15.2f * k, full ? new Color32(0x7D, 0x74, 0x6A, 255) : th.brassText, TextAlignmentOptions.Midline, true);
             Fill(gl, 0, 0, 1, 1);
             y -= btnH + gap;
 
@@ -189,7 +190,7 @@ namespace MafiaNight.UI.Kit
             pi.rectTransform.sizeDelta = new Vector2(12 * k, 12 * k); pi.rectTransform.anchoredPosition = new Vector2(-10 * k, 0);
 
             // ---- a full room: the red stamp over it
-            if (full)
+            if (full && !closed)
             {
                 var st = Label(root, "Stamp", "ممتلئة", th.fontLalezar, 25.6f * k, new Color32(0xE0, 0x52, 0x5A, 255), TextAlignmentOptions.Midline, false);
                 st.GetComponent<TMP_Text>().ForceMeshUpdate();

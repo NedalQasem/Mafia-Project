@@ -29,11 +29,29 @@ namespace MafiaNight.UI.Kit
             if (codeButton != null) codeButton.onClick.AddListener(() => OnEnterCode?.Invoke());
         }
 
+        private string emptyText;
+
+        /// <summary>Until the first answer arrives the list says it is loading, not that there are no rooms.</summary>
+        public void SetLoading()
+        {
+            for (int i = content.childCount - 1; i >= 0; i--) Destroy(content.GetChild(i).gameObject);
+            cards.Clear();
+            ShowEmpty("جاري تحميل الغرف...");
+        }
+
+        private void ShowEmpty(string text)
+        {
+            if (emptyNote == null) return;
+            var label = emptyNote.GetComponentInChildren<ArabicText>(true);
+            if (label != null) { if (emptyText == null) emptyText = label.Text; label.Text = text ?? emptyText; }
+            emptyNote.SetActive(true);
+        }
+
         public void SetRooms(IList<RoomInfo> rooms)
         {
             for (int i = content.childCount - 1; i >= 0; i--) Destroy(content.GetChild(i).gameObject);
             cards.Clear();
-            if (emptyNote != null) emptyNote.SetActive(rooms.Count == 0);
+            if (rooms.Count == 0) ShowEmpty(null); else if (emptyNote != null) emptyNote.SetActive(false);
             if (rooms.Count > 0 && rooms[0].official) Spacer(30f);       // the seal and the pin tag of the first card stand out above it
             foreach (var r in rooms)
             {

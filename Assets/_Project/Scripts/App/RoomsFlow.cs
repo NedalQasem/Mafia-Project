@@ -32,6 +32,7 @@ namespace MafiaNight.App
         private string shownSignature = "";
         private float nextList;
         private bool listing, busyJoin;
+        private List<RoomListing> lastList = new List<RoomListing>();      // the last list EOS gave (the official rooms are drawn above it)
 
         private void Start()
         {
@@ -48,7 +49,8 @@ namespace MafiaNight.App
             screen.OnQuickJoin += OnQuickJoin;
             screen.OnCreateRoom += OnCreate;
             screen.OnEnterCode += () => { if (codeSheet != null) codeSheet.Open(); };
-            screen.SetRooms(new List<RoomInfo>());
+            screen.SetLoading();
+            OfficialRooms.Refresh(_ => { if (this != null && screen != null) Show(lastList); });     // the official rooms come from our own server: they need no EOS, so they show first
 
             if (create != null)
             {
@@ -100,7 +102,7 @@ namespace MafiaNight.App
                 if (!r.Ok)
                 {
                     if (r.Error != RoomError.Busy && r.Error != RoomError.NotReady) Log.Warning("Room list failed: " + r.Error + " " + r.Detail, Tag);
-                    nextList = Time.unscaledTime + (r.Error == RoomError.NotReady ? 3f : ListEvery);
+                    nextList = Time.unscaledTime + (r.Error == RoomError.NotReady ? 1f : ListEvery);
                     return;
                 }
                 var list = new List<RoomListing>(r.Rooms);
@@ -108,14 +110,16 @@ namespace MafiaNight.App
                 // EOS takes a few seconds to index a new room: show the player's own public room anyway
                 var mine = rooms.CurrentRoom;
                 if (mine != null && mine.Kind != RoomKind.Private && string.IsNullOrEmpty(mine.OfficialId) && !list.Exists(x => x.Id == mine.Id)) list.Insert(0, mine);
-                OfficialRooms.Refresh(_ => { if (this != null && screen != null) Show(list); });   // a failed refresh keeps the last known official rooms
+                lastList = list;
+                Show(list);
+                OfficialRooms.Refresh(_ => { if (this != null && screen != null) Show(lastList); });   // a failed refresh keeps the last known official rooms
             });
         }
 
         private void Show(List<RoomListing> list)
         {
             var sig = new System.Text.StringBuilder();
-            foreach (var o in OfficialRooms.Rooms) if (o.Open) sig.Append('#').Append(o.Id).Append(':').Append(o.LobbyId).Append(':').Append(o.Online).Append(':').Append(o.DisplayName).Append(';');
+            foreach (var o in OfficialRooms.Rooms) sig.Append(o.Open ? "" : "x").Append('#').Append(o.Id).Append(':').Append(o.LobbyId).Append(':').Append(o.Online).Append(':').Append(o.DisplayName).Append(';');
             foreach (var l in list) sig.Append(l.Id).Append(':').Append(l.Count).Append(':').Append(l.Name).Append(';');
             if (sig.ToString() == shownSignature) return;
             shownSignature = sig.ToString();
@@ -123,7 +127,12 @@ namespace MafiaNight.App
             var infos = new List<RoomInfo>();
             foreach (var o in OfficialRooms.Rooms)
             {
-                if (!o.Open) continue;
+                if (!o.Open)
+                {
+                    // the room bot has not reported it open: the card stays in the list (dimmed) so the room does not just vanish
+                    infos.Add(new RoomInfo { id = "", name = o.DisplayName, sub = o.DisplaySub, official = true, closed = true, count = 0, capacity = o.Capacity, speakingSeat = -1, type = RoomType.Vip });
+                    continue;
+                }
                 // the room bot owns the lobby; this listing only carries what joining needs
                 byId[o.LobbyId] = new RoomListing { Id = o.LobbyId, Name = o.DisplayName, OfficialId = o.Id, Kind = RoomKind.Public, Mode = RoomMode.Hangout, Count = o.Online, Capacity = o.Capacity, ChatEnabled = o.ChatEnabled, MicSeats = o.MicSeats, MicByRequest = o.MicMode == "request" };
                 infos.Add(new RoomInfo { id = o.LobbyId, name = o.DisplayName, sub = o.DisplaySub, official = true, adminsOnline = o.AdminsOnline, pulse = (profile?.LocalProfile?.Level ?? 99) <= 3, owner = "", ownerRank = 0, ownerLevel = 1, count = o.Online, capacity = o.Capacity, speakingSeat = -1, type = RoomType.Vip });
