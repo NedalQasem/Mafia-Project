@@ -5,6 +5,7 @@
 - Reply to the owner **in Arabic**, every message, including progress updates. Code, comments and commit messages stay in English.
 - Work on the branch `refactor/architecture` and push it to `origin` when a piece of work is done.
 - New screens: an HTML mockup in `Docs/mockups/` first, the owner's approval, then Unity built to match it.
+- **Never build an APK on your own (owner's rule, 2026-11-01):** builds take 4-8 minutes and slow the development. Build only when the owner says so; until then keep working, commit and push.
 - **Every build (APK) is a numbered version (owner's rule):** before building, bump `PlayerSettings.bundleVersion` (`major.feature.build`, e.g. `1.1.0`) and `AndroidBundleVersionCode` (+1), name the file `Builds/Android/MafiaNight-v<version>-dev.apk`, and add an entry at the top of `Docs/CHANGELOG.md` saying what changed since the last version (in Arabic, short). The version shows in the settings screen only (the owner does not want a tag over other screens). Commit the bump with the changelog.
 - Never commit the Unity files that change by themselves (font `*SDF.asset`, URP/ProjectSettings assets, gradle `.backup` files).
 
