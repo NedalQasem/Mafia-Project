@@ -95,7 +95,6 @@ namespace MafiaNight.App
             if (FindAnyObjectByType<KitBagScreen>() != null) gameObject.AddComponent<BagFlow>();
             if (FindAnyObjectByType<KitRankScreen>() != null) gameObject.AddComponent<RankFlow>();
             if (FindAnyObjectByType<KitSettingsScreen>() != null) { gameObject.AddComponent<VoiceSettingsFlow>(); gameObject.AddComponent<RecoveryFlow>(); gameObject.AddComponent<AccountIdFlow>(); gameObject.AddComponent<AccountFlow>(); }
-            VersionTag.Ensure();      // development builds show their version in a corner
             MafiaNight.Services.Chat.ChatService.Ensure();   // listens for messages in every scene (the chat screen reads from it)
             if (FindAnyObjectByType<KitChatScreen>(FindObjectsInactive.Include) != null) gameObject.AddComponent<ChatFlow>();
             MafiaNight.Services.Friends.FriendsService.Ensure();   // reports where the player sits and hears friend news in every scene
