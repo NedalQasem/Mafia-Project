@@ -60,7 +60,7 @@ namespace MafiaNight.Bootstrap
             }
             if (!ServiceLocator.IsRegistered<IVoiceService>())
             {
-                ServiceLocator.Register<IVoiceService>(new EosVoiceService());
+                ServiceLocator.Register<IVoiceService>(new RoutedVoiceService(new EosVoiceService()));
             }
             if (!ServiceLocator.IsRegistered<IStoreService>())
             {
