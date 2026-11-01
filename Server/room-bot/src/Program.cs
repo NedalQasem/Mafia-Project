@@ -19,7 +19,7 @@ namespace MafiaNight.RoomBot
             Console.CancelKeyPress += (s, e) => { e.Cancel = true; Log.Info("Stopping..."); keeper.Stop(); };
             keeper.Run();
             eos.Shutdown();
-            return 0;
+            return keeper.Failed ? 5 : 0;
         }
 
         private static string Env(string name) { var v = Environment.GetEnvironmentVariable(name); return string.IsNullOrWhiteSpace(v) ? null : v.Trim(); }

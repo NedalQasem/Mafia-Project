@@ -56,6 +56,9 @@ namespace MafiaNight.RoomBot
         private DateTime nextBeat = DateTime.MinValue, nextUpdate = DateTime.MinValue;
         private ulong requestNotif, closedNotif;
         private bool running = true;
+        private DateTime? authBadSince;
+        /// <summary>The EOS login was lost and could not be restored: the program stops with a failure so Docker starts it again with a fresh login.</summary>
+        public bool Failed { get; private set; }
         private readonly Random rng = new Random();
         private List<BotProfile> farmProfiles = new List<BotProfile>();
         private readonly Dictionary<string, (int count, bool sit, bool chat)> farmOrders = new Dictionary<string, (int, bool, bool)>();   // "official:1001" -> what the board wants
@@ -67,6 +70,7 @@ namespace MafiaNight.RoomBot
         public void Run()
         {
             OpenSocket();
+            eos.WatchAuth();
             Log.Info("Keeper running as " + eos.MeId);
             while (running)
             {
@@ -76,6 +80,7 @@ namespace MafiaNight.RoomBot
                 var now = DateTime.UtcNow;
                 if (now >= nextUpdate) { nextUpdate = now.AddSeconds(1); foreach (var r in rooms.Values.ToList()) Update(r); }
                 if (now >= nextBeat && !beating) { nextBeat = now.AddSeconds(5); Beat(); }
+                if (authBadSince.HasValue && now - authBadSince.Value > TimeSpan.FromSeconds(45)) { Log.Error("The EOS login is lost and a new login did not help: stopping so the service restarts"); Failed = true; running = false; }
                 Thread.Sleep(20);
             }
             foreach (var r in rooms.Values) if (r.LobbyId != null) eos.Destroy(r.LobbyId);
@@ -294,7 +299,9 @@ namespace MafiaNight.RoomBot
             {
                 var ro = new ReceivePacketOptions { LocalUserId = eos.Me, MaxDataSizeBytes = (uint)buffer.Length, RequestedChannel = Channel };
                 var r = eos.P2P.ReceivePacket(ref ro, ref peer, ref socket, out byte ch, new ArraySegment<byte>(buffer), out uint written);
-                if (r != Result.Success) break;
+                if (r == Result.InvalidAuth) { authBadSince ??= DateTime.UtcNow; eos.Relogin(); break; }
+                if (r != Result.Success) { authBadSince = null; break; }
+                authBadSince = null;
                 string from = peer.ToString();
                 var kept = rooms.Values.FirstOrDefault(k => k.Members.Any(m => m.Puid == from));
                 if (kept == null) continue;

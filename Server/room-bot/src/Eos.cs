@@ -48,6 +48,31 @@ namespace MafiaNight.RoomBot
             return until();
         }
 
+        private ulong expireNotif;
+        private bool relogging;
+        private DateTime lastRelogin = DateTime.MinValue;
+
+        /// <summary>EOS ends a Connect login after about an hour; it says so shortly before. Without a new login every call fails with InvalidAuth.</summary>
+        public void WatchAuth()
+        {
+            var o = new AddNotifyAuthExpirationOptions();
+            expireNotif = platform.GetConnectInterface().AddNotifyAuthExpiration(ref o, null, (ref AuthExpirationCallbackInfo i) => { Log.Warn("The EOS login is about to expire: logging in again"); Relogin(); });
+        }
+
+        /// <summary>Logs in again with the device id (the same user id comes back). At most once every 10 seconds.</summary>
+        public void Relogin()
+        {
+            if (relogging || DateTime.UtcNow - lastRelogin < TimeSpan.FromSeconds(10)) return;
+            relogging = true; lastRelogin = DateTime.UtcNow;
+            var login = new LoginOptions { Credentials = new Credentials { Type = ExternalCredentialType.DeviceidAccessToken, Token = null }, UserLoginInfo = new UserLoginInfo { DisplayName = "Mafia Office" } };
+            platform.GetConnectInterface().Login(ref login, null, (ref LoginCallbackInfo li) =>
+            {
+                relogging = false;
+                Log.Info("Connect.Login (again): " + li.ResultCode);
+                if (li.ResultCode == Result.Success && li.LocalUserId != null && li.LocalUserId.IsValid()) Me = li.LocalUserId;
+            });
+        }
+
         /// <summary>Logs in with the device id of this machine (one identity per machine; the bot is that identity).</summary>
         public bool Login(string displayName)
         {
