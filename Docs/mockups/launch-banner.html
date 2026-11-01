@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لافتة العروض عند فتح اللعبة</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--crim:#8a1c24;--brass:#b99048}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:12px 8px 30px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif;display:grid;justify-items:center;gap:10px}
+.cap{color:#6f685c;font-size:.78rem;margin:0;text-align:center}
+button{font-family:inherit;border:0;color:inherit;cursor:pointer;background:none}
+button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
+.phone{width:min(390px,100%);height:780px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 90% 40% at 50% 0,#e8c27a1c,transparent 70%),linear-gradient(180deg,#15100d,#090605);box-shadow:0 0 0 7px #14100e,0 0 0 8px #ffffff14,0 24px 50px #000}
+
+/* the home screen underneath (only a ghost: the banner sits over the real home) */
+.home{position:absolute;inset:0;filter:blur(2.5px) brightness(.55);transform:scale(1.02)}
+.home .bar{position:absolute;top:30px;left:12px;right:12px;height:54px;border-radius:8px;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:0 0 0 1px #000}
+.home .btn{position:absolute;left:24px;right:24px;height:60px;border-radius:10px;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal}
+.home .btn.b2{background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal}
+.home .tbl{position:absolute;left:30px;right:30px;top:330px;height:230px;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#1f4a36,#0b1f16 70%);box-shadow:0 0 0 10px #3a2418,0 20px 30px #000}
+.home .tab{position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(180deg,#1a110d,#080504);box-shadow:0 -1px 0 #ffffff10}
+
+/* scrim and spotlight */
+.scrim{position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse 80% 55% at 50% 38%,#0000 0,#050302cc 78%),#050302b8;animation:fade .35s ease both}
+.cone{position:absolute;left:50%;top:-20px;width:340px;height:560px;translate:-50% 0;z-index:3;pointer-events:none;background:conic-gradient(from 180deg at 50% 0,transparent 160deg,#f5e2a822 175deg,#f5e2a838 180deg,#f5e2a822 185deg,transparent 200deg);filter:blur(10px);animation:fade .8s .1s ease both}
+@keyframes fade{from{opacity:0}}
+
+/* the newspaper page */
+.sheet{position:absolute;z-index:5;left:20px;right:20px;top:70px;bottom:108px;background:var(--paper);color:var(--ink);rotate:-1deg;border-radius:2px;box-shadow:inset 0 0 34px #8a7a5aaa,inset 0 0 0 1px #00000014,0 22px 40px #000d,0 2px 0 #b8ad90;display:flex;flex-direction:column;padding:10px 14px 10px;animation:rise .55s cubic-bezier(.2,.9,.3,1) both}
+.sheet::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.1;mix-blend-mode:multiply;pointer-events:none;border-radius:2px}
+.sheet::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;translate:-50% 0;background:linear-gradient(90deg,transparent,#00000012,transparent);pointer-events:none}
+@keyframes rise{from{opacity:0;transform:translateY(40px) scale(.96) rotate(2deg)}}
+.phone.closing .sheet{animation:out .3s ease forwards}
+.phone.closing .scrim,.phone.closing .cone{animation:fade .3s ease reverse forwards}
+@keyframes out{to{opacity:0;transform:translateY(30px) scale(.96) rotate(-3deg)}}
+
+.mast{text-align:center;border-block:3px double var(--ink);padding:3px 0 0;position:relative}
+.mast h1{margin:0;font-family:Lalezar;font-weight:400;font-size:2.35rem;line-height:1.05;letter-spacing:.02em}
+.mast .meta{display:flex;justify-content:space-between;align-items:center;border-top:1.5px solid var(--ink);padding:1px 3px;font-weight:800;font-size:.62rem;margin-top:1px}
+.mast .meta em{font-style:normal;color:var(--crim)}
+
+/* close: a brass button on the corner of the page, nothing else on the page is tappable that way */
+.x{position:absolute;z-index:8;top:58px;left:8px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1.5px #000,0 4px 0 #000,0 6px 10px #000a,inset 0 1px 0 #fff8;animation:rise .55s .15s cubic-bezier(.2,.9,.3,1) both}
+.x svg{width:16px;height:16px;stroke:#2a1a08;stroke-width:3;stroke-linecap:round;fill:none}
+.x:active{transform:translateY(3px);box-shadow:0 0 0 1.5px #000,0 1px 0 #000}
+
+/* the offers: pages that turn like the ads of the store */
+.pages{position:relative;flex:1;margin-top:8px;perspective:1100px;touch-action:pan-y;user-select:none}
+.pg{position:absolute;inset:0;opacity:0;pointer-events:none;transform-origin:100% 50%;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;z-index:1}
+.pg.on{opacity:1;pointer-events:auto;z-index:2}
+.pg.turn{opacity:1;z-index:3;animation:turn .8s cubic-bezier(.5,0,.3,1) forwards}
+.pg.turnb{opacity:1;z-index:3;animation:turnb .8s cubic-bezier(.5,0,.3,1) forwards}
+@keyframes turn{0%{transform:rotateY(0);filter:brightness(1)}100%{transform:rotateY(-118deg);opacity:0;filter:brightness(.4)}}
+@keyframes turnb{0%{transform:rotateY(0)}100%{transform:rotateY(118deg);opacity:0;filter:brightness(.4)}}
+.kick{font-family:Lalezar;font-size:.95rem;color:var(--crim);letter-spacing:.04em;display:flex;align-items:center;gap:8px;width:100%}
+.kick::before,.kick::after{content:"";flex:1;height:1.5px;background:var(--ink);opacity:.55}
+.art{position:relative;flex:1;min-height:150px;display:grid;place-items:center;margin-top:4px;width:100%}
+.stamp{position:absolute;top:10px;left:14px;padding:0 11px;font-family:Lalezar;font-size:1.5rem;color:#c0323a;border:3px solid #c0323a;border-radius:4px;rotate:-12deg;background:#d9cfb4cc;z-index:2}
+.stamp.green{color:#1d4a3c;border-color:#1d4a3c}
+.pg h2{margin:2px 0 2px;font-family:Lalezar;font-weight:400;font-size:2.1rem;line-height:1.02}
+.pg p{margin:0 6px 6px;font-size:.8rem;line-height:1.55;font-weight:600}
+.cd{display:inline-flex;gap:6px;align-items:center;font-weight:800;font-size:.76rem;color:var(--crim);margin-bottom:2px}
+.cd b{font-family:Lalezar;font-weight:400;font-size:1.25rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.cta{margin-top:auto;width:100%;padding:11px 14px;border-radius:9px;font-weight:800;font-size:1rem;color:#f0dcd8;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000;display:flex;align-items:center;justify-content:center;gap:8px}
+.was{font-weight:700;font-size:.78rem;margin-bottom:6px;color:#4a3c24}
+.was s{font-family:Lalezar;font-size:1rem;color:var(--ink);text-decoration-thickness:2px;text-decoration-color:var(--crim)}
+.cta:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #ffffff22,0 1px 0 #000}
+.more{margin-top:6px;font-weight:800;font-size:.74rem;color:#4a3c24;text-decoration:underline;text-underline-offset:3px;padding:2px 8px}
+
+/* progress and dots */
+.prog{position:relative;height:3px;border-radius:2px;background:#1c170f22;margin-top:8px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;margin-inline-start:auto;background:linear-gradient(90deg,#8a1c24,#e0525a)}
+.dots{display:flex;gap:7px;justify-content:center;padding:7px 0 2px}
+.dots button{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#6a5a40,#2a2218);box-shadow:0 0 0 1px #000,0 2px 2px #000a;transition:transform .25s,background .25s}
+.dots button.on{background:radial-gradient(circle at 35% 30%,#e0525a,#6a0f16);transform:scale(1.3)}
+.arr{position:absolute;top:44%;z-index:6;width:30px;height:44px;display:grid;place-items:center;opacity:.55}
+.arr svg{width:18px;height:18px;stroke:var(--ink);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.arr.r{right:-8px}.arr.l{left:-8px}
+
+/* below the page: not shown again today, and the honest note */
+.below{position:absolute;z-index:5;left:24px;right:24px;bottom:26px;display:grid;gap:8px;justify-items:center;animation:fade .6s .3s ease both}
+.skip{display:flex;align-items:center;gap:9px;padding:9px 16px;border-radius:9px;font-weight:700;font-size:.82rem;color:#d9d0bd;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff1c,0 3px 0 #000}
+.box{width:20px;height:20px;border-radius:4px;background:#0a0807;box-shadow:inset 0 2px 4px #000,0 0 0 1.5px #6e5224;display:grid;place-items:center;flex:none}
+.box svg{width:13px;height:13px;stroke:#f5e2a8;stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;scale:.5;transition:.2s}
+.skip.on .box svg{opacity:1;scale:1}
+.fine{font-size:.66rem;color:#8d8576;text-align:center;line-height:1.5}
+
+/* item art */
+.av{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);display:grid;place-items:center;color:#8f8573}
+.av svg{width:74%;height:74%}
+.fr{width:140px;height:140px;border-radius:50%;padding:11px;box-shadow:0 10px 14px #000c}
+.f5{background:conic-gradient(from 0deg,#ff8a2a,#c9323a,#5c0f16,#c9323a,#ff8a2a);box-shadow:0 10px 14px #000c,0 0 30px #ff6a1a88;animation:ember 2.4s ease-in-out infinite}
+@keyframes ember{50%{box-shadow:0 10px 14px #000c,0 0 14px #ff6a1a55}}
+.bgt{width:112px;height:150px;border-radius:9px;position:relative;overflow:hidden;box-shadow:0 0 0 2px #000,0 0 0 4px #6e5224,0 12px 16px #000c}
+.b5{background:radial-gradient(circle at 72% 22%,#f5e2a8cc 0 7%,#f5e2a822 8% 20%,transparent 21%),linear-gradient(180deg,#0a1220 0 44%,#1a2a3a 44% 66%,#05080c 66%)}
+.bgt .ship{position:absolute;bottom:46px;right:18px;width:46px;height:20px;background:#05080c;clip-path:polygon(0 40%,100% 40%,88% 100%,10% 100%)}
+.bgt .ship::before{content:"";position:absolute;left:18px;bottom:100%;width:3px;height:14px;background:#05080c}
+.bgt i{position:absolute;left:14px;right:14px;height:16px;border-radius:9px;background:#ffffff1c}
+.bgt i:nth-child(1){bottom:38px;right:40px}.bgt i:nth-child(2){bottom:18px;left:40px;background:#8a1c24aa}
+.pack{position:relative;width:130px;height:130px}
+.pack i{position:absolute;left:50%;width:68px;height:68px;border-radius:50%;translate:-50% 0;background:radial-gradient(circle at 35% 30%,#fff0b8,#c9a050 55%,#6e4b1c);box-shadow:0 0 0 2px #000,0 5px 6px #000a}
+.pack i::after{content:"";position:absolute;inset:14px;border-radius:50%;border:2px solid #6e4b1c99}
+.coin{width:17px;height:17px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000;position:relative;flex:none}
+.coin::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1px solid #6e4b1c99}
+
+/* page chrome of the demo (not part of the game) */
+.demo{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.demo button{padding:7px 14px;border-radius:8px;font-weight:700;font-size:.8rem;background:#1a110d;box-shadow:0 0 0 1px #3a2a20}
+.notes{width:min(390px,100%);background:#0d0a08;border-radius:12px;padding:12px 16px;font-size:.78rem;line-height:1.75;color:#a39b89;box-shadow:0 0 0 1px #2a2018}
+.notes b{color:#e6d9bd}
+.notes ul{margin:4px 0 0;padding-inline-start:18px}
+/* a picture uploaded from the admin board (server image): fills the art area like a photo printed in the newspaper */
+.art .poster{position:absolute;inset:2px 6px;border-radius:2px;background:#222 center/cover no-repeat;rotate:-.6deg;box-shadow:0 0 0 3px #efe6cf,0 0 0 4px #1c170f55,0 8px 14px #0007}
+.art .poster::before{content:"";position:absolute;top:-9px;left:50%;width:62px;height:16px;translate:-50% 0;rotate:2deg;background:#d9c9a2cc;box-shadow:0 1px 3px #0005}
+.art .poster::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#0006);pointer-events:none}
+.art .poster.load{background-image:none!important;background:linear-gradient(110deg,#c9bfa4 30%,#e2d9c0 50%,#c9bfa4 70%) 0 0/200% 100%;animation:shim 1.4s linear infinite}
+@keyframes shim{to{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<p class="cap">لافتة العروض: بتظهر فوق الشاشة الرئيسية لما اللاعب يفتح اللعبة (390 × 780)</p>
+
+<div class="phone" id="phone">
+  <div class="home" aria-hidden="true">
+    <div class="bar"></div>
+    <div class="btn" style="top:110px"></div><div class="btn b2" style="top:186px"></div>
+    <div class="tbl"></div><div class="tab"></div>
+  </div>
+  <div class="scrim" id="scrim"></div>
+  <div class="cone"></div>
+
+  <button class="x" id="close" aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+
+  <div class="sheet" role="dialog" aria-label="عروض الليلة">
+    <div class="mast">
+      <h1>جريدة الليل</h1>
+      <div class="meta"><span>العدد الخاص · عروض الليلة</span><em id="count">٣ عروض</em></div>
+    </div>
+
+    <div class="pages" id="pages">
+      <button class="arr r" id="prev" aria-label="السابق"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="arr l" id="next" aria-label="التالي"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    </div>
+
+    <div class="prog"><i id="prog"></i></div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="below">
+    <button class="skip" id="skip" aria-pressed="false"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></span>لا تعرضها لي اليوم</button>
+    <div class="fine">العروض كلها للزينة والكوينز، وما بتعطي ميزة داخل المباراة.</div>
+  </div>
+</div>
+
+<div class="demo">
+  <button id="again">إعادة العرض</button>
+  <button id="one">عرض واحد فقط</button>
+  <button id="three">ثلاثة عروض</button>
+  <button id="pics" aria-pressed="false">صور من السيرفر: مطفية</button>
+  <button id="load">وهي تتحمّل</button>
+</div>
+
+<div class="notes">
+  <b>متى بتظهر</b>
+  <ul>
+    <li>مرة عند كل فتح للعبة، بعد ما تخلص شاشة التحميل، وفوق الشاشة الرئيسية فقط.</li>
+    <li>لو اللاعب علّم "لا تعرضها لي اليوم" ما بتظهر باقي اليوم، إلا إذا انضاف عرض جديد فبتظهر من جديد.</li>
+    <li>ما بتظهر أول مرة يفتح فيها اللاعب اللعبة (الأولوية للتعليمات)، ولا أثناء مباراة أو بغرفة، ولا إذا ما في عروض.</li>
+  </ul>
+  <b>كيف بتتحرك</b>
+  <ul>
+    <li>أقصى 3 عروض. بتتقلّب لحالها كل ٦ ثواني بشريط أحمر رفيع، وبتوقف لما اللاعب يلمس الصفحة. السحب أو الأسهم أو النقاط بتقلّب يدوياً.</li>
+    <li>الإغلاق بزر نحاسي بزاوية الصفحة، أو بلمس الظلام حول الصفحة. ما في عدّاد انتظار قبل ما يتفعّل الإغلاق.</li>
+    <li>زر "اشتري" بيفتح المتجر على نفس العنصر (مثل إعلانات المتجر)، و"شوف في المتجر" بيفتح المتجر بس.</li>
+  </ul>
+  <b>البيانات</b>
+  <ul>
+    <li>العناوين والأسعار والعدّاد وصورة العنصر بتجي من السيرفر، فنغيّر العروض بدون تحديث اللعبة. إذا انتهى عرض قبل ما يشتريه اللاعب بيختفي.</li>
+  </ul>
+</div>
+
+<script>
+(function(){
+  var AR="٠١٢٣٤٥٦٧٨٩";
+  function ar(n){return String(n).replace(/\d/g,function(d){return AR[d]})}
+  var OFFERS=[
+    {kick:"عرض الليلة فقط",h:"إطار الجمر<br>بنصف الثمن تقريباً",p:"حلقة نارية تتوهج حول صورتك في كل غرفة.",cd:1,stamp:"−٣٠٪",price:"٨٤٠",old:"١٬٢٠٠",art:'<div class="fr f5"><div class="av"><svg><use href="#fed"/></svg></div></div>'},
+    {kick:"وصل حديثاً",h:"خلفية الميناء<br>سفن وليل أسود",p:"غيّر لون مجلسك بخلفية دردشة جديدة.",stamp:"جديد",green:1,price:"٩٠٠",art:'<div class="bgt b5"><span class="ship"></span><i></i><i></i></div>'},
+    {kick:"عرض الكوينز",h:"صندوق كوينز<br>بسعر الحفنة",p:"٣٬٥٠٠ كوينز للهدايا والزينة، وأكثر بـ٣٠٪ من العادي.",stamp:"+٣٠٪",green:1,price:"٤٫٩٩ $",art:'<div class="pack"><i style="bottom:0"></i><i style="bottom:22px;scale:.97"></i><i style="bottom:44px;scale:.94"></i></div>'}
+  ];
+  var phone=document.getElementById("phone"),pages=document.getElementById("pages"),dotsEl=document.getElementById("dots"),prog=document.getElementById("prog"),cnt=document.getElementById("count");
+  // sample pictures as they come from the admin board (1300x800)
+  function svg(s){return "url('data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 800" preserveAspectRatio="xMidYMid slice">'+s+'</svg>')+"')"}
+  var SKY1='<defs><linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0608"/><stop offset=".6" stop-color="#4a0f14"/><stop offset="1" stop-color="#8a2a18"/></linearGradient><radialGradient id="g" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd08a"/><stop offset=".35" stop-color="#ff7a2a" stop-opacity=".9"/><stop offset="1" stop-color="#ff7a2a" stop-opacity="0"/></radialGradient></defs><rect width="1300" height="800" fill="url(#a)"/><circle cx="650" cy="360" r="330" fill="url(#g)"/><circle cx="650" cy="360" r="150" fill="none" stroke="#ffe3b0" stroke-width="34"/><circle cx="650" cy="360" r="150" fill="none" stroke="#ff5a1a" stroke-width="14" opacity=".8"/><g fill="#08040a"><path d="M0 800V560l90-40 70 30 60-90 90 60 60-30 110 90 70-60 80 40 90-70 60 50 110-80 90 90 70-50 100 60 90-40 60 60 90-30 80 80V800z"/></g><g fill="#ffcf7a" opacity=".85"><rect x="130" y="610" width="14" height="20"/><rect x="330" y="590" width="14" height="20"/><rect x="520" y="640" width="14" height="20"/><rect x="760" y="600" width="14" height="20"/><rect x="980" y="630" width="14" height="20"/><rect x="1150" y="610" width="14" height="20"/></g><g fill="#ffb25a"><circle cx="300" cy="200" r="5"/><circle cx="980" cy="160" r="4"/><circle cx="1090" cy="300" r="6"/><circle cx="210" cy="320" r="4"/></g>';
+  var SKY2='<defs><linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1812"/><stop offset="1" stop-color="#2a2008"/></linearGradient><linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1c4"/><stop offset=".5" stop-color="#d2ad60"/><stop offset="1" stop-color="#7a5a22"/></linearGradient></defs><rect width="1300" height="800" fill="url(#b)"/><g stroke="#000" stroke-width="6"><ellipse cx="650" cy="640" rx="270" ry="60" fill="url(#c)"/><ellipse cx="650" cy="590" rx="270" ry="60" fill="url(#c)"/><ellipse cx="650" cy="540" rx="270" ry="60" fill="url(#c)"/><ellipse cx="650" cy="490" rx="270" ry="60" fill="url(#c)"/><ellipse cx="650" cy="440" rx="270" ry="60" fill="url(#c)"/></g><g stroke="#000" stroke-width="6"><ellipse cx="330" cy="660" rx="180" ry="42" fill="url(#c)"/><ellipse cx="330" cy="624" rx="180" ry="42" fill="url(#c)"/><ellipse cx="970" cy="660" rx="180" ry="42" fill="url(#c)"/><ellipse cx="970" cy="624" rx="180" ry="42" fill="url(#c)"/><ellipse cx="970" cy="588" rx="180" ry="42" fill="url(#c)"/></g><g fill="#fff4cf" opacity=".9"><path d="M650 120l14 36 38 3-29 25 9 38-32-21-32 21 9-38-29-25 38-3z"/><circle cx="220" cy="180" r="6"/><circle cx="1080" cy="230" r="5"/></g>';
+  var PIC=false,POSTER={0:svg(SKY1),2:svg(SKY2)},LOADING=false;
+  var list=OFFERS.slice(),cur=0,timer=null,paused=false,start=0,SEC=6000,busy=false;
+
+  function build(){
+    [].forEach.call(pages.querySelectorAll(".pg"),function(e){e.remove()});
+    dotsEl.innerHTML="";
+    list.forEach(function(a,i){
+      var d=document.createElement("div");d.className="pg"+(i===cur?" on":"");
+      d.innerHTML='<div class="kick">'+a.kick+'</div><div class="art">'+(a.stamp?'<span class="stamp'+(a.green?' green':'')+'">'+a.stamp+'</span>':'')+(PIC&&POSTER[OFFERS.indexOf(a)]?'<div class="poster'+(LOADING?' load':'')+'" style="background-image:'+POSTER[OFFERS.indexOf(a)]+'"></div>':a.art)+'</div>'
+        +'<h2>'+a.h+'</h2><p>'+a.p+'</p>'+(a.cd?'<div class="cd">ينتهي خلال <b class="cdv">٠٢:١٤:٣٣</b></div>':'')
+        +(a.old?'<div class="was">السعر العادي <s>'+a.old+'</s></div>':'')+'<button class="cta" data-i="'+i+'">اشتريه الآن <span class="coin"></span> '+a.price+'</button><button class="more">شوف في المتجر</button>';
+      pages.appendChild(d);
+      var b=document.createElement("button");b.className=i===cur?"on":"";b.setAttribute("aria-label","العرض "+ar(i+1));
+      b.addEventListener("click",function(){go(i)});dotsEl.appendChild(b);
+    });
+    dotsEl.style.display=list.length>1?"flex":"none";
+    pages.querySelector(".arr.r").style.display=pages.querySelector(".arr.l").style.display=list.length>1?"grid":"none";
+    prog.parentNode.style.visibility=list.length>1?"visible":"hidden";
+    cnt.textContent=list.length>1?ar(list.length)+" عروض":"عرض واحد";
+    [].forEach.call(pages.querySelectorAll(".cta,.more"),function(b){b.addEventListener("click",function(){toast(b.classList.contains("cta")?"يفتح المتجر على هالعنصر":"يفتح المتجر")})});
+  }
+  function go(n,dir){
+    if(busy||n===cur||list.length<2)return;
+    n=(n+list.length)%list.length;
+    var ps=pages.querySelectorAll(".pg"),from=ps[cur],to=ps[n];
+    dir=dir||(n>cur?1:-1);busy=true;
+    from.classList.remove("on");from.classList.add(dir>0?"turn":"turnb");
+    to.classList.add("on");
+    setTimeout(function(){from.classList.remove("turn","turnb");busy=false},820);
+    [].forEach.call(dotsEl.children,function(d,i){d.classList.toggle("on",i===n)});
+    cur=n;restart();
+  }
+  function restart(){start=performance.now();prog.style.width="0"}
+  function tick(){
+    if(list.length>1&&!paused&&!busy){var t=performance.now()-start;prog.style.width=Math.min(100,t/SEC*100)+"%";if(t>=SEC)go(cur+1,1)}
+    else if(paused){start=performance.now()-(parseFloat(prog.style.width)||0)/100*SEC}
+    timer=requestAnimationFrame(tick)
+  }
+  function toast(t){var e=document.createElement("div");e.textContent=t;e.style.cssText="position:absolute;z-index:9;left:50%;top:54%;translate:-50% 0;background:#0a0807ee;color:#e6d9bd;padding:9px 16px;border-radius:9px;font-weight:800;font-size:.85rem;box-shadow:0 0 0 1px #6e5224,0 8px 16px #000";phone.appendChild(e);setTimeout(function(){e.remove()},1600)}
+
+  pages.addEventListener("pointerdown",function(e){paused=true;pages._x=e.clientX});
+  window.addEventListener("pointerup",function(e){
+    if(paused&&pages._x!=null){var dx=e.clientX-pages._x;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1),dx<0?1:-1);pages._x=null}
+    paused=false});
+  document.getElementById("next").addEventListener("click",function(){go(cur+1,1)});
+  document.getElementById("prev").addEventListener("click",function(){go(cur-1,-1)});
+  function close(){phone.classList.add("closing");setTimeout(function(){phone.style.visibility="hidden"},300)}
+  document.getElementById("close").addEventListener("click",close);
+  document.getElementById("scrim").addEventListener("click",close);
+  var skip=document.getElementById("skip");
+  skip.addEventListener("click",function(){var on=!skip.classList.contains("on");skip.classList.toggle("on",on);skip.setAttribute("aria-pressed",on)});
+  function show(n){list=OFFERS.slice(0,n);cur=0;build();phone.style.visibility="visible";phone.classList.remove("closing");
+    var s=phone.querySelector(".sheet");s.style.animation="none";void s.offsetWidth;s.style.animation="";restart()}
+  document.getElementById("again").addEventListener("click",function(){show(list.length)});
+  document.getElementById("one").addEventListener("click",function(){show(1)});
+  document.getElementById("three").addEventListener("click",function(){show(3)});
+  var pb=document.getElementById("pics");
+  pb.addEventListener("click",function(){PIC=!PIC;LOADING=false;pb.setAttribute("aria-pressed",PIC);pb.textContent="صور من السيرفر: "+(PIC?"شغّالة":"مطفية");show(list.length)});
+  document.getElementById("load").addEventListener("click",function(){PIC=true;LOADING=true;pb.textContent="صور من السيرفر: شغّالة";show(list.length);setTimeout(function(){LOADING=false;var c=cur;build();[].forEach.call(pages.querySelectorAll(".pg"),function(e,i){e.classList.toggle("on",i===c)})},2500)});
+
+  var secs=2*3600+14*60+33;setInterval(function(){secs--;var h=Math.floor(secs/3600),m=Math.floor(secs%3600/60),s=secs%60;var t=[h,m,s].map(function(x){return ar(x).length<2?"٠"+ar(x):ar(x)}).join(":");[].forEach.call(document.querySelectorAll(".cdv"),function(e){e.textContent=t})},1000);
+  build();restart();timer=requestAnimationFrame(tick);
+})();
+</script>
+<svg width="0" height="0" style="position:absolute"><symbol id="fed" viewBox="0 0 48 48"><path d="M16 17c0-6 3-10 8-10s8 4 8 10z" fill="currentColor"/><path d="M6 19c4 2 10 3 18 3s14-1 18-3c-1 4-8 6-18 6S7 23 6 19z" fill="currentColor"/><path d="M14 29c0-3 4-5 10-5s10 2 10 5v4H14z" fill="currentColor" opacity=".55"/><path d="M6 46c0-8 7-12 18-12s18 4 18 12z" fill="currentColor" opacity=".8"/></symbol></svg>
+</body>
+</html>

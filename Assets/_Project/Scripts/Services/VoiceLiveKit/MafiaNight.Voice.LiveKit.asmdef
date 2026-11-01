@@ -1,0 +1,28 @@
+{
+    "name": "MafiaNight.Voice.LiveKit",
+    "rootNamespace": "MafiaNight.Voice.LiveKit",
+    "references": [
+        "MafiaNight.Core",
+        "MafiaNight.Data",
+        "MafiaNight.Services",
+        "LiveKit",
+        "PlayFab"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "LIVEKIT_SDK"
+    ],
+    "versionDefines": [
+        {
+            "name": "io.livekit.livekit-sdk",
+            "expression": "1.0.0",
+            "define": "LIVEKIT_SDK"
+        }
+    ],
+    "noEngineReferences": false
+}

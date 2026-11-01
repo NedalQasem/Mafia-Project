@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الشريط السفلي: خمس أفكار</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--brass:#b99048;--crim:#d6313b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:16px 8px 40px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 2px;font-size:1.8rem}
+.sub{text-align:center;color:#8f8777;margin:0 auto 12px;font-size:.85rem;max-width:640px;line-height:1.7}
+.ctl{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:18px}
+.ctl button{padding:6px 14px;border-radius:16px;font-weight:800;font-size:.78rem;color:#8f8777;background:#1a130f;box-shadow:0 0 0 1px #3a2e22}
+.ctl button.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30)}
+button{font-family:inherit;border:0;color:inherit;cursor:pointer;background:none;padding:0}
+button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:30px}
+.col{display:grid;gap:8px;justify-items:center;align-content:start;width:min(360px,100%)}
+body.narrow .col{width:min(320px,100%)}
+body.wide .col{width:min(560px,100%)}
+.col h2{margin:0;font-family:Lalezar;font-weight:400;font-size:1.35rem;color:#e8cc8c}
+.cap{color:#7d7568;font-size:.76rem;margin:0;text-align:center;line-height:1.6;min-height:4.8em}
+
+/* a phone with a sample page behind the bar */
+.phone{width:100%;height:600px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 90% 30% at 50% 0,#e8c27a18,transparent 70%),linear-gradient(180deg,#15100d,#090605);box-shadow:0 0 0 7px #14100e,0 0 0 8px #ffffff14,0 24px 50px #000}
+body.wide .phone{height:470px;border-radius:22px}
+.page{position:absolute;inset:0;padding:34px 14px 0;display:grid;gap:8px;align-content:start}
+.page .t{font-family:Lalezar;font-size:1.6rem;line-height:1;margin-bottom:6px}
+.page .r{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:11px;background:var(--grain),linear-gradient(180deg,#2a1e17,#17100c);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff12,0 0 0 1px #000}
+.page .r i{width:40px;height:40px;border-radius:50%;flex:none;background:radial-gradient(circle at 50% 35%,#3a2a20,#0c0807);box-shadow:0 0 0 2px #6e5224}
+.page .r span{flex:1;display:grid;gap:5px}
+.page .r span::before,.page .r span::after{content:"";height:9px;border-radius:5px;background:#ffffff18;width:60%}
+.page .r span::after{width:85%;background:#ffffff0d}
+.home{position:absolute;bottom:6px;left:50%;translate:-50% 0;width:110px;height:4px;border-radius:2px;background:#ffffff55;z-index:20}
+
+/* shared */
+.bar{position:absolute;left:0;right:0;bottom:0;z-index:10;padding-bottom:16px}  /* 16px = phone safe area (home indicator) */
+.lb{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:800;line-height:1.2}
+.ico{display:block;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.cnt{position:absolute;min-width:17px;height:17px;padding:0 4px;border-radius:9px;display:grid;place-items:center;font-family:Lalezar;font-size:.66rem;color:#fff;background:var(--crim);z-index:3}
+.nd{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--crim);z-index:3}
+.live{position:absolute;display:flex;align-items:center;gap:4px;white-space:nowrap;font-size:.58rem;font-weight:800;z-index:3}
+.live i{width:5px;height:5px;border-radius:50%;background:#e0343f;box-shadow:0 0 6px 1px #e0343f99;animation:bl 1.4s steps(2) infinite}
+@keyframes bl{50%{opacity:.25}}
+
+/* ========== A: brass plate ========== */
+.A{height:calc(74px + 16px);background:var(--grain),linear-gradient(180deg,#2b1d14,#1a110c 60%,#100a07);background-blend-mode:multiply,normal;box-shadow:0 -12px 24px #000c}
+.A::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#6a4c1c,#e8cc8c 20%,#9a7438 50%,#e8cc8c 80%,#6a4c1c);box-shadow:0 1px 0 #000}
+.A .slots{position:relative;height:74px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:7px 6px 5px}
+.A .s{position:relative;justify-self:center;width:min(100%,96px);display:grid;justify-items:center;align-content:center;gap:3px;border-radius:10px;padding:0 3px;color:#9c917e;transition:color .25s}
+.A .s + .s::before{content:"";position:absolute;right:-1px;top:10px;bottom:10px;width:1px;background:linear-gradient(180deg,transparent,#a98f6255,transparent)}
+.A .s .ico{width:26px;height:26px;transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.A .s .lb{font-size:.66rem}
+.A .s.on{color:#f3dfa6;background:radial-gradient(ellipse 80% 70% at 50% 30%,#8a1c24,#4a0e13 80%);box-shadow:inset 0 0 0 1.5px #c9a050,inset 0 0 0 3px #2a0a0c,inset 0 6px 12px #0008,0 3px 6px #000a}
+.A .s.on::after{content:"";position:absolute;top:-10px;left:50%;translate:-50% 0;border:6px solid transparent;border-top-color:#e8cc8c;filter:drop-shadow(0 1px 0 #000)}
+.A .s.on + .s::before,.A .s.on::before{opacity:0}
+.A .s.on .ico{transform:scale(1.08)}
+.A .s:active .ico{transform:scale(.88)}
+.A .cnt{top:5px;left:calc(50% + 6px);box-shadow:0 0 0 2px #1a110c}
+.A .nd{top:8px;left:calc(50% + 9px);box-shadow:0 0 0 2px #1a110c}
+.A .live{top:-22px;left:50%;translate:-50% 0;padding:2px 8px;border-radius:9px;background:#120b08;color:#e8cc8c;box-shadow:0 0 0 1px #6e5224,0 3px 6px #000a}
+
+/* ========== B: case file tabs ========== */
+.B{height:calc(78px + 16px)}
+.B::before{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(58px + 16px);background:var(--grain),linear-gradient(180deg,#2a1d15,#150d09);background-blend-mode:multiply,normal;box-shadow:0 -10px 22px #000c,inset 0 1px 0 #ffffff1a}
+.B::after{content:"";position:absolute;left:10px;right:10px;bottom:calc(58px + 16px - 7px);border-top:1.5px dashed #a98f62;opacity:.35}
+.B .slots{position:relative;height:78px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:0 6px;align-items:end}
+.B .s{position:relative;justify-self:center;width:min(100%,110px);height:66px;display:grid;justify-items:center;align-content:center;gap:2px;padding:4px 3px 0;color:#968b78;transition:height .3s cubic-bezier(.3,1.4,.5,1),color .2s}
+.B .s .ico{width:25px;height:25px}
+.B .s .lb{font-size:.66rem}
+.B .s.on{height:78px;color:#2a1a0e;z-index:2}
+.B .s.on::before{content:"";position:absolute;inset:0 0 -16px;z-index:-1;clip-path:polygon(10% 0,90% 0,100% 18px,100% 100%,0 100%,0 18px);background:var(--grain),linear-gradient(180deg,#efe4c8,#d9c9a2);background-blend-mode:multiply,normal}
+.B .s.on::after{content:"";position:absolute;left:14%;right:14%;top:7px;height:2px;background:#8a1c24;opacity:.7}
+.B .s.on .lb{font-family:'Aref Ruqaa',Cairo;font-size:.8rem;font-weight:700}
+.B .s.on .ico{stroke-width:1.9}
+.B .cnt{top:6px;left:calc(50% + 6px);box-shadow:0 0 0 2px #150d09}
+.B .s.on .cnt{top:10px}
+.B .nd{top:9px;left:calc(50% + 9px);box-shadow:0 0 0 2px #150d09}
+.B .live{top:-12px;left:50%;translate:-50% 0;padding:1px 7px;border-radius:3px;rotate:-3deg;background:#d9c9a2;color:#5a1016;font-family:Cairo;box-shadow:0 0 0 1px #8a1c24,0 3px 5px #000a}
+.B .live i{background:#8a1c24;box-shadow:none}
+
+/* ========== C: typewriter keys ========== */
+.C{height:calc(82px + 16px);background:linear-gradient(180deg,#141110,#0a0808);box-shadow:0 -12px 24px #000c,inset 0 1px 0 #ffffff14}
+.C::before{content:"";position:absolute;left:14px;right:14px;top:5px;height:1px;background:linear-gradient(90deg,transparent,#b9904888,transparent)}
+.C .slots{position:relative;height:82px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:9px 4px 0}
+.C .s{position:relative;display:grid;justify-items:center;align-content:start;gap:4px;color:#8c8273}
+.C .key{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#2e2622,#0c0a09 75%);box-shadow:0 0 0 2px #000,0 0 0 4px #8a8478,0 0 0 5px #000,0 5px 0 1px #000,0 7px 10px #000c,inset 0 2px 3px #ffffff22;transition:transform .12s,box-shadow .12s}
+.C .key .ico{width:23px;height:23px}
+.C .s .lb{font-size:.64rem}
+.C .s.on{color:#f3dfa6}
+.C .s.on .key{transform:translateY(3px);background:radial-gradient(circle at 50% 35%,#3c2a1c,#120c08 75%);box-shadow:0 0 0 2px #000,0 0 0 4px #c9a050,0 0 0 5px #000,0 2px 0 1px #000,0 0 18px 2px #f5e2a833,inset 0 2px 3px #ffffff22}
+.C .s.on .lb{translate:0 3px}
+.C .s:active .key{transform:translateY(4px)}
+.C .s.main .key{width:54px;height:54px;margin-top:-4px;background:radial-gradient(circle at 50% 35%,#5a1a1e,#1e0709 75%);box-shadow:0 0 0 2px #000,0 0 0 4px #c9a050,0 0 0 5px #000,0 5px 0 1px #000,0 7px 10px #000c,inset 0 2px 3px #ffffff33}
+.C .s.main .key .ico{width:27px;height:27px;color:#f3dfa6}
+.C .s.main.on .key{box-shadow:0 0 0 2px #000,0 0 0 4px #f5e2a8,0 0 0 5px #000,0 2px 0 1px #000,0 0 20px 3px #f5e2a844,inset 0 2px 3px #ffffff33}
+.C .cnt{top:-4px;left:calc(50% + 10px);box-shadow:0 0 0 2px #0a0808}
+.C .nd{top:-1px;left:calc(50% + 14px);box-shadow:0 0 0 2px #0a0808}
+.C .live{top:-20px;left:50%;translate:-50% 0;padding:1px 7px;border-radius:8px;background:#0a0808;color:#e6b3b6;box-shadow:0 0 0 1px #8a1c24}
+
+/* ========== D: poker chips on the card table ========== */
+.D{height:calc(84px + 16px);background:radial-gradient(ellipse 70% 120% at 50% 100%,#1f4a36,#0f2a1e 60%,#08170f);box-shadow:0 -12px 24px #000c}
+.D::before{content:"";position:absolute;left:0;right:0;top:0;height:9px;background:var(--grain),linear-gradient(180deg,#5a3a22,#2e1c10);background-blend-mode:multiply,normal;box-shadow:0 1px 0 #000,0 2px 6px #000a,inset 0 1px 0 #ffffff26}
+.D::after{content:"";position:absolute;inset:9px 0 0;background:var(--grain);opacity:.5;mix-blend-mode:multiply;pointer-events:none}
+.D .slots{position:relative;z-index:1;height:84px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:16px 4px 0}
+.D .s{position:relative;display:grid;justify-items:center;align-content:start;gap:4px;color:#a7b8a6}
+.D .key{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#d9d0bd;
+  background:radial-gradient(circle,#1b1715 0 52%,transparent 53%),repeating-conic-gradient(from 11.25deg,#d9d0bd 0 22.5deg,#26201c 0 45deg);
+  box-shadow:0 0 0 2px #0d0b0a,inset 0 0 0 3px #26201c,0 3px 0 #0d0b0a,0 5px 8px #000c;transition:transform .3s cubic-bezier(.3,1.5,.5,1),box-shadow .3s}
+.D .key::before{content:"";position:absolute;inset:11px;border-radius:50%;border:1.5px dashed #d9d0bd55}
+.D .key .ico{position:relative;width:20px;height:20px}
+.D .s .lb{font-size:.64rem}
+.D .s.main .key{background:radial-gradient(circle,#4a0e13 0 52%,transparent 53%),repeating-conic-gradient(from 11.25deg,#f0e6cf 0 22.5deg,#8a1c24 0 45deg);box-shadow:0 0 0 2px #0d0b0a,inset 0 0 0 3px #8a1c24,0 3px 0 #0d0b0a,0 5px 8px #000c}
+.D .s.on{color:#f3dfa6}
+.D .s.on .key{transform:translateY(-10px);background:radial-gradient(circle,#1b1715 0 52%,transparent 53%),repeating-conic-gradient(from 11.25deg,#f5e2a8 0 22.5deg,#6a4c1c 0 45deg);box-shadow:0 0 0 2px #0d0b0a,inset 0 0 0 3px #6a4c1c,0 3px 0 #0d0b0a,0 6px 0 #6a4c1c,0 9px 0 #0d0b0a,0 16px 14px #000d}
+.D .s.on .key{color:#f3dfa6}
+.D .s.main.on .key{background:radial-gradient(circle,#4a0e13 0 52%,transparent 53%),repeating-conic-gradient(from 11.25deg,#f5e2a8 0 22.5deg,#8a1c24 0 45deg);box-shadow:0 0 0 2px #0d0b0a,inset 0 0 0 3px #8a1c24,0 3px 0 #0d0b0a,0 6px 0 #8a1c24,0 9px 0 #0d0b0a,0 16px 14px #000d}
+.D .s.on .lb{translate:0 -6px}
+.D .s:active .key{transform:translateY(-3px) scale(.95)}
+.D .cnt{top:-5px;left:calc(50% + 9px);box-shadow:0 0 0 2px #0f2a1e}
+.D .nd{top:-2px;left:calc(50% + 13px);box-shadow:0 0 0 2px #0f2a1e}
+.D .live{top:-30px;left:50%;translate:-50% 0;padding:1px 8px;border-radius:9px;background:#08170f;color:#cfe3cf;box-shadow:0 0 0 1px #3c6a50}
+
+/* ========== E: the Don's wax seal ========== */
+.E{height:calc(76px + 16px);background:var(--grain),linear-gradient(180deg,#2a1d15,#140c08);background-blend-mode:multiply,normal;box-shadow:0 -12px 24px #000c,inset 0 1px 0 #ffffff1a}
+.E::before{content:"";position:absolute;left:10px;right:10px;top:6px;border-top:1.5px dashed #a98f62;opacity:.35}
+.E .slots{position:relative;height:76px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:12px 4px 0}
+.E .s{position:relative;display:grid;justify-items:center;align-content:start;gap:3px;color:#7e705f}
+.E .key{position:relative;width:44px;height:40px;display:grid;place-items:center;transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.E .key .ico{position:relative;z-index:1;width:24px;height:24px;filter:drop-shadow(0 1px 0 #ffffff14) drop-shadow(0 -1px 0 #000)}
+.E .s .lb{font-size:.64rem}
+.E .s.on{color:#f0dca0}
+.E .s.on .key::before{content:"";position:absolute;inset:-4px -3px -4px;border-radius:47% 53% 44% 56% / 55% 45% 55% 45%;
+  background:radial-gradient(circle at 34% 26%,#b8434a 0,#861a22 34%,#560b11 70%,#33050a 100%);
+  box-shadow:inset 0 0 0 3px #43070c,inset 0 0 0 4.5px #c2454b44,inset 0 0 0 9px #6e1218,inset 0 0 0 10px #22020566,inset 0 -3px 6px #22020599,0 2px 4px #000c;animation:stamp .35s cubic-bezier(.2,1.6,.4,1)}
+.E .s.on .key::after{content:"";position:absolute;width:10px;height:8px;right:-5px;bottom:-5px;border-radius:50% 60% 50% 40%;background:radial-gradient(circle at 40% 35%,#9c2a31,#4a080d);box-shadow:0 2px 3px #000a}
+.E .s.on .key .ico{width:20px;height:20px;color:#2a0306;stroke-width:2.2;filter:drop-shadow(0 1px 0 #d9666e66)}
+.E .s.on .lb{font-family:'Aref Ruqaa',Cairo;font-weight:700;font-size:.82rem;translate:0 2px}
+@keyframes stamp{0%{transform:scale(1.6);opacity:0}60%{transform:scale(.92);opacity:1}100%{transform:scale(1)}}
+.E .cnt{top:-6px;left:calc(50% + 8px);box-shadow:0 0 0 2px #1f150f}
+.E .nd{top:-2px;left:calc(50% + 12px);box-shadow:0 0 0 2px #1f150f}
+.E .live{top:-30px;left:50%;translate:-50% 0;padding:1px 8px;border-radius:9px;background:#140c08;color:#e8cc8c;box-shadow:0 0 0 1px #6e5224}
+
+/* the mafia picture icons carry their own colours: a tab that is not chosen is dimmed */
+.ico.ill{stroke:none;transition:filter .25s,transform .3s cubic-bezier(.3,1.6,.5,1)}
+.s:not(.on) .ico.ill{filter:grayscale(.45) brightness(.8)}
+.s.on .ico.ill{filter:drop-shadow(0 2px 2px #000)}
+.A .s .ico.ill{width:34px;height:34px}
+.B .s .ico.ill{width:34px;height:34px}
+.C .key .ico.ill{width:30px;height:30px}.C .s.main .key .ico.ill{width:34px;height:34px}
+.D .key .ico.ill{width:26px;height:26px}
+.E .key .ico.ill{width:34px;height:34px}
+.E .s.on .key .ico.ill{width:28px;height:28px;filter:drop-shadow(0 1px 1px #000)}
+/* the menu that rises from a tab with two places behind it */
+.scrim{position:absolute;inset:0;z-index:9;background:#000a}   /* under the bar (z 10), so the bar stays lit */
+.menu{position:absolute;z-index:30;width:250px;max-width:calc(100% - 16px);padding:7px;border-radius:12px;background:var(--grain),linear-gradient(180deg,#2e2018,#160e0a);background-blend-mode:multiply,normal;
+  box-shadow:0 0 0 1px #000,0 0 0 2.5px #8a6a30,0 0 0 3.5px #000,0 18px 30px #000e;animation:rise .28s cubic-bezier(.2,1.3,.4,1);transform-origin:var(--ax) 100%}
+.menu::after{content:"";position:absolute;bottom:-7px;left:var(--ax);width:13px;height:13px;transform:translateX(-50%) rotate(45deg);background:#160e0a;box-shadow:2.5px 2.5px 0 0 #8a6a30,3.5px 3.5px 0 0 #000}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.9)}}
+.mi{position:relative;display:flex;align-items:center;gap:10px;width:100%;padding:7px 9px;border-radius:8px;text-align:start}
+.mi + .mi{margin-top:3px}
+.mi + .mi::before{content:"";position:absolute;inset-inline:10px;top:-2px;border-top:1px dashed #a98f6244}
+.mi .ico.ill{width:38px;height:38px;flex:none;filter:drop-shadow(0 2px 2px #000)}
+.mi .tx{flex:1;min-width:0}
+.mi b{display:block;font-family:Lalezar;font-weight:400;font-size:1.08rem;line-height:1.15;color:#f0dca0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi small{display:block;font-size:.66rem;font-weight:700;color:#a1957f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi.cur{background:linear-gradient(180deg,#5a141a,#360a0e);box-shadow:inset 0 0 0 1px #c9a050}
+.mi.cur small{color:#d7c3a0}
+.mi:active{transform:scale(.97)}
+.mi .cnt,.mi .nd{position:static;flex:none;box-shadow:0 0 0 2px #1d130e}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-market" viewBox="0 0 24 24"><path d="M3.5 9.5l1.7-5h13.6l1.7 5"/><path d="M3.5 9.5a2.8 2.8 0 0 0 5.6 0a2.9 2.9 0 0 0 5.8 0a2.8 2.8 0 0 0 5.6 0z"/><path d="M5 12.3V20h14v-7.7M10 20v-4.6h4V20"/></symbol>
+  <symbol id="i-family" viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><path d="M5.3 6.9h7.4M6.4 6.9c.3-1.8 1.2-2.7 2.6-2.7s2.3.9 2.6 2.7"/><path d="M3 20c.5-3.7 2.9-5.6 6-5.6s5.5 1.9 6 5.6"/><circle cx="16.8" cy="8.6" r="2.4"/><path d="M16.2 13.3c2.8.2 4.5 2.1 4.9 5"/></symbol>
+  <symbol id="i-rooms" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5.8"/><rect x="9.8" y="1.6" width="4.4" height="2.4" rx="1"/><rect x="20" y="9.8" width="2.4" height="4.4" rx="1"/><rect x="9.8" y="20" width="4.4" height="2.4" rx="1"/><rect x="1.6" y="9.8" width="2.4" height="4.4" rx="1"/><path d="M12 9.2l2.3 2.8-2.3 2.8-2.3-2.8z"/></symbol>
+  <symbol id="i-ranks" viewBox="0 0 24 24"><path d="M12 2.8l7.2 3v5.3c0 4.6-3 8.2-7.2 10.1-4.2-1.9-7.2-5.5-7.2-10.1V5.8z"/><path d="M12 8.2l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8l1.7 2.3 2.8-.7.5 2.8 2.5 1.4-1.1 2.7 1.1 2.7-2.5 1.4-.5 2.8-2.8-.7L12 21.2l-1.7-2.3-2.8.7-.5-2.8-2.5-1.4 1.1-2.7-1.1-2.7 2.5-1.4.5-2.8 2.8.7z"/></symbol>
+  <!-- mafia picture icons (48x48, own colours) -->
+  <linearGradient id="mBrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1c4"/><stop offset=".5" stop-color="#d2ad60"/><stop offset="1" stop-color="#7a5a22"/></linearGradient>
+  <linearGradient id="mIvory" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3ead6"/><stop offset="1" stop-color="#b3a584"/></linearGradient>
+  <linearGradient id="mCrim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9474d"/><stop offset="1" stop-color="#7a141a"/></linearGradient>
+  <linearGradient id="mDark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#44342a"/><stop offset="1" stop-color="#140d09"/></linearGradient>
+  <linearGradient id="mSuit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3430"/><stop offset="1" stop-color="#0e0b0a"/></linearGradient>
+  <linearGradient id="mSteel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e4e2dc"/><stop offset=".55" stop-color="#8e8b84"/><stop offset="1" stop-color="#3e3c38"/></linearGradient>
+  <linearGradient id="mWood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9a5e30"/><stop offset="1" stop-color="#3e2010"/></linearGradient>
+  <linearGradient id="mCar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a2a30"/><stop offset=".6" stop-color="#4a0e13"/><stop offset="1" stop-color="#1e0508"/></linearGradient>
+  <linearGradient id="mGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7d8a94"/><stop offset="1" stop-color="#151a1f"/></linearGradient>
+  <radialGradient id="mGlow" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#fff2c0"/><stop offset="1" stop-color="#e09a38"/></radialGradient>
+  <g id="mMan">
+    <path d="M10 47c0-9.5 6-14 14-14s14 4.5 14 14z" fill="url(#mSuit)" stroke="#000" stroke-width="1"/>
+    <path d="M20.3 33.4L24 42l3.7-8.6z" fill="url(#mIvory)"/>
+    <path d="M20.3 33.4L24 42l-5.3-4.6zM27.7 33.4L24 42l5.3-4.6z" fill="#000" opacity=".55"/>
+    <path d="M23 35h2l.9 5.6L24 43l-1.9-2.4z" fill="url(#mCrim)"/>
+    <path d="M18.6 24.5c0-4 2.4-6.5 5.4-6.5s5.4 2.5 5.4 6.5c0 4.6-2.4 8-5.4 8s-5.4-3.4-5.4-8z" fill="#b8916c" stroke="#000" stroke-width=".8"/>
+    <path d="M18.8 22.5h10.4c0 2.2-.2 3.4-.5 4-1.6-1.4-3.2-1.9-4.7-1.9s-3.1.5-4.7 1.9c-.3-.6-.5-1.8-.5-4z" fill="#000" opacity=".55"/>
+    <ellipse cx="24" cy="21" rx="10.5" ry="2.6" fill="#1c1513" stroke="#000" stroke-width=".8"/>
+    <path d="M16.8 21c0-7 2.6-9.6 7.2-9.6s7.2 2.6 7.2 9.6z" fill="#2a201b" stroke="#000" stroke-width=".8"/>
+    <path d="M20.6 13.2q3.4 2.2 6.8 0" fill="none" stroke="#000" stroke-width=".9"/>
+    <rect x="16.9" y="18" width="14.2" height="2.4" fill="url(#mCrim)"/>
+  </g>
+  <g id="mGun">
+    <rect x="21" y="13.6" width="20" height="3.8" rx=".6" fill="url(#mSteel)" stroke="#000" stroke-width=".8"/>
+    <rect x="39" y="12.2" width="1.6" height="1.6" fill="#3e3c38"/>
+    <rect x="13" y="12" width="9.5" height="8.6" rx="2" fill="url(#mSteel)" stroke="#000" stroke-width=".8"/>
+    <path d="M15.5 13.6v5.4M18 13.6v5.4M20.5 13.6v5.4" stroke="#3e3c38" stroke-width=".8"/>
+    <path d="M13 12.6l-3-3.2 3.8 1.4z" fill="#3e3c38" stroke="#000" stroke-width=".6"/>
+    <path d="M15.6 20.6q-.4 4.6 4 4.2" fill="none" stroke="#5a5852" stroke-width="1.4"/>
+    <path d="M17.6 20.6l.8 2.6" stroke="#2a2826" stroke-width="1.2"/>
+    <path d="M8.6 18.4l6 .2-.4 2.2-2.4 9.6-6.4-1.2z" fill="url(#mWood)" stroke="#000" stroke-width=".8"/>
+    <circle cx="9.6" cy="24" r=".7" fill="#d2ad60"/>
+  </g>
+  <symbol id="m-market" viewBox="0 0 48 48">
+    <rect x="12" y="4.5" width="24" height="6.5" rx="1" fill="url(#mBrass)" stroke="#000" stroke-width=".8"/>
+    <rect x="16.5" y="7.1" width="15" height="1.3" fill="#3a2a10"/>
+    <rect x="6" y="20" width="36" height="23" fill="url(#mDark)" stroke="#000"/>
+    <path d="M4 12h6.7L9.3 22H2z" fill="url(#mCrim)"/><path d="M10.7 12h6.6L16.7 22H9.3z" fill="url(#mIvory)"/><path d="M17.3 12h6.7V22h-7.3z" fill="url(#mCrim)"/>
+    <path d="M24 12h6.7l.6 10H24z" fill="url(#mIvory)"/><path d="M30.7 12h6.6l1.4 10h-7.4z" fill="url(#mCrim)"/><path d="M37.3 12H44l2 10h-7.3z" fill="url(#mIvory)"/>
+    <path d="M2 22a3.65 3.65 0 0 0 7.3 0a3.7 3.7 0 0 0 7.4 0a3.65 3.65 0 0 0 7.3 0a3.65 3.65 0 0 0 7.3 0a3.7 3.7 0 0 0 7.4 0a3.65 3.65 0 0 0 7.3 0z" fill="url(#mCrim)" stroke="#000" stroke-width=".6"/>
+    <path d="M4 12h40l2 10H2z" fill="none" stroke="#000" stroke-width=".8"/>
+    <rect x="9" y="27" width="14" height="10" fill="url(#mGlow)" stroke="#000" stroke-width="1.2"/>
+    <path d="M16 27v10M9 32h14" stroke="#3a2a10" stroke-width="1"/>
+    <rect x="27.5" y="27" width="10" height="16" fill="#24160e" stroke="#000"/>
+    <rect x="29.5" y="29" width="6" height="5" fill="url(#mGlow)" opacity=".85"/>
+    <circle cx="35.6" cy="37" r=".9" fill="#d2ad60"/>
+    <rect x="3" y="43" width="42" height="2" fill="#000" opacity=".55"/>
+  </symbol>
+  <symbol id="m-family" viewBox="0 0 48 48">
+    <g opacity=".7"><use href="#mMan" transform="translate(-6.3 12.4) scale(.73)"/><use href="#mMan" transform="translate(18.7 12.4) scale(.73)"/></g>
+    <use href="#mMan"/>
+  </symbol>
+  <symbol id="m-rooms" viewBox="0 0 48 48">
+    <rect x="33" y="8" width="4.5" height="9" fill="url(#mDark)" stroke="#000" stroke-width=".8"/>
+    <rect x="7" y="20" width="34" height="23" fill="url(#mDark)" stroke="#000"/>
+    <path d="M3.5 21.5L24 7.5l20.5 14z" fill="#2a1d15" stroke="url(#mBrass)" stroke-width="1.6" stroke-linejoin="round"/>
+    <circle cx="24" cy="16" r="2.6" fill="url(#mGlow)" stroke="#000" stroke-width=".7"/>
+    <rect x="9.5" y="24.5" width="5.5" height="6.5" fill="url(#mGlow)" stroke="#000" stroke-width=".8"/>
+    <rect x="33" y="24.5" width="5.5" height="6.5" fill="url(#mGlow)" stroke="#000" stroke-width=".8"/>
+    <rect x="9.5" y="34" width="5.5" height="6" fill="url(#mGlow)" opacity=".55" stroke="#000" stroke-width=".8"/>
+    <rect x="33" y="34" width="5.5" height="6" fill="url(#mGlow)" opacity=".55" stroke="#000" stroke-width=".8"/>
+    <rect x="17" y="22" width="2.6" height="21" fill="url(#mIvory)" stroke="#000" stroke-width=".6"/>
+    <rect x="28.4" y="22" width="2.6" height="21" fill="url(#mIvory)" stroke="#000" stroke-width=".6"/>
+    <path d="M20.8 43V31.5a3.2 3.2 0 0 1 6.4 0V43z" fill="#120b07" stroke="url(#mBrass)" stroke-width=".9"/>
+    <rect x="16" y="43" width="16" height="2.2" fill="url(#mIvory)" opacity=".7"/>
+    <rect x="3" y="45" width="42" height="1.6" fill="#000" opacity=".55"/>
+  </symbol>
+  <symbol id="m-ranks" viewBox="0 0 48 48">
+    <use href="#mGun" transform="rotate(-38 24 22) translate(0 3)"/>
+    <use href="#mGun" transform="translate(48 0) scale(-1 1) rotate(-38 24 22) translate(0 3)"/>
+    <circle cx="24" cy="30" r="8.5" fill="url(#mBrass)" stroke="#000" stroke-width="1"/>
+    <circle cx="24" cy="30" r="6.6" fill="none" stroke="#7a5a22" stroke-width=".8"/>
+    <path d="M24 24.6l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="url(#mCrim)" stroke="#000" stroke-width=".6"/>
+  </symbol>
+  <symbol id="m-car" viewBox="0 0 48 48">
+    <circle cx="4.6" cy="27" r="3.4" fill="#0d0b0a" stroke="#000"/><circle cx="4.6" cy="27" r="1.8" fill="none" stroke="#e8e0cc" stroke-width=".9"/>
+    <path d="M7 32v-9q0-8.5 7.5-8.5h10.5q3.6 0 4.6 4.2l1 4.6 12.6.9q3.3.4 3.3 3.6V32z" fill="url(#mCar)" stroke="#000" stroke-width="1"/>
+    <path d="M10.6 22.6l.9-3.8q.6-2.3 3-2.3h4.6v6.1zM21.2 16.5h3.8q2 0 2.5 2.1l.8 4H21.2z" fill="url(#mGlass)" stroke="#000" stroke-width=".7"/>
+    <path d="M30.6 24.4h12.6" stroke="#000" stroke-width=".7" opacity=".6"/><path d="M33 25.6v4M35.5 25.6v4M38 25.6v4" stroke="#e8dcc0" stroke-width=".7" opacity=".45"/>
+    <path d="M5.6 34.5q.6-7.6 7.4-7.6t7.4 7.6zM30.6 34.5q.6-7.6 7.4-7.6t7.4 7.6z" fill="#140406" stroke="#000" stroke-width=".8"/>
+    <rect x="19.6" y="32" width="11.6" height="1.8" fill="#0c0807" stroke="#000" stroke-width=".4"/>
+    <circle cx="13" cy="35" r="5" fill="#0d0b0a" stroke="#000"/><circle cx="13" cy="35" r="3.2" fill="none" stroke="#e8e0cc" stroke-width="1.4"/><circle cx="13" cy="35" r="1.4" fill="url(#mSteel)"/>
+    <circle cx="38" cy="35" r="5" fill="#0d0b0a" stroke="#000"/><circle cx="38" cy="35" r="3.2" fill="none" stroke="#e8e0cc" stroke-width="1.4"/><circle cx="38" cy="35" r="1.4" fill="url(#mSteel)"/>
+    <rect x="45" y="24.4" width="2.4" height="7.6" rx=".6" fill="url(#mSteel)" stroke="#000" stroke-width=".5"/>
+    <circle cx="43" cy="25.2" r="1.9" fill="url(#mGlow)" stroke="#000" stroke-width=".6"/>
+    <rect x="43.6" y="32.4" width="4" height="1.3" rx=".6" fill="url(#mSteel)"/><rect x="1" y="32.4" width="5" height="1.3" rx=".6" fill="url(#mSteel)"/>
+    <ellipse cx="25" cy="41.6" rx="22" ry="1.2" fill="#000" opacity=".5"/>
+  </symbol>
+  <symbol id="m-safe" viewBox="0 0 48 48">
+    <rect x="6.5" y="6.5" width="35" height="35" rx="3" fill="url(#mDark)" stroke="#000" stroke-width="1.2"/>
+    <rect x="10" y="10" width="28" height="28" rx="2" fill="#2e241d" stroke="#000" stroke-width=".9"/>
+    <rect x="7.5" y="13" width="2.4" height="5" fill="url(#mSteel)"/><rect x="7.5" y="30" width="2.4" height="5" fill="url(#mSteel)"/>
+    <circle cx="22" cy="24" r="8.4" fill="url(#mBrass)" stroke="#000"/>
+    <circle cx="22" cy="24" r="7.1" fill="none" stroke="#3a2a10" stroke-width="1.5" stroke-dasharray=".8 2.92"/>
+    <circle cx="22" cy="24" r="4.6" fill="#2a2016" stroke="#000" stroke-width=".7"/>
+    <path d="M22 24v-3.6" stroke="url(#mBrass)" stroke-width="1.6" stroke-linecap="round"/>
+    <rect x="32.5" y="18" width="3.2" height="12" rx="1.4" fill="url(#mBrass)" stroke="#000" stroke-width=".7"/>
+    <rect x="9" y="41.5" width="5" height="2.5" fill="#000"/><rect x="34" y="41.5" width="5" height="2.5" fill="#000"/>
+  </symbol>
+  <symbol id="m-phone" viewBox="0 0 48 48">
+    <path d="M7 15.5q0-6.5 6-6.5h22q6 0 6 6.5v1q0 2.4-2.4 2.4h-4q-2.4 0-2.4-2.4v-2H16.8v2q0 2.4-2.4 2.4h-5Q7 18.9 7 16.5z" fill="url(#mSuit)" stroke="#000" stroke-width="1"/>
+    <path d="M12 10.8h24" stroke="#ffffff30" stroke-width=".8"/>
+    <rect x="14.2" y="18" width="3" height="4" fill="url(#mBrass)" stroke="#000" stroke-width=".5"/><rect x="30.8" y="18" width="3" height="4" fill="url(#mBrass)" stroke="#000" stroke-width=".5"/>
+    <path d="M11.5 21.5h25l5.6 18.6q.5 2.4-2 2.4H7.9q-2.5 0-2-2.4z" fill="url(#mCrim)" stroke="#000" stroke-width="1"/>
+    <circle cx="24" cy="32" r="8.2" fill="url(#mIvory)" stroke="#000" stroke-width=".9"/>
+    <g fill="#3a2a20"><circle cx="24" cy="26.3" r="1.3"/><circle cx="28" cy="28" r="1.3"/><circle cx="29.7" cy="32" r="1.3"/><circle cx="28" cy="36" r="1.3"/><circle cx="24" cy="37.7" r="1.3"/><circle cx="20" cy="36" r="1.3"/><circle cx="18.3" cy="32" r="1.3"/><circle cx="20" cy="28" r="1.3"/></g>
+    <circle cx="24" cy="32" r="2.6" fill="url(#mBrass)" stroke="#000" stroke-width=".6"/>
+    <rect x="6" y="43" width="36" height="1.6" fill="#000" opacity=".5"/>
+  </symbol>
+  <symbol id="m-case" viewBox="0 0 48 48">
+    <path d="M17 15v-3.4q0-3 3-3h8q3 0 3 3V15" fill="none" stroke="#000" stroke-width="4.2"/>
+    <path d="M17 15v-3.4q0-3 3-3h8q3 0 3 3V15" fill="none" stroke="#7a4a28" stroke-width="2.6"/>
+    <rect x="4.5" y="14.5" width="39" height="27.5" rx="3.2" fill="url(#mWood)" stroke="#000" stroke-width="1.1"/>
+    <rect x="6.6" y="16.6" width="34.8" height="23.3" rx="2.2" fill="none" stroke="#e8c48c" stroke-width=".6" stroke-dasharray="1.4 1.2" opacity=".55"/>
+    <path d="M4.5 23.5h39" stroke="#000" stroke-width=".9" opacity=".6"/>
+    <rect x="11" y="20.5" width="6" height="6.6" rx="1" fill="url(#mBrass)" stroke="#000" stroke-width=".7"/>
+    <rect x="31" y="20.5" width="6" height="6.6" rx="1" fill="url(#mBrass)" stroke="#000" stroke-width=".7"/>
+    <circle cx="14" cy="24.4" r=".8" fill="#3a2a10"/><circle cx="34" cy="24.4" r=".8" fill="#3a2a10"/>
+    <rect x="5" y="42.6" width="38" height="1.8" fill="#000" opacity=".5"/>
+  </symbol>
+  <symbol id="m-trophy" viewBox="0 0 48 48">
+    <path d="M15 10q-8 0-7.2 6.2.8 5 7.8 5M33 10q8 0 7.2 6.2-.8 5-7.8 5" fill="none" stroke="#000" stroke-width="3.6"/>
+    <path d="M15 10q-8 0-7.2 6.2.8 5 7.8 5M33 10q8 0 7.2 6.2-.8 5-7.8 5" fill="none" stroke="url(#mBrass)" stroke-width="2"/>
+    <path d="M13.5 6.5h21V14q0 11-10.5 13Q13.5 25 13.5 14z" fill="url(#mBrass)" stroke="#000"/>
+    <path d="M24 10.4l1.4 2.9 3.2.4-2.3 2.2.6 3.2-2.9-1.5-2.9 1.5.6-3.2-2.3-2.2 3.2-.4z" fill="url(#mCrim)" stroke="#000" stroke-width=".5"/>
+    <rect x="21.8" y="26.6" width="4.4" height="6.4" fill="url(#mBrass)" stroke="#000" stroke-width=".7"/>
+    <rect x="16" y="33" width="16" height="4.2" rx="1" fill="url(#mDark)" stroke="url(#mBrass)" stroke-width=".9"/>
+    <rect x="12.5" y="37.2" width="23" height="5.6" rx="1" fill="url(#mDark)" stroke="#000"/>
+    <rect x="19" y="38.8" width="10" height="2.3" fill="url(#mBrass)"/>
+  </symbol>
+  <symbol id="m-medal" viewBox="0 0 48 48">
+    <path d="M14.5 3.5h7.4l5.6 19.5h-7.4z" fill="url(#mCrim)" stroke="#000" stroke-width=".8"/>
+    <path d="M33.5 3.5h-7.4L20.5 23h7.4z" fill="#7a141a" stroke="#000" stroke-width=".8"/>
+    <path d="M18.2 3.5l5.6 19.5M29.8 3.5L24.2 23" stroke="#f3ead6" stroke-width="1.2" opacity=".75"/>
+    <circle cx="24" cy="32" r="11" fill="url(#mBrass)" stroke="#000"/>
+    <circle cx="24" cy="32" r="8.4" fill="none" stroke="#7a5a22" stroke-width="1"/>
+    <path d="M24 25.6l1.9 3.9 4.3.6-3.1 3 .7 4.3-3.8-2-3.8 2 .7-4.3-3.1-3 4.3-.6z" fill="url(#mCrim)" stroke="#000" stroke-width=".6"/>
+  </symbol>
+</defs></svg>
+
+<h1>الشريط السفلي: خمس أفكار</h1>
+<p class="sub">نفس التبويبات الخمسة بكل الأفكار. الأيقونات رسومات مافيا: محل للسوق، رجال العيلة للعائلة، البيت للغرف، مسدسين للرتب، والخزنة للإعدادات (اختيار صاحب المشروع). فيك تقلبها لأيقونات خطوط من الأزرار. <b>السوق والعائلة والرتب</b> بيفتحوا قائمة صغيرة لفوق (المتجر/الحقيبة، الدردشة/العائلة، التصنيفات/رتبتي)، والغرف والإعدادات بيفتحوا مباشرة. اضغط على أي تبويب لتجرّب. الأرقام: ٣ على العائلة، نقطة على الرتب، وعدد المتصلين على الغرف.</p>
+<div class="ctl">
+  <button data-lang="ar" class="on">عربي</button><button data-lang="en">English</button>
+  <span style="width:12px"></span>
+  <span style="width:12px"></span>
+  <button data-set="mafia" class="on">أيقونات مافيا</button><button data-set="line">أيقونات خطوط</button>
+  <span style="width:12px"></span>
+  <button data-st="safe" class="on">الإعدادات: خزنة</button><button data-st="car">الإعدادات: سيارة</button>
+  <span style="width:12px"></span>
+  <button data-w="" class="on">موبايل</button><button data-w="narrow">موبايل صغير</button><button data-w="wide">تابلت</button>
+</div>
+
+<div class="row" id="row"></div>
+
+<script>
+const TABS = [
+  { k: 'market', ar: 'السوق', en: 'Market' },
+  { k: 'family', ar: 'العائلة', en: 'Family', cnt: 3 },
+  { k: 'rooms', ar: 'الغرف', en: 'Rooms', main: true },
+  { k: 'ranks', ar: 'الرتب', en: 'Ranks', dot: true },
+  { k: 'settings', ar: 'الإعدادات', en: 'Settings' },
+];
+const IDEAS = [
+  { c: 'A', name: 'أ · لوح النحاس', cap: 'شريط خشب غامق بحافة نحاس فوق. التبويب المختار بيصير مخمل قرمزي بإطار نحاسي وسهم صغير. كل التبويبات بنفس الحجم، بدون زر طالع لبرّا.' },
+  { c: 'B', name: 'ب · ملف القضية', cap: 'كل تبويب لسان ملف. المختار بيطلع لفوق كورقة عاجية بخط الرقعة وخط أحمر، كأنك فاتح ملف من أرشيف العيلة.' },
+  { c: 'C', name: 'ج · مفاتيح الآلة الكاتبة', cap: 'لوح أسود مع مفاتيح دائرية بحلقة معدن. المختار بينضغط لتحت وبيضوي نحاسي. «الغرف» مفتاح أحمر أكبر لأنه الزر الأساسي، بس جوّا الشريط.' },
+  { c: 'D', name: 'د · فيش الطاولة', cap: 'الشريط حافة طاولة لعب: جوخ أخضر وإطار خشب. كل تبويب فيشة، والمختارة بتنرفع فوق رزمة فيش ذهبية. «الغرف» فيشة حمرا.' },
+  { c: 'E', name: 'هـ · ختم الدون', cap: 'جلد غامق والأيقونات محفورة فيه. لما تختار تبويب بينطبع عليه ختم شمع أحمر بنقطة شمع سايلة، والاسم بخط الرقعة، كأنه الدون وقّع.' },
+];
+// tabs with two places behind them open a small menu above the tab; rooms and settings open straight away
+const MENUS = {
+  market: [
+    { k: 'store', ic: 'm-market', ar: 'المتجر', en: 'Store', sar: 'كوينز وجواهر وعروض', sen: 'Coins, gems and offers' },
+    { k: 'bag', ic: 'm-case', ar: 'الحقيبة', en: 'Bag', sar: 'الأغراض اللي اشتريتها', sen: 'Everything you bought' }],
+  family: [
+    { k: 'chat', ic: 'm-phone', ar: 'الدردشة', en: 'Chat', sar: 'الخاص والمجموعات والساحة', sen: 'Private, groups and the square', cnt: 2 },
+    { k: 'friends', ic: 'm-family', ar: 'العائلة', en: 'Family', sar: 'الأصدقاء والطلبات', sen: 'Friends and requests', cnt: 1 }],
+  ranks: [
+    { k: 'boards', ic: 'm-trophy', ar: 'التصنيفات', en: 'Leaderboards', sar: 'الأقوى اليوم والأسبوع', sen: 'Best of the day and the week', dot: true },
+    { k: 'myrank', ic: 'm-medal', ar: 'رتبتي', en: 'My rank', sar: 'من الصبي للدون', sen: 'From errand boy to the Don' }],
+};
+const ar = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+let lang = 'ar', iconSet = 'mafia', settingsIcon = 'safe';
+const state = { A: 'rooms', B: 'rooms', C: 'rooms', D: 'rooms', E: 'rooms' };
+const open = {};                                              // bar letter -> tab whose menu is open
+const sub = { market: 'store', family: 'chat', ranks: 'boards' };  // the place last opened behind each tab
+
+function menuHtml(c) {
+  const k = open[c]; if (!k) return '';
+  const num = n => lang === 'ar' ? ar(n) : String(n);
+  return `<div class="scrim" data-close="${c}"></div><div class="menu" data-for="${k}">${MENUS[k].map(m =>
+    `<button class="mi${state[c] === k && sub[k] === m.k ? ' cur' : ''}" data-c="${c}" data-tab="${k}" data-sub="${m.k}"><svg class="ico ill"><use href="#${m.ic}"/></svg>
+      <span class="tx"><b>${m[lang]}</b><small>${lang === 'ar' ? m.sar : m.sen}</small></span>${m.cnt ? `<span class="cnt">${num(m.cnt)}</span>` : ''}${m.dot ? '<span class="nd"></span>' : ''}</button>`).join('')}</div>`;
+}
+// the menu sits over its tab, kept inside the phone; the little arrow still points at the tab
+function place() {
+  document.querySelectorAll('.menu').forEach(m => {
+    const ph = m.closest('.phone'), tab = ph.querySelector(`.s[data-k=${m.dataset.for}]`);
+    const P = ph.getBoundingClientRect(), T = tab.getBoundingClientRect(), bar = ph.querySelector('.bar').getBoundingClientRect();
+    const w = m.offsetWidth, cx = T.left + T.width / 2 - P.left;
+    const left = Math.max(8, Math.min(P.width - w - 8, cx - w / 2));
+    m.style.left = left + 'px'; m.style.bottom = (P.bottom - bar.top + 14) + 'px'; m.style.setProperty('--ax', (cx - left) + 'px');
+  });
+}
+
+function tabHtml(c, t) {
+  const on = (open[c] ? open[c] === t.k : state[c] === t.k) ? ' on' : '', main = t.main ? ' main' : '';
+  const num = n => lang === 'ar' ? ar(n) : String(n);
+  const sym = iconSet === 'line' ? 'i-' + t.k : t.k === 'settings' ? 'm-' + settingsIcon : 'm-' + t.k;
+  const icon = `<svg class="ico${iconSet === 'line' ? '' : ' ill'}"><use href="#${sym}"/></svg>`;
+  const live = t.main ? `<span class="live"><i></i>${lang === 'ar' ? num('1,234').replace(',', '٬') + ' متصل' : '1,234 online'}</span>` : '';
+  const badge = (t.cnt ? `<span class="cnt">${num(t.cnt)}</span>` : '') + (t.dot ? '<span class="nd"></span>' : '');
+  const inner = 'CDE'.includes(c) ? `<span class="key">${icon}${badge}</span>` : icon + badge;
+  return `<button class="s${on}${main}" data-c="${c}" data-k="${t.k}">${live}${inner}<span class="lb">${t[lang]}</span></button>`;
+}
+function draw() {
+  document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.getElementById('row').innerHTML = IDEAS.map(i => {
+    const k = state[i.c], page = MENUS[k] ? MENUS[k].find(m => m.k === sub[k])[lang] : TABS.find(t => t.k === k)[lang];
+    return `<div class="col"><h2>${i.name}</h2><p class="cap">${i.cap}</p>
+      <div class="phone"><div class="page"><div class="t">${page}</div>${'<div class="r"><i></i><span></span></div>'.repeat(8)}</div>
+        <nav class="bar ${i.c}"><div class="slots">${TABS.map(t => tabHtml(i.c, t)).join('')}</div></nav>${menuHtml(i.c)}<span class="home"></span></div></div>`;
+  }).join('');
+  place();
+}
+document.addEventListener('click', e => {
+  const mi = e.target.closest('.mi'); if (mi) { const c = mi.dataset.c; state[c] = mi.dataset.tab; sub[mi.dataset.tab] = mi.dataset.sub; open[c] = null; draw(); return; }
+  const sc = e.target.closest('[data-close]'); if (sc) { open[sc.dataset.close] = null; draw(); return; }
+  const s = e.target.closest('.s[data-c]'); if (s) { const c = s.dataset.c, k = s.dataset.k;
+    if (MENUS[k]) open[c] = open[c] === k ? null : k; else { state[c] = k; open[c] = null; }
+    draw(); return; }
+  const l = e.target.closest('[data-lang]'); if (l) { lang = l.dataset.lang; document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('on', b === l)); draw(); return; }
+  const ic = e.target.closest('[data-set]'); if (ic) { iconSet = ic.dataset.set; document.querySelectorAll('[data-set]').forEach(b => b.classList.toggle('on', b === ic)); draw(); return; }
+  const st = e.target.closest('[data-st]'); if (st) { settingsIcon = st.dataset.st; document.querySelectorAll('[data-st]').forEach(b => b.classList.toggle('on', b === st)); draw(); return; }
+  const w = e.target.closest('[data-w]'); if (w) { document.body.className = w.dataset.w; document.querySelectorAll('[data-w]').forEach(b => b.classList.toggle('on', b === w)); place(); }
+});
+draw();
+</script>
+</body>
+</html>

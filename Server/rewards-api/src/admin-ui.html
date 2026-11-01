@@ -1,0 +1,1272 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>MAFIA ADMIN BOARD</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--soft:#4a3c24;--crim:#c0323a;--crimd:#8a1c24;--brass:#b99048;--green:#1d4a3c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;background:#070504;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif;font-size:15px}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{border:0;cursor:pointer;background:none}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.leather{background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal}
+.red{background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal}
+.greenb{background:var(--grain),linear-gradient(180deg,#2c6a55,#1d4a3c 55%,#102c24);background-blend-mode:multiply,normal}
+.paper{position:relative;background:var(--paper);color:var(--ink);border-radius:3px;box-shadow:inset 0 0 40px #8a7a5a88,0 10px 20px #000c}
+.paper::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.1;mix-blend-mode:multiply;pointer-events:none;border-radius:inherit}
+.paper>*{position:relative}
+.btn{padding:8px 20px;border-radius:9px;font-family:Lalezar;font-size:1.05rem;color:#f0dcd8;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000;transition:transform .12s}
+.btn:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #ffffff22,0 0 0 #000}
+.btn.sm{padding:4px 14px;font-size:.9rem;border-radius:7px}
+.btn.ghost{background:#0b080888;box-shadow:inset 0 0 0 1px #6e5224;color:#e6d9bd}
+.stamp{display:inline-block;padding:0 10px;font-family:Lalezar;font-size:.95rem;line-height:1.35;color:var(--crim);border:2.5px solid var(--crim);border-radius:4px;rotate:-6deg;mix-blend-mode:multiply}
+.stamp.green{color:var(--green);border-color:var(--green)}.stamp.brown{color:#6e4b1c;border-color:#6e4b1c}.stamp.grey{color:#6a6458;border-color:#6a6458}
+
+/* ---------- login ---------- */
+#login{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:radial-gradient(ellipse 70% 50% at 50% 0,#e8c27a24,transparent 70%),#070504}
+#login.off{display:none}
+.lamp{position:absolute;top:0;left:50%;translate:-50% 0;width:520px;height:720px;clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);background:linear-gradient(180deg,#ffe9a02e,transparent 85%);pointer-events:none}
+.lbox{width:min(400px,92vw);padding:26px 28px 24px;text-align:center;rotate:-.6deg}
+.lbox .plaque{display:inline-block;padding:3px 18px;margin-bottom:6px;font-family:Lalezar;font-size:1.6rem;letter-spacing:2px;white-space:nowrap;border-block:3px double var(--ink)}
+.lbox small{display:block;font-weight:800;color:var(--crimd);font-size:.8rem;margin-bottom:14px}
+.lbox label{display:block;text-align:right;font-weight:800;font-size:.85rem;color:var(--soft);margin-bottom:4px}
+.lbox input{width:100%;padding:10px 14px;border-radius:6px;border:2px solid #1c170f88;background:#f0e8d2;color:var(--ink);font-size:1.1rem;letter-spacing:2px;text-align:center}
+.lbox .btn{width:100%;margin-top:14px;padding:11px}
+.lbox p{margin:12px 0 0;font-size:.75rem;font-weight:700;color:var(--soft)}
+.lbox .stamp{position:absolute;top:-14px;left:-18px;font-size:1.1rem;background:#d9cfb4cc}
+
+/* ---------- shell ---------- */
+#app{display:grid;grid-template-columns:240px 1fr;height:100vh}
+#app.off{display:none}
+aside{padding:18px 14px;display:flex;flex-direction:column;gap:6px;box-shadow:inset -1px 0 0 #000,inset -3px 0 0 #6e5224;position:relative}
+aside .brand{text-align:center;margin-bottom:14px}
+aside .brand b{display:block;font-family:Lalezar;font-weight:400;font-size:1.45rem;letter-spacing:2px;color:#f5e2a8;line-height:1.1}
+aside .brand small{font-weight:700;font-size:.7rem;color:#8d744a}
+.nav{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-weight:800;color:#b9a98a;text-align:right;position:relative;transition:background .15s}
+.nav svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.nav:hover{background:#ffffff0a}
+.nav.on{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 14px #8a7a5a88,0 0 0 1px #000}
+.nav .n{margin-inline-start:auto;min-width:22px;height:22px;border-radius:11px;padding:0 6px;background:radial-gradient(circle at 35% 30%,#e0525a,#8a1c24);color:#fff;font-size:.75rem;line-height:22px;text-align:center;box-shadow:0 0 0 1.5px #000}
+aside .out{margin-top:auto}
+main{overflow:auto;padding:22px 30px 40px;background:radial-gradient(ellipse 80% 30% at 50% 0,#e8c27a14,transparent 70%),#0d0907}
+.top{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.top h1{margin:0;font-family:Lalezar;font-weight:400;font-size:2rem;line-height:1.1}
+.top h1 small{display:block;font-family:Cairo;font-weight:700;font-size:.8rem;color:#8d744a;margin-top:2px}
+.top .sp{margin-inline-start:auto}
+.live{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:7px;background:#0b080899;box-shadow:inset 0 0 0 1px #6e5224;font-weight:800;font-size:.8rem}
+.live i{width:8px;height:8px;border-radius:50%;background:#4fd49b;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.3}}
+section.view{display:none}section.view.on{display:block}
+
+/* cards and tables */
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g2{grid-template-columns:1.4fr 1fr}
+@media(max-width:1100px){.g2{grid-template-columns:1fr}#app{grid-template-columns:76px 1fr}aside .brand small,.nav span,aside .out span{display:none}.nav{justify-content:center}}
+.stat{padding:16px 18px 14px;rotate:-.4deg}
+.stat:nth-child(even){rotate:.4deg}
+.stat b{display:block;font-family:Lalezar;font-weight:400;font-size:2.4rem;line-height:1}
+.stat span{font-weight:800;font-size:.85rem;color:var(--soft)}
+.stat em{position:absolute;top:12px;left:14px;font-style:normal;font-weight:800;font-size:.72rem;color:var(--green)}
+.stat em.dn{color:var(--crimd)}
+#sGuestsCard em{position:static;display:block;margin-top:4px}
+.card{padding:16px 18px}
+.card h3{margin:0 0 10px;font-family:Lalezar;font-weight:400;font-size:1.3rem;border-bottom:3px double var(--ink);padding-bottom:2px;display:flex;align-items:baseline;gap:8px}
+.card h3 small{font-family:Cairo;font-weight:700;font-size:.72rem;color:var(--crimd);margin-inline-start:auto}
+.bars{display:flex;align-items:flex-end;gap:12px;height:170px;padding-top:10px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;font-weight:800;font-size:.72rem}
+.bars i{display:block;width:100%;border-radius:3px 3px 0 0;background:linear-gradient(90deg,#1c170f,#3a2e1c,#1c170f);box-shadow:inset 0 2px 0 #ffffff22}
+.bars div.today i{background:linear-gradient(90deg,#8a1c24,#c0323a,#8a1c24)}
+.feed{list-style:none;margin:0;padding:0}
+.feed li{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed #1c170f55;font-weight:700;font-size:.85rem}
+.feed li:last-child{border:0}
+.feed time{margin-inline-start:auto;font-size:.72rem;color:var(--soft);font-weight:800}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--crim)}.dot.g{background:var(--green)}.dot.b{background:#b99048}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-family:Lalezar;font-weight:400;font-size:1rem;text-align:right;padding:6px 10px;border-bottom:2px solid var(--ink)}
+.tbl td{padding:10px;border-bottom:1px dashed #1c170f55;font-weight:700;vertical-align:middle}
+.tbl tr:last-child td{border:0}
+.tbl .act{display:flex;gap:6px;justify-content:flex-end}
+.tbl .t{font-family:Lalezar;font-weight:400;font-size:1.05rem}
+.tbl .m{font-size:.75rem;color:var(--soft)}
+.kind{display:inline-block;padding:1px 10px;border-radius:5px;font-weight:800;font-size:.72rem;color:#f0dcd8;background:var(--crimd)}
+.kind.c{background:var(--green)}.kind.i{background:#6e4b1c}
+.paper .btn.ghost{background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal}
+.tog{display:inline-block;vertical-align:middle;width:44px;height:24px;border-radius:12px;background:#1c170f44;box-shadow:inset 0 0 0 1px #1c170f66;position:relative;transition:background .2s;flex:none}
+.tog::after{content:"";position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#f0e8d2;box-shadow:0 1px 3px #0008;transition:translate .2s}
+.tog.on{background:var(--green)}.tog.on::after{translate:-20px 0}
+.bar-actions{display:flex;gap:10px;margin-bottom:14px;align-items:center}
+
+/* editor (drawer + live preview) */
+.drawer{position:fixed;inset:0;z-index:30;background:#050302cc;display:none;place-items:center;padding:20px}
+.drawer.on{display:grid}
+.edit{width:min(1020px,100%);max-height:92vh;overflow:auto;display:grid;grid-template-columns:1fr 330px;gap:0;padding:0}
+.edit .form{padding:20px 24px}
+.edit .prev{padding:20px 16px;background:var(--grain),linear-gradient(180deg,#2b1f18,#140d0a);background-blend-mode:multiply,normal;box-shadow:inset 1px 0 0 #000,inset 3px 0 0 #6e5224;display:flex;flex-direction:column;align-items:center;gap:14px;border-radius:0 3px 3px 0}
+.edit h2{margin:0 0 12px;font-family:Lalezar;font-weight:400;font-size:1.6rem;border-bottom:3px double var(--ink);display:flex;align-items:center}
+.edit h2 .x{margin-inline-start:auto;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1.5px #000,0 2px 0 #000;color:#2a1a08;font-size:1rem;font-family:Cairo;font-weight:800}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f{margin-bottom:12px}
+.f label{display:block;font-weight:800;font-size:.8rem;color:var(--soft);margin-bottom:3px}
+.f input,.f select,.f textarea{width:100%;padding:8px 12px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+.f textarea{min-height:62px;resize:vertical}
+.f small{display:block;font-size:.68rem;font-weight:700;color:var(--soft);margin-top:2px}
+.kinds{display:flex;gap:8px;margin-bottom:12px}
+.kinds button{flex:1;padding:7px;border-radius:7px;font-family:Lalezar;font-size:.95rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.kinds button.on{background:var(--ink);color:#f5e2a8}
+.hide{display:none!important}
+.foot-act{display:flex;gap:10px;margin-top:6px}
+/* the picture of an offer or an event */
+.pic{display:grid;gap:8px;margin:2px 0 12px}
+.pic .head{display:flex;align-items:baseline;gap:8px}
+.pic .head b{font-weight:800}
+.pic .head small{color:var(--soft);font-weight:700;font-size:.72rem}
+.zone{position:relative;display:grid;place-items:center;gap:4px;text-align:center;padding:18px 12px;border-radius:6px;border:2.5px dashed #6e5224;background:#1c170f0d;color:var(--soft);cursor:pointer}
+.zone svg{width:30px;height:30px;stroke:#8a1c24;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.zone b{color:var(--ink);font-size:.9rem}
+.zone span{font-size:.72rem;font-weight:700}
+.zone.over{border-color:#8a1c24;background:#8a1c2412}
+.zone input,.pic input[type=file]{display:none}
+.shot{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:start}
+.frame{position:relative;aspect-ratio:13/8;border-radius:4px;background:#222 center/cover no-repeat;box-shadow:0 0 0 2px #1c170f,0 6px 12px #0006;overflow:hidden}
+.frame .safe{position:absolute;inset:15% 6%;border:1.5px dashed #ffffffcc;border-radius:2px;box-shadow:0 0 0 999px #00000045}
+.frame.ev{aspect-ratio:2/1}.frame.ev .safe{inset:12% 6%}
+.shot .meta{display:grid;gap:5px;align-content:start}
+.shot .meta .ok{display:flex;align-items:center;gap:6px;font-weight:800;font-size:.78rem;color:#1d6a4a}
+.shot .meta .ok svg{width:16px;height:16px;stroke:#1d6a4a;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.shot .meta .m{font-size:.72rem;font-weight:700;color:var(--soft)}
+.shot .acts{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.pic .note{font-size:.7rem;font-weight:700;color:var(--soft);line-height:1.6;margin:0}
+.pic .err2{padding:8px 10px;border-radius:5px;background:#8a1c2414;box-shadow:inset 0 0 0 1.5px #8a1c24;color:#8a1c24;font-weight:800;font-size:.78rem}
+.clip .photo{height:96px;margin:-2px -4px 8px;background:#222 center/cover no-repeat;box-shadow:0 0 0 2px #efe6cf,0 0 0 3px #1c170f55,0 4px 8px #0007;rotate:-.6deg}
+.clip .photo.ev{height:78px}
+.prev h4{margin:0;font-family:Lalezar;font-weight:400;color:#e6d9bd;font-size:1rem}
+.prev small{color:#8d744a;font-weight:700;font-size:.7rem;text-align:center}
+.clip{width:100%;padding:12px 14px 22px;position:relative;rotate:.6deg;filter:drop-shadow(0 7px 5px #000c)}
+.clip .pg{position:absolute;inset:0;background:var(--paper);box-shadow:inset 0 0 30px #8a7a5a88;clip-path:polygon(0 0,100% 0,100% 94%,96% 97%,91% 94%,86% 98%,80% 95%,74% 99%,68% 95%,62% 98%,55% 94%,49% 98%,42% 95%,36% 99%,30% 95%,23% 98%,17% 94%,11% 98%,6% 95%,0 98%)}
+.clip>*:not(.pg){position:relative;color:var(--ink)}
+.clip .tape{position:absolute;top:-10px;left:50%;translate:-50% 0;width:60px;height:19px;background:#d8c88a99;rotate:-2deg}
+.clip .kick{display:flex;justify-content:space-between;font-weight:800;font-size:.62rem;color:var(--crim);border-bottom:1.5px solid var(--ink);margin-bottom:6px}
+.clip .kick span:last-child{color:var(--soft)}
+.clip h5{margin:0;font-family:Lalezar;font-weight:400;font-size:1.25rem;line-height:1.1;padding-inline-end:70px}
+.clip p{margin:3px 0 8px;font-size:.72rem;font-weight:700;line-height:1.55;color:var(--soft)}
+.clip .st{position:absolute;top:44px;left:8px;font-size:.85rem;background:#d9cfb4cc}
+.clip .cd{font-weight:800;font-size:.66rem;color:var(--crim)}
+.clip .cd b{padding:1px 8px;border-radius:4px;background:#0b0807;color:#ffd98a;font-family:Lalezar;font-weight:400;font-size:.8rem;box-shadow:0 0 0 1px #6e5224}
+.clip .rw{font-family:Lalezar;font-size:.9rem;margin-top:6px;display:flex;align-items:center;gap:5px}
+.coin{width:14px;height:14px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000}
+.red-bar{display:inline-block;height:.9em;width:70px;border-radius:2px;background:#15100d;vertical-align:-1px}
+
+/* words and chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 6px 3px 12px;border-radius:6px;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;font-weight:800}
+.chip button{width:20px;height:20px;border-radius:50%;background:#8a1c2433;color:var(--crimd);font-weight:800;line-height:20px}
+.addrow{display:flex;gap:8px}
+.addrow input{flex:1;padding:8px 12px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+.player{display:grid;grid-template-columns:90px 1fr auto;gap:18px;align-items:center}
+.av{width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);box-shadow:0 0 0 4px var(--brass),0 6px 10px #000a}
+.kv{display:grid;grid-template-columns:repeat(4,auto);gap:4px 26px}
+.kv span{font-size:.72rem;font-weight:800;color:var(--soft)}
+.kv b{font-family:Lalezar;font-weight:400;font-size:1.3rem}
+
+.toast{position:fixed;z-index:60;left:50%;bottom:28px;translate:-50% 30px;opacity:0;pointer-events:none;transition:.3s;padding:10px 20px;border-radius:9px;font-weight:800;background:#0a0807f2;box-shadow:0 0 0 1px #b99048,0 8px 16px #000;color:#f5e2a8}
+.toast.on{opacity:1;translate:-50% 0}
+.note{margin-top:22px;max-width:860px;font-size:.78rem;line-height:1.8;color:#8d8576}
+.note b{color:#e6d9bd}
+
+/* extra pieces of the live page */
+#login{display:grid}
+.lbox .err,.f .err,.edit .err{min-height:1.2em;margin-top:8px;font-weight:800;font-size:.82rem;color:var(--crimd)}
+.off{display:none!important}
+.srcnote{margin:0 0 12px;padding:8px 14px;border-radius:6px;background:#0b080899;box-shadow:inset 0 0 0 1px #6e5224;font-weight:700;font-size:.82rem;color:#e6d9bd}
+.empty{padding:22px;text-align:center;font-weight:800;color:var(--soft)}
+.hint{display:block;margin-top:6px;font-weight:700;font-size:.72rem;color:var(--soft)}
+.tbl code{font-family:Consolas,monospace;font-size:.85rem;direction:ltr;display:inline-block}
+.btn.del{color:#ff9a9a}
+.sw{display:flex!important;align-items:center;gap:10px}
+.tog{cursor:pointer}
+.chips .m{font-weight:700;font-size:.8rem;color:var(--soft)}
+.paper .m{color:var(--soft)}
+.nav .n.hide{display:none}
+
+/* live ops pages */
+.lang{display:flex;gap:6px;margin-bottom:10px}
+.lang button{padding:3px 14px;border-radius:6px;font-weight:800;font-size:.8rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.lang button.on{background:var(--ink);color:#f5e2a8}
+.lang .hintl{margin-inline-start:auto;font-size:.7rem;font-weight:700;color:var(--soft);align-self:center}
+input.ltr,textarea.ltr{direction:ltr;text-align:left}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:1px 9px;border-radius:6px;background:#0b0807;color:#ffd98a;font-family:Lalezar;font-size:.8rem;box-shadow:0 0 0 1px #6e5224;margin-inline-end:4px}
+.coin{width:12px;height:12px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000}
+.gem{width:11px;height:11px;display:inline-block;rotate:45deg;background:linear-gradient(135deg,#9be8d0,#2c8f74);box-shadow:0 0 0 1px #000;border-radius:2px}
+.cols2{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+@media(max-width:1100px){.cols2{grid-template-columns:1fr}}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.seg button{padding:6px 14px;border-radius:7px;font-weight:800;font-size:.82rem;background:#1c170f14;box-shadow:inset 0 0 0 1px #1c170f44;color:var(--soft)}
+.seg button.on{background:var(--ink);color:#f5e2a8}
+.warn{margin:8px 0;padding:8px 12px;border-radius:6px;background:#8a1c2422;box-shadow:inset 0 0 0 1px #8a1c2488;font-weight:800;font-size:.78rem;color:var(--crimd)}
+.sect{margin-top:16px;padding-top:12px;border-top:2px dashed #1c170f55}
+.sect h5{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1.15rem}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.tile{padding:12px 14px;border-radius:6px;background:#1c170f0d;box-shadow:inset 0 0 0 1px #1c170f33}
+.tile h6{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1rem}
+.rowin{display:flex;gap:8px;margin-bottom:8px}
+.seg{display:flex;margin-bottom:10px;border-radius:7px;overflow:hidden;box-shadow:0 0 0 2px #1c170f66}
+.seg button{flex:1;padding:6px 8px;font-weight:800;font-size:.82rem;background:#f0e8d2;color:var(--soft);border:0;cursor:pointer;font-family:inherit}
+.seg button.on{background:#1d4a3c;color:#f0dcd8}.seg button.on.wn{background:#8a1c24}
+.dmimg{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.dmimg .box{flex:none;width:84px;height:58px;border-radius:5px;background:#1c170f14;box-shadow:inset 0 0 0 2px #1c170f55;overflow:hidden;display:grid;place-items:center;font-size:.62rem;font-weight:800;color:var(--soft);text-align:center}
+.dmimg .box img{width:100%;height:100%;object-fit:cover;display:block}
+.mpill{display:inline-block;padding:0 8px;border-radius:9px;font-weight:800;font-size:.66rem;color:#f6efe0}.mpill.n{background:#1d4a3c}.mpill.w{background:#8a1c24}.mpill.m{background:#6e4b1c}
+.rowin input,.rowin select{flex:1;min-width:0;padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700}
+.mono{font-family:Consolas,monospace;direction:ltr;display:inline-block;font-weight:800;letter-spacing:1px}
+.ok{color:var(--green);font-weight:800;font-size:.82rem}
+
+/* the narrow table of the sent list */
+.cols2 .tbl{min-width:0}
+/* ranking block of the event editor */
+.rankbox{margin:6px 0 12px;padding:12px 14px;border-radius:6px;background:#1c170f0d;box-shadow:inset 0 0 0 1px #1c170f33}
+.rankbox h6{margin:0 0 8px;font-family:Lalezar;font-weight:400;font-size:1.05rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.prizes{display:grid;gap:6px}
+.prizes .pz{display:grid;grid-template-columns:64px 64px 1fr 40px;gap:8px;align-items:center}
+.prizes .pz input,.prizes .pz select{padding:6px 8px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700;min-width:0}
+/* narrow screens: the collapsed sidebar keeps only a tiny name */
+@media(max-width:1100px){aside .brand b{font-size:.58rem;letter-spacing:.5px;overflow:hidden}aside{padding:14px 8px}}
+/* phones */
+.card{overflow-x:auto}
+#v-lbprizes .tbl{min-width:0}.lbadd .f,.lbadd select{min-width:0}.lbadd select{width:100%}.lbadd .rowin input{min-width:0;flex:1;width:100%}
+.tbl{min-width:560px}
+@media(max-width:720px){
+  main{padding:16px 14px 30px}
+  .top{flex-wrap:wrap}.top h1{font-size:1.6rem}
+  .g2,.edit{grid-template-columns:1fr!important}
+  .edit .prev{display:none}
+  .row2{grid-template-columns:1fr}
+  .player{grid-template-columns:70px 1fr}.player>div:last-child{grid-column:1/-1;grid-auto-flow:column}
+  .kv{grid-template-columns:repeat(2,auto)}
+  #v-words .grid{grid-template-columns:1fr!important}
+  .bars{gap:5px}.bars div{font-size:.6rem}
+}
+</style>
+</head>
+<body>
+<!-- ============ login ============ -->
+<div id="login">
+  <div class="lamp"></div>
+  <form class="lbox paper" id="loginForm" autocomplete="off">
+    <span class="stamp">سرّي</span>
+    <span class="plaque">MAFIA ADMIN BOARD</span>
+    <small>مكتب الريّس · للإدارة فقط</small>
+    <label for="pw">كلمة السر</label>
+    <input id="pw" type="password" autocomplete="current-password" required>
+    <div class="err" id="loginErr" role="alert"></div>
+    <button class="btn red" id="enter" type="submit">ادخل المكتب</button>
+    <p>٥ محاولات خاطئة وبينقفل الباب ١٥ دقيقة</p>
+  </form>
+</div>
+
+<!-- ============ app ============ -->
+<div id="app" class="off">
+  <aside class="leather">
+    <div class="brand"><b>MAFIA<br>ADMIN BOARD</b><small>مكتب الريّس</small></div>
+    <button class="nav on" data-v="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg><span>الواجهة</span></button>
+    <button class="nav" data-v="events"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><span>الأحداث</span><i class="n hide" id="nEvents"></i></button>
+    <button class="nav" data-v="offers"><svg viewBox="0 0 24 24"><path d="M3 12l9-9h8v8l-9 9-8-8zM15 8h.01"/></svg><span>العروض</span></button>
+
+    <button class="nav" data-v="packs"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8zM3 8l9 5 9-5M12 13v8"/></svg><span>الحزم</span></button>
+    <button class="nav" data-v="mail"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/></svg><span>البريد</span></button>
+
+    <button class="nav" data-v="codes"><svg viewBox="0 0 24 24"><path d="M4 8h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4V8zM10 8v10" stroke-dasharray="2 2"/></svg><span>الأكواد</span></button>
+    <button class="nav" data-v="lbprizes"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg><span>جوائز التصنيفات</span></button>
+    <button class="nav" data-v="words"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span>الكلمات الممنوعة</span></button>
+    <button class="nav" data-v="reports"><svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg><span>البلاغات</span><i class="n hide" id="nReports"></i></button>
+    <button class="nav" data-v="players"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-4 3.2-6 6.5-6s5.9 2 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .6 3.3 2.5 3.5 6"/></svg><span>اللاعبون</span></button>
+    <button class="nav" data-v="office"><svg viewBox="0 0 24 24"><path d="M3 21V9l9-6 9 6v12M9 21v-6h6v6M3 21h18"/></svg><span>الغرف الرسمية</span><i class="n hide" id="nOffice"></i></button>
+    <button class="nav" data-v="bots"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01M9 16.5h6M3 12v3M21 12v3"/></svg><span>البوتات</span></button>
+    <button class="nav out" id="out"><svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg><span>اخرج</span></button>
+  </aside>
+
+  <main>
+    <section class="view on" id="v-home">
+      <div class="top"><h1>الواجهة<small>شو عم يصير بالحارة الليلة</small></h1><span class="sp live"><i></i><span id="liveTxt">السيرفر شغّال</span></span></div>
+      <div class="grid g4">
+        <div class="paper stat"><b id="sOnline">–</b><span>لاعبين متصلين الآن</span></div>
+        <div class="paper stat"><b id="sMatches">–</b><span>مباريات اليوم</span></div>
+        <div class="paper stat"><b id="sPlayers">–</b><span>لاعبين لعبوا مباراة</span></div>
+        <div class="paper stat"><b id="sReports">–</b><span>بلاغات مفتوحة</span></div>
+        <div class="paper stat" id="sGuestsCard" title="الضيف = لاعب ما ربط Google ولا Facebook ولا حساب بمكتب المافيا"><b id="sGuests">–</b><span id="sGuestsTxt">ضيوف بدون حساب مربوط</span><em id="sGuestsNote"></em></div>
+      </div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="paper card"><h3>المباريات بآخر ٧ أيام<small>الأحمر = اليوم</small></h3><div class="bars" id="bars"></div></div>
+        <div class="paper card"><h3>آخر النشاط</h3><ul class="feed" id="feed"></ul></div>
+      </div>
+    </section>
+
+    <section class="view" id="v-events">
+      <div class="top"><h1>الأحداث<small>اللي بتظهر للاعبين بـ «أخبار الحارة»</small></h1><button class="btn red sp" id="newEvent">+ حدث جديد</button></div>
+      <div class="srcnote hide" id="evSrc">هاي الأحداث جاية من ملف الإعدادات. أول تعديل أو إضافة هون بينقلها للوحة وبتصير تتحكم فيها من هون.</div>
+      <div class="paper card"><div class="empty hide" id="evEmpty">ما في أحداث. اضغط «حدث جديد» لتبدأ.</div><table class="tbl" id="evTable"></table></div>
+    </section>
+
+    <section class="view" id="v-offers">
+      <div class="top"><h1>العروض<small>لافتة «جريدة الليل» عند فتح اللعبة · أقصى ٣ عروض فعّالة</small></h1><button class="btn red sp" id="newOffer">+ عرض جديد</button></div>
+      <div class="srcnote hide" id="ofSrc">هاي العروض جاية من ملف الإعدادات. أول تعديل أو إضافة هون بينقلها للوحة.</div>
+      <div class="paper card"><div class="empty hide" id="ofEmpty">ما في عروض من السيرفر، فاللعبة بتعرض إعلانات متجرها.</div><table class="tbl" id="ofTable"></table></div>
+    </section>
+
+
+    <section class="view" id="v-packs">
+      <div class="top"><h1>الحزم<small>قوالب جاهزة (كوينز، جواهر، عناصر) بتستخدمها بالبريد وجوائز الأحداث</small></h1><button class="btn red sp" id="newPack">+ حزمة جديدة</button></div>
+      <div class="paper card"><div class="empty hide" id="pkEmpty">ما في حزم. اضغط «حزمة جديدة».</div><table class="tbl" id="pkTable"></table></div>
+    </section>
+
+    <section class="view" id="v-mail">
+      <div class="top"><h1>البريد<small>ابعت بكج أو رسالة للاعب، أو للكل، وبتوصل على بريد اللعبة</small></h1></div>
+      <div class="cols2">
+        <div class="paper card"><h3>برقية جديدة</h3>
+          <form id="mailForm" autocomplete="off">
+            <div class="seg" id="mAud"><button type="button" class="on" data-a="one">لاعب واحد</button><button type="button" data-a="list">قائمة أرقام</button><button type="button" data-a="active7">اللي لعبوا آخر ٧ أيام</button><button type="button" data-a="all">كل اللاعبين</button></div>
+            <div class="f" id="mTargetsBox"><label for="mTargets" id="mTargetsLbl">اللاعب (رقمه أو معرّفه)</label><input id="mTargets" class="ltr" dir="ltr" placeholder="48291735"><small id="mTargetsHint"></small></div>
+            <div class="row2"><div class="f"><label for="mTitleAr">العنوان</label><input id="mTitleAr" maxlength="80"></div><div class="f"><label for="mTitleEn">Title (English)</label><input id="mTitleEn" class="ltr" dir="ltr" maxlength="80"></div></div>
+            <div class="row2"><div class="f"><label for="mBodyAr">الرسالة</label><textarea id="mBodyAr" maxlength="200"></textarea></div><div class="f"><label for="mBodyEn">Message (English)</label><textarea id="mBodyEn" class="ltr" dir="ltr" maxlength="200"></textarea></div></div>
+            <small class="hint" style="margin:-6px 0 10px">اللعبة بتعرض لغة جهاز اللاعب. إذا الإنجليزي فاضي بتعرض العربي.</small>
+            <div class="row2"><div class="f"><label for="mPack">الحزمة</label><select id="mPack"></select></div><div class="f"><label for="mDays">تنتهي بعد</label><select id="mDays"><option value="7">٧ أيام</option><option value="30">٣٠ يوم</option><option value="3">٣ أيام</option><option value="0">بدون نهاية</option></select></div></div>
+            <div class="row2 hide" id="mCustom"><div class="f"><label for="mCoins">كوينز</label><input id="mCoins" type="number" min="0" value="0"></div><div class="f"><label for="mGems">جواهر</label><input id="mGems" type="number" min="0" value="0"></div></div>
+            <div class="warn hide" id="mWarn">الإرسال لمجموعة كبيرة بيطلب تأكيد، وما بيتراجع عنه.</div>
+            <div class="err" id="mErr" role="alert"></div>
+            <div class="foot-act"><button class="btn red" type="submit">ابعت</button></div>
+          </form>
+        </div>
+        <div class="paper card"><h3>آخر المُرسل<small>المستلم / المُرسل</small></h3>
+          <div class="empty hide" id="mlEmpty">ما بعتّ شي بعد.</div><table class="tbl" id="mlTable"></table></div>
+      </div>
+    </section>
+
+
+    <section class="view" id="v-codes">
+      <div class="top"><h1>أكواد الترويج<small>عروض برا اللعبة: انشر الكود (انستغرام، واتساب…) واللاعب بيكتبه بالبريد</small></h1><button class="btn red sp" id="newCode">+ كود جديد</button></div>
+      <div class="paper card"><div class="empty hide" id="cdEmpty">ما في أكواد. اضغط «كود جديد».</div><table class="tbl" id="cdTable"></table>
+        <p class="hint">كل لاعب بيستخدم الكود مرة وحدة. اللعبة بتقفل اللاعب ١٠ دقايق بعد ٥ محاولات غلط ورا بعض عشان ما حدا يخمّن الأكواد.</p></div>
+    </section>
+
+    <section class="view" id="v-lbprizes">
+      <div class="top"><h1>جوائز التصنيفات<small>أول المراكز بسبورة الليلة وجريدة الأسبوع بتوصلهم الجائزة هدية بالبريد لحالها لما يخلص اليوم أو الأسبوع</small></h1>
+        <div class="act"><button class="btn ghost sp" id="lbReset">رجّع الافتراضي</button><button class="btn red sp" id="lbSave">احفظ</button></div></div>
+      <div class="warn hide" id="lbDirty" style="margin-bottom:12px">في تغييرات ما انحفظت.</div>
+      <div class="err" id="lbErr" role="alert"></div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(420px,1fr))">
+        <div class="paper card"><h3>سبورة الليلة<small>بتتوزّع كل يوم بعد نص الليل</small></h3>
+          <div class="empty hide" id="lb-day-empty">ما في جوائز.</div><table class="tbl" id="lb-day-table"></table>
+          <form class="lbadd" data-p="day" autocomplete="off">
+            <div class="row2"><div class="f"><label>الفئة</label><select data-k="cat"></select></div><div class="f"><label>المراكز (من – لـ)</label><div class="rowin"><input data-k="from" type="number" min="1" max="50" value="1"><input data-k="to" type="number" min="1" max="50" value="1"></div></div></div>
+            <div class="row2"><div class="f"><label>الجائزة</label><select data-k="pack"></select></div><div class="f lbcustom"><label>كوينز / جواهر</label><div class="rowin"><input data-k="coins" type="number" min="0" value="0"><input data-k="gems" type="number" min="0" value="0"></div></div></div>
+            <div class="foot-act"><button class="btn ghost sm" type="submit">+ أضف الجائزة</button></div>
+          </form>
+        </div>
+        <div class="paper card"><h3>جريدة الأسبوع<small>بتتوزّع بآخر الأسبوع (السبت)</small></h3>
+          <div class="empty hide" id="lb-week-empty">ما في جوائز.</div><table class="tbl" id="lb-week-table"></table>
+          <form class="lbadd" data-p="week" autocomplete="off">
+            <div class="row2"><div class="f"><label>الفئة</label><select data-k="cat"></select></div><div class="f"><label>المراكز (من – لـ)</label><div class="rowin"><input data-k="from" type="number" min="1" max="50" value="1"><input data-k="to" type="number" min="1" max="50" value="1"></div></div></div>
+            <div class="row2"><div class="f"><label>الجائزة</label><select data-k="pack"></select></div><div class="f lbcustom"><label>كوينز / جواهر</label><div class="rowin"><input data-k="coins" type="number" min="0" value="0"><input data-k="gems" type="number" min="0" value="0"></div></div></div>
+            <div class="foot-act"><button class="btn ghost sm" type="submit">+ أضف الجائزة</button></div>
+          </form>
+        </div>
+      </div>
+      <div class="paper card" style="margin-top:16px"><h3>آخر التوزيعات<small>كل فترة بتنعطى مرة وحدة بس</small></h3><div class="empty hide" id="lbHistEmpty">لسا ما انوزّعت جوائز.</div><table class="tbl" id="lbHist"></table>
+        <p class="hint">الجائزة بتنحسب للفئة نفسها: مثلاً «الانتصارات» المركز ١ بياخدها صاحب أكتر انتصارات بهداك اليوم. اللي ما لعب ما بياخد شي، وإذا لعبوا أقل من عدد المراكز بتنعطى بس للي طلعوا.</p></div>
+    </section>
+
+    <section class="view" id="v-words">
+      <div class="top"><h1>الكلمات الممنوعة<small>بتتفلتر من الدردشة قبل ما توصل، فوق القائمة الجاهزة باللعبة</small></h1></div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="paper card"><h3>كلمة كاملة<small>بتنمنع لما تكون كلمة لحالها</small></h3>
+          <form class="addrow" data-list="exact"><input placeholder="اكتب كلمة…" maxlength="30" aria-label="كلمة كاملة"><button class="btn red sm" type="submit">أضف</button></form>
+          <div class="chips" id="wExact"></div></div>
+        <div class="paper card"><h3>داخل الكلمة<small>بتنمنع حتى لو جوّا كلمة ثانية</small></h3>
+          <form class="addrow" data-list="contains"><input placeholder="اكتب كلمة…" maxlength="30" aria-label="داخل الكلمة"><button class="btn red sm" type="submit">أضف</button></form>
+          <div class="chips" id="wContains"></div></div>
+      </div>
+    </section>
+
+    <section class="view" id="v-reports">
+      <div class="top"><h1>البلاغات<small>اللي بعتها اللاعبين عن بعض</small></h1></div>
+      <div class="paper card"><div class="empty hide" id="rpEmpty">ما في بلاغات.</div><table class="tbl" id="rpTable"></table></div>
+    </section>
+
+    <section class="view" id="v-players">
+      <div class="top"><h1>اللاعبون<small>دوّر برقم اللاعب (٦ خانات) أو معرّف PlayFab أو اسمه</small></h1></div>
+      <div class="paper card" style="margin-bottom:16px"><form class="addrow" id="pForm"><input id="pq" placeholder="رقم اللاعب أو معرّفه أو اسمه" aria-label="بحث"><button class="btn red sm" type="submit">ابحث</button></form>
+        <small class="hint">البحث بالاسم بيلاقي بس اللاعبين اللي ظهروا من آخر مرة اشتغل فيها السيرفر.</small></div>
+      <div id="pResult"></div>
+    </section>
+
+
+    <section class="view" id="v-office">
+      <div class="top"><h1>الغرف الرسمية<small>غرف ثابتة تابعة إلنا (مكتب المافيا للاعبين الجدد...): بتظهر مثبّتة أول قائمة الغرف، وأدمنزنا بيديروها</small></h1><button class="btn red sp" id="rmNew">+ غرفة رسمية</button></div>
+      <div class="warn" id="rmBot" style="margin-bottom:12px"></div>
+      <div class="paper card"><div class="empty hide" id="rmEmpty">ما في غرف رسمية. اضغط «غرفة رسمية» لتبدأ.</div><table class="tbl" id="rmTable"></table></div>
+      <div id="rmDetail" class="hide" style="margin-top:16px">
+        <div class="grid g2">
+          <div class="paper card"><h3 id="rmTitle">إعدادات الغرفة</h3><div class="err" id="rmErr" role="alert"></div>
+            <form id="rmForm" autocomplete="off">
+              <div class="row2"><div class="f"><label>الاسم (عربي)</label><input data-k="name" maxlength="40"></div><div class="f"><label>الاسم بالإنجليزي</label><input data-k="nameEn" maxlength="40"></div></div>
+              <div class="row2"><div class="f"><label>السطر الفرعي (عربي)</label><input data-k="sub" maxlength="70"></div><div class="f"><label>السطر الفرعي (إنجليزي)</label><input data-k="subEn" maxlength="70"></div></div>
+              <div class="row2"><div class="f"><label>السعة (٤–٦٤)</label><input data-k="capacity" type="number" min="4" max="64"></div><div class="f"><label>مقاعد المايك (٢–١٢)</label><input data-k="micSeats" type="number" min="2" max="12"></div></div>
+              <div class="row2"><div class="f"><label>المايك</label><select data-k="micMode"><option value="request">بالطلب: الأدمن بيطلّع</option><option value="free">حر: أي واحد يقعد</option></select></div><div class="f"><label>وضع بطيء (ثواني بين الرسائل)</label><input data-k="slowSeconds" type="number" min="0" max="60"></div></div>
+              <div class="row2"><div class="f"><label>رسالة ترحيب (عربي)</label><textarea data-k="welcome" rows="2" maxlength="220"></textarea></div><div class="f"><label>رسالة ترحيب (إنجليزي)</label><textarea data-k="welcomeEn" rows="2" maxlength="220"></textarea></div></div>
+              <div class="f"><label><input data-k="pinned" type="checkbox"> مثبّتة أول القائمة</label><label><input data-k="chatEnabled" type="checkbox"> الدردشة مفتوحة</label><label><input data-k="hidden" type="checkbox"> مخفية عن اللاعبين (للأدمنز بس)</label></div>
+              <div class="foot-act"><button class="btn red" type="submit">احفظ</button></div>
+            </form></div>
+          <div class="paper card"><h3>الأدمنز<small>بيديروا هالغرفة</small></h3><table class="tbl" id="rmAdmins"></table>
+            <form id="rmAdminAdd" class="addrow" autocomplete="off"><input placeholder="رقم اللاعب (٦ خانات) أو معرّف PlayFab" aria-label="أدمن جديد"><button class="btn red sm" type="submit">أضف أدمن</button></form>
+            <p class="hint">الأدمن بيدخل اللعبة كلاعب عادي، وأول ما يفتح الغرفة بتظهر له أدوات الإدارة (إعطاء المايك، إنزال، طرد). لو شلته بتروح منه فوراً.</p></div>
+        </div>
+        <div class="grid g2" style="margin-top:16px">
+          <div class="paper card"><h3>الموجودين هلأ<small id="rmCount"></small></h3><div class="empty hide" id="rmMEmpty">ما حدا بالغرفة (أو البوت مش شغّال).</div><table class="tbl" id="rmMembers"></table></div>
+          <div class="paper card"><h3>الدردشة مباشرة</h3><div class="empty hide" id="rmChatEmpty">لسا ما كتب حدا.</div><table class="tbl" id="rmChat"></table>
+            <form id="rmSay" class="addrow" autocomplete="off"><input placeholder="اكتب باسم المكتب…" maxlength="200" aria-label="رسالة من المكتب"><button class="btn red sm" type="submit">ارسل</button></form></div>
+        </div>
+        <div class="paper card" style="margin-top:16px"><h3>سجل الغرفة<small id="rmStats"></small></h3><div class="empty hide" id="rmLogEmpty">السجل فاضي.</div><ul class="feed" id="rmLog"></ul></div>
+      </div>
+    </section>
+
+    <section class="view" id="v-bots">
+      <div class="top"><h1>البوتات<small>لاعبين وهميين بتضيفهم لأي غرفة: لتجرّب اللعبة، ولما تنطلق ما تكون الغرف فاضية</small></h1></div>
+      <div class="warn" id="btStatus" style="margin-bottom:12px"></div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px">
+        <div class="paper stat"><b id="btTotal">–</b><span>بوت بالمخزن</span></div>
+        <div class="paper stat"><b id="btRun">–</b><span>شغّالين هلأ</span></div>
+        <div class="paper stat"><b id="btRooms">–</b><span>غرف فيها بوتات</span></div>
+        <div class="paper stat"><b id="btMatch">–</b><span>بمباراة</span></div>
+        <div class="paper stat"><b id="btReal">–</b><span>لاعبين حقيقيين</span></div>
+      </div>
+      <div class="grid g2">
+        <div class="paper card"><h3>أضف بوتات لغرفة</h3><div class="err" id="btErr" role="alert"></div>
+          <form id="btOrder" autocomplete="off">
+            <div class="f"><label>الغرفة</label><select data-k="room"></select></div>
+            <div class="row2"><div class="f"><label>كم بوت</label><input data-k="count" type="number" min="1" max="30" value="3"></div><div class="f"><label>تكمّل الغرفة لـ (٠ = بدون)</label><input data-k="fillTo" type="number" min="0" max="16" value="0"></div></div>
+            <div class="f"><label><input data-k="sit" type="checkbox" checked> يقعدوا على مقاعد المايك (مكتومين)</label><label><input data-k="chat" type="checkbox" checked> يكتبوا بالدردشة بين فترة وفترة</label><label><input data-k="play" type="checkbox" checked> يلعبوا المباراة لما تبدأ</label></div>
+            <div class="foot-act"><button class="btn red" type="submit">أضف</button></div>
+          </form>
+          <p class="hint">البوتات ما بتحكي صوت، وما بتكسب كوينز ولا جوائز ولا نقاط رتبة، وما بتظهر بالتصنيفات ولا بعدّاد المتصلين، وما بتبعت بريد ولا طلبات صداقة. وبتظهر باللعبة مثل أي لاعب (بدون شارة).</p>
+          <h3 style="margin-top:14px">التكليفات الحالية</h3><div class="empty hide" id="btOrdEmpty">ما في تكليفات.</div><table class="tbl" id="btOrders"></table></div>
+        <div class="paper card"><h3>وضع الإطلاق<small>بدل ما تضيف يدوي</small></h3>
+          <form id="btLaunch" autocomplete="off">
+            <div class="f"><label><input data-k="enabled" type="checkbox"> املأ الغرف العامة تلقائياً</label><label><input data-k="leaveWhenReal" type="checkbox"> البوت بيطلع لما يدخل لاعب حقيقي مكانه</label></div>
+            <div class="row2"><div class="f"><label>الحد الأدنى بكل غرفة عامة</label><input data-k="minPerRoom" type="number" min="1" max="16"></div><div class="f"><label>أقصى عدد بوتات بنفس الوقت</label><input data-k="maxBots" type="number" min="0" max="60"></div></div>
+            <div class="row2"><div class="f"><label>من الساعة</label><input data-k="fromHour" type="number" min="0" max="23"></div><div class="f"><label>إلى الساعة</label><input data-k="toHour" type="number" min="0" max="23"></div></div>
+            <div class="foot-act"><button class="btn red" type="submit">احفظ</button></div>
+          </form></div>
+      </div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="paper card"><h3>البوتات الشغّالة<small>بيتحدّث كل ٥ ثواني</small></h3><div class="empty hide" id="btRunEmpty">ما في بوتات شغّالة.</div><table class="tbl" id="btRunning"></table></div>
+        <div class="paper card"><h3>شخصيات البوتات</h3>
+          <form id="btGen" class="row2" autocomplete="off"><div class="f"><label>عدد</label><input data-k="count" type="number" min="1" max="40" value="20"></div><div class="f"><label>مستوى من – إلى</label><div class="rowin"><input data-k="levelFrom" type="number" min="1" max="40" value="2"><input data-k="levelTo" type="number" min="1" max="40" value="15"></div></div><div class="foot-act"><button class="btn ghost sm" type="submit">ولّد بوتات بأسماء عربية</button></div></form>
+          <div class="empty hide" id="btProfEmpty">ما في بوتات. ولّد بوتات أول.</div><table class="tbl" id="btProfiles"></table></div>
+      </div>
+    </section>
+
+    <p class="note"><b>ملاحظة:</b> أي تعديل بيتحفظ على السيرفر وبيطبّق فوراً بدون إعادة تشغيل ولا نسخة جديدة من اللعبة. كل إجراء بيتسجّل بسجلّ النشاط.</p>
+  </main>
+</div>
+
+<!-- ============ editor ============ -->
+<div class="drawer" id="drawer">
+  <div class="paper edit">
+    <div class="form">
+      <h2><span id="edTitle">حدث جديد</span><button class="x" id="edX" type="button" aria-label="إغلاق">×</button></h2>
+      <div class="lang" id="langs"><button type="button" class="on" data-l="ar">العربية</button><button type="button" data-l="en">English</button><span class="hintl">اللعبة بتعرض لغة جهاز اللاعب، والعربي احتياط لو الإنجليزي فاضي</span></div>
+
+      <form id="formEvent" autocomplete="off">
+        <div class="kinds" id="kinds">
+          <button type="button" class="on" data-k="bonus">مضاعفة ذهب</button><button type="button" data-k="challenge">تحدّي</button><button type="button" data-k="info">إعلان</button>
+        </div>
+        <div class="row2" data-lang="ar"><div class="f"><label for="eTitle">العنوان</label><input id="eTitle" maxlength="60"></div><div class="f"><label for="eKick">العنوان الصغير</label><input id="eKick" maxlength="24"></div></div>
+        <div class="row2 hide" data-lang="en"><div class="f"><label for="eTitleEn">Title</label><input id="eTitleEn" class="ltr" dir="ltr" maxlength="60"></div><div class="f"><label for="eKickEn">Small heading</label><input id="eKickEn" class="ltr" dir="ltr" maxlength="24"></div></div>
+        <div class="f" data-lang="ar"><label for="eBody">الوصف</label><textarea id="eBody" maxlength="160"></textarea></div>
+        <div class="f hide" data-lang="en"><label for="eBodyEn">Description</label><textarea id="eBodyEn" class="ltr" dir="ltr" maxlength="160"></textarea></div>
+        <div class="row2"><div class="f"><label for="eFrom">يبدأ</label><input id="eFrom" type="datetime-local"><small>فاضي = من هلأ</small></div><div class="f"><label for="eUntil">ينتهي</label><input id="eUntil" type="datetime-local"><small>فاضي = بلا نهاية</small></div></div>
+        <div class="row2" id="gBonus"><div class="f"><label for="eMul">مضاعف الذهب</label><input id="eMul" type="number" min="1" max="5" step="0.5" value="2"><small>أقصى ٥ مرات. بينطبّق على الكوينز بس، مش الخبرة ولا الرتبة</small></div><div></div></div>
+        <div class="row2 hide" id="gChal"><div class="f"><label for="eGoal">الهدف (عدد المباريات)</label><input id="eGoal" type="number" min="1" max="1000" value="10"></div><div class="f"><label for="eMetric">بتنعدّ</label><select id="eMetric"><option value="wins">الانتصارات</option><option value="games">المباريات الملعوبة</option></select></div><div class="f"><label for="eRw">المكافأة (كوينز)</label><input id="eRw" type="number" min="0" max="10000" value="500"></div></div>
+        <div class="f hide" id="gSecret"><label class="sw"><span class="tog" id="eSecret" role="switch" aria-checked="false" tabindex="0"></span> أخفِ الجائزة لحد ما يبدأ الحدث</label></div>
+
+        <div class="rankbox"><h6><span class="tog" id="rkTog" role="switch" aria-checked="false" tabindex="0"></span> تصنيف لهذا الحدث <small style="font-family:Cairo;font-weight:700;font-size:.7rem;color:var(--soft)">لاعبين بيتنافسوا ضمن الحدث ومراكزهم بتظهر باللعبة</small></h6>
+          <div id="rkFields" class="hide">
+            <div class="row2"><div class="f"><label for="rkMetric">بيتصنّفوا حسب</label><select id="rkMetric"><option value="wins">الانتصارات خلال الحدث</option><option value="games">المباريات الملعوبة</option><option value="points">نقاط الرتبة المكسوبة</option><option value="secs">الدقائق الملعوبة</option></select></div><div class="f"><label for="rkWinners">عدد المراكز اللي بتاخد جوائز</label><input id="rkWinners" type="number" value="5" min="1" max="20"></div></div>
+            <label style="display:block;font-weight:800;font-size:.8rem;color:var(--soft);margin-bottom:3px">الجوائز (من مركز، لمركز، الحزمة)</label>
+            <div class="prizes" id="rkPrizes"></div>
+            <button class="btn ghost sm" type="button" id="rkAdd" style="margin-top:8px">+ جائزة</button>
+            <div class="f" style="margin-top:10px"><label for="rkDist">توزيع الجوائز</label><select id="rkDist"><option value="auto">تلقائي عند نهاية الحدث (بيوصلوا على البريد)</option><option value="manual">يدوي: أنا بضغط «وزّع الجوائز»</option></select></div>
+          </div></div>
+        <div class="pic" id="ePic"></div>
+        <div class="err" id="eErr" role="alert"></div>
+        <div class="foot-act"><button class="btn red" type="submit">احفظ وطبّق</button><button class="btn ghost" type="button" data-cancel>إلغاء</button></div>
+      </form>
+
+      <form id="formOffer" class="hide" autocomplete="off">
+        <div class="kinds" id="oRef">
+          <button type="button" class="on" data-r="adId">إعلان من المتجر (adId)</button><button type="button" data-r="itemId">عنصر من المتجر (itemId)</button>
+        </div>
+        <div class="f"><label for="oRefVal" id="oRefLbl">معرّف الإعلان</label><input id="oRefVal" maxlength="64" placeholder="مثال: ad_ember" required><small>لازم يكون موجود باللعبة وبمتجر PlayFab. السيرفر بس بيختار شو يُروَّج</small></div>
+        <div class="row2" data-lang="ar"><div class="f"><label for="oMast">العنوان الصغير (اختياري)</label><input id="oMast" maxlength="40" placeholder="عرض الليلة فقط"></div><div class="f"><label for="oStamp">الختم (اختياري)</label><input id="oStamp" maxlength="12" placeholder="−٣٠٪"></div></div>
+        <div class="row2 hide" data-lang="en"><div class="f"><label for="oMastEn">Small heading (optional)</label><input id="oMastEn" class="ltr" dir="ltr" maxlength="40" placeholder="Tonight only"></div><div class="f"><label for="oStampEn">Stamp (optional)</label><input id="oStampEn" class="ltr" dir="ltr" maxlength="12" placeholder="-30%"></div></div>
+        <div class="f" data-lang="ar"><label for="oHead">العنوان (اختياري، سطر جديد = سطر ثاني)</label><textarea id="oHead" maxlength="80"></textarea></div>
+        <div class="f hide" data-lang="en"><label for="oHeadEn">Headline (optional, new line = second line)</label><textarea id="oHeadEn" class="ltr" dir="ltr" maxlength="80"></textarea></div>
+        <div class="f" data-lang="ar"><label for="oBody">الوصف (اختياري)</label><textarea id="oBody" maxlength="140"></textarea></div>
+        <div class="f hide" data-lang="en"><label for="oBodyEn">Description (optional)</label><textarea id="oBodyEn" class="ltr" dir="ltr" maxlength="140"></textarea></div>
+        <div class="row2"><div class="f"><label for="oFrom">يبدأ</label><input id="oFrom" type="datetime-local"></div><div class="f"><label for="oUntil">ينتهي</label><input id="oUntil" type="datetime-local"><small>العدّاد باللعبة بيعدّ لهالوقت</small></div></div>
+        <div class="pic" id="oPic"></div>
+        <div class="err" id="oErr" role="alert"></div>
+        <div class="foot-act"><button class="btn red" type="submit">احفظ وطبّق</button><button class="btn ghost" type="button" data-cancel>إلغاء</button></div>
+      </form>
+    </div>
+    <div class="prev">
+      <h4>هيك رح يظهر باللعبة</h4>
+      <div class="clip"><div class="pg"></div><span class="tape"></span><span class="stamp st" id="pSt">شغّال</span>
+        <div class="kick"><span id="pK"></span><span>الحدث ١</span></div>
+        <div class="photo hide" id="pPhoto"></div>
+        <h5 id="pT"></h5><p id="pB"></p>
+        <div class="cd" id="pCd">ينتهي خلال <b>٠٣:١٢:٤٠</b></div><div class="rw" id="pR"></div></div>
+      <small id="pNote">المعاينة بتتحدّث وأنت عم تكتب</small>
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="d-pack"><div class="paper edit" style="grid-template-columns:1fr"><div class="form">
+  <h2><span id="pkTitle">حزمة جديدة</span><button class="x" data-close aria-label="إغلاق" type="button">×</button></h2>
+  <form id="packForm" autocomplete="off">
+    <div class="row2"><div class="f"><label for="pkAr">الاسم</label><input id="pkAr" maxlength="40" required></div><div class="f"><label for="pkEn">Name (English)</label><input id="pkEn" class="ltr" dir="ltr" maxlength="40"></div></div>
+    <div class="row2"><div class="f"><label for="pkCoins">كوينز</label><input id="pkCoins" type="number" min="0" max="1000000" value="0"></div><div class="f"><label for="pkGems">جواهر</label><input id="pkGems" type="number" min="0" max="10000" value="0"></div></div>
+    <div class="f"><label for="pkItems">عناصر من المتجر (اختياري)</label><input id="pkItems" class="ltr" dir="ltr" placeholder="frame_ember, chat_port"><small>معرّفات العناصر بالكتالوج، مفصولة بفاصلة. لازم تكون موجودة بمتجر PlayFab.</small></div>
+    <div class="err" id="pkErr" role="alert"></div>
+    <div class="foot-act"><button class="btn red" type="submit">احفظ</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
+  </form>
+</div></div></div>
+
+<div class="drawer" id="d-rank"><div class="paper edit" style="grid-template-columns:1fr"><div class="form">
+  <h2><span id="rkTitle">تصنيف الحدث</span><button class="x" data-close aria-label="إغلاق" type="button">×</button></h2>
+  <div class="srcnote" id="rkInfo"></div>
+  <div class="empty hide" id="rkEmpty">ما حدا بالتصنيف لسا.</div>
+  <table class="tbl" id="rkTable"></table>
+  <div class="warn" id="rkWarn"></div>
+  <div class="foot-act"><button class="btn greenb" id="rkDistBtn" type="button">وزّع الجوائز الآن</button><button class="btn ghost" type="button" data-close>إغلاق</button></div>
+</div></div></div>
+
+<div class="drawer" id="d-code"><div class="paper edit" style="grid-template-columns:1fr"><div class="form">
+  <h2><span id="cdTitle">كود ترويج جديد</span><button class="x" data-close aria-label="إغلاق" type="button">×</button></h2>
+  <form id="codeForm" autocomplete="off">
+    <div class="row2"><div class="f"><label for="cdCode">الكود</label><input id="cdCode" class="ltr" dir="ltr" maxlength="20" placeholder="MAFIA2026"><small>حروف إنجليزي وأرقام (٣ لـ٢٠). ما بيفرّق كبير وصغير. فاضي = كود عشوائي</small></div><div class="f"><label>&nbsp;</label><button class="btn ghost sm" type="button" id="cdRandom">ولّد كود عشوائي</button></div></div>
+    <div class="f"><label for="cdPack">الحزمة</label><select id="cdPack"></select></div>
+    <div class="row2"><div class="f"><label for="cdMax">أقصى عدد استخدامات</label><input id="cdMax" type="number" min="0" value="1000"><small>٠ = بلا حد</small></div><div class="f"><label for="cdUntil">ينتهي</label><input id="cdUntil" type="datetime-local"><small>فاضي = بلا نهاية</small></div></div>
+    <div class="err" id="cdErr" role="alert"></div>
+    <div class="foot-act"><button class="btn red" type="submit">احفظ وفعّل</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
+  </form>
+</div></div></div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+'use strict';
+const BASE = '__BASE__';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const AR = '٠١٢٣٤٥٦٧٨٩';
+const ar = n => String(n).replace(/\d/g, d => AR[d]);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ERR = {
+  wrong_password: 'كلمة السر غلط', locked: 'انقفل الباب مؤقتاً، جرّب بعد شوي', not_logged_in: 'انتهت الجلسة، ادخل من جديد',
+  title_required: 'العنوان مطلوب', bad_multiplier: 'المضاعف بين ١ و٥', bad_goal: 'الهدف بين ١ و١٠٠٠', bad_reward: 'المكافأة بين ٠ و١٠٠٠٠',
+  until_before_from: 'النهاية لازم تكون بعد البداية', bad_from: 'تاريخ البداية غير صحيح', bad_until: 'تاريخ النهاية غير صحيح',
+  ad_or_item_required: 'اكتب معرّف الإعلان أو العنصر', bad_adId: 'معرّف الإعلان غير صحيح (حروف وأرقام و_ و- فقط)', bad_itemId: 'معرّف العنصر غير صحيح (حروف وأرقام و_ و- فقط)',
+  bad_word: 'الكلمة لازم تكون كلمة وحدة بدون فراغ', too_many: 'وصلت الحد الأقصى للكلمات', not_found: 'ما انوجد (يمكن انحذف)', id_taken: 'المعرّف مستخدم',
+};
+let lastPf = '';   // PlayFab's own reason of the last refusal, shown after our text
+const errText = c => (ERR[c] || 'صار خطأ (' + c + ')') + (lastPf && /playfab|insufficient/.test(c) ? ' · ' + lastPf : '');
+
+function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2400); }
+
+async function api(path, body) {
+  const opt = { credentials: 'same-origin', headers: { 'X-Admin': '1' } };
+  if (body !== undefined) { opt.method = 'POST'; opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+  let res, j = null;
+  try { res = await fetch(BASE + '/api' + path, opt); j = await res.json(); } catch { throw { code: 'network' }; }
+  if (res.status === 401 && path !== '/login') { showLogin(); throw { code: 'not_logged_in' }; }
+  lastPf = (j && j.playfab) || '';
+  if (!j || !j.ok) throw Object.assign({ code: (j && j.error) || 'error' }, j || {});
+  return j;
+}
+
+// ------------------------------------------------------------------ login and shell
+function showLogin() { $('#app').classList.add('off'); $('#login').classList.remove('off'); $('#pw').value = ''; setTimeout(() => $('#pw').focus(), 50); }
+function showApp() { $('#login').classList.add('off'); $('#app').classList.remove('off'); loadHome(); refreshBadges(); }
+$('#loginForm').onsubmit = async e => {
+  e.preventDefault();
+  $('#loginErr').textContent = '';
+  try { await api('/login', { password: $('#pw').value }); showApp(); }
+  catch (x) { $('#loginErr').textContent = x.code === 'wrong_password' ? ERR.wrong_password + (x.left != null ? ' · باقي ' + ar(x.left) + ' محاولات' : '') : x.code === 'locked' ? ERR.locked : x.code === 'network' ? 'ما في اتصال بالسيرفر' : errText(x.code); }
+};
+$('#out').onclick = async () => { try { await api('/logout', {}); } catch {} showLogin(); };
+const loaders = { home: loadHome, events: loadEvents, offers: loadOffers, words: loadWords, reports: loadReports, players: () => {} };
+$$('.nav[data-v]').forEach(b => b.onclick = () => {
+  $$('.nav').forEach(x => x.classList.toggle('on', x === b));
+  $$('section.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
+  Promise.resolve(loaders[b.dataset.v]()).catch(() => {});
+});
+const setBadge = (el, n) => { el.textContent = ar(n); el.classList.toggle('hide', !n); };
+
+// ------------------------------------------------------------------ home
+const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+const ACT = { login: 'دخول إلى اللوحة', login_failed: 'محاولة دخول فاشلة', event_save: 'حفظ حدث', event_delete: 'حذف حدث', event_toggle: 'تفعيل/تعطيل حدث', offer_save: 'حفظ عرض', offer_delete: 'حذف عرض', offer_toggle: 'تفعيل/تعطيل عرض', word_add: 'إضافة كلمة ممنوعة', word_remove: 'حذف كلمة ممنوعة', report_mute: 'كتم بسبب بلاغ', report_ignore: 'تجاهل بلاغ', player_mute: 'كتم لاعب', player_unmute: 'فك كتم لاعب' };
+Object.assign(ACT, { message_send: 'رسالة خاصة', image_upload: 'رفع صورة', recovery_set: 'حساب استرجاع', recovery_remove: 'إلغاء حساب استرجاع', rename: 'تغيير اسم', ban: 'حظر', unban: 'فك حظر', balance_add: 'إضافة رصيد', balance_remove: 'سحب رصيد', mail_send: 'إرسال بريد', pack_save: 'حفظ حزمة', pack_delete: 'حذف حزمة', code_save: 'حفظ كود', code_toggle: 'تفعيل/تعطيل كود', code_delete: 'حذف كود', ranking_distribute: 'توزيع جوائز تصنيف' });
+const bad = a => a === 'login_failed';
+function ago(ts) { const s = Math.max(0, (Date.now() - ts) / 1000); return s < 60 ? 'قبل لحظات' : s < 3600 ? 'قبل ' + ar(Math.floor(s / 60)) + ' د' : s < 86400 ? 'قبل ' + ar(Math.floor(s / 3600)) + ' س' : 'قبل ' + ar(Math.floor(s / 86400)) + ' يوم'; }
+async function loadHome() {
+  const o = await api('/overview');
+  $('#sOnline').textContent = ar(o.online); $('#sMatches').textContent = ar(o.matchesToday); $('#sPlayers').textContent = ar(o.players.toLocaleString('en')); $('#sReports').textContent = ar(o.openReports);
+  showGuests(o.guests);
+  const max = Math.max(1, ...o.days.map(d => d.matches));
+  $('#bars').innerHTML = o.days.map((d, i) => `<div class="${i === o.days.length - 1 ? 'today' : ''}">${ar(d.matches)}<i style="height:${Math.max(4, Math.round(d.matches / max * 100))}%"></i>${DAYS[new Date(d.day + 'T12:00:00Z').getUTCDay()]}</div>`).join('');
+  $('#feed').innerHTML = o.activity.length ? o.activity.map(a => `<li><span class="dot ${bad(a.action) ? '' : 'g'}"></span>${esc(ACT[a.action] || a.action)}${a.detail ? ' · ' + esc(a.detail) : ''}<time>${ago(a.ts)}</time></li>`).join('') : '<li>ما في نشاط بعد</li>';
+  $('#liveTxt').textContent = 'السيرفر شغّال · آخر تحديث ' + new Date().toLocaleTimeString('ar');
+  setBadge($('#nReports'), o.openReports); setBadge($('#nEvents'), o.liveEvents);
+}
+// guests = players with no Google/Facebook/office account linked; they are deleted after `days` away only when guests.purge is on in config.json
+function showGuests(g) {
+  $('#sGuestsCard').classList.toggle('hide', !g);
+  if (!g) return;
+  $('#sGuests').textContent = ar(g.guests.toLocaleString('en'));
+  $('#sGuestsTxt').textContent = 'ضيوف من أصل ' + ar(g.total.toLocaleString('en'));
+  const note = $('#sGuestsNote');
+  note.classList.toggle('dn', !!(g.purge && g.atRisk));
+  note.textContent = !g.purge ? 'الحذف مطفي' : g.atRisk ? ar(g.atRisk.toLocaleString('en')) + ' قريب من الحذف' : 'الحذف بعد ' + ar(g.days) + ' يوم';
+  note.title = g.purge ? 'الضيف اللي بيغيب ' + ar(g.days) + ' يوم بينحذف (بيوصله تحذير بالبريد قبلها)' : 'لتفعيله: "guests": {"purge": true} بـ config.json على السيرفر';
+}
+function refreshBadges() { api('/overview').then(o => { setBadge($('#nReports'), o.openReports); setBadge($('#nEvents'), o.liveEvents); }).catch(() => {}); }
+setInterval(() => { if (!$('#app').classList.contains('off') && $('#v-home').classList.contains('on')) loadHome().catch(() => {}); }, 20000);
+
+// ------------------------------------------------------------------ helpers shared by events and offers
+const toLocal = iso => { if (!iso) return ''; const d = new Date(iso); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
+const toIso = v => (v ? new Date(v).toISOString() : '');
+const fmtDate = iso => (iso ? new Date(iso).toLocaleDateString('ar', { day: 'numeric', month: 'long' }) + ' ' + new Date(iso).toLocaleTimeString('ar', { hour: 'numeric', minute: '2-digit' }) : '—');
+const span = e => (e.from || e.until ? (e.from ? fmtDate(e.from) : 'من هلأ') + ' ← ' + (e.until ? fmtDate(e.until) : 'بلا نهاية') : 'دايماً');
+const STAMP = { live: ['شغّال', ''], soon: ['قريباً', 'brown'], done: ['انتهى', 'grey'], off: ['معطّل', 'grey'] };
+const stampOf = s => `<span class="stamp ${STAMP[s][1]}" style="font-size:.8rem">${STAMP[s][0]}</span>`;
+const tog = (on, id) => `<span class="tog ${on ? 'on' : ''}" role="switch" aria-checked="${!!on}" tabindex="0" data-tog="${esc(id)}"></span>`;
+document.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && e.target.classList && e.target.classList.contains('tog')) { e.preventDefault(); e.target.click(); } });
+
+// ------------------------------------------------------------------ events
+let EVENTS = [];
+const KIND = { bonus: ['مضاعفة', 'kind'], challenge: ['تحدّي', 'kind c'], info: ['إعلان', 'kind i'] };
+async function loadEvents() {
+  const r = await api('/events'); EVENTS = r.events;
+  $('#evSrc').classList.toggle('hide', r.source !== 'config' || !EVENTS.length);
+  $('#evEmpty').classList.toggle('hide', EVENTS.length > 0);
+  $('#evTable').innerHTML = EVENTS.length ? '<tr><th>الحدث</th><th>النوع</th><th>الحالة</th><th>الموعد</th><th>التفاصيل</th><th>فعّال</th><th></th></tr>' + EVENTS.map(e =>
+    `<tr><td><div class="t">${esc(e.title)}</div><div class="m">${esc(e.kicker)}</div></td><td><span class="${KIND[e.kind][1]}">${KIND[e.kind][0]}</span></td><td>${stampOf(e.status)}</td><td>${span(e)}</td><td>${detail(e)}</td><td>${tog(e.enabled !== false, e.id)}</td>
+    <td><div class="act">${e.ranking && e.ranking.enabled ? `<button class="btn greenb sm" data-rank="${esc(e.id)}">التصنيف</button>` : ''}<button class="btn ghost sm" data-edit="${esc(e.id)}">عدّل</button><button class="btn ghost sm del" data-del="${esc(e.id)}">احذف</button></div></td></tr>`).join('') : '';
+  setBadge($('#nEvents'), EVENTS.filter(e => e.status === 'live').length);
+}
+function detail(e) { const rk = e.ranking && e.ranking.enabled ? ' · تصنيف ' + (METRIC_SHORT[e.ranking.metric] || '') : ''; return (e.kind === 'bonus' ? '×' + ar(e.coinsMultiplier) + ' كوينز' : e.kind === 'challenge' ? (e.metric === 'games' ? 'العب ' : 'اربح ') + ar(e.goal) + ' · ' + ar(e.rewardCoins) + ' كوينز' : e.secret ? 'الجائزة مخفية' : '—') + rk; }
+const METRIC_SHORT = { wins: 'الانتصارات', games: 'المباريات', points: 'نقاط الرتبة', secs: 'الدقائق' };
+
+let edit = { type: 'event', id: null, kind: 'bonus', ref: 'adId' };
+function openDrawer(type, id) {
+  edit = { type, id: id || null, kind: 'bonus', ref: 'adId', lang: 'ar' }; setLang('ar');
+  $('#formEvent').classList.toggle('hide', type !== 'event'); $('#formOffer').classList.toggle('hide', type !== 'offer');
+  $('#eErr').textContent = ''; $('#oErr').textContent = '';
+  if (type === 'event') {
+    const e = EVENTS.find(x => x.id === id) || { kind: 'bonus', title: '', kicker: '', body: '', coinsMultiplier: 2, goal: 10, rewardCoins: 500, metric: 'wins' };
+    $('#edTitle').textContent = id ? 'تعديل الحدث' : 'حدث جديد';
+    $('#eTitle').value = e.title; $('#eKick').value = e.kicker || ''; $('#eBody').value = e.body || ''; $('#eTitleEn').value = e.titleEn || ''; $('#eKickEn').value = e.kickerEn || ''; $('#eBodyEn').value = e.bodyEn || ''; $('#eFrom').value = toLocal(e.from); $('#eUntil').value = toLocal(e.until);
+    $('#eMul').value = e.coinsMultiplier || 2; $('#eGoal').value = e.goal || 10; $('#eRw').value = e.rewardCoins == null ? 500 : e.rewardCoins; $('#eMetric').value = e.metric || 'wins';
+    setSwitch($('#eSecret'), e.secret === true);
+    fillRanking(e);
+    PICS.e = { id: e.image || '' }; picRender('e');
+    setKind(e.kind);
+  } else {
+    const o = OFFERS.find(x => x.id === id) || { adId: '', mast: '', headline: '', body: '', stamp: '' };
+    $('#edTitle').textContent = id ? 'تعديل العرض' : 'عرض جديد';
+    edit.ref = o.itemId ? 'itemId' : 'adId'; setRef(edit.ref);
+    $('#oRefVal').value = o.adId || o.itemId || ''; $('#oMast').value = o.mast || ''; $('#oStamp').value = o.stamp || ''; $('#oHead').value = o.headline || ''; $('#oBody').value = o.body || ''; $('#oMastEn').value = o.mastEn || ''; $('#oStampEn').value = o.stampEn || ''; $('#oHeadEn').value = o.headlineEn || ''; $('#oBodyEn').value = o.bodyEn || '';
+    $('#oFrom').value = toLocal(o.from); $('#oUntil').value = toLocal(o.until);
+    PICS.o = { id: o.image || '' }; picRender('o');
+    preview();
+  }
+  $('#drawer').classList.add('on');
+  setTimeout(() => (type === 'event' ? $('#eTitle') : $('#oRefVal')).focus(), 30);
+}
+const closeDrawer = () => $('#drawer').classList.remove('on');
+const setSwitch = (el, on) => { el.classList.toggle('on', on); el.setAttribute('aria-checked', on); };
+function setKind(k) {
+  edit.kind = k;
+  $$('#kinds button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+  $('#gBonus').classList.toggle('hide', k !== 'bonus'); $('#gChal').classList.toggle('hide', k !== 'challenge'); $('#gSecret').classList.toggle('hide', k !== 'info');
+  preview();
+}
+function setRef(r) {
+  edit.ref = r;
+  $$('#oRef button').forEach(b => b.classList.toggle('on', b.dataset.r === r));
+  $('#oRefLbl').textContent = r === 'adId' ? 'معرّف الإعلان' : 'معرّف العنصر';
+  $('#oRefVal').placeholder = r === 'adId' ? 'مثال: ad_ember' : 'مثال: chat_port';
+}
+const pick = (arSel, enSel) => (edit.lang === 'en' && $(enSel).value ? $(enSel).value : $(arSel).value);
+function setLang(l) {
+  edit.lang = l; $$('#langs button').forEach(b => b.classList.toggle('on', b.dataset.l === l));
+  $$('#drawer [data-lang]').forEach(el => el.classList.toggle('hide', el.dataset.lang !== l));
+}
+$$('#langs button').forEach(b => b.onclick = () => { setLang(b.dataset.l); preview(); });
+function preview() {
+  const live = edit.type === 'event';
+  const pk = live ? 'e' : 'o', pu = picSrc(pk), ph = $('#pPhoto');
+  ph.classList.toggle('hide', !pu); ph.classList.toggle('ev', live); ph.style.backgroundImage = pu ? "url('" + pu + "')" : '';
+  $('#pNote').textContent = live ? 'المعاينة بتتحدّث وأنت عم تكتب' : pu ? 'الصورة بتطلع بمكان رسمة العنصر، والسعر من المتجر' : 'هيك تقريباً بيظهر نص العرض بالجريدة (الصورة والسعر من المتجر)';
+  if (live) {
+    $('#pSt').textContent = 'شغّال'; $('#pCd').classList.remove('hide');
+    $('#pK').textContent = pick('#eKick', '#eKickEn'); $('#pT').textContent = pick('#eTitle', '#eTitleEn') || 'عنوان الحدث'; $('#pB').textContent = pick('#eBody', '#eBodyEn');
+    const k = edit.kind;
+    $('#pR').innerHTML = k === 'bonus' ? '×' + ar($('#eMul').value || 1) + ' <span class="coin"></span> على كل ربح' : k === 'challenge' ? ar($('#eRw').value || 0) + ' <span class="coin"></span> مكافأة · الهدف ' + ar($('#eGoal').value || 0) : ($('#eSecret').classList.contains('on') ? 'الجائزة: <span class="red-bar"></span>' : '');
+  } else {
+    $('#pSt').textContent = pick('#oStamp', '#oStampEn') || 'عرض'; $('#pCd').classList.toggle('hide', !$('#oUntil').value);
+    $('#pK').textContent = pick('#oMast', '#oMastEn') || 'عرض الليلة فقط'; $('#pT').textContent = (pick('#oHead', '#oHeadEn') || 'عنوان العرض').replace(/\n/g, ' '); $('#pB').textContent = pick('#oBody', '#oBodyEn'); $('#pR').innerHTML = '';
+  }
+}
+$$('#drawer input,#drawer textarea,#drawer select').forEach(i => i.addEventListener('input', preview));
+$('#eSecret').onclick = () => { setSwitch($('#eSecret'), !$('#eSecret').classList.contains('on')); preview(); };
+$$('#kinds button').forEach(b => b.onclick = () => setKind(b.dataset.k));
+$$('#oRef button').forEach(b => b.onclick = () => setRef(b.dataset.r));
+$('#edX').onclick = closeDrawer; $$('[data-cancel]').forEach(b => b.onclick = closeDrawer);
+$('#drawer').onclick = e => { if (e.target === $('#drawer')) closeDrawer(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+$('#newEvent').onclick = () => openDrawer('event'); $('#newOffer').onclick = () => openDrawer('offer');
+
+$('#formEvent').onsubmit = async e => {
+  e.preventDefault(); $('#eErr').textContent = '';
+  const body = { id: edit.id || undefined, kind: edit.kind, title: $('#eTitle').value, kicker: $('#eKick').value, body: $('#eBody').value, titleEn: $('#eTitleEn').value, kickerEn: $('#eKickEn').value, bodyEn: $('#eBodyEn').value, from: toIso($('#eFrom').value), until: toIso($('#eUntil').value) };
+  if (edit.kind === 'bonus') body.coinsMultiplier = Number($('#eMul').value);
+  if (edit.kind === 'challenge') { body.goal = Number($('#eGoal').value); body.rewardCoins = Number($('#eRw').value); body.metric = $('#eMetric').value; }
+  if (edit.kind === 'info') body.secret = $('#eSecret').classList.contains('on');
+  const old = EVENTS.find(x => x.id === edit.id); if (old) body.enabled = old.enabled !== false;
+  body.ranking = readRanking();
+  try { body.image = await picSave('e'); await api('/events/save', body); closeDrawer(); toast('انحفظ وطُبّق عند اللاعبين فوراً'); loadEvents(); } catch (x) { $('#eErr').textContent = errText(x.code); }
+};
+
+// ------------------------------------------------------------------ pictures of offers and events
+// One optional picture each, uploaded here and shown by the game (the offer's page, the event's card). The page shrinks it first: at most
+// "w" px wide, JPEG, under ~900 KB (the server refuses more than 1 MB). It is uploaded when the offer / event is saved; the server keeps only its id.
+const PIC = { o: { w: 1300, min: 800, label: 'صورة العرض', ev: false, hint: 'بدون صورة بتظهر رسمة العنصر', ideal: '١٣٠٠ × ٨٠٠' }, e: { w: 1200, min: 720, label: 'صورة الحدث', ev: true, hint: 'بدون صورة بيطلع الحدث متل هلّق', ideal: '١٢٠٠ × ٦٠٠' } };
+const PICS = { o: {}, e: {} };
+const picSrc = k => PICS[k].data || (PICS[k].id ? location.origin + '/v1/img/' + PICS[k].id : '');
+const OKSVG = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>', UPSVG = '<svg viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 19h14"/></svg>';
+function picRender(k) {
+  const c = PIC[k], s = PICS[k], box = $('#' + k + 'Pic'), src = picSrc(k);
+  const zone = `<label class="zone" data-pic-zone="${k}">${UPSVG}<b>اسحب الصورة لهون أو اضغط لتختار</b><span>JPG أو PNG · المقاس المثالي ${c.ideal} · أقصى حجم ١ ميغا</span><input type="file" accept="image/jpeg,image/png" data-pic-file="${k}"></label>`;
+  const meta = s.w ? `<span class="ok">${OKSVG}المقاس مناسب · ${ar(s.w)} × ${ar(s.h)}</span><span class="m">${esc(s.name)} · ${ar(Math.round(s.bytes / 1024))} كيلو</span>` : '<span class="m">الصورة محفوظة على السيرفر</span>';
+  box.innerHTML = `<div class="head"><b>${c.label}</b><small>اختيارية${src ? '' : ' · ' + c.hint}</small></div>` +
+    (src ? `<div class="shot"><div class="frame${c.ev ? ' ev' : ''}" style="background-image:url('${src}')"><i class="safe"></i></div><div class="meta">${meta}<span class="m">المربع المنقّط = الجزء اللي بيطلع دايماً على كل الشاشات</span><div class="acts"><label class="btn ghost sm">غيّر الصورة<input type="file" accept="image/jpeg,image/png" data-pic-file="${k}"></label><button class="btn ghost sm del" type="button" data-pic-del="${k}">احذف الصورة</button></div></div></div>` : zone) +
+    (s.err ? `<div class="err2" role="alert">${esc(s.err)}</div>` : '') +
+    (src ? '' : '<p class="note">الصورة بتتقصّ تلقائياً على قد المكان. خلّي الشي المهم (وجه، اسم) بالنص. لا تحط فيها أسعار أو تواريخ لأنها بتتغيّر بالنص.</p>');
+}
+const picImg = file => new Promise((ok, no) => { const fr = new FileReader(); fr.onerror = no; fr.onload = () => { const im = new Image(); im.onerror = no; im.onload = () => ok(im); im.src = fr.result; }; fr.readAsDataURL(file); });
+async function picLoad(k, file) {
+  const s = PICS[k], c = PIC[k]; s.err = '';
+  try {
+    if (!/^image\/(jpeg|png)$/.test(file.type)) throw 'نوع الملف مش مدعوم. استعمل JPG أو PNG.';
+    const im = await picImg(file);
+    if (im.width < c.min) throw 'الصورة صغيرة كتير (' + ar(im.width) + ' × ' + ar(im.height) + '). لازم تكون ' + ar(c.min) + ' عرض على الأقل لتطلع حادّة على الموبايلات الكبيرة.';
+    const f = Math.min(1, c.w / im.width), cv = document.createElement('canvas'); cv.width = Math.round(im.width * f); cv.height = Math.round(im.height * f);
+    cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+    let data = '', q = 0.88;
+    for (; q > 0.45; q -= 0.08) { data = cv.toDataURL('image/jpeg', q); if (data.length * 0.75 < 900 * 1024) break; }
+    if (data.length * 0.75 >= 900 * 1024) throw 'الصورة ثقيلة حتى بعد الضغط، جرّب صورة أبسط.';
+    Object.assign(s, { data, w: cv.width, h: cv.height, bytes: Math.round(data.length * 0.75), name: file.name });
+  } catch (x) { s.err = typeof x === 'string' ? x : 'تعذّر قراءة الصورة.'; }
+  picRender(k); preview();
+}
+/** Uploads a picture chosen in this drawer and returns the id to save ('' = none). */
+async function picSave(k) {
+  const s = PICS[k];
+  if (s.data) { s.id = (await api('/upload-image', { data: s.data.split(',')[1] })).id; s.data = null; }
+  return s.id || '';
+}
+document.addEventListener('change', e => { const f = e.target.closest('[data-pic-file]'); if (f && f.files[0]) { picLoad(f.dataset.picFile, f.files[0]); f.value = ''; } });
+document.addEventListener('click', e => { const d = e.target.closest('[data-pic-del]'); if (d) { PICS[d.dataset.picDel] = {}; picRender(d.dataset.picDel); preview(); } });
+document.addEventListener('dragover', e => { const z = e.target.closest('[data-pic-zone]'); if (z) { e.preventDefault(); z.classList.add('over'); } });
+document.addEventListener('dragleave', e => { const z = e.target.closest('[data-pic-zone]'); if (z) z.classList.remove('over'); });
+document.addEventListener('drop', e => { const z = e.target.closest('[data-pic-zone]'); if (z) { e.preventDefault(); z.classList.remove('over'); if (e.dataTransfer.files[0]) picLoad(z.dataset.picZone, e.dataTransfer.files[0]); } });
+
+// ------------------------------------------------------------------ offers
+let OFFERS = [];
+async function loadOffers() {
+  const r = await api('/offers'); OFFERS = r.offers;
+  $('#ofSrc').classList.toggle('hide', r.source !== 'config' || !OFFERS.length);
+  $('#ofEmpty').classList.toggle('hide', OFFERS.length > 0);
+  $('#ofTable').innerHTML = OFFERS.length ? '<tr><th>العرض</th><th>يشير إلى</th><th>الختم</th><th>الحالة</th><th>الموعد</th><th>فعّال</th><th></th></tr>' + OFFERS.map(o =>
+    `<tr><td><div class="t">${esc((o.headline || '—').replace(/\n/g, ' '))}</div><div class="m">${esc(o.mast)}</div></td><td><code>${esc(o.adId ? o.adId : o.itemId)}</code><div class="m">${o.adId ? 'إعلان' : 'عنصر'}</div></td><td>${o.stamp ? `<span class="stamp" style="font-size:.8rem">${esc(o.stamp)}</span>` : '—'}</td><td>${stampOf(o.status)}</td><td>${span(o)}</td><td>${tog(o.enabled !== false, o.id)}</td>
+    <td><div class="act"><button class="btn ghost sm" data-edit="${esc(o.id)}">عدّل</button><button class="btn ghost sm del" data-del="${esc(o.id)}">احذف</button></div></td></tr>`).join('') : '';
+}
+$('#formOffer').onsubmit = async e => {
+  e.preventDefault(); $('#oErr').textContent = '';
+  const body = { id: edit.id || undefined, mast: $('#oMast').value, stamp: $('#oStamp').value, headline: $('#oHead').value, body: $('#oBody').value, mastEn: $('#oMastEn').value, stampEn: $('#oStampEn').value, headlineEn: $('#oHeadEn').value, bodyEn: $('#oBodyEn').value, from: toIso($('#oFrom').value), until: toIso($('#oUntil').value) };
+  body[edit.ref] = $('#oRefVal').value.trim();
+  const old = OFFERS.find(x => x.id === edit.id); if (old) body.enabled = old.enabled !== false;
+  try { body.image = await picSave('o'); await api('/offers/save', body); closeDrawer(); toast('انحفظ وطُبّق عند اللاعبين فوراً'); loadOffers(); } catch (x) { $('#oErr').textContent = errText(x.code); }
+};
+
+// switches and the edit/delete buttons of both tables
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-tog]');
+  if (t) {
+    const inEvents = !!t.closest('#evTable'), id = t.dataset.tog, on = !t.classList.contains('on');
+    try { await api((inEvents ? '/events' : '/offers') + '/toggle', { id, enabled: on }); toast(on ? 'تفعّل' : 'اتعطّل'); (inEvents ? loadEvents : loadOffers)(); } catch (x) { toast(errText(x.code)); }
+    return;
+  }
+  const ed = e.target.closest('[data-edit]');
+  if (ed) { openDrawer(ed.closest('#evTable') ? 'event' : 'offer', ed.dataset.edit); return; }
+  const del = e.target.closest('[data-del]');
+  if (del) {
+    const inEvents = !!del.closest('#evTable');
+    if (!confirm('تأكيد الحذف؟ ما بيتراجع عنه.')) return;
+    try { await api((inEvents ? '/events' : '/offers') + '/delete', { id: del.dataset.del }); toast('انحذف'); (inEvents ? loadEvents : loadOffers)(); } catch (x) { toast(errText(x.code)); }
+  }
+});
+
+// ------------------------------------------------------------------ banned words
+async function loadWords() {
+  const r = await api('/words');
+  const chips = (el, list, kind) => { $(el).innerHTML = list.length ? list.map(w => `<span class="chip">${esc(w)}<button type="button" aria-label="احذف ${esc(w)}" data-w="${kind}" data-word="${esc(w)}">×</button></span>`).join('') : '<span class="m">ما في كلمات إضافية بعد</span>'; };
+  chips('#wExact', r.exact, 'exact'); chips('#wContains', r.contains, 'contains');
+}
+$$('form[data-list]').forEach(f => f.onsubmit = async e => {
+  e.preventDefault();
+  const i = f.querySelector('input'), w = i.value.trim(); if (!w) return;
+  try { await api('/words/add', { list: f.dataset.list, word: w }); i.value = ''; toast('انضافت وبتطبّق فوراً'); loadWords(); } catch (x) { toast(errText(x.code)); }
+});
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-w]'); if (!b) return;
+  try { await api('/words/remove', { list: b.dataset.w, word: b.dataset.word }); toast('انحذفت'); loadWords(); } catch (x) { toast(errText(x.code)); }
+});
+
+// ------------------------------------------------------------------ reports
+const REASON = { abuse: 'إساءة', harassment: 'مضايقة', cheat: 'غش', voice: 'صوت مزعج', name: 'اسم مسيء', spam: 'سبام', other: 'غير ذلك' };
+async function loadReports() {
+  const r = (await api('/reports')).reports;
+  $('#rpEmpty').classList.toggle('hide', r.length > 0);
+  $('#rpTable').innerHTML = r.length ? '<tr><th>اللي بلّغ</th><th>المُبلَّغ عنه</th><th>السبب</th><th>الوقت</th><th>الحالة</th><th></th></tr>' + r.map(x =>
+    `<tr><td class="t">${esc(x.reporterName)}</td><td class="t">${esc(x.targetName)}${x.muted ? ' <span class="stamp" style="font-size:.7rem">مكتوم</span>' : ''}</td><td>${esc(REASON[x.reason] || x.reason || '—')}${x.text ? `<div class="m">«${esc(x.text.slice(0, 80))}»</div>` : ''}</td><td>${x.ts ? ago(Date.parse(x.ts)) : '—'}</td>
+    <td>${x.status === 'new' ? '<span class="stamp" style="font-size:.8rem">جديد</span>' : '<span class="stamp green" style="font-size:.8rem">' + (x.action === 'mute' ? 'انكتم' : 'اتجاهل') + '</span>'}</td>
+    <td><div class="act">${x.status === 'new' ? `<button class="btn red sm" data-rp="mute" data-id="${esc(x.id)}">كتم ساعتين</button><button class="btn ghost sm" data-rp="ignore" data-id="${esc(x.id)}">تجاهل</button>` : ''}</div></td></tr>`).join('') : '';
+  refreshBadges();
+}
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-rp]'); if (!b) return;
+  try { await api('/reports/handle', { id: b.dataset.id, action: b.dataset.rp, minutes: 120 }); toast(b.dataset.rp === 'mute' ? 'انكتم ساعتين' : 'اتجاهل'); loadReports(); } catch (x) { toast(errText(x.code)); }
+});
+
+// ------------------------------------------------------------------ players
+async function searchPlayers() {
+  const q = $('#pq').value.trim(); if (!q) return;
+  try { PACKS = (await api('/packs')).packs; } catch {}          // the player card offers the packages
+  try { const r = (await api('/players?q=' + encodeURIComponent(q))).players; $('#pResult').innerHTML = r.length ? r.map(playerCard).join('') : '<div class="paper card empty">ما لقينا لاعب بهالبحث.</div>'; } catch (x) { toast(errText(x.code)); }
+}
+$('#pForm').onsubmit = e => { e.preventDefault(); searchPlayers(); };
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-pm]'); if (!b) return;
+  try { await api('/players/mute', { pf: b.dataset.pf, minutes: Number(b.dataset.pm) }); toast(b.dataset.pm === '0' ? 'انفك الكتم' : 'انكتم'); searchPlayers(); } catch (x) { toast(errText(x.code)); }
+});
+
+// ------------------------------------------------------------------ live ops: packs, mail, balance
+ERR.name_required = 'الاسم مطلوب'; ERR.empty_pack = 'الحزمة فاضية: حط كوينز أو جواهر أو عنصر'; ERR.bad_coins = 'الكوينز بين ٠ ومليون'; ERR.bad_gems = 'الجواهر بين ٠ و١٠٠٠٠'; ERR.bad_items = 'معرّفات العناصر غير صحيحة';
+ERR.unknown_player = 'ما في لاعب بهالرقم أو المعرّف'; ERR.no_recipients = 'ما في مستلمين'; ERR.bad_targets = 'اكتب من لاعب لـ٢٠٠ لاعب'; ERR.confirm_required = 'لازم تأكد الإرسال'; ERR.pack_not_found = 'الحزمة ما انوجدت';
+ERR.bad_kind = 'نوع الرسالة غلط'; ERR.body_required = 'اكتب نص الرسالة'; ERR.image_not_found = 'الصورة مش موجودة'; ERR.bad_image = 'الملف مش صورة JPG أو PNG'; ERR.image_too_big = 'الصورة كبيرة، جرّب أصغر';
+ERR.bad_username = 'اسم المستخدم: ٤ لـ٢٤ حرف إنجليزي أو رقم'; ERR.bad_password = 'كلمة السر من ٨ لـ٦٤'; ERR.username_taken = 'اسم المستخدم محجوز'; ERR.playfab_failed = 'تعذّر الربط مع PlayFab';
+ERR.bad_name = 'الاسم من ٣ لـ٢٥ حرف'; ERR.name_taken = 'الاسم مستخدم'; ERR.bad_hours = 'المدة غير صحيحة';
+ERR.reason_required = 'اكتب سبب (٣ أحرف على الأقل)'; ERR.bad_amount = 'الكمية بين ١ ومليون'; ERR.insufficient_or_failed = 'فشل: يمكن الرصيد أقل من المطلوب'; ERR.playfab_failed = 'فشل عند PlayFab، جرّب بعد شوي'; ERR.no_playfab = 'PlayFab غير متصل';
+const pills = p => (p.coins ? `<span class="pill"><span class="coin"></span>${ar(p.coins.toLocaleString('en'))}</span>` : '') + (p.gems ? `<span class="pill"><span class="gem"></span>${ar(p.gems)}</span>` : '') + (p.items || []).map(i => `<span class="pill">${esc(i)}</span>`).join('');
+let PACKS = [];
+async function loadPacks() {
+  PACKS = (await api('/packs')).packs;
+  $('#pkEmpty').classList.toggle('hide', PACKS.length > 0);
+  $('#pkTable').innerHTML = PACKS.length ? '<tr><th>الحزمة</th><th>المحتوى</th><th></th></tr>' + PACKS.map(p =>
+    `<tr><td><div class="t">${esc(p.name.ar || p.name.en)}</div><div class="m">${esc(p.name.en)}</div></td><td>${pills(p)}</td><td><div class="act"><button class="btn ghost sm" data-pk-edit="${esc(p.id)}">عدّل</button><button class="btn ghost sm del" data-pk-del="${esc(p.id)}">احذف</button></div></td></tr>`).join('') : '';
+}
+let pkEditing = null;
+function openPack(id) {
+  pkEditing = id || null;
+  const p = PACKS.find(x => x.id === id) || { name: { ar: '', en: '' }, coins: 0, gems: 0, items: [] };
+  $('#pkTitle').textContent = id ? 'تعديل الحزمة' : 'حزمة جديدة'; $('#pkErr').textContent = '';
+  $('#pkAr').value = p.name.ar; $('#pkEn').value = p.name.en; $('#pkCoins').value = p.coins; $('#pkGems').value = p.gems; $('#pkItems').value = (p.items || []).join(', ');
+  $('#d-pack').classList.add('on'); setTimeout(() => $('#pkAr').focus(), 30);
+}
+$('#newPack').onclick = () => openPack();
+$('#packForm').onsubmit = async e => {
+  e.preventDefault(); $('#pkErr').textContent = '';
+  const body = { id: pkEditing || undefined, name: { ar: $('#pkAr').value, en: $('#pkEn').value }, coins: Number($('#pkCoins').value), gems: Number($('#pkGems').value), items: $('#pkItems').value.split(',').map(s => s.trim()).filter(Boolean) };
+  try { await api('/packs/save', body); $('#d-pack').classList.remove('on'); toast('انحفظت الحزمة'); loadPacks(); } catch (x) { $('#pkErr').textContent = errText(x.code); }
+};
+document.addEventListener('click', async e => {
+  if (e.target.closest('[data-close]')) { const d = e.target.closest('.drawer'); if (d) d.classList.remove('on'); }
+  if (e.target === $('#d-pack')) $('#d-pack').classList.remove('on');
+  const ed = e.target.closest('[data-pk-edit]'); if (ed) { openPack(ed.dataset.pkEdit); return; }
+  const del = e.target.closest('[data-pk-del]');
+  if (del) { if (!confirm('تأكيد حذف الحزمة؟')) return; try { await api('/packs/delete', { id: del.dataset.pkDel }); toast('انحذفت'); loadPacks(); } catch (x) { toast(errText(x.code)); } }
+});
+
+// mail composer
+let mAud = 'one';
+const AUD = {
+  one: ['اللاعب (رقمه أو معرّفه)', '48291735', 'رقم اللاعب ٦ خانات أو معرّف PlayFab', false],
+  list: ['قائمة لاعبين (كل واحد بسطر أو مفصولين بفاصلة)', '48291735, 19302211', 'لحد ٢٠٠ لاعب', false],
+  active7: ['', '', 'بتنبعت لكل اللي خلّصوا مباراة بآخر ٧ أيام (لحد ٥٠٠٠)', true],
+  all: ['', '', 'كل اللاعبين، حتى اللي بيسجّلوا بعدين طول فترة الصلاحية', true],
+};
+function setAud(a) {
+  mAud = a; $$('#mAud button').forEach(b => b.classList.toggle('on', b.dataset.a === a));
+  const [lbl, ph, hint, big] = AUD[a];
+  $('#mTargetsBox').classList.toggle('hide', big); $('#mTargetsLbl').textContent = lbl; $('#mTargets').placeholder = ph; $('#mTargetsHint').textContent = hint;
+  $('#mWarn').classList.toggle('hide', !big); $('#mWarn').textContent = hint + '. الإرسال بيطلب تأكيد وما بيتراجع عنه.';
+}
+$$('#mAud button').forEach(b => b.onclick = () => setAud(b.dataset.a));
+function fillPackSelect() {
+  $('#mPack').innerHTML = '<option value="">بدون حزمة (رسالة بس)</option>' + PACKS.map(p => `<option value="${esc(p.id)}">${esc(p.name.ar || p.name.en)}</option>`).join('') + '<option value="__custom">مخصّصة…</option>';
+}
+$('#mPack').onchange = () => $('#mCustom').classList.toggle('hide', $('#mPack').value !== '__custom');
+async function loadMail() {
+  PACKS = (await api('/packs')).packs; fillPackSelect(); setAud(mAud);
+  const s = (await api('/mail/sent')).sent;
+  $('#mlEmpty').classList.toggle('hide', s.length > 0);
+  $('#mlTable').innerHTML = s.length ? '<tr><th>البرقية</th><th>لمين</th><th>استلموا</th></tr>' + s.map(x => {
+    const who = x.audience === 'all' ? 'كل اللاعبين' : ar(x.count) + ' لاعب';
+    const got = x.audience === 'all' ? `<b>${ar(x.claimed)}</b> <span class="m">استلموا</span>` : (x.claimed >= x.count ? '<span class="stamp green" style="font-size:.7rem">استلموا</span>' : `<b>${ar(x.claimed)}</b> <span class="m">/ ${ar(x.count)}</span>`);
+    return `<tr><td><div class="t">${esc(x.title.ar || x.title.en)}</div><div class="m">${ago(x.ts)}${x.label ? ' · ' + esc(x.label) : ''}</div></td><td>${who}</td><td>${got}</td></tr>`;
+  }).join('') : '';
+}
+$('#mailForm').onsubmit = async e => {
+  e.preventDefault(); $('#mErr').textContent = '';
+  const big = AUD[mAud][3];
+  if (big && !confirm('تأكيد الإرسال؟ ' + AUD[mAud][2] + '. ما بيتراجع عنه.')) return;
+  const body = { audience: mAud, confirm: big ? true : undefined, title: { ar: $('#mTitleAr').value, en: $('#mTitleEn').value }, body: { ar: $('#mBodyAr').value, en: $('#mBodyEn').value }, expiresInDays: Number($('#mDays').value) };
+  if (!big) body.targets = $('#mTargets').value.split(/[\s,،]+/).filter(Boolean);
+  const pk = $('#mPack').value;
+  if (pk === '__custom') body.pack = { coins: Number($('#mCoins').value), gems: Number($('#mGems').value) }; else if (pk) body.packId = pk;
+  try { const r = await api('/mail/send', body); toast('انبعتت' + (r.count ? ' لـ' + ar(r.count) + ' لاعب' : ' للكل')); $('#mTitleAr').value = $('#mTitleEn').value = $('#mBodyAr').value = $('#mBodyEn').value = ''; loadMail(); } catch (x) { $('#mErr').textContent = errText(x.code); }
+};
+loaders.packs = loadPacks; loaders.mail = loadMail;
+
+// the player card: balances, mail, and the support tiles
+function playerCard(p) {
+  const s = p.stats || {}, muted = p.mutedUntil > Date.now(), b = p.balances;
+  const pf = esc(p.pf);
+  return `<div class="paper card" style="margin-bottom:16px"><div class="player"><div class="av"></div>
+    <div><div style="font-family:Lalezar;font-size:1.6rem;line-height:1.1">${esc(p.name)} ${muted ? '<span class="stamp" style="font-size:.8rem">مكتوم</span>' : ''} ${p.ban ? '<span class="stamp" style="font-size:.8rem">محظور</span>' : ''}</div>
+    <div class="m" style="font-weight:700;font-size:.8rem;margin:2px 0 10px">${p.num ? 'رقم اللاعب ' + ar(p.num) + ' · ' : ''}المستوى ${ar(p.level)} · <span class="mono">${pf}</span></div>
+    <div class="kv"><div><span>الكوينز</span><br><b>${b ? ar(b.coins.toLocaleString('en')) : '—'}</b></div><div><span>الجواهر</span><br><b>${b ? ar(b.gems) : '—'}</b></div><div><span>مباريات</span><br><b>${ar(s.games || 0)}</b></div><div><span>انتصارات</span><br><b>${ar(s.wins || 0)}</b></div><div><span>بلاغات ضده</span><br><b>${ar(p.reportsAgainst)}</b></div><div><span>برقيات بانتظاره</span><br><b>${ar(p.pendingMail || 0)}</b></div></div></div>
+    <div style="display:grid;gap:8px">${muted ? `<button class="btn greenb sm" data-pm="0" data-pf="${pf}">فك الكتم</button>` : `<button class="btn red sm" data-pm="120" data-pf="${pf}">كتم ساعتين</button><button class="btn ghost sm" data-pm="1440" data-pf="${pf}">كتم يوم</button>`}</div></div>
+    <div class="sect"><h5>إجراءات الدعم</h5><div class="sgrid">
+      <div class="tile"><h6>تغيير الاسم</h6><div class="rowin"><input data-rn="name" value="${esc(p.name)}" maxlength="25" aria-label="الاسم الجديد"><button class="btn red sm" data-rn-go="${pf}">احفظ</button></div><small class="hint">بيطبّق فوراً. من ٣ لـ٢٥ حرف، وما بيتكرر اسم موجود.</small></div>
+      <div class="tile"><h6>تعديل الرصيد</h6>
+        <div class="rowin"><select data-bal="op"><option value="add">إضافة</option><option value="remove">سحب</option></select><select data-bal="currency"><option value="coins">كوينز</option><option value="gems">جواهر</option></select><input data-bal="amount" type="number" min="1" value="500" style="max-width:90px"></div>
+        <div class="rowin"><input data-bal="reason" placeholder="السبب (إجباري، بيتسجّل وما بيشوفه اللاعب)"></div>
+        <button class="btn red sm" data-bal-go="${pf}">نفّذ</button>
+        <small class="hint">الإضافة بتوصله هدية بالبريد، وبتنزل برصيده لما يضغط «استلام».</small>
+        <div class="warn" style="margin-top:8px">السحب بيتنفّذ فوراً وما بيتراجع عنه. الرصيد ما بينزل تحت الصفر.</div></div>
+      <div class="tile"><h6>بكج بالبريد</h6>
+        <div class="rowin"><select data-mail="pack">${PACKS.map(k => `<option value="${esc(k.id)}">${esc(k.name.ar || k.name.en)}</option>`).join('') || '<option value="">ما في حزم: ضيف من صفحة الحزم</option>'}</select></div>
+        <div class="rowin"><input data-mail="title" placeholder="عنوان البرقية"></div>
+        <button class="btn greenb sm" data-mail-go="${pf}">ابعت لهاللاعب</button></div>
+      <div class="tile"><h6>حظر من اللعبة</h6>${p.ban ? `<div class="warn">محظور: ${esc(p.ban.reason)} · ${p.ban.until ? 'لحد ' + new Date(p.ban.until).toLocaleDateString('ar') : 'للأبد'}</div><button class="btn greenb sm" data-unban-go="${pf}">فك الحظر</button>` : `<div class="rowin"><select data-ban="hours"><option value="24">٢٤ ساعة</option><option value="168">أسبوع</option><option value="720">٣٠ يوم</option><option value="0">للأبد</option></select></div><div class="rowin"><input data-ban="reason" placeholder="السبب (إجباري، بيتسجّل)" maxlength="140"></div><button class="btn red sm" data-ban-go="${pf}">احظر</button><div class="warn" style="margin-top:8px">PlayFab بيرفض دخوله. فكّ الحظر من هون.</div>`}</div>
+      <div class="tile"><h6>حساب استرجاع</h6>${p.recovery ? `<div class="warn" style="background:#e8f1e3;color:#2f4a2a">فعّال · اسم المستخدم: <b dir="ltr">${esc(p.recovery.username)}</b><br>انستخدم ${p.recovery.count || 0} مرة${p.recovery.last ? ' · آخر مرة ' + ago(p.recovery.last) : ''}</div><div class="rowin"><button class="btn red sm" data-rec-new="${pf}">كلمة سر جديدة</button><button class="btn sm" data-rec-off="${pf}">ألغِ الحساب</button></div>` : `<div class="rowin"><input data-rec="username" dir="ltr" placeholder="اسم المستخدم (إنجليزي)" maxlength="24"></div><button class="btn greenb sm" data-rec-go="${pf}">أنشئ حساب استرجاع</button><small class="hint">بيطلع لك كلمة سر مرة وحدة بس. بتعطيها للاعب، وهو بيدخل فيها من جهاز جديد.</small>`}<div id="rec-out-${pf}"></div></div>
+      <div class="tile"><h6>رسالة خاصة</h6><div class="seg" data-dm-seg><button class="on" data-dm-kind="note">رسالة عادية</button><button data-dm-kind="warn">تحذير</button></div>
+        <div class="rowin"><input data-dm="tar" placeholder="العنوان (عربي)" maxlength="80"></div><div class="rowin"><input data-dm="ten" class="ltr" dir="ltr" placeholder="Title (English, optional)" maxlength="80"></div>
+        <div class="rowin"><textarea data-dm="bar" rows="3" placeholder="نص الرسالة (عربي)" maxlength="600" style="flex:1;padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700;font-family:inherit"></textarea></div>
+        <div class="rowin"><textarea data-dm="ben" class="ltr" dir="ltr" rows="2" placeholder="Text (English, optional)" maxlength="600" style="flex:1;padding:7px 10px;border-radius:6px;border:2px solid #1c170f66;background:#f0e8d2;color:var(--ink);font-weight:700;font-family:inherit"></textarea></div>
+        <div class="dmimg"><div class="box" data-dm="prev">بدون صورة</div><div><input type="file" accept="image/jpeg,image/png" data-dm="file" hidden><button class="btn ghost sm" data-dm-pick>اختر صورة</button> <button class="btn sm" data-dm-clear>شيلها</button><small class="hint">JPG أو PNG. بتتصغّر لحد ٩٠٠ بكسل قبل ما تنرفع.</small></div></div>
+        <label class="hint" data-dm="mustrow" style="display:none;margin:0 0 8px"><input type="checkbox" data-dm="must" checked> قراءة إلزامية (زر «فهمت» بعد ٣ ثواني)</label>
+        <button class="btn greenb sm" data-dm-go="${pf}">ابعت الرسالة</button>
+        ${(p.messages || []).length ? `<table class="tbl" style="margin-top:10px"><tr><th>النوع</th><th>العنوان</th><th>الحالة</th></tr>${p.messages.map(m => `<tr><td><span class="mpill ${m.kind === 'warn' ? 'w' : 'n'}">${m.kind === 'warn' ? 'تحذير' : 'عادية'}</span></td><td>${esc(m.title.ar || m.title.en)}</td><td>${m.read ? `<span class="mpill n">انقرأت ${ago(m.read)}</span>` : '<span class="mpill m">وصلت · لسا</span>'}</td></tr>`).join('')}</table>` : ''}</div>
+    </div></div>
+    <div class="sect"><h5>سجلّ العمليات على هاللاعب</h5>${(p.log || []).length ? `<table class="tbl"><tr><th>الوقت</th><th>العملية</th><th>التفاصيل</th></tr>${p.log.map(l => `<tr><td>${ago(l.ts)}</td><td>${esc(ACT[l.action] || l.action)}</td><td>${esc(l.detail)}</td></tr>`).join('')}</table>` : '<p class="hint">ما في عمليات مسجّلة على هاللاعب.</p>'}</div></div>`;
+}
+const DM_IMG = {};
+const shrink = file => new Promise((ok, no) => { const fr = new FileReader(); fr.onerror = no; fr.onload = () => { const im = new Image(); im.onerror = no; im.onload = () => { const k = Math.min(1, 900 / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', 0.85)); }; im.src = fr.result; }; fr.readAsDataURL(file); });
+document.addEventListener('change', async e => { const fi = e.target.closest('[data-dm=file]'); if (!fi || !fi.files[0]) return; const t = fi.closest('.tile'); const pf = t.querySelector('[data-dm-go]').dataset.dmGo; try { DM_IMG[pf] = await shrink(fi.files[0]); t.querySelector('[data-dm=prev]').innerHTML = `<img src="${DM_IMG[pf]}" alt="">`; } catch { toast('تعذّر قراءة الصورة'); } });
+const showRec = (pf, r) => { const o = document.getElementById('rec-out-' + pf); if (o) o.innerHTML = `<div class="warn" style="margin-top:8px">انسخها هلأ، ما رح تنعرض مرة ثانية:<br><b dir="ltr">${esc(r.username)}</b><br><b dir="ltr" style="font-size:1.1rem">${esc(r.password)}</b></div>`; };
+document.addEventListener('click', async e => {
+  const dk = e.target.closest('[data-dm-kind]');
+  if (dk) { const t = dk.closest('.tile'); t.querySelectorAll('[data-dm-kind]').forEach(x => x.classList.remove('on', 'wn')); dk.classList.add('on'); if (dk.dataset.dmKind === 'warn') dk.classList.add('wn'); t.querySelector('[data-dm=mustrow]').style.display = dk.dataset.dmKind === 'warn' ? 'block' : 'none'; return; }
+  const dp = e.target.closest('[data-dm-pick]'); if (dp) { dp.closest('.tile').querySelector('[data-dm=file]').click(); return; }
+  const dc = e.target.closest('[data-dm-clear]'); if (dc) { const t = dc.closest('.tile'); delete DM_IMG[t.querySelector('[data-dm-go]').dataset.dmGo]; t.querySelector('[data-dm=file]').value = ''; t.querySelector('[data-dm=prev]').textContent = 'بدون صورة'; return; }
+  const dg = e.target.closest('[data-dm-go]');
+  if (dg) { const t = dg.closest('.tile'), pf = dg.dataset.dmGo, v = k => t.querySelector('[data-dm=' + k + ']').value.trim(); const kind = t.querySelector('[data-dm-kind].on').dataset.dmKind;
+    if (!v('tar') && !v('ten')) return toast(errText('title_required')); if (!v('bar') && !v('ben')) return toast(errText('body_required'));
+    if (!confirm(kind === 'warn' ? 'إرسال تحذير لهاللاعب؟' : 'إرسال الرسالة لهاللاعب؟')) return;
+    try { let image = ''; if (DM_IMG[pf]) image = (await api('/upload-image', { data: DM_IMG[pf].split(',')[1] })).id;
+      await api('/players/message', { pf, kind, title: { ar: v('tar'), en: v('ten') }, body: { ar: v('bar'), en: v('ben') }, image, must: t.querySelector('[data-dm=must]').checked }); delete DM_IMG[pf]; toast('انبعتت الرسالة'); searchPlayers(); } catch (x) { toast(errText(x.code)); } return; }
+  const rc = e.target.closest('[data-rec-go],[data-rec-new]');
+  if (rc) { const pf = rc.dataset.recGo || rc.dataset.recNew; const inp = rc.closest('.tile').querySelector('[data-rec=username]'); const username = inp ? inp.value.trim() : (rc.closest('.tile').querySelector('b[dir=ltr]') || {}).textContent; try { const r = await api('/players/recovery', { pf, username }); await searchPlayers(); showRec(pf, r); } catch (x) { toast(errText(x.code)); } return; }
+  const ro = e.target.closest('[data-rec-off]');
+  if (ro) { if (!confirm('إلغاء حساب الاسترجاع؟ ما عاد يقدر يدخل فيه.')) return; try { await api('/players/recovery/remove', { pf: ro.dataset.recOff }); toast('انلغى'); searchPlayers(); } catch (x) { toast(errText(x.code)); } return; }
+  const rn = e.target.closest('[data-rn-go]');
+  if (rn) { const name = rn.closest('.tile').querySelector('[data-rn=name]').value.trim(); try { await api('/players/rename', { pf: rn.dataset.rnGo, name }); toast('انتغيّر الاسم'); searchPlayers(); } catch (x) { toast(errText(x.code)); } return; }
+  const bn = e.target.closest('[data-ban-go]');
+  if (bn) { const t = bn.closest('.tile'); if (!confirm('تأكيد الحظر؟ اللاعب ما رح يقدر يدخل اللعبة.')) return; try { await api('/players/ban', { pf: bn.dataset.banGo, reason: t.querySelector('[data-ban=reason]').value, hours: Number(t.querySelector('[data-ban=hours]').value) }); toast('انحظر'); searchPlayers(); } catch (x) { toast(errText(x.code)); } return; }
+  const ub = e.target.closest('[data-unban-go]');
+  if (ub) { try { await api('/players/unban', { pf: ub.dataset.unbanGo }); toast('انفك الحظر'); searchPlayers(); } catch (x) { toast(errText(x.code)); } return; }
+  const g = e.target.closest('[data-bal-go]');
+  if (g) {
+    const tile = g.closest('.tile'), v = k => tile.querySelector(`[data-bal=${k}]`).value;
+    if (v('op') === 'remove' && !confirm('تأكيد السحب؟ ما بيتراجع عنه.')) return;
+    try { await api('/players/balance', { pf: g.dataset.balGo, op: v('op'), currency: v('currency'), amount: Number(v('amount')), reason: v('reason') }); toast(v('op') === 'add' ? 'انبعتت هدية بالبريد' : 'انسحب من رصيده'); searchPlayers(); } catch (x) { toast(errText(x.code)); }
+    return;
+  }
+  const m = e.target.closest('[data-mail-go]');
+  if (m) {
+    const tile = m.closest('.tile'), pack = tile.querySelector('[data-mail=pack]').value, title = tile.querySelector('[data-mail=title]').value.trim();
+    if (!title) { toast('اكتب عنوان البرقية'); return; }
+    try { await api('/mail/send', { audience: 'one', targets: [m.dataset.mailGo], title: { ar: title }, packId: pack || undefined, expiresInDays: 7 }); toast('انبعتت البرقية'); searchPlayers(); } catch (x) { toast(errText(x.code)); }
+  }
+});
+api('/packs').then(r => { PACKS = r.packs; }).catch(() => {});
+
+// ------------------------------------------------------------------ live ops: ranking inside an event
+ERR.bad_metric = 'نوع التصنيف غير صحيح'; ERR.bad_winners = 'عدد المراكز بين ١ و٢٠'; ERR.bad_prize_ranks = 'مراكز الجائزة لازم تكون ضمن عدد المراكز (من ≤ إلى)'; ERR.already_distributed = 'الجوائز انوزّعت قبل'; ERR.no_ranking = 'هالحدث بدون تصنيف';
+const METRIC = { wins: 'الانتصارات', games: 'المباريات', points: 'نقاط الرتبة', secs: 'الدقائق' };
+function prizeRow(p) {
+  const row = document.createElement('div'); row.className = 'pz';
+  row.innerHTML = `<input type="number" min="1" max="20" value="${p.from}" aria-label="من مركز"><input type="number" min="1" max="20" value="${p.to}" aria-label="إلى مركز"><select aria-label="الحزمة">${PACKS.map(k => `<option value="${esc(k.id)}" ${k.id === p.packId ? 'selected' : ''}>${esc(k.name.ar || k.name.en)} (${k.coins ? ar(k.coins) + ' كوينز' : ''}${k.gems ? ' ' + ar(k.gems) + ' جواهر' : ''})</option>`).join('') || '<option value="">ضيف حزمة من صفحة الحزم</option>'}</select><button type="button" class="btn ghost sm del" aria-label="احذف">×</button>`;
+  row.querySelector('button').onclick = () => row.remove();
+  $('#rkPrizes').appendChild(row);
+}
+function fillRanking(e) {
+  const r = (e && e.ranking) || null;
+  setSwitch($('#rkTog'), !!(r && r.enabled)); $('#rkFields').classList.toggle('hide', !(r && r.enabled));
+  $('#rkMetric').value = r ? r.metric : 'wins'; $('#rkWinners').value = r ? r.winners : 5; $('#rkDist').value = r ? r.distribution : 'auto';
+  $('#rkPrizes').innerHTML = '';
+  ((r && r.prizes) || []).forEach(prizeRow);
+}
+function readRanking() {
+  if (!$('#rkTog').classList.contains('on')) return { enabled: false };
+  const prizes = [...$$('#rkPrizes .pz')].map(row => { const [a, b] = row.querySelectorAll('input'); return { from: Number(a.value), to: Number(b.value), packId: row.querySelector('select').value }; });
+  return { enabled: true, metric: $('#rkMetric').value, winners: Number($('#rkWinners').value), prizes, distribution: $('#rkDist').value };
+}
+$('#rkTog').onclick = () => { setSwitch($('#rkTog'), !$('#rkTog').classList.contains('on')); $('#rkFields').classList.toggle('hide', !$('#rkTog').classList.contains('on')); };
+$('#rkAdd').onclick = () => { const n = $$('#rkPrizes .pz').length; prizeRow({ from: n + 1, to: n + 1, packId: PACKS[0] ? PACKS[0].id : '' }); };
+
+let rkEvent = null;
+async function openRanking(id) {
+  rkEvent = id;
+  try {
+    const r = await api('/events/ranking?id=' + encodeURIComponent(id));
+    $('#rkTitle').textContent = 'تصنيف: ' + r.title;
+    $('#rkInfo').textContent = (r.endsInSec ? 'شغّال · ينتهي بعد ' + ago(Date.now() - r.endsInSec * 1000).replace('قبل ', '') + ' · ' : 'انتهى · ') + 'بيتصنّفوا حسب: ' + METRIC[r.metric] + ' · الجوائز: ' + (r.distribution === 'auto' ? 'تلقائية عند النهاية' : 'يدوية');
+    $('#rkEmpty').classList.toggle('hide', r.rows.length > 0);
+    $('#rkTable').innerHTML = r.rows.length ? '<tr><th>#</th><th>اللاعب</th><th>' + METRIC[r.metric] + '</th><th>الجائزة</th></tr>' + r.rows.map(x =>
+      `<tr><td class="t">${ar(x.rank)}</td><td><div class="t">${esc(x.name)}</div><div class="m mono">${esc(x.pf)}</div></td><td class="t">${ar(x.value)}</td><td>${x.prize ? pills(x.prize) : '<span class="m">—</span>'}</td></tr>`).join('') : '';
+    const d = r.distributed;
+    $('#rkWarn').className = d ? 'srcnote' : 'warn';
+    $('#rkWarn').textContent = d ? 'الجوائز انوزّعت (' + (d.by === 'auto' ? 'تلقائياً' : 'يدوياً') + ') على ' + ar(d.count) + ' لاعب. التصنيف متجمّد.' : 'الجوائز لسا ما انوزّعت. بتنوزّع ' + (r.distribution === 'auto' ? 'تلقائياً بنهاية الحدث' : 'لما تضغط الزر') + '، أو اضغط الزر هلأ وبتروح لبريد أصحاب المراكز. مرة وحدة بس، وبعدها التصنيف بيتجمّد.';
+    $('#rkDistBtn').classList.toggle('hide', !!d);
+    $('#d-rank').classList.add('on');
+  } catch (x) { toast(errText(x.code)); }
+}
+$('#rkDistBtn').onclick = async () => {
+  if (!confirm('توزيع الجوائز على أصحاب المراكز؟ بتنبعت للبريد وما بيتراجع عنه، والتصنيف بيتجمّد.')) return;
+  try { const r = await api('/events/distribute', { id: rkEvent }); toast('انوزّعت الجوائز على ' + ar(r.count) + ' لاعب'); openRanking(rkEvent); } catch (x) { toast(errText(x.code)); }
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-rank]'); if (b) openRanking(b.dataset.rank);
+  if (e.target === $('#d-rank')) $('#d-rank').classList.remove('on');
+});
+
+
+// ------------------------------------------------------------------ live ops: promo codes
+ERR.bad_code_format = 'الكود لازم يكون ٣ لـ٢٠ حرف إنجليزي أو أرقام'; ERR.bad_max_uses = 'الحد بين ٠ ومليون'; ERR.code_exists = 'الكود موجود';
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+let CODES = [];
+async function loadCodes() {
+  PACKS = (await api('/packs')).packs;
+  CODES = (await api('/codes')).codes;
+  const packName = id => { const p = PACKS.find(x => x.id === id); return p ? esc(p.name.ar || p.name.en) : '<span class="m">محذوفة</span>'; };
+  $('#cdEmpty').classList.toggle('hide', CODES.length > 0);
+  $('#cdTable').innerHTML = CODES.length ? '<tr><th>الكود</th><th>الحزمة</th><th>الاستخدام</th><th>ينتهي</th><th>الحالة</th><th>فعّال</th><th></th></tr>' + CODES.map(c => {
+    const done = (c.maxUses && c.uses >= c.maxUses) || (c.until && Date.parse(c.until) <= Date.now());
+    const state = !c.enabled ? 'off' : done ? 'done' : 'live';
+    return `<tr><td><span class="mono">${esc(c.code)}</span></td><td>${packName(c.packId)}</td><td>${ar(c.uses)} / ${c.maxUses ? ar(c.maxUses) : '∞'}</td><td>${c.until ? fmtDate(c.until) : 'بدون نهاية'}</td><td>${stampOf(state)}</td><td>${tog(c.enabled, c.code)}</td>
+      <td><div class="act"><button class="btn ghost sm" data-cd-edit="${esc(c.code)}">عدّل</button><button class="btn ghost sm del" data-cd-del="${esc(c.code)}">احذف</button></div></td></tr>`; }).join('') : '';
+}
+let cdEditing = null;
+function openCode(code) {
+  cdEditing = code || null;
+  const c = CODES.find(x => x.code === code) || { code: '', packId: PACKS[0] ? PACKS[0].id : '', maxUses: 1000, until: '', enabled: true };
+  $('#cdTitle').textContent = code ? 'تعديل الكود' : 'كود ترويج جديد'; $('#cdErr').textContent = '';
+  $('#cdCode').value = c.code; $('#cdCode').readOnly = !!code; $('#cdRandom').classList.toggle('hide', !!code);
+  $('#cdPack').innerHTML = PACKS.map(p => `<option value="${esc(p.id)}" ${p.id === c.packId ? 'selected' : ''}>${esc(p.name.ar || p.name.en)}</option>`).join('') || '<option value="">ضيف حزمة من صفحة الحزم أول</option>';
+  $('#cdMax').value = c.maxUses; $('#cdUntil').value = toLocal(c.until);
+  $('#d-code').classList.add('on'); setTimeout(() => $('#cdCode').focus(), 30);
+}
+$('#newCode').onclick = async () => { try { PACKS = (await api('/packs')).packs; } catch {} openCode(); };
+$('#cdRandom').onclick = () => { let s = ''; for (let i = 0; i < 8; i++) s += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)]; $('#cdCode').value = s; };
+$('#codeForm').onsubmit = async e => {
+  e.preventDefault(); $('#cdErr').textContent = '';
+  const old = CODES.find(x => x.code === cdEditing);
+  const body = { code: $('#cdCode').value.trim() || undefined, isNew: cdEditing ? undefined : true, packId: $('#cdPack').value, maxUses: Number($('#cdMax').value), until: toIso($('#cdUntil').value), enabled: old ? old.enabled : true };
+  try { const r = await api('/codes/save', body); $('#d-code').classList.remove('on'); toast('انحفظ الكود ' + r.code); loadCodes(); } catch (x) { $('#cdErr').textContent = errText(x.code); }
+};
+document.addEventListener('click', async e => {
+  if (e.target === $('#d-code')) $('#d-code').classList.remove('on');
+  const ed = e.target.closest('[data-cd-edit]'); if (ed) { openCode(ed.dataset.cdEdit); return; }
+  const del = e.target.closest('[data-cd-del]');
+  if (del) { if (!confirm('تأكيد حذف الكود؟ اللي استخدموه بيضل معهم البكج.')) return; try { await api('/codes/delete', { code: del.dataset.cdDel }); toast('انحذف'); loadCodes(); } catch (x) { toast(errText(x.code)); } return; }
+  const t = e.target.closest('#cdTable [data-tog]');
+  if (t) { e.stopPropagation(); try { await api('/codes/toggle', { code: t.dataset.tog, enabled: !t.classList.contains('on') }); toast(t.classList.contains('on') ? 'اتعطّل' : 'تفعّل'); loadCodes(); } catch (x) { toast(errText(x.code)); } }
+}, true);
+loaders.codes = loadCodes;
+
+// ------------------------------------------------------------------ live ops: leaderboard prizes
+ERR.bad_category = 'فئة غير معروفة'; ERR.bad_ranks = 'المراكز بين ١ و٥٠، و«لـ» مش أقل من «من»'; ERR.bad_prize = 'حط كوينز أو جواهر أو اختار حزمة'; ERR.overlap = 'في مراكز متداخلة بنفس الفئة'; ERR.too_many_rows = 'أكتر من ١٠ صفوف بالفئة';
+let LB = null, LBC = null, LBCATS = [];
+const lbCatName = id => (LBCATS.find(c => c.id === id) || { ar: id }).ar;
+const lbRanks = r => r.from === r.to ? ar(r.from) : ar(r.from) + ' – ' + ar(r.to);
+function lbGives(r) {
+  if (r.packId) { const k = PACKS.find(x => x.id === r.packId); return k ? esc(k.name.ar || k.name.en) + ' ' + pills(k) : '<span class="m">حزمة محذوفة</span>'; }
+  return pills({ coins: r.coins || 0, gems: r.gems || 0, items: [] });
+}
+function lbRender() {
+  for (const period of ['day', 'week']) {
+    const rows = [];
+    for (const [cat, list] of Object.entries(LBC[period] || {})) list.forEach((r, i) => rows.push({ cat, i, r }));
+    $('#lb-' + period + '-empty').classList.toggle('hide', rows.length > 0);
+    $('#lb-' + period + '-table').innerHTML = rows.length ? '<tr><th>الفئة</th><th>المراكز</th><th>الجائزة</th><th></th></tr>' + rows.map(x =>
+      `<tr><td>${esc(lbCatName(x.cat))}</td><td>${lbRanks(x.r)}</td><td>${lbGives(x.r)}</td><td><button class="btn ghost sm del" data-lb-del="${period}|${x.cat}|${x.i}">احذف</button></td></tr>`).join('') : '';
+    const f = document.querySelector('.lbadd[data-p="' + period + '"]');
+    f.querySelector('[data-k=cat]').innerHTML = LBCATS.map(c => `<option value="${c.id}">${esc(c.ar)}</option>`).join('');
+    f.querySelector('[data-k=pack]').innerHTML = '<option value="">كوينز / جواهر (اكتبهم جنب)</option>' + PACKS.map(k => `<option value="${esc(k.id)}">${esc(k.name.ar || k.name.en)}</option>`).join('');
+  }
+  $('#lbHistEmpty').classList.toggle('hide', LB.history.length > 0);
+  $('#lbHist').innerHTML = LB.history.length ? '<tr><th>الفترة</th><th>متى</th><th>جوائز انبعتت</th></tr>' + LB.history.map(h => {
+    const [p, key] = h.id.split(':'); return `<tr><td>${p === 'day' ? 'سبورة الليلة' : 'جريدة الأسبوع'} · <span class="mono">${esc(key)}</span></td><td>${ago(h.at)}</td><td>${ar(h.count)}</td></tr>`; }).join('') : '';
+}
+const lbDirty = on => $('#lbDirty').classList.toggle('hide', !on);
+async function loadLb() {
+  LB = await api('/lbprizes'); PACKS = LB.packs || []; LBCATS = LB.cats || [];
+  LBC = { day: {}, week: {} };
+  for (const period of ['day', 'week']) for (const [cat, list] of Object.entries(LB.config[period] || {})) LBC[period][cat] = list.map(r => r.packId ? { from: r.from, to: r.to, packId: r.packId } : { from: r.from, to: r.to, coins: r.coins || 0, gems: r.gems || 0 });
+  $('#lbErr').textContent = ''; lbDirty(false); lbRender();
+}
+document.addEventListener('submit', e => {
+  const f = e.target.closest('.lbadd'); if (!f) return;
+  e.preventDefault();
+  const v = k => f.querySelector('[data-k=' + k + ']').value, period = f.dataset.p, cat = v('cat');
+  const row = v('pack') ? { from: +v('from'), to: +v('to'), packId: v('pack') } : { from: +v('from'), to: +v('to'), coins: +v('coins'), gems: +v('gems') };
+  if (!row.packId && !row.coins && !row.gems) { toast(ERR.bad_prize); return; }
+  (LBC[period][cat] = LBC[period][cat] || []).push(row); LBC[period][cat].sort((a, b) => a.from - b.from);
+  lbDirty(true); lbRender();
+});
+document.addEventListener('click', async e => {
+  const d = e.target.closest('[data-lb-del]');
+  if (d) { const [period, cat, i] = d.dataset.lbDel.split('|'); LBC[period][cat].splice(+i, 1); if (!LBC[period][cat].length) delete LBC[period][cat]; lbDirty(true); lbRender(); return; }
+  if (e.target.closest('#lbSave')) { $('#lbErr').textContent = ''; try { await api('/lbprizes/save', { config: LBC }); toast('انحفظت الجوائز'); loadLb(); } catch (x) { $('#lbErr').textContent = errText(x.code); } return; }
+  if (e.target.closest('#lbReset')) { if (!confirm('ترجع الجوائز الافتراضية؟ (الأول بالليلة ٣٠٠، وأول ٣ بالأسبوع ٥٬٠٠٠ / ٢٬٥٠٠ / ١٬٠٠٠ بنقاط الرتبة)')) return; try { await api('/lbprizes/save', { reset: true }); toast('رجعت الافتراضية'); loadLb(); } catch (x) { toast(errText(x.code)); } }
+});
+loaders.lbprizes = loadLb;
+Object.assign(ACT, { lbprizes_save: 'حفظ جوائز التصنيفات' });
+
+// ------------------------------------------------------------------ start: a valid cookie goes straight in
+api('/overview').then(() => showApp()).catch(() => showLogin());
+
+// ------------------------------------------------------------------ official rooms
+const OFERR = { name_required: 'الاسم مطلوب', bad_room: 'بيانات الغرفة غير صحيحة', bad_player: 'اللاعب غير صحيح', unknown_player: 'ما انوجد لاعب بهالرقم أو المعرّف', not_found: 'ما انوجدت الغرفة', bad_command: 'أمر غير صحيح' };
+let rmSel = '', rmData = null, rmTimer = null;
+const rmRoom = () => rmData && rmData.rooms.find(r => r.id === rmSel);
+function rmFmtTime(ts) { const d = new Date(ts); return ar(String(d.getHours()).padStart(2, '0')) + ':' + ar(String(d.getMinutes()).padStart(2, '0')); }
+async function loadOffice() {
+  clearTimeout(rmTimer);
+  rmData = await api('/office');
+  setBadge($('#nOffice'), rmData.rooms.reduce((n, r) => n + r.online, 0));
+  $('#rmBot').textContent = rmData.botAlive ? 'برنامج الحارس شغّال: الغرف المفتوحة بتظهر للاعبين.' : 'برنامج الحارس (البوت) مش شغّال: التعريفات بتنحفظ، لكن الغرف ما بتنفتح للاعبين لحد ما يشتغل.';
+  $('#rmBot').classList.toggle('hide', rmData.botAlive);
+  $('#rmEmpty').classList.toggle('hide', rmData.rooms.length > 0);
+  $('#rmTable').innerHTML = rmData.rooms.length ? '<tr><th>الغرفة</th><th>الرقم</th><th>السعة</th><th>الحالة</th><th>الموجودين</th><th></th></tr>' + rmData.rooms.map(r =>
+    '<tr><td><b>' + esc(r.name) + '</b>' + (r.pinned ? ' <span class="kind">مثبّتة</span>' : '') + (r.hidden ? ' <span class="kind i">مخفية</span>' : '') + '</td><td>' + ar(r.id) + '</td><td>' + ar(r.capacity) + ' · ' + ar(r.micSeats) + ' مقاعد</td><td>' + (r.open ? '<span class="kind c">مفتوحة</span>' : '<span class="kind">مسكّرة</span>') + '</td><td>' + ar(r.online) + ' · ' + ar(r.adminsOnline) + ' أدمن</td><td class="act"><button class="btn ghost sm" data-rm-sel="' + esc(r.id) + '">إدارة</button><button class="btn ghost sm" data-rm-del="' + esc(r.id) + '">حذف</button></td></tr>').join('') : '';
+  $$('[data-rm-sel]').forEach(b => b.onclick = () => { rmSel = b.dataset.rmSel; rmFill(); loadOfficeLive(); });
+  $$('[data-rm-del]').forEach(b => b.onclick = async () => { if (!confirm('تحذف هالغرفة نهائياً؟')) return; try { await api('/office/delete', { id: b.dataset.rmDel }); if (rmSel === b.dataset.rmDel) { rmSel = ''; } toast('انحذفت الغرفة'); loadOffice(); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } });
+  if (!rmRoom()) rmSel = '';
+  $('#rmDetail').classList.toggle('hide', !rmSel);
+  if (rmSel) { rmAdmins(); loadOfficeLive(); }
+  if ($('#v-office').classList.contains('on')) rmTimer = setTimeout(() => loadOffice().catch(() => {}), 5000);
+}
+function rmFill() {
+  const r = rmRoom(); const f = $('#rmForm');
+  if (!r) return;
+  $('#rmTitle').textContent = 'إعدادات: ' + r.name;
+  f.querySelectorAll('[data-k]').forEach(i => { const k = i.dataset.k; i.type === 'checkbox' ? i.checked = !!r[k] : i.value = k === 'slowSeconds' ? Math.round(r.slowMs / 1000) : (r[k] == null ? '' : r[k]); });
+  $('#rmDetail').classList.remove('hide');
+}
+function rmAdmins() {
+  const r = rmRoom(); if (!r) return;
+  $('#rmAdmins').innerHTML = r.adminList.length ? '<tr><th>الأدمن</th><th>الرقم</th><th>الحالة</th><th></th></tr>' + r.adminList.map(a => '<tr><td>' + esc(a.name) + '<div class="m">' + esc(a.pf) + '</div></td><td>' + (a.num ? ar(a.num) : '–') + '</td><td>' + (a.online ? '<span class="kind c">حاضر</span>' : '<span class="kind">مش موجود</span>') + '</td><td class="act"><button class="btn ghost sm" data-rm-rm="' + esc(a.pf) + '">شيل</button></td></tr>').join('') : '<tr><td>ما في أدمنز. أضف واحد.</td></tr>';
+  $$('[data-rm-rm]').forEach(b => b.onclick = async () => { try { await api('/office/admin', { room: rmSel, player: b.dataset.rmRm, on: false }); toast('انشال الأدمن'); loadOffice(); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } });
+}
+async function loadOfficeLive() {
+  const r = rmRoom(); if (!r) return;
+  const [lg, ch] = await Promise.all([api('/office/log?room=' + encodeURIComponent(rmSel)), api('/office/chat?room=' + encodeURIComponent(rmSel))]);
+  $('#rmCount').textContent = ar(r.online) + ' من ' + ar(r.capacity);
+  $('#rmMEmpty').classList.toggle('hide', r.members.length > 0);
+  $('#rmMembers').innerHTML = r.members.length ? '<tr><th>اللاعب</th><th>الحالة</th><th></th></tr>' + r.members.map(m => {
+    const onMic = r.stage.seats.includes(m.puid) || r.stage.head === m.puid, hand = r.stage.queue.includes(m.puid);
+    return '<tr><td>' + esc(m.name) + (m.staff ? ' <span class="kind">أدمن</span>' : '') + (m.isNew ? ' <span class="kind c">جديد</span>' : '') + (m.bot ? ' <span class="kind i">بوت</span>' : '') + '<div class="m">' + esc(m.pf) + '</div></td><td>' + (onMic ? 'على المايك' : hand ? '✋ رافع إيده' : 'يسمع') + '</td><td class="act">' + (m.staff || m.bot ? '' : '<button class="btn ghost sm" data-rm-cmd="down" data-puid="' + esc(m.puid) + '" data-pf="' + esc(m.pf) + '">نزّل</button><button class="btn ghost sm" data-rm-cmd="kick" data-puid="' + esc(m.puid) + '" data-pf="' + esc(m.pf) + '">اطرد</button>') + '</td></tr>'; }).join('') : '';
+  $$('[data-rm-cmd]').forEach(b => b.onclick = async () => { try { await api('/office/command', { room: rmSel, kind: b.dataset.rmCmd, puid: b.dataset.puid, pf: b.dataset.pf }); toast('انبعت الأمر للبوت'); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } });
+  $('#rmChatEmpty').classList.toggle('hide', ch.messages.length > 0);
+  $('#rmChat').innerHTML = ch.messages.length ? ch.messages.map(m => '<tr><td>' + esc(m.name) + '<div class="m">' + rmFmtTime(m.ts) + '</div></td><td>' + esc(m.text) + '</td><td class="act"><button class="btn ghost sm" data-rm-mdel="' + m.id + '">احذف</button>' + (m.from ? '<button class="btn ghost sm" data-rm-mute="' + esc(m.from) + '">اكتم ١٠ د</button>' : '') + '</td></tr>').join('') : '';
+  $$('[data-rm-mdel]').forEach(b => b.onclick = async () => { try { await api('/office/chat/delete', { id: Number(b.dataset.rmMdel) }); loadOfficeLive(); } catch (x) { toast(errText(x.code)); } });
+  $$('[data-rm-mute]').forEach(b => b.onclick = async () => { try { await api('/players/mute', { pf: b.dataset.rmMute, minutes: 10 }); toast('انكتم ١٠ دقايق'); } catch (x) { toast(errText(x.code)); } });
+  $('#rmStats').textContent = 'دخول اليوم ' + ar(lg.stats.joinsToday) + ' · رسائل اليوم ' + ar(lg.stats.chatToday);
+  $('#rmLogEmpty').classList.toggle('hide', lg.log.length > 0);
+  const KIND = { join: 'g', leave: '', hand: 'b', mic: 'b', admin: '', room: 'b' };
+  $('#rmLog').innerHTML = lg.log.map(l => '<li><span class="dot ' + (KIND[l.kind] || '') + '"></span>' + esc(l.name ? l.name + ' · ' : '') + esc(l.text) + '<time>' + rmFmtTime(l.ts) + '</time></li>').join('');
+}
+$('#rmNew').onclick = async () => { try { const r = await api('/office/save', { name: 'غرفة رسمية جديدة', capacity: 64, micSeats: 8, micMode: 'request' }); rmSel = r.room.id; toast('انعملت الغرفة'); await loadOffice(); rmFill(); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } };
+$('#rmForm').onsubmit = async e => {
+  e.preventDefault(); $('#rmErr').textContent = '';
+  const body = { id: rmSel }; e.target.querySelectorAll('[data-k]').forEach(i => body[i.dataset.k] = i.type === 'checkbox' ? i.checked : i.value);
+  try { await api('/office/save', body); toast('انحفظت'); loadOffice(); } catch (x) { $('#rmErr').textContent = OFERR[x.code] || errText(x.code); }
+};
+$('#rmAdminAdd').onsubmit = async e => { e.preventDefault(); const i = e.target.querySelector('input'); try { await api('/office/admin', { room: rmSel, player: i.value.trim() }); i.value = ''; toast('انضاف الأدمن'); loadOffice(); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } };
+$('#rmSay').onsubmit = async e => { e.preventDefault(); const i = e.target.querySelector('input'); if (!i.value.trim()) return; try { await api('/office/chat/say', { room: rmSel, text: i.value.trim() }); i.value = ''; loadOfficeLive(); } catch (x) { toast(OFERR[x.code] || errText(x.code)); } };
+loaders.office = loadOffice;
+
+// ------------------------------------------------------------------ bots
+const BTERR = { bad_room: 'اختر غرفة', bad_profile: 'بيانات البوت غير صحيحة', name_required: 'الاسم مطلوب', name_taken: 'الاسم مستخدم', too_many: 'كتير بوتات', not_found: 'ما انوجد' };
+let btTimer = null;
+const STYLE = { quiet: 'هادي', normal: 'عادي', chatty: 'حكّي' };
+async function loadBots() {
+  clearTimeout(btTimer);
+  const [v, o] = await Promise.all([api('/bots'), api('/office').catch(() => ({ rooms: [] }))]);
+  $('#btStatus').textContent = v.alive ? 'برنامج البوتات شغّال.' : 'برنامج البوتات مش شغّال: التكليفات والشخصيات بتنحفظ، وبتتنفّذ لما يشتغل.';
+  $('#btStatus').classList.toggle('hide', v.alive);
+  $('#btTotal').textContent = ar(v.stats.total); $('#btRun').textContent = ar(v.stats.running); $('#btRooms').textContent = ar(v.stats.rooms); $('#btMatch').textContent = ar(v.stats.matches); $('#btReal').textContent = ar(v.real);
+  const sel = $('#btOrder [data-k=room]'), keep = sel.value;
+  sel.innerHTML = o.rooms.map(r => '<option value="official:' + esc(r.id) + '">' + esc(r.name) + ' (رسمية)</option>').join('') + v.lobbies.map(l => '<option value="lobby:' + esc(l.id) + '">' + esc(l.name) + ' · ' + ar(l.count) + ' من ' + ar(l.capacity) + (l.mafia ? ' · مافيا' : '') + '</option>').join('');
+  if (keep) sel.value = keep;
+  const roomName = ref => { const f = [...sel.options].find(x => x.value === ref); return f ? f.textContent : ref; };
+  $('#btOrdEmpty').classList.toggle('hide', v.orders.length > 0);
+  $('#btOrders').innerHTML = v.orders.length ? '<tr><th>الغرفة</th><th>العدد</th><th>بيعملوا</th><th></th></tr>' + v.orders.map(x => '<tr><td>' + esc(roomName(x.room)) + '</td><td>' + ar(x.count) + (x.fillTo ? ' · تكمّل لـ' + ar(x.fillTo) : '') + '</td><td>' + [x.sit ? 'مقاعد' : '', x.chat ? 'دردشة' : '', x.play ? 'مباراة' : ''].filter(Boolean).join(' · ') + '</td><td class="act"><button class="btn ghost sm" data-bt-od="' + esc(x.id) + '">شيل</button></td></tr>').join('') : '';
+  $$('[data-bt-od]').forEach(b => b.onclick = async () => { try { await api('/bots/order/delete', { id: b.dataset.btOd }); loadBots(); } catch (x) { toast(BTERR[x.code] || errText(x.code)); } });
+  $('#btRunEmpty').classList.toggle('hide', v.running.length > 0);
+  const pname = id => { const p = v.profiles.find(z => z.id === id); return p ? p.name : id; };
+  $('#btRunning').innerHTML = v.running.length ? '<tr><th>البوت</th><th>الغرفة</th><th>الحالة</th></tr>' + v.running.map(b => '<tr><td>' + esc(pname(b.id)) + '</td><td>' + esc(roomName(b.room)) + '</td><td>' + esc({ seat: 'على مقعد', listen: 'يسمع', match: 'بمباراة' }[b.status] || b.status) + (b.role ? ' · ' + esc(b.role) : '') + '</td></tr>').join('') : '';
+  $('#btProfEmpty').classList.toggle('hide', v.profiles.length > 0);
+  $('#btProfiles').innerHTML = v.profiles.length ? '<tr><th>الاسم</th><th>المستوى</th><th>الأسلوب</th><th></th></tr>' + v.profiles.map(p => '<tr><td>' + esc(p.name) + '</td><td>م' + ar(p.level) + '</td><td>' + (STYLE[p.style] || p.style) + '</td><td class="act"><button class="btn ghost sm" data-bt-pd="' + esc(p.id) + '">احذف</button></td></tr>').join('') : '';
+  $$('[data-bt-pd]').forEach(b => b.onclick = async () => { try { await api('/bots/profile/delete', { id: b.dataset.btPd }); loadBots(); } catch (x) { toast(BTERR[x.code] || errText(x.code)); } });
+  const L = $('#btLaunch'); if (!L.dataset.filled) { L.dataset.filled = '1'; L.querySelectorAll('[data-k]').forEach(i => { i.type === 'checkbox' ? i.checked = !!v.launch[i.dataset.k] : i.value = v.launch[i.dataset.k]; }); }
+  if ($('#v-bots').classList.contains('on')) btTimer = setTimeout(() => loadBots().catch(() => {}), 5000);
+}
+const formBody = f => { const b = {}; f.querySelectorAll('[data-k]').forEach(i => b[i.dataset.k] = i.type === 'checkbox' ? i.checked : i.value); return b; };
+$('#btOrder').onsubmit = async e => { e.preventDefault(); $('#btErr').textContent = ''; try { await api('/bots/order', formBody(e.target)); toast('انضاف التكليف'); loadBots(); } catch (x) { $('#btErr').textContent = BTERR[x.code] || errText(x.code); } };
+$('#btGen').onsubmit = async e => { e.preventDefault(); try { const r = await api('/bots/generate', formBody(e.target)); toast('انعمل ' + ar(r.made.length) + ' بوت'); loadBots(); } catch (x) { toast(BTERR[x.code] || errText(x.code)); } };
+$('#btLaunch').onsubmit = async e => { e.preventDefault(); try { await api('/bots/launch', formBody(e.target)); toast('انحفظ وضع الإطلاق'); } catch (x) { toast(BTERR[x.code] || errText(x.code)); } };
+loaders.bots = loadBots;
+Object.assign(ACT, { office_create: 'غرفة رسمية جديدة', office_update: 'تعديل غرفة رسمية', office_delete: 'حذف غرفة رسمية', office_admin_add: 'إضافة أدمن لغرفة', office_admin_remove: 'شيل أدمن من غرفة', office_kick: 'طرد من غرفة رسمية', office_down: 'إنزال عن المايك', office_mute: 'كتم بغرفة رسمية', office_chat_delete: 'حذف رسالة غرفة', office_say: 'رسالة باسم المكتب', bots_generate: 'توليد بوتات', bot_save: 'حفظ بوت', bot_delete: 'حذف بوت', bots_order: 'تكليف بوتات لغرفة', bots_order_delete: 'شيل تكليف بوتات', bots_launch: 'وضع إطلاق البوتات' });
+</script>
+</body>
+</html>

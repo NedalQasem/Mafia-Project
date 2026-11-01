@@ -1,0 +1,293 @@
+'use strict';
+// The HTTP service. POST /v1/match-result is idempotent: a player's device sends the finished match, and sends it again to
+// see whether the reward arrived (it answers "waiting" until more than half of the players reported the same match).
+
+const http = require('node:http');
+const crypto = require('node:crypto');
+const R = require('./rewards');
+const { PlayFabError } = require('./playfab');
+const { createLegal } = require('./legal');
+
+const PROGRESS_KEY = 'Progress';
+
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, accounts = null, identity = null, admin = null, officialRooms = null, botFarm = null, botKey = '', voice = null, now = () => Date.now(), log = console }) {
+  const buckets = new Map();   // ip -> { count, resetAt }
+  const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
+  const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
+
+  async function who(ticket) {
+    const t = now();
+    const hit = tickets.get(ticket);
+    if (hit && hit.until > t) return hit.pf;
+    const pf = await playfab.authenticate(ticket);
+    tickets.set(ticket, { pf, until: t + 5 * 60 * 1000 });
+    if (tickets.size > 5000) for (const [k, v] of tickets) if (v.until < t) tickets.delete(k);
+    if (accounts) accounts.touch(pf);
+    if (chat) chat.who(pf).catch(() => {});      // learns the name of every player who opens the game, so the admin can find him by it
+    return pf;
+  }
+
+  function limited(ip) {
+    const t = now();
+    let b = buckets.get(ip);
+    if (!b || t > b.resetAt) { b = { count: 0, resetAt: t + 60000 }; buckets.set(ip, b); }
+    return ++b.count > cfg.requestsPerMinutePerIp;
+  }
+
+  function withLock(id, fn) {
+    const prev = locks.get(id) || Promise.resolve();
+    const next = prev.catch(() => {}).then(fn);
+    locks.set(id, next);
+    next.finally(() => { if (locks.get(id) === next) locks.delete(id); }).catch(() => {});
+    return next;
+  }
+
+  function summaryHash(r) {
+    return crypto.createHash('sha256').update(JSON.stringify([[...r.players].sort(), r.winner])).digest('hex');
+  }
+
+  const today = () => new Date(now()).toISOString().slice(0, 10);
+
+  /** Pays one player of a match whose quorum is reached. Safe to call again: each step is remembered. */
+  async function pay(match, group, playFabId) {
+    const rep = group.reports[playFabId];
+    const g = (match.grants[playFabId] = match.grants[playFabId] || { progress: false, coins: false });
+    const reward = R.rewardFor({ myRole: rep.myRole, survived: rep.survived, winner: group.winner }, cfg);
+    if (g.capped) return { granted: false, capped: true };
+    if (!g.progress && !g.coins && store.dailyCount(playFabId, today()) >= cfg.dailyMatchCap) { g.capped = true; store.putMatch(match.id, match); return { granted: false, capped: true }; }
+    if (!g.progress) {
+      const progress = (await playfab.getProgress(playFabId, PROGRESS_KEY)) || R.newProgress();
+      R.applyReward(progress, { myRole: rep.myRole }, reward, new Date(now()).toISOString());
+      await playfab.setProgress(playFabId, PROGRESS_KEY, progress);
+      g.progress = true;
+      if (leaderboard) leaderboard.record(playFabId, { won: reward.won, role: rep.myRole, survived: rep.survived, durationSec: rep.durationSec, rankPointsGained: reward.rankPoints, rankPointsNow: progress.rankPoints });
+      if (events) events.record(playFabId, { won: reward.won, points: reward.rankPoints, secs: rep.durationSec });
+      store.addDaily(playFabId, today());
+      if (admin) admin.noteMatch(match.id);
+      store.putMatch(match.id, match);
+    }
+    // a running bonus event multiplies the coins (only the coins; xp and rank stay the same)
+    const coins = events ? Math.round(reward.coins * events.coinsMultiplier()) : reward.coins;
+    if (!g.coins) {
+      if (coins > 0) await playfab.addCurrency(playFabId, cfg.currencyCode, coins);
+      g.coins = true;
+      store.putMatch(match.id, match);
+    }
+    return { granted: true, xp: reward.xp, coins, rankPoints: reward.rankPoints, won: reward.won };
+  }
+
+  async function handleMatchResult(ticket, body) {
+    const playFabId = await who(ticket);
+    const bad = R.validateReport(body, cfg);
+    if (bad) return { status: 400, body: { ok: false, error: bad } };
+    if (!body.players.includes(playFabId)) return { status: 403, body: { ok: false, error: 'not a player of this match' } };
+
+    return withLock('match:' + body.matchId, async () => {
+      let match = store.match(body.matchId);
+      if (!match) match = { id: body.matchId, firstSeen: now(), groups: {}, reporters: {}, grants: {} };
+      const h = summaryHash(body);
+      if (match.reporters[playFabId] === undefined) {
+        if (now() - match.firstSeen > cfg.reportWindowSeconds * 1000) return { status: 410, body: { ok: false, error: 'report window closed' } };
+        // reports that agree about who played and who won form a group; only a group with more than half of its players is paid,
+        // so one player who invents a different story cannot pay himself and cannot block the honest ones
+        const group = (match.groups[h] = match.groups[h] || { players: [...body.players].sort(), winner: body.winner, reports: {} });
+        group.reports[playFabId] = { myRole: body.myRole, survived: body.survived, rounds: body.rounds, durationSec: body.durationSec };
+        match.reporters[playFabId] = h;
+        store.putMatch(match.id, match);
+      }
+      const group = match.groups[match.reporters[playFabId]];
+      const need = R.quorumFor(group.players.length, cfg);
+      const have = Object.keys(group.reports).length;
+      if (have < need) return { status: 200, body: { ok: true, granted: false, waiting: true, reports: have, needed: need } };
+
+      const r = await withLock('pf:' + playFabId, () => pay(match, group, playFabId));
+      return { status: 200, body: { ok: true, ...r } };
+    });
+  }
+
+  function send(res, status, obj) {
+    const text = JSON.stringify(obj);
+    res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': Buffer.byteLength(text), 'Cache-Control': 'no-store' });
+    res.end(text);
+  }
+
+  function readJson(req, res, limit = 8192) {
+    return new Promise(resolve => {
+      let size = 0; const chunks = [];
+      req.on('data', c => { size += c.length; if (size > limit) { send(res, 413, { ok: false, error: 'too big' }); req.destroy(); resolve(undefined); } else chunks.push(c); });
+      req.on('end', () => {
+        if (res.writableEnded) return resolve(undefined);
+        if (size === 0) return resolve({});
+        try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch { send(res, 400, { ok: false, error: 'bad json' }); resolve(undefined); }
+      });
+    });
+  }
+
+  function fail(res, e, what) {
+    if (e instanceof PlayFabError && (e.status === 401 || e.status === 403 || e.code === 'InvalidSessionTicket' || e.code === 'NoUser')) return send(res, 401, { ok: false, error: 'bad ticket' });
+    if (e && e.code && e.status && !(e instanceof PlayFabError)) return send(res, e.status, Object.assign({ ok: false, error: e.code }, e.extra || {}));
+    log.error(what + ' failed:', e && e.message);
+    send(res, 502, { ok: false, error: 'try again' });
+  }
+
+  const chatPost = {
+    '/v1/chat/send': (pf, b) => chat.send(pf, b),
+    '/v1/chat/read': async (pf, b) => chat.markRead(pf, b.channel, b.upTo),
+    '/v1/chat/group/create': (pf, b) => chat.createGroup(pf, b),
+    '/v1/chat/group/leave': (pf, b) => chat.leaveGroup(pf, b.id),
+    '/v1/chat/report': async (pf, b) => chat.report(pf, b),
+    '/v1/chat/block': async (pf, b) => chat.block(pf, b.player, !!b.on),
+  };
+
+  const friendsPost = friends ? {
+    '/v1/friends/lookup': (pf, b) => friends.lookup(pf, b),
+    '/v1/friends/request': (pf, b) => friends.request(pf, b),
+    '/v1/friends/respond': (pf, b) => friends.respond(pf, b),
+    '/v1/friends/cancel': async (pf, b) => friends.cancel(pf, b),
+    '/v1/friends/remove': async (pf, b) => friends.remove(pf, b),
+    '/v1/friends/invite': (pf, b) => friends.invite(pf, b),
+    '/v1/presence': async (pf, b) => friends.setPresence(pf, b),
+    '/v1/report/player': async (pf, b) => friends.reportPlayer(pf, b),
+  } : {};
+  const boardPost = leaderboard ? {
+    '/v1/leaderboard': (pf, b) => leaderboard.board(pf, b),
+    '/v1/wall': async () => leaderboard.wall(),
+  } : {};
+  const offersPost = offers ? { '/v1/offers': async () => ({ ok: true, offers: offers.active() }) } : {};
+  const eventsPost = events ? {
+    '/v1/events': async pf => events.board(pf),
+    '/v1/events/ranking': (pf, b) => events.ranking(pf, b),
+    '/v1/events/claim': (pf, b) => withLock('pf:' + pf, () => events.claim(pf, b)),
+  } : {};
+  const mailPost = mail ? {
+    '/v1/mail': async pf => mail.list(pf),
+    '/v1/mail/claim': (pf, b) => withLock('pf:' + pf, () => mail.claim(pf, String(b.id || ''))),
+    '/v1/mail/claim-all': pf => withLock('pf:' + pf, () => mail.claimAll(pf)),
+    '/v1/mail/read': (pf, b) => withLock('pf:' + pf, async () => mail.read(pf, String(b.id || ''))),
+  } : {};
+  const accountPost = accounts ? { '/v1/account': async pf => accounts.status(pf) } : {};
+  const identityPost = identity ? {
+    '/v1/auth/google/link': (pf, b) => withLock('pf:' + pf, () => identity.link(pf, 'google', b.idToken)),
+    '/v1/auth/facebook/link': (pf, b) => withLock('pf:' + pf, () => identity.link(pf, 'facebook', b.accessToken)),
+  } : {};
+  const loginRoutes = { '/v1/auth/google/login': ['google', 'idToken'], '/v1/auth/facebook/login': ['facebook', 'accessToken'] };
+  const codesPost = codes ? { '/v1/codes/redeem': async (pf, b) => codes.redeem(pf, b.code) } : {};
+  // official rooms: the list, entering and leaving a room's chat (a player is inside a room's chat only while he pings)
+  const roomsPost = officialRooms ? {
+    '/v1/rooms/official': async pf => officialRooms.list(pf),
+    '/v1/rooms/official/enter': async (pf, b) => officialRooms.enter(pf, String(b.id || '')),
+    '/v1/rooms/official/ping': async pf => officialRooms.ping(pf),
+    '/v1/rooms/official/leave': async pf => officialRooms.leave(pf),
+  } : {};
+  // voice tokens for the LiveKit rooms (the voice where many listen and a few speak)
+  const voicePost = voice && voice.enabled ? { '/v1/voice/token': async (pf, b) => voice.token(pf, chat ? (await chat.who(pf)).name : '', String(b.room || '')) } : {};
+  const posts = Object.assign({}, chat ? chatPost : {}, roomsPost, voicePost, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
+  const legal = createLegal();
+
+  const server = http.createServer((req, res) => {
+    const ip = (cfg.trustProxy && req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : req.socket.remoteAddress) || 'unknown';
+    const url = new URL(req.url, 'http://local');
+    if (req.method === 'GET' && url.pathname === '/health') return send(res, 200, { ok: true });
+    // the public privacy policy and data deletion pages (asked by the stores and by Facebook)
+    if (req.method === 'GET' && legal.page(url.pathname)) {
+      const html = legal.page(url.pathname);
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=3600', 'X-Content-Type-Options': 'nosniff' });
+      return res.end(html);
+    }
+    if (req.method === 'GET' && legal.movedTo(url.pathname)) { res.writeHead(301, { Location: legal.movedTo(url.pathname) }); return res.end(); }
+    if (limited(ip)) return send(res, 429, { ok: false, error: 'slow down' });
+    if (admin && admin.owns(url.pathname)) return admin.handle(req, res, url, ip);      // the admin board (its own login)
+
+    // a picture of a private message: its name is random and unguessable, so it needs no ticket (the game loads it as a texture)
+    if (images && req.method === 'GET' && url.pathname.startsWith('/v1/img/')) {
+      const img = images.get(url.pathname.slice(8));
+      if (!img) return send(res, 404, { ok: false, error: 'not found' });
+      res.writeHead(200, { 'Content-Type': img.mime, 'Content-Length': img.buf.length, 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' });
+      return res.end(img.buf);
+    }
+    // sign in with a user name and password (account recovery): the one route that has no session ticket yet
+    if (recovery && req.method === 'POST' && url.pathname === '/v1/recover/login') {
+      (async () => {
+        try {
+          const body = await readJson(req, res);
+          if (body === undefined) return;
+          send(res, 200, await recovery.login(body && body.username, body && body.password, ip));
+        } catch (e) { fail(res, e, url.pathname); }
+      })();
+      return;
+    }
+    // sign in with Google or Facebook on a device that has no session yet (a new device, or the first start): answers with a PlayFab session
+    if (identity && req.method === 'POST' && loginRoutes[url.pathname]) {
+      const [provider, field] = loginRoutes[url.pathname];
+      (async () => {
+        try {
+          const body = await readJson(req, res);
+          if (body === undefined) return;
+          send(res, 200, await identity.login(provider, body && body[field]));
+        } catch (e) { fail(res, e, url.pathname); }
+      })();
+      return;
+    }
+    // the room bot (a program of ours on the same server): it has no player ticket, it has a shared key
+    if (botKey && url.pathname.startsWith('/v1/bot/')) {
+      const got = String(req.headers['x-bot-key'] || '');
+      const ok = got.length === botKey.length && crypto.timingSafeEqual(Buffer.from(got), Buffer.from(botKey));
+      if (!ok) return send(res, 401, { ok: false, error: 'bad key' });
+      (async () => {
+        try {
+          if (req.method === 'POST' && url.pathname === '/v1/bot/beat') {
+            const body = await readJson(req, res, 262144);
+            if (body === undefined) return;
+            const out = officialRooms ? officialRooms.beat(body) : { ok: true, commands: [], rooms: [] };
+            if (botFarm) out.farm = botFarm.beat(body);
+            return send(res, 200, out);
+          }
+          if (req.method === 'POST' && url.pathname === '/v1/bot/say') {
+            const body = await readJson(req, res, 4096);
+            if (body === undefined) return;
+            const id = String((body && body.room) || '');
+            if (!chat || !officialRooms || !officialRooms.room(id) || !officialRooms.chatOpen(id)) return send(res, 200, { ok: false, error: 'closed' });
+            const m = chat.botSay('room:' + id, body.bot, body.text);
+            return send(res, 200, { ok: !!m, id: m ? m.id : 0 });
+          }
+          return send(res, 404, { ok: false, error: 'not found' });
+        } catch (e) { fail(res, e, url.pathname); }
+      })();
+      return;
+    }
+    const isResult = req.method === 'POST' && url.pathname === '/v1/match-result';
+    const isChatPost = req.method === 'POST' && !!posts[url.pathname];
+    const isChatGet = req.method === 'GET' && ((!!chat && (url.pathname === '/v1/chat/poll' || url.pathname === '/v1/chat/inbox' || url.pathname === '/v1/chat/blocked')) || (!!friends && (url.pathname === '/v1/friends' || url.pathname === '/v1/me')));
+    if (!isResult && !isChatPost && !isChatGet) return send(res, 404, { ok: false, error: 'not found' });
+
+    const ticket = req.headers['x-authorization'];
+    if (typeof ticket !== 'string' || ticket.length < 10 || ticket.length > 2000) return send(res, 401, { ok: false, error: 'no ticket' });
+
+    (async () => {
+      try {
+        if (isChatGet) {
+          const pf = await who(ticket);
+          if (url.pathname === '/v1/friends') return send(res, 200, await friends.list(pf));
+          if (url.pathname === '/v1/me') return send(res, 200, await friends.me(pf));
+          if (url.pathname === '/v1/chat/inbox') return send(res, 200, await chat.inbox(pf));
+          if (url.pathname === '/v1/chat/blocked') return send(res, 200, chat.blockedList(pf));
+          if (officialRooms) officialRooms.ping(pf);
+          const out = await chat.poll(pf, parseInt(url.searchParams.get('since') || '0', 10), Math.min(parseInt(url.searchParams.get('wait') || '0', 10) * 1000 || 0, 25000), url.searchParams.get('history') === '1');
+          return send(res, 200, Object.assign({ ok: true }, out));
+        }
+        const body = await readJson(req, res);
+        if (body === undefined) return;
+        if (isChatPost) {
+          const pf = await who(ticket);
+          return send(res, 200, await posts[url.pathname](pf, body || {}));
+        }
+        const out = await handleMatchResult(ticket, body);
+        send(res, out.status, out.body);
+      } catch (e) { fail(res, e, url.pathname); }
+    })();
+  });
+
+  return { server, handleMatchResult };
+}
+
+module.exports = { createApp, PROGRESS_KEY };

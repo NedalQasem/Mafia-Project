@@ -1,0 +1,15 @@
+# LiveKit server for the voice of the rooms where many players listen and a few speak (audio only, nothing is recorded).
+# The signalling port (7880) is not published: the website's nginx reaches it as http://mafia-livekit:7880 under /lk/ (see README).
+# The media goes straight to the server on ONE udp port (7882) with a TCP fallback (7881).
+port: 7880
+rtc:
+  tcp_port: 7881
+  udp_port: 7882
+  use_external_ip: true
+room:
+  auto_create: true
+  empty_timeout: 300        # an empty room is closed after 5 minutes
+  departure_timeout: 20
+logging:
+  level: info
+# the API key and secret come from the environment (LIVEKIT_KEYS, written by set-livekit.sh), never from this file

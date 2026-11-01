@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تأثير الورقة اللي بتنحرق</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&display=swap">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:14px 10px 40px;background:#050404;color:#d9d0bd;font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 4px;font-size:1.9rem}
+.sub{text-align:center;color:#8f8777;margin:0 auto 16px;max-width:760px;line-height:1.8;font-size:.86rem}
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:34px}
+.col{display:grid;gap:10px;justify-items:center;align-content:start;width:min(390px,100%)}
+.cap{color:#8d744a;font-weight:800;font-size:.8rem;margin:0;text-align:center;line-height:1.6;min-height:2.6em}
+button{font-family:inherit;border:0;color:inherit;background:none;padding:0;cursor:pointer}
+button:focus-visible{outline:2px solid #d9d0bd;outline-offset:2px}
+
+.phone{width:390px;max-width:100%;aspect-ratio:390/790;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;background:#0a0807;box-shadow:0 0 0 7px #14100e,0 0 0 8px #ffffff14,0 24px 50px #000}
+.phone canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.phone .sp{pointer-events:none}
+.ctl{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.ctl button{padding:6px 13px;border-radius:15px;font-weight:800;font-size:.76rem;color:#a79d88;background:#1a130f;box-shadow:0 0 0 1px #3a2e22}
+.ctl button.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30)}
+.ctl button.go{color:#f3dfa6;background:linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);box-shadow:0 0 0 1px #000}
+.ctl .lbl{align-self:center;color:#6f685c;font-size:.7rem;font-weight:800;padding:0 4px}
+.notes{max-width:860px;margin:30px auto 0;padding:16px 20px;border-radius:8px;background:#120d0a;box-shadow:inset 0 0 0 1px #3a2e22;line-height:1.85;font-size:.84rem}
+.notes b{display:block;font-family:Lalezar;font-weight:400;font-size:1.1rem;color:#e8cc8c;margin-top:8px}
+.notes ul{margin:2px 0 6px;padding-inline-start:20px;color:#b9ae98}
+.notes li{margin:2px 0}
+</style>
+</head>
+<body>
+<h1>تأثير الورقة اللي بتنحرق</h1>
+<p class="sub">بدل ما الشاشة تتبدّل فجأة، الشاشة القديمة بتنحرق من زاوية لحد الزاوية المقابلة وبتظهر الجديدة من تحتها: حافة نار متوهجة، وبعدها فحم أسود، ورماد وشرر بيطلع لفوق. جرّب الأزرار تحت كل جوال.</p>
+
+<div class="row">
+  <div class="col">
+    <p class="cap">١ · التنقّل بين الشاشات (تبويبات الشريط السفلي): النار بتبلّش من الزاوية اللي جنب التبويب اللي ضغطت عليه</p>
+    <div class="phone" id="p1"></div>
+    <div class="ctl" id="c1">
+      <button class="go" data-go="0">رتبتي</button><button class="go" data-go="1">الحقيبة</button><button class="go" data-go="2">الأحداث</button>
+    </div>
+    <div class="ctl" data-group="corner"><span class="lbl">تبلّش من</span><button data-v="br" class="on">تحت يمين</button><button data-v="bl">تحت يسار</button><button data-v="tr">فوق يمين</button><button data-v="tl">فوق يسار</button></div>
+    <div class="ctl" data-group="speed"><span class="lbl">السرعة</span><button data-v="0.5">سريع ٠٫٥ث</button><button data-v="0.9" class="on">عادي ٠٫٩ث</button><button data-v="1.6">بطيء ١٫٦ث</button></div>
+  </div>
+  <div class="col">
+    <p class="cap">٢ · تقليب صفحات جريدة العروض: كل صفحة بتنحرق وبتظهر اللي بعدها</p>
+    <div class="phone" id="p2"></div>
+    <div class="ctl" id="c2"><button class="go" data-dir="prev">السابق ←</button><button class="go" data-dir="next">→ التالي</button><button data-auto="1">عرض تلقائي</button></div>
+    <div class="ctl" data-group="speed2"><span class="lbl">السرعة</span><button data-v="0.5">سريع ٠٫٥ث</button><button data-v="0.9" class="on">عادي ٠٫٩ث</button><button data-v="1.6">بطيء ١٫٦ث</button></div>
+  </div>
+</div>
+
+<div class="notes">
+  <b>وين بيشتغل</b>
+  <ul>
+    <li>بين شاشات الشريط السفلي (السوق، العائلة، الغرف، الرتب، الإعدادات) وبين صفحات القوائم اللي بتنفتح منه (الحقيبة، رتبتي…): النار بتبلّش من الزاوية السفلية اللي جنب التبويب (يمين لتبويب يمين، ويسار لتبويب يسار، والغرف من الجهة اللي جاي منها)، وبتخلص بالزاوية العلوية المقابلة.</li>
+    <li>بين صفحات «جريدة الليل» لما تتقلّب: التالي بيبلّش تحت يمين، والسابق تحت يسار.</li>
+    <li>بين التبويبات الصغيرة جوّا الشاشة (الخاص/المجموعات، أنواع الحقيبة…) نسخة أخف وأسرع (٠٫٤ ثانية) بدون شرر كتير، ليضل التنقل خفيف.</li>
+  </ul>
+  <b>كيف بيشتغل</b>
+  <ul>
+    <li>قبل ما الشاشة تتبدّل بناخد لقطة منها، وبنفتح الجديدة تحتها، واللقطة بتنحرق فوقها بتأثير (شيدر) بنسبة نار تمشي من زاوية لزاوية. الحافة مش مستقيمة: بتتعرّج عشوائياً متل ورقة حقيقية.</li>
+    <li>الشاشة الجديدة بتشتغل وتتحمّل وهي تحت النار، فما في انتظار إضافي: بالعكس التأثير بيغطّي وقت التحميل.</li>
+    <li>المدة العادية ٠٫٩ ثانية، وفي سريع وبطيء. النقر خلال التأثير بيتجاهل (ما بيضغط شي بالشاشة القديمة).</li>
+  </ul>
+  <b>للأجهزة الضعيفة والحالات الخاصة</b>
+  <ul>
+    <li>على الأجهزة الضعيفة بتنزل الدقة تلقائياً وبيقل الشرر. وإذا اللاعب فاتح «تقليل الحركة» بنظام الجهاز، بيصير تلاشي سريع (٠٫٢ ثانية) بدل النار.</li>
+    <li>خيار بالإعدادات «تأثيرات الانتقال: نار / بسيط / بدون» ليختار اللاعب.</li>
+    <li>الأصوات: خشخشة نار خفيفة اختيارية (بتحتاج ملف صوت، مش مدرج بالتصميم).</li>
+  </ul>
+</div>
+
+<script>
+// ------------------------------------------------------------------ the burn
+// A page is burnt away along a front that moves from one corner to the opposite one. Every pixel has a "time of burning" t (its distance from the
+// corner, bent by noise so the edge is ragged). The front is at p: pixels with t > p are paper, a band behind the front glows white -> orange -> red,
+// then turns to char and falls away as ash, and past the band the page below shows. In Unity this is one UI shader on the snapshot of the old screen.
+const MW = 195, MH = 395, W = 390, H = 790, BAND = 0.17;
+
+function hash(n) { n = Math.sin(n) * 43758.5453; return n - Math.floor(n); }
+const NOISE = (() => {                                   // value noise, two octaves, 0..1
+  const g = 24, grid = []; for (let i = 0; i < (g + 2) * (g + 2); i++) grid.push(hash(i * 12.9898 + 4.1));
+  const at = (x, y) => grid[y * (g + 2) + x];
+  const smooth = t => t * t * (3 - 2 * t);
+  const v = (u, w) => { const x = u * g, y = w * g, xi = Math.floor(x), yi = Math.floor(y), fx = smooth(x - xi), fy = smooth(y - yi);
+    return at(xi, yi) * (1 - fx) * (1 - fy) + at(xi + 1, yi) * fx * (1 - fy) + at(xi, yi + 1) * (1 - fx) * fy + at(xi + 1, yi + 1) * fx * fy; };
+  const out = new Float32Array(MW * MH);
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) { const u = x / MW, w = y / MH; out[y * MW + x] = 0.65 * v(u * 0.6, w * 0.6) + 0.35 * v(u * 0.9 + 0.05, w * 0.9 + 0.05); }
+  return out;
+})();
+
+class Burn {
+  constructor(root, srcs, opts = {}) {
+    this.root = root; this.imgs = []; this.cur = 0; this.running = false; this.parts = []; this.speed = 0.9; this.corner = 'br';
+    const mk = cls => { const c = document.createElement('canvas'); c.width = W * 2; c.height = H * 2; if (cls) c.className = cls; root.appendChild(c); return c; };
+    this.under = mk(); this.top = mk(); this.fx = mk(); this.sp = mk('sp');
+    this.mask = document.createElement('canvas'); this.mask.width = MW; this.mask.height = MH;
+    this.edge = document.createElement('canvas'); this.edge.width = MW; this.edge.height = MH;
+    this.mctx = this.mask.getContext('2d'); this.ectx = this.edge.getContext('2d');
+    this.mimg = this.mctx.createImageData(MW, MH); this.eimg = this.ectx.createImageData(MW, MH);
+    this.d = new Float32Array(MW * MH); this.setCorner('br');
+    this.ready = Promise.all(srcs.map(s => new Promise(r => { const im = new Image(); im.onload = () => r(im); im.src = s; }))).then(l => { this.imgs = l; this.still(this.cur); });
+  }
+  setCorner(c) {
+    this.corner = c; const cx = c[1] === 'r' ? 1 : 0, cy = c[0] === 'b' ? 1 : 0, far = Math.hypot(W, H);
+    for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) this.d[y * MW + x] = Math.hypot((x / MW - cx) * W, (y / MH - cy) * H) / far;
+  }
+  draw(ctx, img) { ctx.clearRect(0, 0, W * 2, H * 2); if (img) ctx.drawImage(img, 0, 0, W * 2, H * 2); }
+  still(i) { this.cur = i; this.draw(this.top.getContext('2d'), this.imgs[i]); this.under.getContext('2d').clearRect(0, 0, W * 2, H * 2); this.fx.getContext('2d').clearRect(0, 0, W * 2, H * 2); this.sp.getContext('2d').clearRect(0, 0, W * 2, H * 2); }
+
+  /** Draws the burning page at front position p (0 = nothing burnt yet). time makes the embers flicker. */
+  frame(p, time = 0) {
+    const M = this.mimg.data, F = this.eimg.data, d = this.d, n = NOISE, N = MW * MH, tk = Math.floor(time * 12);
+    for (let i = 0; i < N; i++) {
+      const t = d[i] * 0.8 + n[i] * 0.2, s = (p - t) / BAND, o = i * 4;
+      let ma = 255, r = 0, g = 0, b = 0, a = 0;
+      if (s <= 0) { if (s > -0.14) { a = 110 * (1 + s / 0.14); r = 255; g = 110 + 40 * n[i]; b = 20; } }
+      else if (s < 1) {
+        if (s < 0.06) { r = 255; g = 246; b = 200; a = 255; }
+        else if (s < 0.2) { const k = (s - 0.06) / 0.14; r = 255; g = 246 - 106 * k; b = 200 - 170 * k; a = 255; }
+        else if (s < 0.38) { const k = (s - 0.2) / 0.18; r = 255 - 90 * k; g = 140 - 108 * k; b = 30 - 20 * k; a = 255; }
+        else if (s < 0.62) { const k = (s - 0.38) / 0.24; r = 165 - 135 * k; g = 32 - 16 * k; b = 10 + 2 * k; a = 255; }
+        else { const k = (s - 0.62) / 0.38; r = 30; g = 17; b = 13; a = 255 * (1 - k); }
+        if (s > 0.28 && s < 0.9 && hash(i * 1.37 + tk * 91.7) > 0.972) { r = 255; g = 175; b = 45; a = 255; }       // an ember
+        ma = s < 0.78 ? 255 : 255 * (1 - (s - 0.78) / 0.22);
+      } else { ma = 0; }
+      M[o] = M[o + 1] = M[o + 2] = 255; M[o + 3] = ma < 0 ? 0 : ma;
+      F[o] = r; F[o + 1] = g; F[o + 2] = b; F[o + 3] = a;
+    }
+    this.mctx.putImageData(this.mimg, 0, 0); this.ectx.putImageData(this.eimg, 0, 0);
+    const t = this.top.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, W * 2, H * 2);
+    t.drawImage(this.from, 0, 0, W * 2, H * 2); t.globalCompositeOperation = 'destination-in'; t.imageSmoothingEnabled = true; t.drawImage(this.mask, 0, 0, W * 2, H * 2); t.globalCompositeOperation = 'source-over';
+    const f = this.fx.getContext('2d'); f.clearRect(0, 0, W * 2, H * 2); f.imageSmoothingEnabled = true; f.drawImage(this.edge, 0, 0, W * 2, H * 2);
+    // the char of the old page is only painted where the old page still is (the ash must not hang in the air over the new one)
+    f.globalCompositeOperation = 'destination-in'; f.drawImage(this.fxMaskSource(), 0, 0, W * 2, H * 2); f.globalCompositeOperation = 'source-over';
+  }
+  fxMaskSource() { return this.mask; }
+
+  spawn(p, dt, quality) {
+    const d = this.d, n = NOISE, tries = Math.round(70 * dt * 60 * quality);
+    for (let k = 0; k < tries; k++) {
+      const i = Math.floor(Math.random() * MW * MH), t = d[i] * 0.8 + n[i] * 0.2, s = (p - t) / BAND;
+      if (s > 0.03 && s < 0.3 && Math.random() < 0.5) this.parts.push({ x: (i % MW) / MW * W, y: Math.floor(i / MW) / MH * H, vx: (Math.random() - 0.5) * 30, vy: -(30 + Math.random() * 90), life: 0.5 + Math.random() * 0.9, age: 0, size: 1 + Math.random() * 2.4, smoke: false });
+      else if (s > 0.35 && s < 0.7 && Math.random() < 0.04) this.parts.push({ x: (i % MW) / MW * W, y: Math.floor(i / MW) / MH * H, vx: (Math.random() - 0.5) * 12, vy: -(14 + Math.random() * 20), life: 1.4 + Math.random() * 0.8, age: 0, size: 14 + Math.random() * 22, smoke: true });
+    }
+  }
+  drawParts(dt) {
+    const c = this.sp.getContext('2d'); c.clearRect(0, 0, W * 2, H * 2); c.save(); c.scale(2, 2);
+    this.parts = this.parts.filter(q => (q.age += dt) < q.life);
+    for (const q of this.parts) {
+      q.x += q.vx * dt; q.y += q.vy * dt; q.vx += (Math.random() - 0.5) * 60 * dt; const k = q.age / q.life;
+      if (q.smoke) { c.globalCompositeOperation = 'source-over'; const g = c.createRadialGradient(q.x, q.y, 0, q.x, q.y, q.size * (1 + k)); g.addColorStop(0, 'rgba(90,80,75,' + (0.16 * (1 - k)) + ')'); g.addColorStop(1, 'rgba(90,80,75,0)'); c.fillStyle = g; c.beginPath(); c.arc(q.x, q.y, q.size * (1 + k), 0, 7); c.fill(); }
+      else { c.globalCompositeOperation = 'lighter'; c.fillStyle = k < 0.4 ? 'rgba(255,225,130,' + (1 - k) + ')' : 'rgba(255,120,30,' + (1 - k) + ')'; c.beginPath(); c.arc(q.x, q.y, q.size * (1 - k * 0.5), 0, 7); c.fill(); }
+    }
+    c.restore();
+  }
+
+  /** Burns the current page away to page `to`, starting at `corner`. Resolves when it is over. */
+  go(to, corner, opts = {}) {
+    if (this.running || to === this.cur) return Promise.resolve();
+    this.running = true; if (corner && corner !== this.corner) this.setCorner(corner);
+    const dur = (opts.dur || this.speed) * 1000, quality = opts.quality == null ? 1 : opts.quality, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.from = this.cur === undefined ? this.imgs[0] : this.imgs[this.cur]; const next = this.imgs[to];
+    this.draw(this.under.getContext('2d'), next);
+    const p0 = -0.03, p1 = 1.0 + BAND + 0.03;
+    return new Promise(res => {
+      const t0 = performance.now(); let last = t0;
+      const step = now => {
+        const x = Math.min(1, (now - t0) / dur), dt = Math.min(0.05, (now - last) / 1000); last = now;
+        const e = x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+        this.frame(p0 + (p1 - p0) * e, now / 1000); if (!reduce) { this.spawn(p0 + (p1 - p0) * e, dt, quality); this.drawParts(dt); }
+        if (x < 1) requestAnimationFrame(step);
+        else { this.cur = to; this.parts.length = 0; this.running = false; this.still(to); res(); }
+      };
+      requestAnimationFrame(step);
+    });
+  }
+}
+
+// ------------------------------------------------------------------ the two demos
+const S1 = ['img/burn_rank.jpg', 'img/burn_bag.jpg', 'img/burn_events.jpg'], S2 = ['img/burn_pg1.jpg', 'img/burn_pg2.jpg', 'img/burn_pg3.jpg'];
+const b1 = new Burn(document.getElementById('p1'), S1), b2 = new Burn(document.getElementById('p2'), S2);
+let corner1 = 'br';
+const group = (sel, fn) => document.querySelectorAll(sel + ' button').forEach(b => b.onclick = () => { document.querySelectorAll(sel + ' button').forEach(x => x.classList.toggle('on', x === b)); fn(b.dataset.v); });
+group('[data-group=corner]', v => corner1 = v);
+group('[data-group=speed]', v => b1.speed = +v);
+group('[data-group=speed2]', v => b2.speed = +v);
+document.querySelectorAll('#c1 [data-go]').forEach(b => b.onclick = () => b1.go(+b.dataset.go, corner1));
+document.querySelectorAll('#c2 [data-dir]').forEach(b => b.onclick = () => { const n = S2.length; b2.go((b2.cur + (b.dataset.dir === 'next' ? 1 : n - 1)) % n, b.dataset.dir === 'next' ? 'br' : 'bl'); });
+let auto = null;
+document.querySelector('#c2 [data-auto]').onclick = e => { if (auto) { clearInterval(auto); auto = null; e.target.classList.remove('on'); return; } e.target.classList.add('on'); auto = setInterval(() => b2.go((b2.cur + 1) % S2.length, 'br'), 2600); };
+window.b1 = b1; window.b2 = b2;
+</script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إنشاء غرفة</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--crim:#8a1c24;--teal:#4fa58b;--brass:#b99048}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:12px 8px 30px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif;display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+.col{display:grid;gap:8px;justify-items:center;align-content:start;width:min(390px,100%)}
+.cap{color:#6f685c;font-size:.78rem;margin:0}
+button,input{font-family:inherit;border:0;color:inherit;background:none}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
+.phone{width:100%;height:790px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 90% 30% at 50% 0,#e8c27a18,transparent 70%),linear-gradient(180deg,#15100d,#090605);box-shadow:0 0 0 7px #14100e,0 0 0 8px #ffffff14,0 24px 50px #000}
+.top{position:absolute;top:0;left:0;right:0;padding:30px 12px 8px;display:flex;align-items:center;gap:10px;z-index:8;background:linear-gradient(180deg,#0a0705f2 70%,transparent)}
+.ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 1.5px #000,0 3px 6px #000a}
+.ic svg{width:18px;height:18px;stroke:#cfc6b2;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ttl{flex:1;font-family:Lalezar;font-size:1.5rem;line-height:1}
+.ttl small{display:block;font-family:Cairo;font-weight:600;font-size:.62rem;color:#8d744a}
+.scroll{position:absolute;inset:0;overflow-y:auto;padding:84px 12px 112px;scrollbar-width:none;display:grid;gap:12px;align-content:start}
+.scroll::-webkit-scrollbar{display:none}
+
+/* leather card */
+.card{border-radius:12px;padding:12px 14px 14px;background:var(--grain),linear-gradient(180deg,#2a1e17,#17100c);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #000,0 8px 14px #000a;display:grid;gap:10px}
+.lab{font-family:Lalezar;font-size:1.05rem;line-height:1.1;display:flex;align-items:baseline;gap:8px}
+.lab small{font-family:Cairo;font-weight:600;font-size:.62rem;color:#8f8777}
+.lab em{margin-inline-start:auto;font-style:normal;font-family:Cairo;font-weight:800;font-size:.66rem;color:#8f8777}
+
+/* name field = paper tag */
+.field{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 18px #8a7a5a99,0 4px 8px #0008}
+.field input{flex:1;min-width:0;font-family:"Aref Ruqaa";font-size:1.4rem;line-height:1.2;color:var(--ink);outline:0}
+.field input::placeholder{color:#7a6c4e}
+.sugs{display:flex;gap:6px;flex-wrap:wrap}
+.sugs button{padding:4px 10px;border-radius:12px;font-weight:800;font-size:.68rem;color:#b9a67e;background:#000a;box-shadow:inset 0 0 0 1px #3a2e22}
+.sugs button:active{transform:scale(.95)}
+
+/* type cards */
+.types{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ty{position:relative;display:grid;justify-items:center;gap:3px;padding:10px 4px 9px;border-radius:10px;text-align:center;background:#000a;box-shadow:inset 0 2px 4px #000,0 0 0 1.5px #3a2e22;transition:all .25s}
+.ty svg{width:26px;height:26px;stroke:#8f8777;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ty b{font-family:Lalezar;font-weight:400;font-size:1rem;line-height:1;color:#a79d88}
+.ty small{font-size:.58rem;font-weight:700;color:#6f685c;line-height:1.2}
+.ty.on{background:var(--grain),linear-gradient(180deg,#f0d896,#c9a050 60%,#8a6a30);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #fff9,0 0 0 1.5px #000,0 3px 0 #000}
+.ty.on svg{stroke:#2a1a08}.ty.on b{color:#2a1a08}.ty.on small{color:#5a4118}
+.ty.lock{opacity:.55}
+.ty.lock::after{content:"";position:absolute;top:6px;left:6px;width:15px;height:15px;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b9a67e' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E")}
+.hint{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:8px;background:#0007;box-shadow:inset 0 0 0 1px #2b2118;font-size:.7rem;font-weight:700;line-height:1.5;color:#b9a67e;min-height:44px}
+.hint svg{width:16px;height:16px;flex:none;margin-top:2px;stroke:var(--brass);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.hint.warn{color:#e6b3b6;box-shadow:inset 0 0 0 1px #8a1c2488}.hint.warn svg{stroke:#e0585f}
+
+/* segmented */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;padding:3px;border-radius:9px;background:#000a;box-shadow:inset 0 2px 4px #000}
+.seg button{padding:8px 4px;border-radius:7px;font-weight:800;font-size:.76rem;color:#8f8777;transition:all .25s}
+.seg button.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:inset 0 1px 0 #fff9,0 2px 0 #000}
+
+/* stepper (seats) */
+.step{display:flex;align-items:center;justify-content:center;gap:14px}
+.step button{width:42px;height:42px;border-radius:50%;font-family:Lalezar;font-size:1.5rem;line-height:1;display:grid;place-items:center;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 1.5px #000,0 3px 6px #000a}
+.step button:active{transform:translateY(2px)}
+.step button:disabled{opacity:.35}
+.num{min-width:84px;text-align:center;font-family:Lalezar;font-size:2.2rem;line-height:1;color:#ffb35a;text-shadow:0 0 10px #ff8a2a88;background:#000b;padding:4px 12px;border-radius:6px;box-shadow:inset 0 0 0 1px #3a2a1c}
+.dots{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.dots i{width:12px;height:12px;border-radius:50%;background:#e8dfc9;box-shadow:0 0 0 1px #000}
+.dots i.off{background:#000;box-shadow:inset 0 1px 2px #000,0 0 0 1px #2a2118}
+
+/* room background picker (owned store items) */
+.bgs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
+.bgs::-webkit-scrollbar{display:none}
+.bg{position:relative;flex:none;width:76px;height:98px;border-radius:7px;display:grid;align-items:end;padding:0 0 6px;text-align:center;font-size:.6rem;font-weight:800;color:#f3ead4;box-shadow:0 0 0 1.5px #000,0 4px 8px #000a;transition:transform .2s}
+.bg::before{content:"";position:absolute;inset:0;border-radius:7px;background:linear-gradient(180deg,transparent 40%,#000b)}
+.bg span{position:relative}
+.bg.on{transform:translateY(-3px);box-shadow:0 0 0 2px #000,0 0 0 4px var(--brass),0 8px 12px #000b}
+.bg.get{background:#000a;box-shadow:inset 0 0 0 1.5px #3a2e22;color:#8f8777}
+.bg.get::before{display:none}
+.bg.get b{position:relative;display:block;font-family:Lalezar;font-weight:400;font-size:1.6rem;line-height:1;color:var(--brass)}
+
+/* rows + brass lever toggle */
+.r{display:flex;align-items:center;gap:10px;font-size:.84rem;font-weight:700}
+.r .t{flex:1;line-height:1.3}
+.r .t small{display:block;font-size:.64rem;color:#8f8777;font-weight:600}
+.tg{position:relative;width:52px;height:28px;border-radius:14px;flex:none;background:#000b;box-shadow:inset 0 2px 4px #000,0 0 0 1.5px #3a2e22,0 1px 0 #ffffff14;transition:background .3s}
+.tg i{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff0b8,#c9a050 55%,#6e4b1c);box-shadow:0 2px 3px #000a,inset 0 0 0 1px #0004;transition:right .3s cubic-bezier(.3,1.4,.5,1)}
+.tg[aria-checked="true"]{background:linear-gradient(180deg,#143a2a,#0a2418);box-shadow:inset 0 2px 4px #000,0 0 0 1.5px #2d7a60,0 0 10px #4fa58b55}
+.tg[aria-checked="true"] i{right:27px}
+
+/* bottom bar */
+.bar{position:absolute;left:0;right:0;bottom:0;padding:26px 14px 16px;z-index:8;background:linear-gradient(0deg,#090605 62%,transparent)}
+.go{width:100%;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:13px 18px;border-radius:12px;position:relative;text-align:start;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000,0 14px 24px #000b}
+.go::after{content:"";position:absolute;inset:6px;border:1.5px dashed #e6c9a0;opacity:.45;border-radius:8px;pointer-events:none}
+.go b{font-family:Lalezar;font-weight:400;font-size:1.4rem;line-height:1.1;display:block}
+.go small{font-size:.66rem;font-weight:700;color:#e6c9a0}
+.go span{font-size:1.8rem;line-height:1}
+.go:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #ffffff22,0 1px 0 #000,0 6px 12px #000b}
+.go.gold{background:linear-gradient(180deg,#e8cc8c,#b99048 55%,#6e5224);color:#2a1a08;box-shadow:inset 0 1px 0 #fff9,0 4px 0 #2a1c08,0 14px 24px #000b}
+.go.gold small{color:#5a4118}
+.go.gold::after{border-color:#2a1a0888}
+
+/* success screen */
+.ok{display:grid;gap:14px;justify-items:center;text-align:center;padding-top:10px}
+.stamp{font-family:"Aref Ruqaa";font-size:2.4rem;color:#e0585f;border:3px solid #e0585f;border-radius:10px;padding:2px 22px;rotate:-6deg;opacity:.9;margin-top:6px}
+.ticket{position:relative;width:100%;padding:16px 16px 14px;border-radius:6px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 22px #8a7a5a99,0 10px 18px #000b;rotate:-1deg;display:grid;gap:6px}
+.ticket::before{content:"";position:absolute;right:18px;top:-10px;width:22px;height:18px;background:#7a1820;clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
+.ticket h3{margin:0;font-family:"Aref Ruqaa";font-size:1.6rem;line-height:1.1}
+.ticket small{font-size:.7rem;font-weight:800;color:#6a5a3a}
+.code{font-family:Lalezar;font-size:3rem;letter-spacing:.35em;padding-inline-start:.35em;line-height:1;color:var(--crim);border-block:2px dashed #1c170f66;padding-block:8px;margin-top:4px}
+.shares{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.sh{display:grid;justify-items:center;gap:5px;padding:12px 4px 9px;border-radius:10px;font-weight:800;font-size:.7rem;background:var(--grain),linear-gradient(180deg,#2a1e17,#17100c);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff14,0 0 0 1px #000,0 4px 8px #000a}
+.sh svg{width:24px;height:24px;stroke:#cfc6b2;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sh.wa svg{stroke:#4fd08b}
+.small{font-size:.7rem;font-weight:700;color:#8f8777;line-height:1.6;max-width:300px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="back" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></symbol>
+<symbol id="key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/></symbol>
+<symbol id="crown" viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></symbol>
+<symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></symbol>
+<symbol id="chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+<symbol id="link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+<symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+<symbol id="wa" viewBox="0 0 24 24"><path d="M4 20l1.4-4.2A8 8 0 1 1 8.3 18.6z"/><path d="M9 9c0 3 3 6 6 6l1.2-1.4-2-1-1 .7c-1-.4-2-1.4-2.4-2.4l.7-1-1-2z"/></symbol>
+</defs></svg>
+
+<!-- ============ 1) the form ============ -->
+<div class="col">
+<p class="cap">١ — النموذج (الأنواع تتبدّل، والنص تحت الأنواع يتغيّر)</p>
+<div class="phone">
+  <div class="top">
+    <button class="ic" aria-label="رجوع"><svg viewBox="0 0 24 24"><use href="#back"/></svg></button>
+    <div class="ttl">افتح طاولتك<small>غرفة جديدة</small></div>
+  </div>
+
+  <div class="scroll">
+    <div class="card">
+      <div class="lab">اسم الغرفة <em id="cnt">١٤ / ٢٤</em></div>
+      <label class="field"><input id="name" maxlength="24" value="سهرة الأصحاب" aria-label="اسم الغرفة"></label>
+      <div class="sugs" id="sugs"><button>سهرة الشباب</button><button>مباراة سريعة</button><button>على راحتنا</button><button>طاولة العائلة</button></div>
+    </div>
+
+    <div class="card">
+      <div class="lab">نوع الغرفة</div>
+      <div class="types" id="types">
+        <button class="ty lock" data-t="public"><svg viewBox="0 0 24 24"><use href="#globe"/></svg><b>عامة</b><small>تظهر للجميع</small></button>
+        <button class="ty on" data-t="private"><svg viewBox="0 0 24 24"><use href="#key"/></svg><b>خاصة</b><small>بكود أو رابط</small></button>
+        <button class="ty lock" data-t="vip"><svg viewBox="0 0 24 24"><use href="#crown"/></svg><b>VIP</b><small>شكل مميّز</small></button>
+      </div>
+      <div class="hint" id="hint"><svg viewBox="0 0 24 24"><use href="#info"/></svg><span></span></div>
+    </div>
+
+    <div class="card">
+      <div class="lab">شو بدكم تعملوا؟</div>
+      <div class="seg" id="mode"><button class="on" data-m="hangout">سهرة وحكي</button><button data-m="mafia">مباراة مافيا</button></div>
+    </div>
+
+    <div class="card">
+      <div class="lab">عدد الكراسي <small>الصوت لحد ١٦</small></div>
+      <div class="step"><button id="plus" aria-label="زيادة">+</button><div class="num" id="seats">١٢</div><button id="minus" aria-label="نقصان">−</button></div>
+      <div class="dots" id="dots"></div>
+    </div>
+
+    <div class="card">
+      <div class="lab">خلفية الغرفة <small>من مقتنياتك</small></div>
+      <div class="bgs">
+        <button class="bg on" style="background:linear-gradient(180deg,#8a6a4e,#3a2418)"><span>الغرفة الخلفية</span></button>
+        <button class="bg" style="background:linear-gradient(180deg,#c08a4a,#4a2a10)"><span>مقهى القهوة</span></button>
+        <button class="bg get"><span><b>+</b>من السوق</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="r"><div class="t">الدردشة النصية<small>للّي ما بدّه يحكي</small></div><button class="tg" role="switch" aria-checked="true" aria-label="الدردشة"><i></i></button></div>
+      <div class="r"><div class="t">المايك مقفول عند الدخول<small>اللاعب يفتحه بنفسه</small></div><button class="tg" role="switch" aria-checked="false" aria-label="المايك"><i></i></button></div>
+    </div>
+
+    <div class="hint warn"><svg viewBox="0 0 24 24"><use href="#info"/></svg><span>لكل لاعب غرفة وحدة. إذا فتحت غرفة جديدة، غرفتك القديمة بتنسكّر تلقائياً.</span></div>
+  </div>
+
+  <div class="bar"><button class="go" id="create"><div><b>افتح الطاولة</b><small id="gosub">غرفة خاصة · ١٢ كرسي</small></div><span>›</span></button></div>
+</div>
+</div>
+
+<!-- ============ 2) success ============ -->
+<div class="col">
+<p class="cap">٢ — بعد الإنشاء (الغرفة الخاصة: كود ورابط للمشاركة)</p>
+<div class="phone">
+  <div class="top">
+    <button class="ic" aria-label="رجوع"><svg viewBox="0 0 24 24"><use href="#back"/></svg></button>
+    <div class="ttl">الطاولة جاهزة<small>ادعُ أصحابك</small></div>
+  </div>
+  <div class="scroll">
+    <div class="ok">
+      <div class="stamp">جاهزة</div>
+      <div class="ticket">
+        <small>غرفة خاصة</small>
+        <h3>سهرة الأصحاب</h3>
+        <div class="code">K7Q2</div>
+        <small>الكود بيدخّل أي لاعب، حتى لو ما كانت الغرفة بالقائمة</small>
+      </div>
+      <div class="shares">
+        <button class="sh wa"><svg viewBox="0 0 24 24"><use href="#wa"/></svg>واتساب</button>
+        <button class="sh"><svg viewBox="0 0 24 24"><use href="#link"/></svg>نسخ الرابط</button>
+        <button class="sh"><svg viewBox="0 0 24 24"><use href="#copy"/></svg>نسخ الكود</button>
+      </div>
+      <p class="small">الغرفة بتنسكّر لحالها لما تفضى. إذا فتحت غرفة جديدة قبل هيك، هاي بتنسكّر.</p>
+    </div>
+  </div>
+  <div class="bar"><button class="go gold"><div><b>ادخل الغرفة</b><small>وانتظر أصحابك على الطاولة</small></div><span>›</span></button></div>
+</div>
+</div>
+
+<script>
+const ar=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const $=s=>document.querySelector(s);
+// name counter + suggestions
+const name=$('#name'), cnt=$('#cnt');
+const upd=()=>{cnt.textContent=ar(name.value.length)+' / '+ar(24)};
+name.addEventListener('input',upd);upd();
+document.querySelectorAll('#sugs button').forEach(b=>b.onclick=()=>{name.value=b.textContent;upd()});
+// type
+const info={
+ public:'عامة: بتظهر بالقائمة للجميع. بتفتح عند المستوى ٥، ومستواك الآن ١.',
+ private:'خاصة: ما بتظهر بالقائمة. بيدخل عليها اللي معه الكود أو الرابط، وبتقدر تعملها من أول لحظة.',
+ vip:'VIP: اسم ملوّن وخلفية مميّزة، وبتظهر أول القائمة. بتحتاج عضوية VIP.'
+};
+let type='private';
+function setType(t){
+  type=t;
+  document.querySelectorAll('#types .ty').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  $('#hint span').textContent=info[t];
+  const locked=document.querySelector('#types .ty[data-t="'+t+'"]').classList.contains('lock');
+  $('#hint').classList.toggle('warn',locked);
+  $('#create').style.opacity=locked?.5:1;
+  sub();
+}
+document.querySelectorAll('#types .ty').forEach(b=>b.onclick=()=>setType(b.dataset.t));
+// mode
+document.querySelectorAll('#mode button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#mode button').forEach(x=>x.classList.toggle('on',x===b))});
+// seats
+let seats=12;
+function drawSeats(){
+  $('#seats').textContent=ar(seats);
+  $('#dots').innerHTML=Array.from({length:16},(_,i)=>'<i class="'+(i<seats?'':'off')+'"></i>').join('');
+  $('#plus').disabled=seats>=16;$('#minus').disabled=seats<=4;
+  sub();
+}
+$('#plus').onclick=()=>{if(seats<16){seats++;drawSeats()}};
+$('#minus').onclick=()=>{if(seats>4){seats--;drawSeats()}};
+function sub(){const n={public:'غرفة عامة',private:'غرفة خاصة',vip:'غرفة VIP'}[type];$('#gosub').textContent=n+' · '+ar(seats)+' كرسي'}
+// toggles + backgrounds
+document.querySelectorAll('.tg').forEach(t=>t.onclick=()=>t.setAttribute('aria-checked',t.getAttribute('aria-checked')!=='true'));
+document.querySelectorAll('.bg:not(.get)').forEach(b=>b.onclick=()=>document.querySelectorAll('.bg:not(.get)').forEach(x=>x.classList.toggle('on',x===b)));
+setType('private');drawSeats();
+</script>
+</body>
+</html>

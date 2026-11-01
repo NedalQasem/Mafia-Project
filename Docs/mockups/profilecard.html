@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>بطاقة اللاعب</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+--crimson:#8a1c24;--brass:#b99048;--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:20px 12px 60px;background:radial-gradient(ellipse at 50% 0,#1d1511,#070605 70%);color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 4px;font-size:1.8rem}
+.sub{text-align:center;color:#8f8777;margin:0 0 14px;font-size:.88rem}
+.seg{display:flex;gap:6px;justify-content:center;margin-bottom:14px}
+.seg button{padding:7px 16px;border-radius:8px;font-family:inherit;font-weight:700;font-size:.85rem;border:1px solid #ffffff1c;background:#0d0b0a;color:#a79d88;cursor:pointer}
+.seg button.on{color:#2a1a08;background:linear-gradient(180deg,#e8cc8c,#b99048);border-color:#000}
+.phone{width:min(390px,100%);height:640px;margin:auto;border-radius:30px;position:relative;overflow:hidden;background:radial-gradient(ellipse 80% 50% at 50% 30%,#e8c27a22,transparent 65%),linear-gradient(180deg,#14100e,#070504);box-shadow:0 0 0 7px #14100e,0 0 0 8px #ffffff14,0 24px 50px #000}
+.tip{position:absolute;bottom:22px;left:0;right:0;text-align:center;color:#6f685c;font-size:.8rem}
+button{font-family:inherit;border:0;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
+.av{position:relative;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);display:grid;place-items:center;color:#9a8e78}
+.av svg{width:72%;height:72%}
+.coin{width:18px;height:18px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1px #000;position:relative;flex:none}
+.coin::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1px solid #6e4b1c99}
+
+/* ===== compact main bar: a slim paper tag ===== */
+.bar{position:absolute;top:30px;left:12px;right:12px;height:54px;display:flex;align-items:center;gap:10px;z-index:3}
+.tag{position:relative;flex:1;height:54px;display:flex;align-items:center;gap:10px;padding:0 12px 0 14px;border-radius:6px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 14px #8a7a5a88,0 6px 12px #000b;cursor:pointer;text-align:start;transition:transform .12s}
+.tag:active{transform:translateY(2px)}
+.tag::before{content:"";position:absolute;right:-1px;top:-8px;width:20px;height:16px;background:#7a1820;clip-path:polygon(0 0,100% 0,100% 100%,50% 70%,0 100%)}
+.tag .av{width:36px;height:36px;flex:none;box-shadow:0 0 0 2px var(--ink)}
+.tag .lv{position:absolute;right:46px;bottom:6px;font-family:Lalezar;font-size:.65rem;padding:0 6px;border-radius:7px;color:#2a1a08;background:linear-gradient(145deg,#e8cc8c,#9a7632);box-shadow:0 0 0 1.5px var(--ink)}
+.tag .tx{display:grid;line-height:1.15;min-width:0}
+.tag .tx b{font-family:"Aref Ruqaa";font-size:1.05rem}
+.tag .tx small{font-size:.62rem;color:#6a5a3a;font-weight:700}
+.tag .xpl{position:absolute;left:8px;right:8px;bottom:4px;height:3px;border-radius:2px;background:#1c170f33;overflow:hidden}
+.tag .xpl i{display:block;height:100%;width:62%;background:var(--crimson)}
+.tag .chev{margin-inline-start:auto;font-size:.7rem;color:#8a1c24}
+.ticket{position:relative;display:flex;align-items:center;gap:7px;padding:0 14px;height:40px;background:var(--paper);color:var(--ink);border-radius:4px;box-shadow:inset 0 0 10px #8a7a5a66,0 6px 10px #000a;rotate:2deg}
+.ticket::before,.ticket::after{content:"";position:absolute;top:50%;width:9px;height:9px;border-radius:50%;translate:0 -50%;background:#0d0a09}
+.ticket::before{right:-4px}.ticket::after{left:-4px}
+.ticket b{font-family:Lalezar;font-weight:400;font-size:1rem}
+
+/* ===== overlay + hanging profile card ===== */
+.ov{position:absolute;inset:0;z-index:10;pointer-events:none;background:#000;opacity:0;transition:opacity .35s}
+.ov.open{pointer-events:auto;opacity:1;background:#000c}
+.hang{position:absolute;top:0;left:50%;width:290px;margin-left:-145px;transform:translateY(-115%);perspective:900px;transform-origin:50% 0}
+.ov.open .hang{animation:drop .9s cubic-bezier(.3,1.25,.5,1) forwards}
+.ov.closing .hang{animation:lift .35s ease-in forwards}
+@keyframes drop{0%{transform:translateY(-115%) rotate(0)}55%{transform:translateY(8px) rotate(3deg)}80%{transform:translateY(0) rotate(-1.6deg)}100%{transform:translateY(0) rotate(0)}}
+@keyframes lift{to{transform:translateY(-115%)}}
+.ov.settled .hang .flipper{animation:sway 6s ease-in-out infinite;transform-origin:50% -20px}
+@keyframes sway{0%,100%{rotate:-1deg}50%{rotate:1deg}}
+.strap{position:absolute;top:-6px;left:50%;width:52px;height:60px;translate:-50% 0;background:#7a1820;clip-path:polygon(0 0,100% 0,60% 100%,40% 100%);z-index:2}
+.clip{position:absolute;top:48px;left:50%;translate:-50% 0;width:34px;height:16px;border-radius:3px;z-index:3;background:linear-gradient(180deg,#d7d9da,#7a7d7f);box-shadow:0 2px 3px #000a}
+.flipper{position:relative;margin-top:58px;width:100%;height:430px;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.3,1.2,.5,1)}
+.flipper.flip{transform:rotateY(180deg)}
+.card{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 28px #8a7a5a99,0 20px 34px #000c;padding:24px 16px 14px;display:flex;flex-direction:column;gap:8px}
+.card::before{content:"";position:absolute;top:10px;left:50%;translate:-50% 0;width:44px;height:7px;border-radius:4px;background:#2a2217;box-shadow:inset 0 1px 2px #000}
+.card.back{rotate:y 180deg}
+.head{display:flex;justify-content:space-between;font-size:.62rem;font-weight:800;color:var(--crimson);border-bottom:1.5px solid #1c170f66;padding-bottom:4px}
+.photo{display:flex;gap:12px;align-items:center}
+.photo .av{width:84px;height:84px;flex:none;box-shadow:0 0 0 3px var(--ink),0 0 0 5px #8a6a30}
+.photo .who{display:grid;gap:1px}
+.photo .who b{font-family:"Aref Ruqaa";font-size:1.6rem;line-height:1.1}
+.photo .who span{font-size:.78rem;color:#6a5a3a;font-weight:700}
+.lvrow{display:flex;align-items:center;gap:8px;font-size:.72rem;font-weight:800}
+.lvrow .xp{flex:1;height:8px;border-radius:4px;background:#1c170f33;overflow:hidden}
+.lvrow .xp i{display:block;height:100%;width:62%;background:var(--crimson)}
+.barcode{height:16px;background:repeating-linear-gradient(90deg,#1c170f 0 2px,transparent 2px 4px,#1c170f 4px 5px,transparent 5px 8px,#1c170f 8px 11px,transparent 11px 13px);opacity:.8}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.stats div{padding:6px 2px;border:1.5px solid #1c170f55;border-radius:5px}
+.stats b{display:block;font-family:Lalezar;font-weight:400;font-size:1.35rem;line-height:1}
+.stats small{font-size:.62rem;font-weight:700;color:#6a5a3a}
+.stamps{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.stamp{padding:1px 9px;font-family:Lalezar;font-size:.78rem;color:var(--crimson);border:2px solid var(--crimson);border-radius:3px;rotate:-5deg;opacity:.88}
+.stamp.b{color:#1d4a3c;border-color:#1d4a3c;rotate:4deg}
+.suit{width:22px;height:30px;border-radius:3px;background:#f0e8d2;display:grid;place-items:center;font-size:.95rem;color:#111;box-shadow:0 0 0 1px #1c170f66}
+.suit.r{color:var(--crimson)}
+.acts{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acts button{padding:9px 6px;border-radius:6px;font-weight:800;font-size:.82rem;color:#f0dcd8;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000;position:relative}
+.acts button.dk{background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;color:#e6d9bd}
+.acts button:active{transform:translateY(2px);box-shadow:0 1px 0 #000}
+.acts .full{grid-column:1/-1}
+.flipbtn{position:absolute;bottom:-40px;left:50%;translate:-50% 0;padding:6px 16px;border-radius:16px;font-weight:700;font-size:.78rem;background:#ffffff14;color:var(--ivory);box-shadow:inset 0 0 0 1px #ffffff22}
+.report{text-align:center;font-size:.66rem;color:#7a6a4a;text-decoration:underline;cursor:pointer;margin-top:-2px}
+/* back */
+.back h3{margin:0;font-family:Lalezar;font-weight:400;font-size:1.1rem}
+.row{display:flex;justify-content:space-between;font-size:.8rem;padding:5px 0;border-bottom:1px dotted #1c170f66}
+.row b{font-family:Lalezar;font-weight:400}
+.sig{margin-top:auto;border-top:1.5px solid #1c170f;padding-top:3px;font-family:"Aref Ruqaa";font-size:1.15rem;rotate:-3deg;width:60%;color:#2a2217}
+.close{position:absolute;top:34px;left:12px;z-index:11;display:none;width:36px;height:36px;border-radius:50%;background:#000a;color:var(--ivory);box-shadow:0 0 0 1px #ffffff30;font-size:1.1rem}
+.ov.open ~ .close{display:block}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="fed" viewBox="0 0 48 48"><path d="M16 17c0-6 3-10 8-10s8 4 8 10z" fill="currentColor"/><path d="M6 19c4 2 10 3 18 3s14-1 18-3c-1 4-8 6-18 6S7 23 6 19z" fill="currentColor"/><path d="M14 29c0-3 4-5 10-5s10 2 10 5v4H14z" fill="currentColor" opacity=".55"/><path d="M6 46c0-8 7-12 18-12s18 4 18 12z" fill="currentColor" opacity=".8"/></symbol>
+</defs></svg>
+
+<h1>بطاقة اللاعب</h1>
+<p class="sub">الشريط الرئيسي صغير، وبطاقة الهوية تنزل منه عند الضغط</p>
+<div class="seg"><button class="on" id="mMine">بطاقتي</button><button id="mOther">بطاقة لاعب آخر</button></div>
+
+<div class="phone" id="ph">
+  <div class="bar">
+    <button class="tag" id="open" aria-label="افتح بطاقتي">
+      <div class="av"><svg><use href="#fed"/></svg></div><span class="lv">٧</span>
+      <div class="tx"><b id="barName">أبو سالم</b><small>صاحب كلمة</small></div>
+      <span class="chev">▾</span><span class="xpl"><i></i></span>
+    </button>
+    <div class="ticket"><b>١٬٢٥٠</b><span class="coin"></span></div>
+  </div>
+  <div class="tip" id="tip">اضغط على الشريط لتنزل البطاقة</div>
+
+  <div class="ov" id="ov">
+    <div class="hang"><div class="strap"></div><div class="clip"></div>
+      <div class="flipper" id="fl">
+        <div class="card front">
+          <div class="head"><span>هوية العائلة</span><span id="cardNo">رقم ٠٤٢</span></div>
+          <div class="photo"><div class="av"><svg><use href="#fed"/></svg></div>
+            <div class="who"><b id="cName">أبو سالم</b><span id="cTitle">صاحب كلمة</span><span>عضو منذ شهر</span></div></div>
+          <div class="lvrow"><span>م٧</span><span class="xp"><i></i></span><span>٦٢٠/١٠٠٠</span></div>
+          <div class="barcode"></div>
+          <div class="stats"><div><b>٣٤</b><small>جولة</small></div><div><b>١٢</b><small>فوز</small></div><div><b>٣٥٪</b><small>نسبة الفوز</small></div></div>
+          <div class="stamps"><span class="stamp">مافيا ×٥</span><span class="stamp b">محقق ×٧</span><span class="suit">♠</span><span class="suit r">♥</span></div>
+          <div class="acts" id="acts"></div>
+          <div class="report" id="report" hidden>إبلاغ عن اللاعب</div>
+        </div>
+        <div class="card back">
+          <div class="head"><span>السجل</span><span>خلف البطاقة</span></div>
+          <h3>الأدوار</h3>
+          <div class="row"><span>مواطن</span><b>١٥</b></div><div class="row"><span>مافيا</span><b>٥</b></div><div class="row"><span>محقق</span><b>٧</b></div><div class="row"><span>طبيب</span><b>٧</b></div>
+          <h3>الأوسمة</h3>
+          <div class="stamps"><span class="stamp">أول فوز</span><span class="stamp b">ضيف دائم</span><span class="stamp">١٠ سهرات</span></div>
+          <div class="sig" id="sig">أبو سالم</div>
+        </div>
+        <button class="flipbtn" id="flip">اقلب البطاقة</button>
+      </div>
+    </div>
+  </div>
+  <button class="close" id="close" aria-label="إغلاق">✕</button>
+</div>
+
+<script>
+(function(){
+  var ov=document.getElementById("ov"),fl=document.getElementById("fl"),acts=document.getElementById("acts"),mine=true,st;
+  function setMode(m){
+    mine=m;document.getElementById("mMine").classList.toggle("on",m);document.getElementById("mOther").classList.toggle("on",!m);
+    var n=m?"أبو سالم":"أم سعيد";
+    document.getElementById("barName").textContent=n;document.getElementById("cName").textContent=n;document.getElementById("sig").textContent=n;
+    document.getElementById("cardNo").textContent=m?"رقم ٠٤٢":"رقم ٠٧٧";
+    document.getElementById("cTitle").textContent=m?"صاحب كلمة":"حكيمة الحارة";
+    acts.innerHTML=m?'<button class="dk">تعديل البطاقة</button><button class="dk">الإطارات</button>':'<button>أضف صديق</button><button class="dk">أرسل هدية</button>';
+    document.getElementById("report").hidden=m;
+    document.getElementById("tip").textContent=m?"اضغط على الشريط لتنزل بطاقتك":"هكذا تظهر بطاقة لاعب آخر عند الضغط على اسمه";
+  }
+  function open(){fl.classList.remove("flip");ov.classList.remove("closing");ov.classList.add("open");clearTimeout(st);st=setTimeout(function(){ov.classList.add("settled")},900)}
+  function close(){ov.classList.remove("settled");ov.classList.add("closing");setTimeout(function(){ov.classList.remove("open","closing")},350)}
+  document.getElementById("open").addEventListener("click",open);
+  document.getElementById("close").addEventListener("click",close);
+  ov.addEventListener("click",function(e){if(e.target===ov)close()});
+  document.getElementById("flip").addEventListener("click",function(){fl.classList.toggle("flip")});
+  document.getElementById("mMine").addEventListener("click",function(){setMode(true)});
+  document.getElementById("mOther").addEventListener("click",function(){setMode(false);open()});
+  setMode(true);
+})();
+</script>
+</body>
+</html>

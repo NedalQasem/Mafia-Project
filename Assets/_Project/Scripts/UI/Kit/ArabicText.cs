@@ -1,0 +1,163 @@
+using System;
+using TMPro;
+using UnityEngine;
+using MafiaNight.Core;
+using UnityEngine.EventSystems;
+
+namespace MafiaNight.UI.Kit
+{
+    /// <summary>
+    /// Put next to a TMP_Text. Set <see cref="Text"/> with normal logical Arabic; this component shapes it
+    /// (joined letters, right-to-left order) and, if wrapping is on, breaks lines itself so word order stays correct.
+    /// Rich-text tags are not supported inside shaped text.
+    /// </summary>
+    [RequireComponent(typeof(TMP_Text))]
+    [ExecuteAlways]
+    [DisallowMultipleComponent]
+    public class ArabicText : UIBehaviour
+    {
+        [TextArea(1, 6)] [SerializeField] private string text = "";
+        [SerializeField] private bool wrap;
+        [SerializeField] private bool arabicDigits = true;
+
+        private TMP_Text tmp;
+        private bool refreshing;
+
+        public string Text
+        {
+            get => text;
+            set { if (text == value) return; text = value; Refresh(); }
+        }
+
+        public bool Wrap { get => wrap; set { wrap = value; Refresh(); } }
+        /// <summary>Turn Latin digits into Arabic-Indic digits (default). Off keeps the digits exactly as written.</summary>
+        public bool ArabicDigits { get => arabicDigits; set { arabicDigits = value; Refresh(); } }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            if (Application.isPlaying && Loc.English) { var c = GetComponentInParent<Canvas>(); SetMirrored(c != null && KitLocale.IsMirrored(c.rootCanvas)); }
+            Refresh();
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex ArabicRun = new System.Text.RegularExpressions.Regex("[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+(?:[  ]+[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+)*");
+
+        private bool mirroredNow;
+
+        /// <summary>
+        /// English mode draws the canvas in a mirror (<see cref="KitLocale"/>): the letters of this text are flipped back so they read normally, and it is aligned the
+        /// other way (what was at the right of its box in Arabic sits at the left of the mirrored box).
+        /// </summary>
+        public void SetMirrored(bool on)
+        {
+            if (!Application.isPlaying || on == mirroredNow) return;
+            mirroredNow = on;
+            if (tmp == null) tmp = GetComponent<TMP_Text>();
+            if (tmp != null)
+            {
+                var h = tmp.horizontalAlignment;
+                if (h == HorizontalAlignmentOptions.Left) tmp.horizontalAlignment = HorizontalAlignmentOptions.Right;
+                else if (h == HorizontalAlignmentOptions.Right) tmp.horizontalAlignment = HorizontalAlignmentOptions.Left;
+            }
+            // the letters are mirrored back where they are drawn (about the middle of the box), so a text keeps its box and nothing needs the pivot to be in the middle
+            if (tmp != null) { tmp.OnPreRenderText -= FlipLetters; if (on) tmp.OnPreRenderText += FlipLetters; }
+            Refresh();
+            if (tmp != null) tmp.ForceMeshUpdate();
+        }
+
+        private void FlipLetters(TMP_TextInfo info)
+        {
+            float cx = tmp.rectTransform.rect.center.x;
+            var meshes = info.meshInfo;
+            for (int m = 0; m < meshes.Length; m++)
+            {
+                var v = meshes[m].vertices; if (v == null) continue;
+                int n = Mathf.Min(meshes[m].vertexCount, v.Length);
+                for (int i = 0; i < n; i++) v[i].x = 2f * cx - v[i].x;
+            }
+        }
+        protected override void OnRectTransformDimensionsChange() { base.OnRectTransformDimensionsChange(); if (wrap) Refresh(); }
+#if UNITY_EDITOR
+        protected override void OnValidate() { base.OnValidate(); if (isActiveAndEnabled) Refresh(); }
+#endif
+
+        public void Refresh()
+        {
+            if (refreshing) return;
+            refreshing = true;
+            try
+            {
+                if (tmp == null) tmp = GetComponent<TMP_Text>();
+                if (tmp == null) return;
+                tmp.isRightToLeftText = false;     // we already output visual order
+                tmp.richText = false;
+                tmp.textWrappingMode = TextWrappingModes.NoWrap;
+                // Lalezar's pair-kerning table throws joined letters on top of each other (a final reh after a yaa jumps ~100 px back and hides
+                // under its neighbours): shaped text needs no kerning from it
+                if (tmp.font != null && tmp.font.name.IndexOf("Lalezar", StringComparison.OrdinalIgnoreCase) >= 0 && tmp.fontFeatures != null && tmp.fontFeatures.Count > 0)
+                    tmp.fontFeatures = new System.Collections.Generic.List<UnityEngine.TextCore.OTL_FeatureTag>();
+
+                if (Application.isPlaying && Loc.English)
+                {
+                    // the English line (or the Arabic one when it is not translated yet): English is not shaped and breaks its lines by itself
+                    string translated = Loc.T(text);
+                    string en = Loc.LatinDigits(translated);
+                    if (!ArabicShaper.ContainsArabic(en))
+                    {
+                        tmp.textWrappingMode = wrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+                        tmp.textWrappingMode = wrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+                        // English is usually longer than the Arabic the boxes were drawn for: a one-line text shrinks (down to half) rather than run into its neighbour
+                        if (!wrap && !tmp.enableAutoSizing) { tmp.fontSizeMax = tmp.fontSize; tmp.fontSizeMin = tmp.fontSize * 0.5f; tmp.enableAutoSizing = true; }
+                        tmp.text = en;
+                        return;
+                    }
+                    if (translated != text)
+                    {
+                        // an English line with an Arabic name or word inside (a player's name): only the Arabic parts are shaped, the line stays left to right
+                        tmp.textWrappingMode = wrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
+                        tmp.text = ArabicRun.Replace(en, m => Shape(m.Value));
+                        return;
+                    }
+                    if (!string.IsNullOrWhiteSpace(text)) Loc.Missing.Add(text.Trim());
+                }
+                if (!ArabicShaper.ContainsArabic(text)) { tmp.text = text; return; }
+                tmp.text = wrap ? WrapShaped() : Shape(text);
+            }
+            finally { refreshing = false; }
+        }
+
+        // calligraphic fonts may not have the lam-alef ligature glyphs; then the two letters are joined instead
+        private string Shape(string s)
+        {
+            bool lig = tmp.font == null || tmp.font.HasCharacter((char)0xFEFB, true, true);
+            return ArabicShaper.Shape(s, arabicDigits, lig, tmp.font != null ? ContextualForms.For(tmp.font.name) : null);
+        }
+
+        private string WrapShaped()
+        {
+            float max = tmp.rectTransform.rect.width - tmp.margin.x - tmp.margin.z;
+            if (max <= 1f) return Shape(text);
+
+            var paragraphs = text.Split('\n');
+            var lines = new System.Collections.Generic.List<string>();
+            foreach (var p in paragraphs)
+            {
+                var words = p.Split(' ');
+                string cur = "";
+                foreach (var w in words)
+                {
+                    string cand = cur.Length == 0 ? w : cur + " " + w;
+                    float width = tmp.GetPreferredValues(Shape(cand)).x;
+                    if (width > max && cur.Length > 0)
+                    {
+                        lines.Add(Shape(cur));
+                        cur = w;
+                    }
+                    else cur = cand;
+                }
+                lines.Add(Shape(cur));
+            }
+            return string.Join("\n", lines);
+        }
+    }
+}

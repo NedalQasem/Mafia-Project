@@ -1,0 +1,252 @@
+using MafiaNight.Core;
+using MafiaNight.Data.Player;
+using MafiaNight.Services.Economy;
+using MafiaNight.Services.Profile;
+using MafiaNight.Services.Scenes;
+using MafiaNight.Services.Store;
+using MafiaNight.Data.Store;
+using MafiaNight.UI.Kit;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+namespace MafiaNight.App
+{
+    /// <summary>
+    /// Glue between the UI-kit screens and the real services. It is created automatically in any scene that has
+    /// the kit bars, so the screens keep working as stand-alone prototypes when the services are missing
+    /// (the scene was opened without going through the Bootstrap).
+    /// Rooms, chat and leaderboards still show demo data: they have no backend service yet.
+    /// </summary>
+    [DefaultExecutionOrder(100)]
+    public sealed class KitAppBinder : MonoBehaviour
+    {
+        private const string Tag = "AppBinder";
+
+        private IPlayerProfileService profile;
+        private ICurrencyService currency;
+        private IStoreService storeService;
+        private ISceneLoader sceneLoader;
+        private KitTopBar topBar;
+        private KitNavBar[] navBars = new KitNavBar[0];     // the family screens draw one bar per frame
+        private KitProfileCard card;
+        private KitStoreScreen store;
+        private KitScreenHeader header;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void Hook()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            Attach();
+        }
+
+        private static void OnSceneLoaded(Scene scene, LoadSceneMode mode) => Attach();
+
+        private static void Attach()
+        {
+            bool familyScene = SceneManager.GetActiveScene().name == AppScenes.Family;       // the family screens have no top bar of the kit
+            if ((FindAnyObjectByType<KitTopBar>() == null && FindAnyObjectByType<KitLeaderboardsScreen>() == null && FindAnyObjectByType<KitScreenHeader>() == null && !familyScene) || FindAnyObjectByType<KitAppBinder>() != null) return;
+            new GameObject("KitAppBinder").AddComponent<KitAppBinder>();
+        }
+
+        private void Awake()
+        {
+            // the prototype wirings of the kit scenes (mock rooms, mock seats) step aside while the real services run
+            KitLiveMode.Active = ServiceLocator.IsRegistered<IPlayerProfileService>() && ServiceLocator.IsRegistered<ICurrencyService>();
+            KitImages.Loader = MafiaNight.Services.Config.ServerImages.Load;      // the pictures of messages, offers and events
+        }
+
+        private static bool testServerWarned;
+
+        private void Start()
+        {
+            // a test server left in PlayerPrefs sends the whole game (chat, mail, rewards) away from the real one, so it must not go unnoticed
+            if (!testServerWarned && PlayerPrefs.HasKey("MafiaApiUrl"))
+            {
+                testServerWarned = true;
+                Log.Warning("Using the TEST server " + GameConstants.ApiUrl + " (PlayerPrefs MafiaApiUrl). Delete the key to use the real server.", Tag);
+            }
+            topBar = FindAnyObjectByType<KitTopBar>();
+            navBars = FindObjectsByType<KitNavBar>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            if (!ServiceLocator.TryGet(out profile) || !ServiceLocator.TryGet(out currency))
+            {
+                KitLiveMode.Active = false;
+                Log.Info("Services not available - screen stays in demo mode", Tag);
+                Destroy(gameObject);
+                return;
+            }
+            ServiceLocator.TryGet(out sceneLoader);
+            ServiceLocator.TryGet(out storeService);
+            card = FindAnyObjectByType<KitProfileCard>(FindObjectsInactive.Include);
+            store = FindAnyObjectByType<KitStoreScreen>();
+
+            profile.OnProfileLoaded += OnProfile;
+            profile.OnProfileUpdated += OnProfile;
+            currency.OnCoinsChanged += OnCoins;
+            foreach (var nb in navBars) { nb.OnTabSelected += OnTab; nb.OnPlaceSelected += OnPlace; }
+            if (navBars.Length > 0) gameObject.AddComponent<NavBadgesFlow>();
+            if (storeService != null) storeService.OnChanged += OnStoreChanged;
+            if (store != null) WireStore();
+            if (FindAnyObjectByType<KitRoomsScreen>() != null && ServiceLocator.IsRegistered<MafiaNight.Services.Rooms.IRoomService>())
+            {
+                gameObject.AddComponent<RoomsFlow>();
+                MafiaNight.Services.Match.MatchRunner.Ensure();
+            }
+            if (FindAnyObjectByType<KitBagScreen>() != null) gameObject.AddComponent<BagFlow>();
+            if (FindAnyObjectByType<KitRankScreen>() != null) gameObject.AddComponent<RankFlow>();
+            if (FindAnyObjectByType<KitSettingsScreen>() != null) { gameObject.AddComponent<VoiceSettingsFlow>(); gameObject.AddComponent<RecoveryFlow>(); gameObject.AddComponent<AccountIdFlow>(); gameObject.AddComponent<AccountFlow>(); }
+            VersionTag.Ensure();      // development builds show their version in a corner
+            MafiaNight.Services.Chat.ChatService.Ensure();   // listens for messages in every scene (the chat screen reads from it)
+            if (FindAnyObjectByType<KitChatScreen>(FindObjectsInactive.Include) != null) gameObject.AddComponent<ChatFlow>();
+            MafiaNight.Services.Friends.FriendsService.Ensure();   // reports where the player sits and hears friend news in every scene
+            InviteFlow.Ensure();
+            ReconnectFlow.Ensure();      // offers the way back into a match the player lost with his connection
+            if (SceneManager.GetActiveScene().name == AppScenes.Home) { gameObject.AddComponent<LaunchBannerFlow>(); gameObject.AddComponent<QuickMenuFlow>(); }       // the offers banner at the start of the game, and the quick menu that brings it back
+            if (SceneManager.GetActiveScene().name == AppScenes.Family && FindAnyObjectByType<KitMatchView>(FindObjectsInactive.Include) != null) gameObject.AddComponent<FamilyFlow>();
+            var lb = FindAnyObjectByType<KitLeaderboardsScreen>();
+            if (lb != null) { lb.OnBack += GoHome; gameObject.AddComponent<LeaderboardsFlow>(); }
+            header = FindAnyObjectByType<KitScreenHeader>();
+            if (header != null)
+            {   // the chat is reached from the family tab, so its back button returns there
+                if (SceneManager.GetActiveScene().name == AppScenes.Chat) header.OnBack += () => { if (sceneLoader != null) sceneLoader.LoadScene(AppScenes.Family); };
+                else header.OnBack += GoHome;
+                header.SetCoins(currency.Coins);
+            }
+
+            Refresh();
+            if (SceneManager.GetActiveScene().name == AppScenes.Home) ReloadAccount();      // back on the home screen
+        }
+
+        // coins, gems and the name can change outside the game (the admin board takes coins or renames the player), so they are asked again
+        // when the player comes back to the home screen or to the game, at most once a minute; the first home screen comes right after loading
+        private const float ReloadEvery = 60f;
+        private static float reloadedAt = -1f;
+
+        private void ReloadAccount()
+        {
+            float t = Time.realtimeSinceStartup;
+            if (reloadedAt < 0f) { reloadedAt = t; return; }
+            if (t - reloadedAt < ReloadEvery) return;
+            reloadedAt = t;
+            currency.FetchCurrencies();
+            profile.RefreshProfile();
+        }
+
+        private void OnApplicationFocus(bool focus) { if (focus && currency != null) ReloadAccount(); }
+
+        private void OnDestroy()
+        {
+            if (profile != null) { profile.OnProfileLoaded -= OnProfile; profile.OnProfileUpdated -= OnProfile; }
+            if (currency != null) currency.OnCoinsChanged -= OnCoins;
+            foreach (var nb in navBars) if (nb != null) { nb.OnTabSelected -= OnTab; nb.OnPlaceSelected -= OnPlace; }
+            if (storeService != null) storeService.OnChanged -= OnStoreChanged;
+        }
+
+        private void OnStoreChanged() => Refresh();
+
+        private void OnProfile(PlayerProfile _) => Refresh();
+
+        private void OnCoins(int coins)
+        {
+            if (store != null) store.Coins = coins;
+            if (header != null) header.SetCoins(coins, true);
+            if (topBar != null) Refresh(true);
+        }
+
+        private void GoHome()
+        {
+            if (sceneLoader != null && SceneManager.GetActiveScene().name != AppScenes.Home) sceneLoader.LoadScene(AppScenes.Home);
+        }
+
+        private void OnTab(int index)
+        {
+            if (sceneLoader == null || index < 0 || index >= AppScenes.ByTab.Length) return;
+            string target = AppScenes.ByTab[index];
+            if (SceneManager.GetActiveScene().name == target) return;
+            // the page burns from the bottom corner next to the tab that was pressed (ranks and settings are on the left)
+            MafiaNight.UI.Animations.BurnSettings.NextCorner = index >= 3 ? MafiaNight.UI.Animations.BurnCorner.BottomLeft : MafiaNight.UI.Animations.BurnCorner.BottomRight;
+            sceneLoader.LoadScene(target);
+        }
+
+        // the market, family and ranks tabs open a menu of two places
+        private const int MarketTab = 0, FamilyTab = 1, RanksTab = 3;
+
+        private void OnPlace(int tab, int place)
+        {
+            if (sceneLoader == null) return;
+            string here = SceneManager.GetActiveScene().name;
+            if (tab == FamilyTab)
+            {
+                string frame = place == 0 ? "c1" : "f1";     // the chats, or the friends behind them
+                var family = FindAnyObjectByType<FamilyFlow>();
+                if (here == AppScenes.Family && family != null) { family.OpenPlace(frame); return; }
+                FamilyFlow.StartFrame = frame;
+                sceneLoader.LoadScene(AppScenes.Family);
+                return;
+            }
+            string target = tab == MarketTab ? (place == 0 ? AppScenes.Store : AppScenes.Bag) : tab == RanksTab ? (place == 0 ? AppScenes.Leaderboards : AppScenes.Rank) : null;
+            if (target != null && here != target)
+            {
+                MafiaNight.UI.Animations.BurnSettings.NextCorner = tab == RanksTab ? MafiaNight.UI.Animations.BurnCorner.BottomLeft : MafiaNight.UI.Animations.BurnCorner.BottomRight;
+                sceneLoader.LoadScene(target);
+            }
+        }
+
+        private void Refresh(bool animateCoins = false)
+        {
+            var p = profile.LocalProfile;
+            if (p == null || topBar == null) return;
+
+            var step = RankLadder.FromPoints(p.RankPoints);
+            string title = KitTheme.RankNames[Mathf.Clamp(step.RankIndex, 0, KitTheme.RankNames.Length - 1)];
+            string name = string.IsNullOrEmpty(p.DisplayName) ? "لاعب" : p.DisplayName;
+            float xp01 = p.GetLevelProgress();
+
+            // what the player wears: the frame goes around the avatar, the title replaces the rank under the name
+            Sprite frame = null;
+            if (storeService != null && storeService.Catalog != null)
+            {
+                var f = storeService.Catalog.GetItem(storeService.GetEquipped("frames"));
+                if (f != null) frame = f.sprite != null ? f.sprite : FrameSprite(f.variant);
+                var t = storeService.Catalog.GetItem(storeService.GetEquipped("titles"));
+                if (t != null && !string.IsNullOrEmpty(t.titleText)) title = t.titleText;
+            }
+
+            topBar.SetPlayer(name, title, p.Level, step.RankIndex, xp01, currency.Coins, animateCoins, frame);
+            if (card != null)
+            {
+                var s = p.Statistics ?? new PlayerStatistics();
+                card.SetPlayer(name, title, p.Level, step.RankIndex, xp01, p.CurrentXP, p.XPToNextLevel, s.GamesPlayed, s.GamesWon, frame);
+                card.SetRoles(s.CitizenGames, s.MafiaGames, 0, 0);
+            }
+            if (store != null) store.PlayerRank = step.RankIndex + 1;
+        }
+
+        private static Sprite FrameSprite(int variant)
+        {
+            var th = KitTheme.Current;
+            return th != null && th.storeFrames != null && variant >= 1 && variant <= th.storeFrames.Length ? th.storeFrames[variant - 1] : null;
+        }
+
+        private System.Collections.IEnumerator AfterPurchase(StoreItem item)
+        {
+            yield return new WaitForSecondsRealtime(1f);
+            RewardFlow.Show("من متجر الحارة", "اشتريت " + item.name, new System.Collections.Generic.List<RewardItem> { RewardFlow.FromStore(item) });
+        }
+
+        private void WireStore()
+        {
+            store.Coins = currency.Coins;
+            if (storeService == null) return;   // no store service: the screen keeps its local demo behaviour
+            store.OwnedResolver = item => storeService.Owns(item.id);
+            store.EquippedResolver = item => storeService.IsEquipped(item.id);
+            store.EquipHandler = item => storeService.Equip(item.id);
+            store.PurchaseHandler = (item, done) => storeService.Purchase(item.id, item.price, item.storeId, (ok, msg) =>
+            {
+                done(ok, msg);
+                // the bought item comes out of the loot briefcase, a moment after the buy sheet closes
+                if (ok && this != null) StartCoroutine(AfterPurchase(item));
+            });
+        }
+    }
+}

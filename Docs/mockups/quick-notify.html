@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تنبيهات اللسان</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--crim:#8a1c24;--brass:#b99048}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:18px 10px 30px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif;display:flex;flex-wrap:wrap;gap:26px;justify-content:center;align-items:flex-start}
+button{font-family:inherit;border:0;color:inherit;cursor:pointer;background:none}
+.leather{background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal}
+.red{background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal}
+
+/* ---------- side panel: the demo buttons ---------- */
+.pick{width:300px;display:grid;gap:9px;text-align:center}
+.pick h1{font-family:Lalezar;font-weight:400;font-size:1.9rem;margin:0}
+.pick p{color:#8f8777;margin:0 0 4px;font-size:.84rem;line-height:1.65}
+.sbtn{padding:11px;border-radius:10px;font-weight:800;font-size:.95rem;color:#e6d9bd;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1a,0 3px 0 #000,0 0 0 1px #3a2a20;display:flex;align-items:center;gap:10px}
+.sbtn i{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:0 0 0 1px #000}
+.sbtn small{margin-inline-start:auto;font-weight:600;font-size:.7rem;color:#8f8777}
+.sbtn.main{color:#f0dcd8;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;justify-content:center}
+.row{display:flex;gap:8px}.row .sbtn{flex:1;justify-content:center}
+.notes{margin-top:4px;padding:10px 12px;border-radius:10px;background:#0d0a08;box-shadow:0 0 0 1px #2a2018;font-size:.75rem;line-height:1.75;color:#a39b89;text-align:right}
+.notes b{color:#e6d9bd}
+
+/* ---------- the phone and a ghost of the home screen ---------- */
+.phone{width:390px;height:780px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;flex:none;background:radial-gradient(ellipse 90% 40% at 50% 0,#e8c27a1c,transparent 70%),linear-gradient(180deg,#15100d,#090605);box-shadow:0 0 0 7px #14100e,0 0 0 8px #ffffff14,0 24px 50px #000}
+.top{position:absolute;top:26px;left:12px;right:12px;height:58px;border-radius:8px;display:flex;align-items:center;gap:10px;padding:0 10px;box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff14}
+.top .av{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2a2623,#0c0b0a);box-shadow:0 0 0 2px var(--brass)}
+.top b{font-family:Lalezar;font-weight:400;font-size:1.15rem}
+.top small{display:block;font-size:.6rem;color:#8d744a;margin-top:-4px}
+.top .coins{margin-inline-start:auto;background:var(--paper);color:var(--ink);padding:3px 12px;border-radius:4px;font-family:Lalezar;font-size:.95rem;rotate:2deg}
+.cta{position:absolute;top:96px;left:12px;right:12px;display:flex;gap:10px}
+.cta .a{flex:1.6;height:48px;border-radius:9px;display:grid;place-items:center;font-family:Lalezar;font-size:1.15rem;color:#f0dcd8;box-shadow:inset 0 1px 0 #ffffff22,0 4px 0 #000}
+.cta .b{flex:1;height:48px;border-radius:9px;display:grid;place-items:center;font-family:Lalezar;font-size:1rem;box-shadow:0 0 0 1px #000,0 4px 0 #000}
+.rooms{position:absolute;top:160px;left:12px;right:12px;display:grid;gap:10px}
+.rc{height:104px;border-radius:9px;padding:10px 12px;box-shadow:0 0 0 1px #000,inset 0 1px 0 #ffffff12;display:flex;gap:10px;align-items:flex-start}
+.rc .n{width:40px;height:44px;border-radius:5px;background:#0b0807;display:grid;place-items:center;font-family:Lalezar;font-size:1.1rem;box-shadow:inset 0 0 0 1px #6e5224}
+.rc h4{margin:0;font-family:Lalezar;font-weight:400;font-size:1.25rem}
+.rc p{margin:0;font-size:.65rem;color:#8d8576}
+.dock{position:absolute;left:0;right:0;bottom:0;height:78px;background:linear-gradient(180deg,#1a110d,#080504);box-shadow:0 -1px 0 #ffffff10;display:flex;justify-content:space-around;align-items:center;font-size:.6rem;color:#8d8576}
+.dock i{display:block;width:26px;height:26px;border-radius:7px;background:#2a1f18;margin:0 auto 3px}
+
+/* ---------- the tab (as approved in quick-rail.html) ---------- */
+.qm{position:absolute;z-index:6;top:236px;width:30px;height:50px}
+.qm.right{right:0}.qm.left{left:0}
+.arrow{position:absolute;inset:0;z-index:3;border-radius:25px 0 0 25px;display:grid;place-items:center;background:radial-gradient(circle at 35% 28%,#f5e2a8,#b99048 55%,#6e4b1c);box-shadow:0 0 0 1.5px #000,inset 0 1px 0 #fff8,0 4px 0 #000,0 8px 12px #000a}
+.arrow svg{width:18px;height:18px;margin-inline-end:3px;stroke:#2a1a08;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.qm.left .arrow{border-radius:0 25px 25px 0}
+.qm.left .arrow svg{rotate:180deg}
+.dot{position:absolute;z-index:4;top:-6px;left:-4px;min-width:18px;height:18px;border-radius:9px;padding:0 4px;background:radial-gradient(circle at 35% 30%,#e0525a,#8a1c24);color:#fff;font-family:Lalezar;font-size:.72rem;line-height:18px;text-align:center;box-shadow:0 0 0 1.5px #000}
+.qm.left .dot{left:auto;right:-4px}
+.dot.pop{animation:pop .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes pop{0%{scale:.3}100%{scale:1}}
+.qm.ring .arrow::after{content:"";position:absolute;inset:-4px -2px -4px -4px;border-radius:29px 0 0 29px;border:2px solid var(--rc,#e0525a);animation:ring 1.2s ease-out 2;pointer-events:none;opacity:0}
+.qm.left.ring .arrow::after{inset:-4px -4px -4px -2px;border-radius:0 29px 29px 0}
+@keyframes ring{0%{opacity:.9;scale:.85}100%{opacity:0;scale:1.45}}
+.qm.knock .arrow{animation:knock .6s ease-in-out}
+@keyframes knock{0%,100%{translate:0}20%{translate:-5px}40%{translate:2px}60%{translate:-3px}80%{translate:1px}}
+.qm.left.knock .arrow{animation-name:knockL}
+@keyframes knockL{0%,100%{translate:0}20%{translate:5px}40%{translate:-2px}60%{translate:3px}80%{translate:-1px}}
+
+/* ---------- the notification slip: a small telegram that slides out from behind the tab ---------- */
+.slot{position:absolute;z-index:2;top:-6px;height:64px;width:266px;overflow:hidden;pointer-events:none;padding:3px 0}
+.qm.right .slot{right:20px}.qm.left .slot{left:20px}
+.slip{--s1:#d8404a;--s2:#8a1c24;--s3:#4a0b10;--ic:#f3e6c8;position:absolute;top:3px;height:58px;width:256px;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:9px;padding:0 14px 0 12px;pointer-events:auto;cursor:pointer;color:var(--ink);
+  background:var(--paper);box-shadow:inset 0 0 22px #8a7a5a99,0 6px 10px #000c;border-radius:2px;
+  transition:translate .45s cubic-bezier(.25,1.35,.45,1),opacity .3s;touch-action:pan-y}
+.slip::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.12;mix-blend-mode:multiply;pointer-events:none}
+.slip::after{content:"";position:absolute;inset:4px;border:1.5px dashed #1c170f55;pointer-events:none}
+.slip>*{position:relative;z-index:1}
+.qm.right .slip{right:0;padding-right:18px;translate:105% 0;rotate:-1deg;transform-origin:100% 50%}
+.qm.left .slip{left:0;padding-left:18px;translate:-105% 0;rotate:1deg;transform-origin:0 50%}
+.qm .slip.in{translate:0 0}
+.slip.away{transition:translate .3s ease-in,opacity .3s;opacity:0}
+.qm.right .slip.away{translate:105% 0}.qm.left .slip.away{translate:-105% 0}
+/* the wax seal carries the icon and the colour of the news */
+.seal{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 28%,var(--s1),var(--s2) 55%,var(--s3));box-shadow:0 0 0 2px color-mix(in srgb,var(--s2) 75%,#000),0 3px 4px #0008,inset 0 1px 0 #ffffff55}
+.seal::after{content:"";position:absolute;inset:3px;border-radius:50%;border:1px dashed #ffffff40}
+.seal{position:relative}
+.seal svg{width:18px;height:18px;stroke:var(--ic);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 0 #0006)}
+.slip.in .seal{animation:stamp .5s .25s cubic-bezier(.3,1.8,.5,1) both}
+@keyframes stamp{0%{scale:1.7;opacity:0;rotate:-25deg}100%{scale:1;opacity:1;rotate:0deg}}
+.txt{min-width:0;line-height:1.15}
+.txt b{display:block;font-family:Lalezar;font-weight:400;font-size:1.06rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.txt span{display:block;font-size:.66rem;font-weight:700;color:#4a3c24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.txt span em{font-style:normal;color:var(--crim);font-weight:800}
+/* "+2": a little ink stamp on the paper */
+.more{position:absolute;z-index:2;top:5px;padding:0 6px;font-family:Lalezar;font-size:.72rem;line-height:16px;color:var(--crim);border:1.5px solid var(--crim);border-radius:3px;rotate:-8deg;mix-blend-mode:multiply;opacity:.85}
+.qm.right .more{left:12px}.qm.left .more{right:12px;rotate:8deg}
+/* the time: an ink line under the text that runs out */
+.time{position:absolute;bottom:8px;height:0;border-top:1.5px dotted #1c170f88}
+.qm.right .time{left:12px;right:62px;transform-origin:100% 50%}.qm.left .time{right:12px;left:62px;transform-origin:0 50%}
+.slip.run .time{animation:time var(--dur,4.5s) linear forwards}
+@keyframes time{to{scale:0 1}}
+.slip:active{filter:brightness(.95)}
+
+/* kinds: the colour of the wax */
+.k-mail{--s1:#d8404a;--s2:#8a1c24;--s3:#4a0b10;--ac:#d8404a}
+.k-reward{--s1:#f5e2a8;--s2:#b98a2e;--s3:#5a3a10;--ic:#2a1a08;--ac:#e8b04a}
+.k-event{--s1:#4fa884;--s2:#1d4a3c;--s3:#0c2219;--ac:#3fae8c}
+.k-ending{--s1:#e08a4a;--s2:#a8541c;--s3:#4a2008;--ac:#e07a3a}
+.k-offer{--s1:#4a382c;--s2:#2a1a10;--s3:#0c0806;--ic:#f5e2a8;--ac:#b99048}
+
+.toast{position:absolute;z-index:12;left:50%;bottom:96px;translate:-50% 20px;opacity:0;pointer-events:none;transition:.3s;padding:8px 14px;border-radius:9px;font-weight:800;font-size:.78rem;background:#0a0807f2;box-shadow:0 0 0 1px #6e5224,0 8px 16px #000;white-space:nowrap}
+.toast.on{opacity:1;translate:-50% 0}
+</style>
+</head>
+<body>
+
+<div class="pick">
+  <h1>تنبيهات اللسان</h1>
+  <p>لما يصير شي جديد بالقائمة السريعة، بتطلع برقية صغيرة من ورا اللسان ثواني وبترجع. اللسان بيدقّ والرقم بينط. اضغط الورقة بتفتح المكان، أو اسحبها للحافة بتختفي.</p>
+  <button class="sbtn" data-k="mail"><i style="background:#8a1c24"></i>برقية جديدة<small>البريد</small></button>
+  <button class="sbtn" data-k="reward"><i style="background:#b98a2e"></i>جائزة جاهزة للاستلام<small>أخبار الحارة</small></button>
+  <button class="sbtn" data-k="event"><i style="background:#1d4a3c"></i>حدث جديد بلّش<small>أخبار الحارة</small></button>
+  <button class="sbtn" data-k="ending"><i style="background:#a8541c"></i>حدث قرّب يخلص<small>أخبار الحارة</small></button>
+  <button class="sbtn" data-k="offer"><i style="background:#2a1a10;box-shadow:0 0 0 1px #b99048"></i>عرض جديد<small>العروض</small></button>
+  <button class="sbtn main" id="burst">٣ تنبيهات ورا بعض</button>
+  <div class="row"><button class="sbtn" id="sideR">اللسان يمين</button><button class="sbtn" id="sideL">اللسان يسار</button></div>
+  <div class="notes">
+    <b>القواعد:</b> وحدة بكل مرة، الباقي بالدور (وبيبيّن «+٢» فوق). كل ورقة ٤٫٥ ثانية والخط تحت بيخلص معها. ما بتطلع وانت جوّا غرفة أو مباراة، ولا والقائمة مفتوحة؛ بتستنى لحد ما ترجع للرئيسية. نفس التنبيه ما بيتكرر.
+  </div>
+</div>
+
+<div class="phone" id="phone">
+  <div class="top leather"><div class="av"></div><div><b>أبو سالم</b><small>صاحب كلمة</small></div><div class="coins">١٬٢٥٠</div></div>
+  <div class="cta"><div class="a red">انضم سريع</div><div class="b leather">افتح طاولتك</div></div>
+  <div class="rooms">
+    <div class="rc leather"><div class="n">٩</div><div><h4>سهرة الشباب</h4><p>أبو سالم · المستوى ٧</p></div></div>
+    <div class="rc red"><div class="n">١٤</div><div><h4>مجلس الكبار</h4><p>الحج حسن · المستوى ٩</p></div></div>
+    <div class="rc leather"><div class="n">٤</div><div><h4>غرفة الأصحاب</h4><p>لينا · المستوى ٣</p></div></div>
+  </div>
+  <div class="dock"><div><i></i>الإعدادات</div><div><i></i>الرتب</div><div><i></i>الغرف</div><div><i></i>العائلة</div><div><i></i>السوق</div></div>
+
+  <div class="qm right" id="qm">
+    <div class="slot" id="slot"></div>
+    <button class="arrow" aria-label="القائمة السريعة"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <span class="dot" id="dot">٢</span>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const ar = n => Number(n).toLocaleString('ar-EG');
+const ICON = {
+  mail: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/></svg>',
+  reward: '<svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="1.5"/><path d="M3 7h18v3H3zM12 7v13M12 7c-2-4-6-3-5 0M12 7c2-4 6-3 5 0"/></svg>',
+  event: '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/><circle cx="12" cy="15" r="2" fill="#1a1006"/></svg>',
+  ending: '<svg viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9"/></svg>',
+  offer: '<svg viewBox="0 0 24 24"><path d="M3 12l9-9h8v8l-9 9z"/><circle cx="16" cy="8" r="1.6" fill="#1a1006"/></svg>',
+};
+// what the game would send (text kept short: one line of title, one line of detail)
+const N = {
+  mail:   { t: 'برقية جديدة', s: 'هدية من إدارة الحارة · <em>٥٠٠</em> كوينز', go: 'البريد' },
+  reward: { t: 'جائزتك جاهزة!', s: 'تحدّي ٥ انتصارات · استلم <em>٣٠٠</em> كوينز', go: 'أخبار الحارة' },
+  event:  { t: 'حدث جديد: ليلة الحظ', s: 'كوينز مضاعفة ×٢ · لحد <em>منتصف الليل</em>', go: 'أخبار الحارة' },
+  ending: { t: 'بطولة الويكند بتخلص', s: 'باقي <em>ساعة</em> · إنت بالمركز <em>٧</em>', go: 'أخبار الحارة' },
+  offer:  { t: 'عرض جديد بالسوق', s: 'إطار الوردة بـ<em>٤٠٠</em> بدل ٨٠٠', go: 'العروض' },
+};
+const queue = []; let showing = null, timer = null, count = 2;
+
+function push(kind) { queue.push(kind); bumpDot(); if (!showing) next(); else updateMore(); }
+function bumpDot() { count++; const d = $('#dot'); d.textContent = ar(count); d.classList.remove('pop'); void d.offsetWidth; d.classList.add('pop'); }
+function updateMore() { if (!showing) return; let m = showing.querySelector('.more'); if (!queue.length) { if (m) m.remove(); return; } if (!m) { m = document.createElement('span'); m.className = 'more'; showing.appendChild(m); } m.textContent = '+' + ar(queue.length); }
+
+function next() {
+  if (!queue.length) { showing = null; return; }
+  const kind = queue.shift(), n = N[kind], qm = $('#qm');
+  qm.style.setProperty('--rc', getComputedStyle(document.documentElement).getPropertyValue('--x') || '');
+  const s = document.createElement('div');
+  s.className = 'slip k-' + kind;
+  s.innerHTML = `<div class="seal">${ICON[kind]}</div><div class="txt"><b>${n.t}</b><span>${n.s}</span></div><i class="time"></i>`;
+  $('#slot').appendChild(s);
+  showing = s; updateMore();
+  qm.style.setProperty('--rc', getComputedStyle(s).getPropertyValue('--ac').trim());
+  qm.classList.remove('knock', 'ring'); void qm.offsetWidth; qm.classList.add('knock', 'ring');
+  setTimeout(() => { s.classList.add('in', 'run'); }, 120);
+  timer = setTimeout(() => hide(s), 4600);
+  s.onclick = () => { if (s.dragged) return; toast('بيفتح ' + n.go); hide(s); };
+  // swipe it back to the edge to dismiss
+  let x0 = null, dx = 0;
+  s.onpointerdown = e => { x0 = e.clientX; dx = 0; s.dragged = false; s.style.transition = 'none'; s.setPointerCapture(e.pointerId); };
+  s.onpointermove = e => { if (x0 === null) return; dx = e.clientX - x0; const right = qm.classList.contains('right'); const d = right ? Math.max(0, dx) : Math.min(0, dx); if (Math.abs(d) > 4) s.dragged = true; s.style.translate = d + 'px 0'; };
+  s.onpointerup = () => { if (x0 === null) return; x0 = null; s.style.transition = ''; s.style.translate = ''; if (Math.abs(dx) > 60) hide(s); setTimeout(() => s.dragged = false, 0); };
+}
+
+function hide(s) {
+  if (!s || s.classList.contains('away')) return;
+  clearTimeout(timer);
+  s.classList.add('away');
+  setTimeout(() => { s.remove(); showing = null; setTimeout(next, 250); }, 320);
+}
+
+function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => e.classList.remove('on'), 1600); }
+function side(r) { const qm = $('#qm'); qm.classList.toggle('right', r); qm.classList.toggle('left', !r); $('#slot').innerHTML = ''; queue.length = 0; showing = null; clearTimeout(timer); }
+
+document.querySelectorAll('[data-k]').forEach(b => b.onclick = () => push(b.dataset.k));
+$('#burst').onclick = () => { push('mail'); push('event'); push('offer'); };
+$('#sideR').onclick = () => side(true);
+$('#sideL').onclick = () => side(false);
+setTimeout(() => push('mail'), 700);
+</script>
+</body>
+</html>

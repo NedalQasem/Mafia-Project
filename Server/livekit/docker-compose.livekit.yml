@@ -1,0 +1,23 @@
+# LiveKit next to the website's containers and the rewards service, WITHOUT touching their compose files.
+# Start:  docker compose -f docker-compose.livekit.yml up -d
+services:
+  mafia-livekit:
+    image: livekit/livekit-server:latest
+    container_name: mafia-livekit
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml
+    env_file: /etc/mafia-livekit.env          # LIVEKIT_KEYS="<key>: <secret>"  (written by set-livekit.sh, chmod 600)
+    ports:
+      - "7881:7881/tcp"                       # media over TCP when UDP is blocked
+      - "7882:7882/udp"                       # all media, one port
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    networks: [site]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }     # the logs never fill the disk
+
+networks:
+  site:
+    external: true
+    name: ${SITE_NETWORK:-mena-gaming_default}

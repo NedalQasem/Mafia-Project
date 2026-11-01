@@ -1,0 +1,1117 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38279a7f2c4dc8a4681592c70a09bc22, type: 3}
+  m_Name: StoreCatalog
+  m_EditorClassIdentifier: MafiaNight.Data::MafiaNight.Data.Store.StoreCatalog
+  categories:
+  - id: rank_sets
+    kind: 1
+    tabName: "\u062D\u0635\u0631\u064A \u0627\u0644\u0631\u062A\u0628"
+    headTitle: "\u062D\u0635\u0631\u064A \u0627\u0644\u0631\u062A\u0628"
+    hint: "\u0643\u0644 \u0631\u062A\u0628\u0629 \u0644\u0647\u0627 \u0637\u0642\u0645
+      \u062E\u0627\u0635\u060C \u064A\u064F\u0643\u0633\u0628 \u0628\u0627\u0644\u062A\u0631\u0642\u064A\u0629
+      \u0648\u0644\u0627 \u064A\u064F\u0634\u062A\u0631\u0649"
+    builtInIcon: 0
+    icon: {fileID: 0}
+    perRow: 3
+    equippable: 0
+    hidden: 0
+  - id: frames
+    kind: 0
+    tabName: "\u0627\u0644\u0625\u0637\u0627\u0631\u0627\u062A"
+    headTitle: "\u0625\u0637\u0627\u0631\u0627\u062A \u0627\u0644\u0635\u0648\u0631\u0629"
+    hint: "\u062A\u0631\u0627\u0641\u0642\u0643 \u0641\u064A \u0643\u0644 \u063A\u0631\u0641\u0629"
+    builtInIcon: 1
+    icon: {fileID: 0}
+    perRow: 3
+    equippable: 1
+    hidden: 0
+  - id: room_bg
+    kind: 0
+    tabName: "\u062E\u0644\u0641\u064A\u0629 \u0627\u0644\u0631\u0648\u0645"
+    headTitle: "\u062E\u0644\u0641\u064A\u0629 \u0627\u0644\u0631\u0648\u0645"
+    hint: "\u0634\u0643\u0644 \u0627\u0644\u0645\u0643\u0627\u0646 \u0627\u0644\u0630\u064A
+      \u062A\u062C\u0644\u0633\u0648\u0646 \u0641\u064A\u0647"
+    builtInIcon: 2
+    icon: {fileID: 0}
+    perRow: 3
+    equippable: 1
+    hidden: 0
+  - id: chat_bg
+    kind: 0
+    tabName: "\u062E\u0644\u0641\u064A\u0629 \u0627\u0644\u062F\u0631\u062F\u0634\u0629"
+    headTitle: "\u062E\u0644\u0641\u064A\u0627\u062A \u0627\u0644\u062F\u0631\u062F\u0634\u0629"
+    hint: "\u0644\u0648\u0646 \u0645\u062C\u0644\u0633\u0643"
+    builtInIcon: 3
+    icon: {fileID: 0}
+    perRow: 3
+    equippable: 1
+    hidden: 0
+  - id: bubbles
+    kind: 0
+    tabName: "\u0641\u0642\u0627\u0639\u0627\u062A \u0627\u0644\u062F\u0631\u062F\u0634\u0629"
+    headTitle: "\u0641\u0642\u0627\u0639\u0627\u062A \u0627\u0644\u062F\u0631\u062F\u0634\u0629"
+    hint: "\u0634\u0643\u0644 \u0631\u0633\u0627\u0626\u0644\u0643"
+    builtInIcon: 4
+    icon: {fileID: 0}
+    perRow: 2
+    equippable: 1
+    hidden: 0
+  - id: entry
+    kind: 0
+    tabName: "\u0641\u0642\u0627\u0639\u0627\u062A \u0627\u0644\u062F\u062E\u0648\u0644"
+    headTitle: "\u0641\u0642\u0627\u0639\u0627\u062A \u0627\u0644\u062F\u062E\u0648\u0644"
+    hint: "\u0645\u0627 \u064A\u0638\u0647\u0631 \u0644\u0644\u062C\u0645\u064A\u0639
+      \u0639\u0646\u062F \u062F\u062E\u0648\u0644\u0643 \u0627\u0644\u0631\u0648\u0645"
+    builtInIcon: 5
+    icon: {fileID: 0}
+    perRow: 2
+    equippable: 1
+    hidden: 0
+  - id: gifts
+    kind: 0
+    tabName: "\u0627\u0644\u0647\u062F\u0627\u064A\u0627"
+    headTitle: "\u0647\u062F\u0627\u064A\u0627"
+    hint: "\u0623\u0631\u0633\u0644\u0647\u0627 \u0644\u0644\u0627\u0639\u0628\u064A\u0646
+      \u0628\u0627\u0644\u063A\u0631\u0641\u0629"
+    builtInIcon: 6
+    icon: {fileID: 0}
+    perRow: 3
+    equippable: 0
+    hidden: 0
+  - id: cards
+    kind: 0
+    tabName: "\u0623\u0648\u0631\u0627\u0642 \u0627\u0644\u0637\u0627\u0648\u0644\u0629"
+    headTitle: "\u0623\u0648\u0631\u0627\u0642 \u0627\u0644\u0637\u0627\u0648\u0644\u0629"
+    hint: "\u0634\u0643\u0644 \u0638\u0647\u0631 \u0627\u0644\u0648\u0631\u0642"
+    builtInIcon: 7
+    icon: {fileID: 0}
+    perRow: 3
+    equippable: 1
+    hidden: 0
+  - id: titles
+    kind: 0
+    tabName: "\u0627\u0644\u0623\u0644\u0642\u0627\u0628"
+    headTitle: "\u0627\u0644\u0623\u0644\u0642\u0627\u0628"
+    hint: "\u062A\u0638\u0647\u0631 \u062A\u062D\u062A \u0627\u0633\u0645\u0643"
+    builtInIcon: 8
+    icon: {fileID: 0}
+    perRow: 3
+    equippable: 1
+    hidden: 0
+  - id: coins
+    kind: 0
+    tabName: "\u0627\u0644\u0643\u0648\u064A\u0646\u0632"
+    headTitle: "\u0634\u062D\u0646 \u0627\u0644\u0643\u0648\u064A\u0646\u0632"
+    hint: "\u0644\u0644\u0647\u062F\u0627\u064A\u0627 \u0648\u0627\u0644\u0632\u064A\u0646\u0629
+      \u0641\u0642\u0637"
+    builtInIcon: 9
+    icon: {fileID: 0}
+    perRow: 2
+    equippable: 0
+    hidden: 0
+  items:
+  - id: frame_copper
+    categoryId: frames
+    nameAr: "\u062D\u0644\u0642\u0629 \u0646\u062D\u0627\u0633"
+    descAr: "\u0625\u0637\u0627\u0631 \u0646\u062D\u0627\u0633\u064A \u0628\u0633\u064A\u0637
+      \u0648\u0646\u0638\u064A\u0641."
+    price: 250
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 0
+    variant: 1
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: frame_barbed
+    categoryId: frames
+    nameAr: "\u0633\u0644\u0643 \u0634\u0627\u0626\u0643"
+    descAr: "\u0644\u0644\u0651\u064A \u0644\u0627 \u064A\u0631\u064A\u062F \u0623\u0646
+      \u064A\u0642\u062A\u0631\u0628 \u0645\u0646\u0647 \u0623\u062D\u062F."
+    price: 400
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 0
+    variant: 2
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: frame_rope
+    categoryId: frames
+    nameAr: "\u062D\u0628\u0644 \u0645\u0636\u0641\u0648\u0631"
+    descAr: "\u062D\u0628\u0644 \u0642\u062F\u064A\u0645 \u0645\u0646 \u0645\u064A\u0646\u0627\u0621
+      \u0627\u0644\u062D\u0627\u0631\u0629."
+    price: 400
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 0
+    variant: 3
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: frame_royal_gold
+    categoryId: frames
+    nameAr: "\u0630\u0647\u0628 \u0645\u0644\u0643\u064A"
+    descAr: "\u0630\u0647\u0628 \u062E\u0627\u0644\u0635 \u0628\u062A\u0648\u0647\u0651\u062C
+      \u062F\u0627\u0626\u0645."
+    price: 1500
+    rarity: 3
+    lockRank: 4
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 0
+    variant: 4
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: frame_ember
+    categoryId: frames
+    nameAr: "\u0627\u0644\u062C\u0645\u0631"
+    descAr: "\u062D\u0644\u0642\u0629 \u0646\u0627\u0631\u064A\u0629 \u062A\u062A\u0648\u0647\u0651\u062C
+      \u0648\u062A\u062E\u0641\u062A."
+    price: 1200
+    rarity: 2
+    lockRank: 0
+    isNew: 1
+    ownedByDefault: 0
+    artKind: 0
+    variant: 5
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: frame_turquoise
+    categoryId: frames
+    nameAr: "\u0641\u064A\u0631\u0648\u0632"
+    descAr: "\u0644\u0645\u0639\u0627\u0646 \u0641\u064A\u0631\u0648\u0632\u064A
+      \u0628\u0627\u0631\u062F."
+    price: 900
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 0
+    variant: 6
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: room_backroom
+    categoryId: room_bg
+    nameAr: "\u0627\u0644\u063A\u0631\u0641\u0629 \u0627\u0644\u062E\u0644\u0641\u064A\u0629"
+    descAr: "\u0627\u0644\u063A\u0631\u0641\u0629 \u0627\u0644\u0627\u0641\u062A\u0631\u0627\u0636\u064A\u0629:
+      \u0645\u0635\u0628\u0627\u062D \u0648\u0627\u062D\u062F \u0648\u0637\u0627\u0648\u0644\u0629."
+    price: 0
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 1
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.41568628, g: 0.2901961, b: 0.21960784, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: room_cafe
+    categoryId: room_bg
+    nameAr: "\u0645\u0642\u0647\u0649 \u0627\u0644\u0642\u0647\u0648\u0629"
+    descAr: "\u0637\u0627\u0648\u0644\u062A\u0643\u0645 \u0641\u064A \u0632\u0627\u0648\u064A\u0629
+      \u0645\u0642\u0647\u0649 \u0642\u062F\u064A\u0645."
+    price: 900
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 1
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.65882355, g: 0.4392157, b: 0.22745098, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: room_rooftop
+    categoryId: room_bg
+    nameAr: "\u0633\u0637\u062D \u0627\u0644\u0645\u0628\u0646\u0649"
+    descAr: "\u0633\u0645\u0627\u0621 \u0645\u0641\u062A\u0648\u062D\u0629 \u0648\u0623\u0636\u0648\u0627\u0621
+      \u0627\u0644\u0645\u062F\u064A\u0646\u0629 \u062A\u062D\u062A\u0643\u0645."
+    price: 1200
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 1
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.22745098, g: 0.2901961, b: 0.47843137, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: room_port
+    categoryId: room_bg
+    nameAr: "\u0627\u0644\u0645\u064A\u0646\u0627\u0621"
+    descAr: "\u0645\u0627\u0621 \u0623\u0633\u0648\u062F \u0648\u0635\u0646\u0627\u062F\u064A\u0642
+      \u0648\u0631\u064A\u0627\u062D \u0628\u0627\u0631\u062F\u0629."
+    price: 1500
+    rarity: 2
+    lockRank: 4
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 1
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.16470589, g: 0.3529412, b: 0.47843137, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: room_cellar
+    categoryId: room_bg
+    nameAr: "\u0627\u0644\u0642\u0628\u0648"
+    descAr: "\u062C\u062F\u0631\u0627\u0646 \u0637\u0648\u0628 \u0648\u0636\u0648\u0621
+      \u062E\u0627\u0641\u062A."
+    price: 2200
+    rarity: 3
+    lockRank: 6
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 1
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.5411765, g: 0.22745098, b: 0.16470589, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: chat_backroom
+    categoryId: chat_bg
+    nameAr: "\u0627\u0644\u063A\u0631\u0641\u0629 \u0627\u0644\u062E\u0644\u0641\u064A\u0629"
+    descAr: "\u062E\u0644\u0641\u064A\u0629 \u062F\u0631\u062F\u0634\u0629 \u0628\u0645\u0635\u0628\u0627\u062D
+      \u062F\u0627\u0641\u0626."
+    price: 600
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 2
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.41568628, g: 0.2901961, b: 0.21960784, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: chat_rain
+    categoryId: chat_bg
+    nameAr: "\u0631\u0635\u064A\u0641 \u0627\u0644\u0645\u0637\u0631"
+    descAr: "\u0645\u0637\u0631 \u0644\u064A\u0644\u064A \u0639\u0644\u0649 \u0631\u0635\u064A\u0641
+      \u0642\u062F\u064A\u0645."
+    price: 600
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 2
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.22745098, g: 0.3137255, b: 0.40784314, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: chat_hideout
+    categoryId: chat_bg
+    nameAr: "\u0627\u0644\u0645\u062E\u0628\u0623"
+    descAr: "\u062C\u062F\u0627\u0631 \u0637\u0648\u0628 \u0648\u0638\u0644\u0627\u0644."
+    price: 450
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 2
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.5411765, g: 0.2901961, b: 0.22745098, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: chat_brass_hall
+    categoryId: chat_bg
+    nameAr: "\u0645\u062C\u0644\u0633 \u0627\u0644\u0646\u062D\u0627\u0633"
+    descAr: "\u0645\u062C\u0644\u0633 \u0641\u062E\u0645 \u0628\u0625\u0636\u0627\u0621\u0629
+      \u0646\u062D\u0627\u0633\u064A\u0629."
+    price: 1800
+    rarity: 3
+    lockRank: 5
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 2
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.72156864, g: 0.53333336, b: 0.22745098, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: chat_port
+    categoryId: chat_bg
+    nameAr: "\u0627\u0644\u0645\u064A\u0646\u0627\u0621"
+    descAr: "\u0633\u0641\u0646 \u0648\u0645\u064A\u0627\u0647 \u0633\u0648\u062F\u0627\u0621
+      \u0628\u0627\u0644\u0644\u064A\u0644."
+    price: 900
+    rarity: 2
+    lockRank: 0
+    isNew: 1
+    ownedByDefault: 0
+    artKind: 2
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.16470589, g: 0.3529412, b: 0.47843137, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: chat_balcony
+    categoryId: chat_bg
+    nameAr: "\u0627\u0644\u0634\u0631\u0641\u0629"
+    descAr: "\u0642\u0645\u0631 \u0641\u0648\u0642 \u0645\u062F\u064A\u0646\u0629
+      \u0646\u0627\u0626\u0645\u0629."
+    price: 900
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 2
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.41568628, g: 0.22745098, b: 0.41568628, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: bubble_leather
+    categoryId: bubbles
+    nameAr: "\u062C\u0644\u062F \u0645\u062E\u064A\u0651\u0637"
+    descAr: "\u0641\u0642\u0627\u0639\u0629 \u062C\u0644\u062F \u0628\u062E\u064A\u0627\u0637\u0629
+      \u0645\u0646\u0642\u0651\u0637\u0629."
+    price: 0
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 3
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: bubble_note
+    categoryId: bubbles
+    nameAr: "\u0648\u0631\u0642\u0629 \u0645\u0644\u0627\u062D\u0638\u0629"
+    descAr: "\u0631\u0633\u0627\u0626\u0644\u0643 \u062A\u0628\u062F\u0648 \u0645\u0643\u062A\u0648\u0628\u0629
+      \u0639\u0644\u0649 \u0648\u0631\u0642\u0629."
+    price: 400
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 3
+    variant: 1
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: bubble_ticket
+    categoryId: bubbles
+    nameAr: "\u062A\u0630\u0643\u0631\u0629 \u0645\u0645\u0632\u0642\u0629"
+    descAr: "\u062D\u0627\u0641\u0629 \u0645\u0645\u0632\u0642\u0629 \u0648\u062B\u0642\u0628\u0627\u0646
+      \u0639\u0644\u0649 \u0627\u0644\u062C\u0627\u0646\u0628\u064A\u0646."
+    price: 500
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 3
+    variant: 2
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: bubble_typewriter
+    categoryId: bubbles
+    nameAr: "\u0622\u0644\u0629 \u0643\u0627\u062A\u0628\u0629"
+    descAr: "\u062D\u0631\u0648\u0641 \u0643\u0623\u0646\u0647\u0627 \u0637\u064F\u0628\u0639\u062A
+      \u0644\u0644\u062A\u0648."
+    price: 600
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 3
+    variant: 3
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: bubble_brass
+    categoryId: bubbles
+    nameAr: "\u0644\u0648\u062D\u0629 \u0646\u062D\u0627\u0633"
+    descAr: "\u0643\u0644 \u0631\u0633\u0627\u0644\u0629 \u0644\u0648\u062D\u0629
+      \u0646\u062D\u0627\u0633 \u0645\u062D\u0641\u0648\u0631\u0629."
+    price: 800
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 3
+    variant: 4
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: bubble_velvet
+    categoryId: bubbles
+    nameAr: "\u0645\u062E\u0645\u0644 \u0642\u0631\u0645\u0632\u064A"
+    descAr: "\u0645\u062E\u0645\u0644 \u0642\u0631\u0645\u0632\u064A \u0628\u062D\u0627\u0641\u0629
+      \u0646\u062D\u0627\u0633\u064A\u0629."
+    price: 1400
+    rarity: 3
+    lockRank: 5
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 3
+    variant: 5
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: entry_quiet
+    categoryId: entry
+    nameAr: "\u062F\u062E\u0648\u0644 \u0647\u0627\u062F\u0626"
+    descAr: "\u0634\u0631\u064A\u0637 \u0648\u0631\u0642\u064A \u0628\u0633\u064A\u0637
+      \u0628\u0627\u0633\u0645\u0643."
+    price: 0
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 4
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: entry_bullet
+    categoryId: entry
+    nameAr: "\u062B\u0642\u0628 \u0627\u0644\u0631\u0635\u0627\u0635\u0629"
+    descAr: "\u0634\u0631\u064A\u0637 \u0641\u0648\u0644\u0627\u0630 \u062A\u062E\u062A\u0631\u0642\u0647
+      \u0631\u0635\u0627\u0635\u0629."
+    price: 700
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 4
+    variant: 1
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: entry_red_carpet
+    categoryId: entry
+    nameAr: "\u0627\u0644\u0633\u062C\u0627\u062F\u0629 \u0627\u0644\u062D\u0645\u0631\u0627\u0621"
+    descAr: "\u0633\u062C\u0627\u062F\u0629 \u0642\u0631\u0645\u0632\u064A\u0629
+      \u062A\u064F\u0641\u0631\u0634 \u0644\u0643."
+    price: 900
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 4
+    variant: 2
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: entry_headlights
+    categoryId: entry
+    nameAr: "\u0627\u0644\u0645\u0635\u0627\u0628\u064A\u062D"
+    descAr: "\u0645\u0635\u0628\u0627\u062D\u0627 \u0633\u064A\u0627\u0631\u0629
+      \u064A\u0643\u0634\u0641\u0627\u0646 \u0627\u0633\u0645\u0643."
+    price: 1200
+    rarity: 2
+    lockRank: 0
+    isNew: 1
+    ownedByDefault: 0
+    artKind: 4
+    variant: 3
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: entry_door_shadow
+    categoryId: entry
+    nameAr: "\u0638\u0644 \u0627\u0644\u0628\u0627\u0628"
+    descAr: "\u0638\u0644\u0651\u0643 \u0639\u0644\u0649 \u0627\u0644\u0628\u0627\u0628
+      \u0648\u0636\u0648\u0621 \u0645\u0646 \u0627\u0644\u062F\u0627\u062E\u0644."
+    price: 1500
+    rarity: 3
+    lockRank: 6
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 4
+    variant: 4
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: gift_pocket_watch
+    categoryId: gifts
+    nameAr: "\u0633\u0627\u0639\u0629 \u0627\u0644\u062C\u064A\u0628"
+    descAr: "\u0647\u062F\u064A\u0629 \u0644\u0644\u0651\u064A \u064A\u0646\u062A\u0638\u0631
+      \u062F\u0648\u0631\u0647."
+    price: 300
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 5
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: gift_golden_bullet
+    categoryId: gifts
+    nameAr: "\u0631\u0635\u0627\u0635\u0629 \u0630\u0647\u0628\u064A\u0629"
+    descAr: "\u0644\u0644\u0651\u064A \u0623\u0635\u0627\u0628 \u0627\u0644\u0647\u062F\u0641."
+    price: 500
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 5
+    variant: 1
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: gift_dallah
+    categoryId: gifts
+    nameAr: "\u0627\u0644\u062F\u0644\u0651\u0629"
+    descAr: "\u0642\u0647\u0648\u0629 \u0639\u0644\u0649 \u062D\u0633\u0627\u0628
+      \u0627\u0644\u0637\u0627\u0648\u0644\u0629."
+    price: 200
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 5
+    variant: 2
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: gift_key
+    categoryId: gifts
+    nameAr: "\u0645\u0641\u062A\u0627\u062D \u0627\u0644\u062D\u0627\u0631\u0629"
+    descAr: "\u0623\u0646\u062A \u0645\u0646 \u0627\u0644\u0639\u0627\u0626\u0644\u0629."
+    price: 350
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 5
+    variant: 3
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: gift_rose
+    categoryId: gifts
+    nameAr: "\u0648\u0631\u062F\u0629 \u062D\u0645\u0631\u0627\u0621"
+    descAr: "\u0628\u0644\u0627 \u0643\u0644\u0627\u0645."
+    price: 800
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 5
+    variant: 4
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: gift_crown
+    categoryId: gifts
+    nameAr: "\u0627\u0644\u062A\u0627\u062C"
+    descAr: "\u0647\u062F\u064A\u0629 \u0627\u0644\u0643\u0628\u0627\u0631 \u0641\u0642\u0637."
+    price: 5000
+    rarity: 3
+    lockRank: 7
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 5
+    variant: 5
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: card_crimson
+    categoryId: cards
+    nameAr: "\u0638\u0647\u0631 \u0642\u0631\u0645\u0632\u064A"
+    descAr: "\u0648\u0631\u0642 \u0628\u0638\u0647\u0631 \u0642\u0631\u0645\u0632\u064A
+      \u0645\u0632\u062E\u0631\u0641."
+    price: 350
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 6
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.7529412, g: 0.19607843, b: 0.22745098, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: card_blue_night
+    categoryId: cards
+    nameAr: "\u0644\u064A\u0644 \u0623\u0632\u0631\u0642"
+    descAr: "\u062E\u0637\u0648\u0637 \u0631\u0641\u064A\u0639\u0629 \u0639\u0644\u0649
+      \u0623\u0632\u0631\u0642 \u062F\u0627\u0643\u0646."
+    price: 500
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 6
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.22745098, g: 0.3529412, b: 0.5411765, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: card_club_green
+    categoryId: cards
+    nameAr: "\u0623\u062E\u0636\u0631 \u0627\u0644\u0646\u0627\u062F\u064A"
+    descAr: "\u0623\u062E\u0636\u0631 \u062C\u0648\u062E \u0628\u0644\u0645\u0633\u0629
+      \u0646\u062D\u0627\u0633."
+    price: 700
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 6
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.18431373, g: 0.47843137, b: 0.32156864, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: card_coal
+    categoryId: cards
+    nameAr: "\u0641\u062D\u0645"
+    descAr: "\u0623\u0633\u0648\u062F \u0643\u0627\u0644\u0644\u064A\u0644."
+    price: 700
+    rarity: 2
+    lockRank: 0
+    isNew: 1
+    ownedByDefault: 0
+    artKind: 6
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 0.22745098, g: 0.22745098, b: 0.23529412, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: title_boss
+    categoryId: titles
+    nameAr: "\u0643\u0628\u064A\u0631 \u0627\u0644\u062D\u0627\u0631\u0629"
+    descAr: "\u0644\u0642\u0628 \u0628\u0644\u0648\u062D\u0629 \u0646\u062D\u0627\u0633."
+    price: 900
+    rarity: 3
+    lockRank: 4
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 7
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: "\u0643\u0628\u064A\u0631 \u0627\u0644\u062D\u0627\u0631\u0629"
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: title_word
+    categoryId: titles
+    nameAr: "\u0635\u0627\u062D\u0628 \u0643\u0644\u0645\u0629"
+    descAr: "\u0644\u0642\u0628 \u0628\u0644\u0648\u062D\u0629 \u062C\u0644\u062F."
+    price: 300
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 7
+    variant: 1
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: "\u0635\u0627\u062D\u0628 \u0643\u0644\u0645\u0629"
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: title_suspect
+    categoryId: titles
+    nameAr: "\u0645\u0634\u0628\u0648\u0647"
+    descAr: "\u0644\u0642\u0628 \u0628\u0648\u0631\u0642\u0629 \u0645\u062F\u0628\u0651\u0633\u0629."
+    price: 300
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 7
+    variant: 2
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: "\u0645\u0634\u0628\u0648\u0647"
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: title_professor
+    categoryId: titles
+    nameAr: "\u0627\u0644\u0623\u0633\u062A\u0627\u0630"
+    descAr: "\u0644\u0642\u0628 \u0628\u0625\u0637\u0627\u0631 \u0646\u062D\u0627\u0633\u064A
+      \u0639\u0644\u0649 \u0645\u062E\u0645\u0644."
+    price: 1100
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 7
+    variant: 3
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: "\u0627\u0644\u0623\u0633\u062A\u0627\u0630"
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: pack_small
+    categoryId: coins
+    nameAr: "\u062D\u0641\u0646\u0629 \u0643\u0648\u064A\u0646\u0632"
+    descAr: "\u0665\u0660\u0660 \u0643\u0648\u064A\u0646\u0632 \u0644\u0644\u0647\u062F\u0627\u064A\u0627
+      \u0648\u0627\u0644\u0632\u064A\u0646\u0629 \u0641\u0642\u0637."
+    price: 0
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 8
+    variant: 1
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: "\u0660\u066B\u0669\u0669 $"
+    productId: pack_small
+    coinsGranted: 500
+  - id: pack_bag
+    categoryId: coins
+    nameAr: "\u0643\u064A\u0633 \u0643\u0648\u064A\u0646\u0632"
+    descAr: "\u0661\u066C\u0662\u0660\u0660 \u0643\u0648\u064A\u0646\u0632 \u0644\u0644\u0647\u062F\u0627\u064A\u0627
+      \u0648\u0627\u0644\u0632\u064A\u0646\u0629 \u0641\u0642\u0637."
+    price: 0
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 8
+    variant: 2
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: "\u0661\u066B\u0669\u0669 $"
+    productId: pack_bag
+    coinsGranted: 1200
+  - id: pack_chest
+    categoryId: coins
+    nameAr: "\u0635\u0646\u062F\u0648\u0642 \u0643\u0648\u064A\u0646\u0632"
+    descAr: "\u0663\u066C\u0665\u0660\u0660 \u0643\u0648\u064A\u0646\u0632 \u0644\u0644\u0647\u062F\u0627\u064A\u0627
+      \u0648\u0627\u0644\u0632\u064A\u0646\u0629 \u0641\u0642\u0637."
+    price: 0
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 8
+    variant: 3
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: "\u0664\u066B\u0669\u0669 $"
+    productId: pack_chest
+    coinsGranted: 3500
+  - id: pack_vault
+    categoryId: coins
+    nameAr: "\u062E\u0632\u0646\u0629 \u0643\u0648\u064A\u0646\u0632"
+    descAr: "\u0661\u0660\u066C\u0660\u0660\u0660 \u0643\u0648\u064A\u0646\u0632
+      \u0644\u0644\u0647\u062F\u0627\u064A\u0627 \u0648\u0627\u0644\u0632\u064A\u0646\u0629
+      \u0641\u0642\u0637."
+    price: 0
+    rarity: 3
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 8
+    variant: 4
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    priceText: "\u0661\u0661\u066B\u0669\u0669 $"
+    productId: pack_vault
+    coinsGranted: 10000
+  ads:
+  - id: ad_ember
+    enabled: 1
+    mast: "\u0639\u0631\u0636 \u0627\u0644\u0644\u064A\u0644\u0629 \u0641\u0642\u0637"
+    headline: "\u0625\u0637\u0627\u0631 \u0627\u0644\u062C\u0645\u0631\n\u0628\u0646\u0635\u0641
+      \u0627\u0644\u062B\u0645\u0646 \u062A\u0642\u0631\u064A\u0628\u0627\u064B"
+    body: "\u062D\u0644\u0642\u0629 \u0646\u0627\u0631\u064A\u0629 \u062A\u062A\u0648\u0647\u062C
+      \u062D\u0648\u0644 \u0635\u0648\u0631\u062A\u0643."
+    stamp: "\u2212\u0663\u0660\u066A"
+    itemId: frame_ember
+    countdownSeconds: 8073
+    offerPrice: 840
+    offerStoreId: offers
+  - id: ad_chat_port
+    enabled: 1
+    mast: "\u0648\u0635\u0644 \u062D\u062F\u064A\u062B\u0627\u064B"
+    headline: "\u062E\u0644\u0641\u064A\u0629 \u0627\u0644\u0645\u064A\u0646\u0627\u0621\n\u0633\u0641\u0646
+      \u0648\u0644\u064A\u0644 \u0623\u0633\u0648\u062F"
+    body: "\u063A\u064A\u0651\u0631 \u0644\u0648\u0646 \u0645\u062C\u0644\u0633\u0643
+      \u0628\u062E\u0644\u0641\u064A\u0629 \u062C\u062F\u064A\u062F\u0629."
+    stamp: "\u062C\u062F\u064A\u062F"
+    itemId: chat_port
+    countdownSeconds: 0
+    offerPrice: 0
+    offerStoreId: offers
+  - id: ad_golden_bullet
+    enabled: 1
+    mast: "\u0647\u062F\u064A\u0629 \u0627\u0644\u0623\u0633\u0628\u0648\u0639"
+    headline: "\u0631\u0635\u0627\u0635\u0629 \u0630\u0647\u0628\u064A\u0629\n\u0644\u0645\u0646
+      \u0623\u0635\u0627\u0628 \u0627\u0644\u0647\u062F\u0641"
+    body: "\u0623\u0631\u0633\u0644\u0647\u0627 \u0644\u0644\u0627\u0639\u0628 \u0628\u0627\u0644\u063A\u0631\u0641\u0629."
+    stamp: 
+    itemId: gift_golden_bullet
+    countdownSeconds: 0
+    offerPrice: 0
+    offerStoreId: offers
+  - id: ad_chest
+    enabled: 1
+    mast: "\u0639\u0631\u0636 \u0627\u0644\u0643\u0648\u064A\u0646\u0632"
+    headline: "\u0635\u0646\u062F\u0648\u0642 \u0643\u0648\u064A\u0646\u0632\n\u0628\u0633\u0639\u0631
+      \u0627\u0644\u062D\u0641\u0646\u0629"
+    body: "\u0663\u066C\u0665\u0660\u0660 \u0643\u0648\u064A\u0646\u0632 \u0644\u0644\u0647\u062F\u0627\u064A\u0627
+      \u0648\u0627\u0644\u0632\u064A\u0646\u0629 \u0641\u0642\u0637."
+    stamp: "+\u0663\u0660\u066A"
+    itemId: pack_chest
+    countdownSeconds: 0
+    offerPrice: 0
+    offerStoreId: offers
+  rankSets:
+  - rankNameAr: "\u0627\u0644\u0635\u0628\u064A"
+    m1: {r: 0.5411765, g: 0.41568628, b: 0.2901961, a: 1}
+    m2: {r: 0.3529412, g: 0.2627451, b: 0.1882353, a: 1}
+    e: {r: 0.8784314, g: 0.7607843, b: 0.627451, a: 1}
+    itemNames:
+    - "\u062D\u0628\u0644 \u0627\u0644\u0635\u0628\u064A"
+    - "\u0632\u0642\u0627\u0642 \u0627\u0644\u062D\u0627\u0631\u0629"
+    - "\u0648\u0631\u0642\u0629 \u062C\u0631\u064A\u062F\u0629"
+    - "\u062E\u0637\u0648\u0627\u062A \u0639\u0644\u0649 \u0627\u0644\u0631\u0635\u064A\u0641"
+    - "\u0627\u0628\u0646 \u0627\u0644\u062D\u0627\u0631\u0629"
+  - rankNameAr: "\u0627\u0644\u0639\u0645\u064A\u0644"
+    m1: {r: 0.6039216, g: 0.627451, b: 0.6431373, a: 1}
+    m2: {r: 0.3019608, g: 0.32156864, b: 0.32941177, a: 1}
+    e: {r: 0.9019608, g: 0.92156863, b: 0.93333334, a: 1}
+    itemNames:
+    - "\u062D\u0644\u0642\u0629 \u0627\u0644\u0645\u0641\u062A\u0627\u062D"
+    - "\u0645\u0643\u062A\u0628 \u0635\u063A\u064A\u0631"
+    - "\u0628\u0637\u0627\u0642\u0629 \u0639\u0645\u0644"
+    - "\u0637\u0631\u0642\u0629 \u0639\u0644\u0649 \u0627\u0644\u0628\u0627\u0628"
+    - "\u0627\u0644\u0645\u0637\u0651\u0644\u0639"
+  - rankNameAr: "\u0627\u0644\u062C\u0646\u062F\u064A"
+    m1: {r: 0.7529412, g: 0.5411765, b: 0.3529412, a: 1}
+    m2: {r: 0.41568628, g: 0.2509804, b: 0.1254902, a: 1}
+    e: {r: 1, g: 0.84705883, b: 0.6901961, a: 1}
+    itemNames:
+    - "\u0625\u0637\u0627\u0631 \u0627\u0644\u0631\u0635\u0627\u0635\u0629"
+    - "\u0633\u0627\u062D\u0629 \u0627\u0644\u062A\u062F\u0631\u064A\u0628"
+    - "\u0641\u0642\u0627\u0639\u0629 \u0627\u0644\u062E\u0631\u0637\u0648\u0634"
+    - "\u062F\u062E\u0648\u0644 \u0627\u0644\u062C\u0646\u062F\u064A"
+    - "\u0627\u0644\u062C\u0646\u062F\u064A \u0627\u0644\u0623\u0645\u064A\u0646"
+  - rankNameAr: "\u0627\u0644\u0631\u064A\u0651\u0633"
+    m1: {r: 0.8235294, g: 0.6784314, b: 0.3764706, a: 1}
+    m2: {r: 0.47843137, g: 0.3529412, b: 0.13333334, a: 1}
+    e: {r: 1, g: 0.9411765, b: 0.7529412, a: 1}
+    itemNames:
+    - "\u0625\u0637\u0627\u0631 \u0627\u0644\u0641\u064A\u062F\u0648\u0631\u0627"
+    - "\u0627\u0644\u0645\u0642\u0647\u0649 \u0627\u0644\u062E\u0644\u0641\u064A"
+    - "\u0641\u0642\u0627\u0639\u0629 \u0627\u0644\u0631\u064A\u0651\u0633"
+    - "\u0648\u0635\u0648\u0644 \u0627\u0644\u0633\u064A\u0627\u0631\u0629"
+    - "\u0627\u0644\u0631\u064A\u0651\u0633"
+  - rankNameAr: "\u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631"
+    m1: {r: 0.9098039, g: 0.8, b: 0.54901963, a: 1}
+    m2: {r: 0.5411765, g: 0.41568628, b: 0.1882353, a: 1}
+    e: {r: 1, g: 0.9647059, b: 0.84705883, a: 1}
+    itemNames:
+    - "\u0625\u0637\u0627\u0631 \u0627\u0644\u0631\u064A\u0634\u0629"
+    - "\u0627\u0644\u0645\u0643\u062A\u0628\u0629"
+    - "\u0641\u0642\u0627\u0639\u0629 \u0627\u0644\u062D\u0643\u0645\u0629"
+    - "\u0638\u0644 \u0627\u0644\u0645\u0633\u062A\u0634\u0627\u0631"
+    - "\u0635\u0627\u062D\u0628 \u0627\u0644\u0631\u0623\u064A"
+  - rankNameAr: "\u0627\u0644\u064A\u062F \u0627\u0644\u064A\u0645\u0646\u0649"
+    m1: {r: 0.7882353, g: 0.25882354, b: 0.29803923, a: 1}
+    m2: {r: 0.36078432, g: 0.05882353, b: 0.08627451, a: 1}
+    e: {r: 1, g: 0.8509804, b: 0.85882354, a: 1}
+    itemNames:
+    - "\u0625\u0637\u0627\u0631 \u0627\u0644\u062E\u0627\u062A\u0645"
+    - "\u0627\u0644\u063A\u0631\u0641\u0629 \u0627\u0644\u0645\u063A\u0644\u0642\u0629"
+    - "\u0641\u0642\u0627\u0639\u0629 \u0627\u0644\u062E\u062A\u0645"
+    - "\u062F\u062E\u0648\u0644 \u0628\u0644\u0627 \u0636\u062C\u064A\u062C"
+    - "\u0627\u0644\u0630\u0631\u0627\u0639 \u0627\u0644\u0642\u0648\u064A\u0629"
+  - rankNameAr: "\u0627\u0644\u0632\u0639\u064A\u0645"
+    m1: {r: 0.9411765, g: 0.8392157, b: 0.5411765, a: 1}
+    m2: {r: 0.41568628, g: 0.07058824, b: 0.09411765, a: 1}
+    e: {r: 1, g: 0.9490196, b: 0.76862746, a: 1}
+    itemNames:
+    - "\u0625\u0637\u0627\u0631 \u0627\u0644\u062A\u0627\u062C"
+    - "\u0642\u0627\u0639\u0629 \u0627\u0644\u0639\u0631\u0634"
+    - "\u0641\u0642\u0627\u0639\u0629 \u0627\u0644\u0632\u0639\u064A\u0645"
+    - "\u0627\u0644\u0633\u062C\u0627\u062F\u0629 \u0627\u0644\u0630\u0647\u0628\u064A\u0629"
+    - "\u0627\u0644\u0632\u0639\u064A\u0645"
+  - rankNameAr: "\u0627\u0644\u0639\u0631\u0651\u0627\u0628"
+    m1: {r: 0.9607843, g: 0.8862745, b: 0.65882355, a: 1}
+    m2: {r: 0.16470589, g: 0.1254902, b: 0.09411765, a: 1}
+    e: {r: 1, g: 0.9137255, b: 0.627451, a: 1}
+    itemNames:
+    - "\u0625\u0637\u0627\u0631 \u0627\u0644\u0648\u0631\u062F\u0629"
+    - "\u0627\u0644\u062D\u062F\u064A\u0642\u0629 \u0627\u0644\u0633\u0648\u062F\u0627\u0621"
+    - "\u0641\u0642\u0627\u0639\u0629 \u0627\u0644\u0639\u0631\u0651\u0627\u0628"
+    - "\u062F\u062E\u0648\u0644 \u0627\u0644\u0639\u0631\u0651\u0627\u0628"
+    - "\u0627\u0644\u0639\u0631\u0651\u0627\u0628"

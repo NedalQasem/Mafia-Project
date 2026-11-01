@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الرتب</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@500;700;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+--crimson:#8a1c24;--ivory:#d9d0bd}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:24px 14px 80px;background:radial-gradient(ellipse at 50% 0,#1d1511,#070605 70%);color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;text-align:center;margin:0 0 4px;font-size:2rem}
+.sub{text-align:center;color:#8f8777;margin:0 0 20px;font-size:.9rem}
+.wrap{max-width:560px;margin:auto;display:grid;gap:22px}
+h2{font-family:Lalezar;font-weight:400;font-size:1.2rem;color:#a98f62;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid #ffffff12}
+button{font-family:inherit;border:0;color:inherit;cursor:pointer}
+
+/* rank palettes */
+.r1{--m1:#8a6a4a;--m2:#5a4330;--e:#e0c2a0}
+.r2{--m1:#9aa0a4;--m2:#4d5254;--e:#e6ebee}
+.r3{--m1:#c08a5a;--m2:#6a4020;--e:#ffd8b0}
+.r4{--m1:#d2ad60;--m2:#7a5a22;--e:#fff0c0}
+.r5{--m1:#e8cc8c;--m2:#8a6a30;--e:#fff6d8}
+.r6{--m1:#c9424c;--m2:#5c0f16;--e:#ffd9db}
+.r7{--m1:#f0d68a;--m2:#6a1218;--e:#fff2c4}
+.r8{--m1:#f5e2a8;--m2:#1a1210;--e:#ffe9a0}
+
+.medal{--s:96px;position:relative;width:var(--s);height:var(--s);flex:none;border-radius:50%;background:conic-gradient(from 210deg,var(--m1),var(--m2) 30%,var(--m1) 55%,var(--m2) 80%,var(--m1));box-shadow:0 0 0 2px #000,0 6px 14px #000c,inset 0 0 0 2px #ffffff30;display:grid;place-items:center}
+.medal::before{content:"";position:absolute;inset:7%;border-radius:50%;background:radial-gradient(circle at 50% 30%,#2b2420,#0a0807);box-shadow:inset 0 0 0 1.5px var(--m1),inset 0 4px 10px #000}
+.medal svg{position:relative;width:64%;height:64%;filter:drop-shadow(0 2px 3px #000c) drop-shadow(0 0 5px var(--m1))}
+.medal .gl{position:absolute;inset:7%;border-radius:50%;background:radial-gradient(circle at 30% 22%,#ffffff30,transparent 45%);pointer-events:none}
+.r8 .medal{box-shadow:0 0 0 2px #000,0 0 22px 3px #f5e2a866,0 6px 14px #000c}
+.r8 .medal::after,.r7 .medal::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1.5px dotted var(--m1);opacity:.7}
+
+.pips{display:flex;gap:5px;justify-content:center;padding:7px 9px 6px;border-radius:9px;background:linear-gradient(180deg,#030202,#14110e);box-shadow:inset 0 3px 6px #000,inset 0 -1px 0 #ffffff10,0 0 0 1px #6e5224,0 0 0 2px #000,0 1px 0 2px #ffffff12}
+.bl{width:14px;height:36px;display:block;overflow:visible}
+.bl.on{filter:drop-shadow(0 1px 1.5px #000)}
+.bl.last{animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{0%,100%{filter:drop-shadow(0 1px 1.5px #000) drop-shadow(0 0 1px #ffd27a00)}50%{filter:drop-shadow(0 1px 1.5px #000) drop-shadow(0 0 6px #ffd27acc)}}
+.hero .bl{width:20px;height:52px}
+.hero .pips{width:max-content}
+.ov .bl{width:30px;height:76px}
+.ov .pips{padding:10px 14px 8px;gap:8px}
+
+/* hero */
+.hero{position:relative;padding:20px 16px 16px;border-radius:14px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:var(--grain),linear-gradient(180deg,#3b2a20,#2b1e17 55%,#1a110d);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff1c,0 4px 0 #000,0 14px 24px #000b}
+.hero::after{content:"";position:absolute;inset:6px;border:1.5px dashed #a98f62;opacity:.45;border-radius:9px;pointer-events:none}
+.hero .medal{--s:112px}
+.hero .info{display:grid;gap:6px}
+.hero .info small{color:#a79d88;font-size:.72rem}
+.hero .info b{font-family:"Aref Ruqaa";font-size:1.9rem;line-height:1.1}
+.hero .tier{font-family:Lalezar;font-size:.95rem;color:#e8cc8c}
+.bar{height:10px;border-radius:5px;background:#000a;box-shadow:inset 0 1px 2px #000;overflow:hidden;position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;width:0;border-radius:5px;background:linear-gradient(180deg,#e8cc8c,#b99048 55%,#7a5a22);transition:width 1.2s cubic-bezier(.2,.9,.3,1)}
+.bar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 24%,#0008 24% 25%)}
+.promo{margin-top:6px;padding:9px 14px;border-radius:7px;font-weight:800;font-size:.85rem;color:#f0dcd8;background:var(--grain),linear-gradient(180deg,#a2262f,#8a1c24 55%,#561016);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff22,0 3px 0 #000}
+.promo:active{transform:translateY(2px);box-shadow:0 1px 0 #000}
+
+/* ladder */
+.ladder{display:grid;gap:12px}
+.rk{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:12px 14px;border-radius:12px;background:var(--grain),linear-gradient(180deg,#2a1e17,#17100c);background-blend-mode:multiply,normal;box-shadow:inset 0 1px 0 #ffffff14,0 3px 0 #000,0 10px 18px #000a}
+.rk .medal{--s:72px}
+.rk .tx{display:grid;gap:2px;min-width:0}
+.rk .nm{font-family:"Aref Ruqaa";font-size:1.35rem;line-height:1.1}
+.rk .ds{font-size:.74rem;color:#a79d88;line-height:1.4}
+.rk .pt{font-size:.68rem;color:#8d744a;font-weight:700}
+.rk .side{display:grid;gap:5px;justify-items:center}
+.rk .side .num{font-family:Lalezar;font-size:.7rem;color:#7d756a}
+.rk.cur{box-shadow:inset 0 0 0 1.5px var(--m1),0 3px 0 #000,0 10px 18px #000a}
+.rk.cur::before{content:"رتبتك";position:absolute;top:-8px;right:14px;padding:0 10px 1px;border-radius:3px;font-weight:800;font-size:.66rem;background:#4fa58b;color:#06231a}
+.rk.lock .medal{filter:grayscale(1) brightness(.45)}
+.rk.lock .nm{color:#9a9283}
+.rk .ds.mys{display:none}
+.rk.lock .ds{display:none}
+.rk.lock .ds.mys{display:block;font-style:italic}
+.rk.lock::after{content:"";}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid #ffffff12}
+th{color:#a98f62;font-weight:700}
+td.n{font-family:Lalezar}
+
+/* promotion overlay */
+.ov{position:fixed;inset:0;z-index:50;display:none;place-items:center;background:#000d;text-align:center}
+.ov.show{display:grid}
+.ov .box{display:grid;gap:10px;justify-items:center;padding:20px}
+.ov .head{font-size:.85rem;color:#a98f62;font-weight:700}
+.ov .medal{--s:150px;animation:land .9s cubic-bezier(.2,.9,.3,1.2) both}
+.ov .nm{font-family:"Aref Ruqaa";font-size:2.4rem;color:#f0dca0;animation:fade .6s .6s both}
+.ov .pips{animation:fade .6s .8s both}
+.ov .stamp{padding:2px 20px;font-family:Lalezar;font-size:1.6rem;color:#c0323a;border:3px solid #c0323a;border-radius:4px;rotate:-6deg;animation:slam .5s 1.1s cubic-bezier(.2,.9,.3,1) both}
+.ov button{margin-top:8px;padding:10px 26px;border-radius:8px;font-weight:800;color:#2a1a08;background:linear-gradient(180deg,#e8cc8c,#b99048 55%,#6e5224);box-shadow:0 3px 0 #2a1c08;animation:fade .6s 1.4s both}
+@keyframes land{0%{transform:scale(2.6) rotate(-25deg);opacity:0}60%{transform:scale(.92) rotate(3deg);opacity:1}100%{transform:none}}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}}
+@keyframes slam{0%{opacity:0;transform:scale(2.4) rotate(8deg)}100%{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="gCu" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a2810"/><stop offset=".28" stop-color="#f0b48a"/><stop offset=".55" stop-color="#b86a34"/><stop offset="1" stop-color="#4a200c"/></linearGradient>
+<linearGradient id="gBr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a4018"/><stop offset=".25" stop-color="#fff0b8"/><stop offset=".5" stop-color="#c9a050"/><stop offset=".8" stop-color="#8a6a30"/><stop offset="1" stop-color="#4a3510"/></linearGradient>
+<linearGradient id="gRim" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a2a0c"/><stop offset=".3" stop-color="#d9b25c"/><stop offset="1" stop-color="#3a2a0c"/></linearGradient>
+<symbol id="bOn" viewBox="0 0 16 42" overflow="visible">
+  <path d="M8 1C11.5 4 13.5 8 13.5 13.5V18H2.5v-4.5C2.5 8 4.5 4 8 1z" fill="url(#gCu)" stroke="#2a1006" stroke-width=".6"/>
+  <rect x="2.5" y="17.5" width="11" height="2" fill="#2a1c08"/>
+  <rect x="2.5" y="19" width="11" height="19" fill="url(#gBr)" stroke="#2a1c08" stroke-width=".6"/>
+  <path d="M2.5 30h11" stroke="#4a3510" stroke-width=".9"/><path d="M2.5 31h11" stroke="#fff0b855" stroke-width=".5"/>
+  <rect x="1.2" y="38" width="13.6" height="3" rx=".8" fill="url(#gRim)" stroke="#2a1c08" stroke-width=".6"/>
+  <path d="M5 4.5c-1 2-1.4 5-1.2 11" stroke="#fff" stroke-opacity=".55" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <rect x="4" y="21" width="1.5" height="15" rx=".7" fill="#fff" fill-opacity=".38"/>
+</symbol>
+<symbol id="bOff" viewBox="0 0 16 42" overflow="visible">
+  <path d="M8 1C11.5 4 13.5 8 13.5 13.5V18H2.5v-4.5C2.5 8 4.5 4 8 1z" fill="#0b0908" stroke="#4a3a28" stroke-width=".8"/>
+  <rect x="2.5" y="18" width="11" height="20" fill="#0b0908" stroke="#4a3a28" stroke-width=".8"/>
+  <rect x="1.2" y="38" width="13.6" height="3" rx=".8" fill="#0b0908" stroke="#4a3a28" stroke-width=".8"/>
+  <path d="M4 20v16" stroke="#000" stroke-width="2" opacity=".6"/>
+</symbol>
+<linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0c2a0"/><stop offset=".45" stop-color="#8a6a4a"/><stop offset="1" stop-color="#4a3626"/></linearGradient>
+<linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f7f8"/><stop offset=".45" stop-color="#9aa0a4"/><stop offset="1" stop-color="#40454a"/></linearGradient>
+<linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe4c4"/><stop offset=".45" stop-color="#c08a5a"/><stop offset="1" stop-color="#5a3418"/></linearGradient>
+<linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4cc"/><stop offset=".45" stop-color="#d2ad60"/><stop offset="1" stop-color="#6a4c1c"/></linearGradient>
+<linearGradient id="g5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe6"/><stop offset=".45" stop-color="#e8cc8c"/><stop offset="1" stop-color="#7a5a26"/></linearGradient>
+<linearGradient id="g6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe0e2"/><stop offset=".45" stop-color="#c9424c"/><stop offset="1" stop-color="#4a0c12"/></linearGradient>
+<linearGradient id="g7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6d0"/><stop offset=".45" stop-color="#f0d68a"/><stop offset="1" stop-color="#7a4a18"/></linearGradient>
+<linearGradient id="g8" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe0"/><stop offset=".4" stop-color="#f5e2a8"/><stop offset="1" stop-color="#8a6a30"/></linearGradient>
+<symbol id="e1" viewBox="0 0 64 64" overflow="visible"><g stroke="#1a0f08" stroke-width="1.3" stroke-linejoin="round">
+<path d="M8 40C8 25 18 15 33 15c11 0 19 7 21 18l-2 9z" fill="url(#g1)"/>
+<path d="M44 36c7 0 13 1 16 5-4 5-13 6-21 5z" fill="url(#g1)"/>
+<path d="M8 40h44v6H8z" fill="url(#g1)"/></g>
+<g stroke="#1a0f08" stroke-width=".9" fill="none" opacity=".7"><path d="M33 16L21 40M33 16L45 40M33 16V40"/><path d="M10 43h42" stroke-dasharray="2 2"/></g>
+<circle cx="33" cy="15.5" r="2.8" fill="url(#g4)" stroke="#1a0f08" stroke-width="1"/>
+<path d="M15 24c4-5 10-7 16-7" stroke="#fff" stroke-opacity=".5" stroke-width="1.6" fill="none" stroke-linecap="round"/></symbol>
+<symbol id="e2" viewBox="0 0 64 64" overflow="visible"><g stroke="#161a1c" stroke-width="1.3" stroke-linejoin="round">
+<path fill-rule="evenodd" d="M18 19a13 13 0 1 0 .01 0zM18 26.5a5.5 5.5 0 1 1-.01 0z" fill="url(#g2)"/>
+<circle cx="18" cy="12" r="3.2" fill="url(#g2)"/><circle cx="6.5" cy="30" r="3.2" fill="url(#g2)"/><circle cx="29.5" cy="30" r="3.2" fill="url(#g2)"/>
+<rect x="29" y="27.5" width="30" height="5.5" rx="1" fill="url(#g2)"/>
+<rect x="31" y="25" width="4" height="10.5" rx="1" fill="url(#g2)"/>
+<path d="M45 33h5v10h-5zM53 33h6v7h-6z" fill="url(#g2)"/></g>
+<path d="M32 29h26" stroke="#fff" stroke-opacity=".6" stroke-width="1" stroke-linecap="round"/></symbol>
+<symbol id="e3" viewBox="0 0 64 64" overflow="visible">
+<circle cx="32" cy="32" r="26" fill="url(#g3)" stroke="#1a0f08" stroke-width="1.4"/>
+<circle cx="32" cy="32" r="26" fill="none" stroke="#2a1608" stroke-width="3" stroke-dasharray="3.4 5.2" opacity=".55"/>
+<g fill="#0a0706" stroke="#f0c090" stroke-width="1"><circle cx="32" cy="16.5" r="7"/><circle cx="45.4" cy="24.2" r="7"/><circle cx="45.4" cy="39.8" r="7"/><circle cx="32" cy="47.5" r="7"/><circle cx="18.6" cy="39.8" r="7"/><circle cx="18.6" cy="24.2" r="7"/></g>
+<g><circle cx="32" cy="16.5" r="5" fill="#d9b25c" stroke="#4a3510" stroke-width=".8"/><circle cx="32" cy="16.5" r="2" fill="#7a5a22"/><circle cx="45.4" cy="39.8" r="5" fill="#d9b25c" stroke="#4a3510" stroke-width=".8"/><circle cx="45.4" cy="39.8" r="2" fill="#7a5a22"/><circle cx="18.6" cy="24.2" r="5" fill="#d9b25c" stroke="#4a3510" stroke-width=".8"/><circle cx="18.6" cy="24.2" r="2" fill="#7a5a22"/></g>
+<circle cx="32" cy="32" r="5.5" fill="#1a0f08" stroke="#f0c090" stroke-width="1"/><circle cx="32" cy="32" r="2" fill="#f0c090"/>
+<path d="M12 22c3-8 10-13 18-14" stroke="#fff" stroke-opacity=".55" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
+<symbol id="e4" viewBox="0 0 64 64" overflow="visible"><g stroke="#1a1208" stroke-width="1.3" stroke-linejoin="round">
+<path d="M17 38c0-15 5-24 15-24s15 9 15 24z" fill="url(#g4)"/>
+<path d="M4 41c5-3 13-5 28-5s23 2 28 5c-2 9-13 13-28 13S6 50 4 41z" fill="url(#g4)"/>
+<path d="M17 35h30l.8 5H16.2z" fill="#2a0a0e"/></g>
+<path d="M23 19c5 3 13 3 18 0" stroke="#1a1208" stroke-width="1.3" fill="none" opacity=".8"/>
+<rect x="29" y="34.5" width="6" height="6.5" rx="1" fill="url(#g5)" stroke="#1a1208" stroke-width=".9"/>
+<path d="M13 45c8 3 30 3 38 0" stroke="#1a1208" stroke-width=".9" fill="none" opacity=".5"/>
+<path d="M22 22c1-4 3-6 6-7" stroke="#fff" stroke-opacity=".6" stroke-width="1.6" fill="none" stroke-linecap="round"/></symbol>
+<symbol id="e5" viewBox="0 0 64 64" overflow="visible"><g stroke="#1c1408" stroke-width="1.3" stroke-linejoin="round">
+<rect x="17" y="15" width="30" height="34" fill="#efe0b8"/>
+<rect x="11" y="12" width="9" height="40" rx="4.5" fill="url(#g5)"/><rect x="44" y="12" width="9" height="40" rx="4.5" fill="url(#g5)"/></g>
+<g stroke="#5a4426" stroke-width="1.4" stroke-linecap="round"><path d="M22 23h20M22 29h20M22 35h12"/></g>
+<path d="M60 4C46 9 34 22 27 48l5-1c2-7 6-12 10-15-2 6-3 10-3 14 9-9 16-24 21-42z" fill="url(#g6)" stroke="#1a0608" stroke-width="1.3" stroke-linejoin="round"/>
+<path d="M58 8C45 15 36 28 31 44" stroke="#ffd0d0" stroke-opacity=".6" stroke-width="1" fill="none"/></symbol>
+<symbol id="e6" viewBox="0 0 64 64" overflow="visible">
+<ellipse cx="32" cy="40" rx="17" ry="18" fill="none" stroke="#1a0608" stroke-width="9"/>
+<ellipse cx="32" cy="40" rx="17" ry="18" fill="none" stroke="url(#g6)" stroke-width="6.5"/>
+<path d="M18 30c2-5 6-8 11-9" stroke="#fff" stroke-opacity=".6" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+<ellipse cx="32" cy="18" rx="15" ry="11" fill="url(#g4)" stroke="#1a1208" stroke-width="1.4"/>
+<ellipse cx="32" cy="18" rx="10.5" ry="7.2" fill="#14080a" stroke="#1a1208" stroke-width="1"/>
+<path d="M32 11.5c4 3.6 6.6 5 6.6 8.2a3.4 3.4 0 0 1-5.8 2.3c0 1.5.5 2.5 1.5 3.5h-4.6c1-1 1.5-2 1.5-3.5a3.4 3.4 0 0 1-5.8-2.3c0-3.2 2.6-4.6 6.6-8.2z" fill="url(#g5)"/></symbol>
+<symbol id="e7" viewBox="0 0 64 64" overflow="visible"><g stroke="#1c1006" stroke-width="1.3" stroke-linejoin="round">
+<path d="M9 47L6 22l13 10 13-19 13 19 13-10-3 25z" fill="url(#g7)"/>
+<rect x="8" y="47" width="48" height="8" rx="1.5" fill="url(#g7)"/>
+<circle cx="6" cy="20" r="3.6" fill="url(#g7)"/><circle cx="32" cy="11" r="3.8" fill="url(#g7)"/><circle cx="58" cy="20" r="3.6" fill="url(#g7)"/></g>
+<g stroke="#1c1006" stroke-width=".8"><circle cx="19" cy="51" r="2.2" fill="#c9424c"/><circle cx="32" cy="51" r="2.6" fill="#2a8a6a"/><circle cx="45" cy="51" r="2.2" fill="#c9424c"/><path d="M32 22l3 6-3 7-3-7z" fill="#c9424c"/></g>
+<path d="M12 29l8 6M52 29l-8 6" stroke="#fff" stroke-opacity=".5" stroke-width="1.2" stroke-linecap="round"/></symbol>
+<symbol id="e8" viewBox="0 0 64 64" overflow="visible">
+<g fill="url(#g8)" stroke="#1c1406" stroke-width=".8"><g id="lf"><ellipse cx="11" cy="48" rx="2.8" ry="6" transform="rotate(-50 11 48)"/><ellipse cx="7.5" cy="41" rx="2.8" ry="6" transform="rotate(-38 7.5 41)"/><ellipse cx="6" cy="34" rx="2.8" ry="6" transform="rotate(-22 6 34)"/><ellipse cx="6.5" cy="27" rx="2.8" ry="6" transform="rotate(-6 6.5 27)"/><ellipse cx="9" cy="20.5" rx="2.8" ry="6" transform="rotate(14 9 20.5)"/></g>
+<use href="#lf" transform="translate(64 0) scale(-1 1)"/></g>
+<path d="M32 14c9 9 16 14 16 23a9 9 0 0 1-15 6.5c0 5 1 8 4 11H27c3-3 4-6 4-11A9 9 0 0 1 16 37c0-9 7-14 16-23z" fill="url(#g8)" stroke="#1c1406" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M32 18c5 6 10 10 11 16" stroke="#fff" stroke-opacity=".5" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+<path d="M22 11l-1.2-7 4.2 3.4L30 1l5 6.4 4.2-3.4L38 11z" fill="url(#g8)" stroke="#1c1406" stroke-width="1"/></symbol>
+</defs></svg>
+
+<h1>الرتب</h1>
+<p class="sub">ثماني رتب، وكل رتبة ثلاث درجات (رصاصات) قبل الترقية للتي بعدها</p>
+
+<div class="wrap">
+
+<div class="hero r3" id="hero">
+  <div class="medal"><svg><use href="#e3"/></svg><span class="gl"></span></div>
+  <div class="info">
+    <small>رتبتك الحالية</small>
+    <b>الجندي</b>
+    <div class="tier" id="heroTier">الدرجة الثانية</div>
+    <div class="pips" id="heroPips" style="justify-content:flex-start"></div>
+    <div class="bar"><i id="heroBar"></i></div>
+    <small id="heroTxt">١٬٣٢٠ / ١٬٣٠٠ نقطة للدرجة الثالثة</small>
+    <button class="promo" id="promo">شاهد الترقية</button>
+  </div>
+</div>
+
+<section><h2>سُلّم الرتب</h2>
+<div class="ladder" id="ladder"></div></section>
+
+<section><h2>النقاط لكل درجة</h2>
+<table><thead><tr><th>الرتبة</th><th>نقاط الدرجة</th><th>تبدأ من</th><th>تنتهي عند</th></tr></thead><tbody id="tbl"></tbody></table>
+<p style="color:#7d756a;font-size:.76rem;margin:8px 2px 0">الفوز +٥٠، والخسارة −٢٠، وأفضل لاعب +١٠ (القيم الحالية بـ RankRules). الدرجات تتسع كلما ارتفعت الرتبة. العرّاب بلا سقف.</p></section>
+
+</div>
+
+<div class="ov" id="ov"><div class="box r4" id="ovbox">
+  <div class="head">ترقية!</div>
+  <div class="medal"><svg><use href="#e4"/></svg><span class="gl"></span></div>
+  <div class="nm">الريّس</div>
+  <div class="pips"><svg class="bl on last"><use href="#bOn"/></svg><svg class="bl"><use href="#bOff"/></svg><svg class="bl"><use href="#bOff"/></svg><span class="gl"></span></div>
+  <div class="stamp">مُرقّى</div>
+  <button id="okp">تمام</button>
+</div></div>
+
+<script>
+(function(){
+  var R=[
+    {n:"الصبي",e:"e1",d:"يوصّل الرسائل ويفتح الأبواب. كل كبير بدأ من هنا.",w:150},
+    {n:"العميل",e:"e2",d:"أُعطي مفتاحاً واحداً، وبدأ يعرف من يدخل ومن يخرج.",w:200},
+    {n:"الجندي",e:"e3",d:"يُنفّذ ولا يسأل. اسمه صار يُسمع بالحارة.",w:250},
+    {n:"الريّس",e:"e4",d:"يقود مجموعته بقبعته وكلمته.",w:300},
+    {n:"المستشار",e:"e5",d:"يفكّر قبل أن يتكلم الجميع، ويُصغي له الكبار.",w:400},
+    {n:"اليد اليمنى",e:"e6",d:"لا يُرى كثيراً، لكن لا يُقرّر شيء بدونه.",w:500},
+    {n:"الزعيم",e:"e7",d:"التاج لا يُمنح. يُنتزع بالصبر والحيلة.",w:650},
+    {n:"العرّاب",e:"e8",d:"اسمه وحده يكفي. لا أحد يعلو فوقه.",w:800}
+  ];
+  var tiers=["الأولى","الثانية","الثالثة"];
+  function num(n){return n.toLocaleString("ar-EG")}
+  function pips(k){var s="";for(var i=0;i<3;i++){var on=i<k;s+='<svg class="bl'+(on?" on":"")+(on&&i===k-1?" last":"")+'"><use href="#b'+(on?"On":"Off")+'"/></svg>'}return s}
+  var start=0;R.forEach(function(r,i){r.s=start;start+=r.w*3;r.t=i<7?start:null});
+  var curRank=2,curTier=1,pts=1320;
+  var L=document.getElementById("ladder");
+  R.forEach(function(r,i){
+    var lock=i>curRank+1,cur=i===curRank;
+    var div=document.createElement("div");div.className="rk r"+(i+1)+(cur?" cur":"")+(lock?" lock":"");
+    div.innerHTML='<div class="medal"><svg><use href="#'+r.e+'"/></svg><span class="gl"></span></div><div class="tx"><span class="nm">'+r.n+'</span><span class="ds">'+r.d+'</span><span class="ds mys">رتبة مقفلة، تفتح عند الوصول</span><span class="pt">من '+num(r.s)+(r.t?" إلى "+num(r.t):" وما فوق")+' نقطة</span></div><div class="side"><div class="pips">'+pips(cur?curTier+1:(i<curRank?3:0))+'</div><span class="num">الرتبة '+num(i+1)+'</span></div>';
+    L.appendChild(div);
+  });
+  document.getElementById("heroPips").innerHTML=pips(curTier+1);
+  var tb=document.getElementById("tbl");
+  R.forEach(function(r){var tr=document.createElement("tr");tr.innerHTML="<td>"+r.n+'</td><td class="n">'+num(r.w)+'</td><td class="n">'+num(r.s)+'</td><td class="n">'+(r.t?num(r.t):"∞")+"</td>";tb.appendChild(tr)});
+  setTimeout(function(){var from=R[curRank].s+R[curRank].w*curTier,to=from+R[curRank].w;document.getElementById("heroBar").style.width=Math.round((pts-from)/(to-from)*100)+"%"},300);
+  document.getElementById("heroTxt").textContent=num(pts)+" / "+num(R[curRank].s+R[curRank].w*(curTier+1))+" نقطة للدرجة الثالثة";
+  var ov=document.getElementById("ov");
+  document.getElementById("promo").addEventListener("click",function(){var b=document.getElementById("ovbox");var c=b.cloneNode(true);b.parentNode.replaceChild(c,b);c.id="ovbox";c.querySelector("#okp").addEventListener("click",function(){ov.classList.remove("show")});ov.classList.add("show")});
+  document.getElementById("okp").addEventListener("click",function(){ov.classList.remove("show")});
+})();
+</script>
+</body>
+</html>
