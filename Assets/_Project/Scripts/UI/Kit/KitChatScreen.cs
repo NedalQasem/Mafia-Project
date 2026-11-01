@@ -36,6 +36,30 @@ namespace MafiaNight.UI.Kit
         [SerializeField] private ArabicText cooldownLabel;
         [SerializeField] private GameObject sendIcon;
 
+        /// <summary>What the player wears from the store: his bubble (variant, 0 = plain) and the color of his chat background (clear = none).</summary>
+        public int MyBubble;
+        private Color chatTint = Color.clear;
+        public Color ChatTint
+        {
+            get => chatTint;
+            set
+            {
+                chatTint = value;
+                if (msgScroll == null) return;
+                var wash = msgScroll.transform.Find("StoreWash");
+                if (value.a <= 0f) { if (wash != null) wash.gameObject.SetActive(false); return; }
+                if (wash == null)
+                {
+                    var go = new GameObject("StoreWash", typeof(RectTransform), typeof(Image));
+                    wash = go.transform; wash.SetParent(msgScroll.transform, false); wash.SetAsFirstSibling();
+                    var r = (RectTransform)wash; r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero;
+                    go.GetComponent<Image>().raycastTarget = false;
+                }
+                wash.gameObject.SetActive(true);
+                var c = value; c.a = 0.28f; wash.GetComponent<Image>().color = c;
+            }
+        }
+
         private ChatConversation pub; private List<ChatConversation> dms = new List<ChatConversation>(), groups = new List<ChatConversation>();
         private ChatConversation current;
         private int tab;
@@ -191,6 +215,7 @@ namespace MafiaNight.UI.Kit
             bool showSender = m.kind == MsgKind.Normal && !m.Mine && c.kind != ChatKind.Direct;
             var view = go.GetComponent<ChatMessageView>();
             view.Bind(m, showSender);
+            if (m.kind == MsgKind.Normal && m.Mine) view.Wear(MyBubble);
             if (m.kind == MsgKind.Normal && !m.Mine && !sample) view.SetTap(() => OnMessageTapped?.Invoke(c, m));
         }
 

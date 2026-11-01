@@ -69,6 +69,8 @@ namespace MafiaNight.Data.Rooms
         public bool IsMe;
         /// <summary>The room bot that keeps an official room open (it is the host and is not shown as a player).</summary>
         public bool IsKeeper;
+        /// <summary>What the player wears from the store (item ids; empty = nothing): shown on his seat and in his chat lines.</summary>
+        public string FrameId = "", TitleId = "", BubbleId = "";
     }
 
     /// <summary>The rules from Docs/05-rooms-design.md in one place.</summary>

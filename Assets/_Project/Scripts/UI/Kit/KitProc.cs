@@ -31,6 +31,8 @@ namespace MafiaNight.UI.Kit
             public Color Shadow = Color.clear; public float ShadowDy, ShadowBlur;
             public Color Dash = Color.clear; public float DashInset, DashPx, DashLen = 5f, DashGap = 4f, DashRadius = 8f;
             public float Alpha = 1f;
+            /// <summary>Paint a small plate that stretches by its borders (flat fill, a ring and rounded corners only): use it with Image.Type.Sliced for shapes whose size is not known when they are built.</summary>
+            public bool Sliced;
         }
 
         private static readonly Dictionary<string, Sprite> cache = new Dictionary<string, Sprite>();
@@ -85,6 +87,7 @@ namespace MafiaNight.UI.Kit
 
         private static Sprite Make(Spec s)
         {
+            if (s.Sliced) { s.W = s.H = 2f * s.Radius + 4f; }
             float m = s.Margin;
             float totalW = s.W + 2f * m, totalH = s.H + 2f * m;
             int tw = Mathf.Max(4, Mathf.CeilToInt(totalW * Q)), th = Mathf.Max(4, Mathf.CeilToInt(totalH * Q));
@@ -158,7 +161,12 @@ namespace MafiaNight.UI.Kit
             }
             tex.SetPixels32(px);
             tex.Apply(false, true);
-            return Sprite.Create(tex, new Rect(0, 0, tw, th), new Vector2(0.5f, 0.5f), Q);
+            if (s.Sliced)
+            {
+                float b = (s.Margin + s.Radius + 2f) * Q;
+                return Sprite.Create(tex, new Rect(0, 0, tw, th), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(b, b, b, b));
+            }
+            return Sprite.Create(tex, new Rect(0, 0, tw, th), new Vector2(0.5f, 0.5f), 100f);
         }
 
         /// <summary>A tiny map pin (the head and the needle) for the "pinned" tag.</summary>

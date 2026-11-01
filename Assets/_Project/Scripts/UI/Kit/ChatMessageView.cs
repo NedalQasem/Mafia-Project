@@ -18,6 +18,16 @@ namespace MafiaNight.UI.Kit
         /// <summary>Makes the bubble tappable (to message, report or block the sender).</summary>
         public void SetTap(Action clicked) { if (bubble != null) KitTap.On(bubble, clicked); }
 
+        /// <summary>The store bubble the player wears: the bubble's color and the text on it.</summary>
+        public void Wear(int bubbleVariant)
+        {
+            if (!KitBubbleLooks.Has(bubbleVariant) || bubble == null) return;
+            var look = KitBubbleLooks.Of(bubbleVariant);
+            var img = bubble.GetComponent<Image>();
+            if (img != null) { img.color = Color.Lerp(Color.white, look.Fill, 0.85f); }
+            if (label != null) label.GetComponent<TMP_Text>().color = look.Text;
+        }
+
         public void Bind(ChatMessage m, bool showSender)
         {
             if (label == null) return;

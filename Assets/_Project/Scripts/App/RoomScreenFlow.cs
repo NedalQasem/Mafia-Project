@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using MafiaNight.Core;
 using MafiaNight.Data.Rooms;
+using MafiaNight.Data.Store;
 using MafiaNight.MatchRules.Stage;
 using MafiaNight.Services.Chat;
 using MafiaNight.Services.Match;
 using MafiaNight.Services.Rooms;
+using MafiaNight.Services.Store;
 using MafiaNight.Services.Voice;
 using MafiaNight.UI.Kit;
 using UnityEngine;
@@ -68,6 +70,7 @@ namespace MafiaNight.App
             screen.OnSend += Send;
             screen.OnMessage += OnMessage;
             screen.OnStart += StartMatch;
+            screen.OnSpeaker += on => { if (audio == null) return; audio.SetOutputVolume(on ? MafiaNight.Data.Settings.VoicePrefs.Speaker / 100f : 0f); };
             screen.OnGames += () => Say("الإيموجي والألعاب السريعة قريباً.");
             if (audio != null) { audio.OnSpeaking += OnSpeaking; audio.OnChanged += Redraw; }
             rooms.OnRoomChanged += OnRoomChanged;
@@ -80,6 +83,23 @@ namespace MafiaNight.App
             if (audio != null) { audio.OnSpeaking -= OnSpeaking; audio.OnChanged -= Redraw; }
             Unbind();
         }
+
+        // ---- what players wear from the store (their ids come with their member attributes)
+        private static IStoreService Store => ServiceLocator.TryGet(out IStoreService s) ? s : null;
+        private static StoreItemDef Item(string id) => string.IsNullOrEmpty(id) ? null : Store?.Catalog?.GetItem(id);
+
+        private static Sprite FrameOf(string id)
+        {
+            var d = Item(id);
+            if (d == null) return null;
+            if (d.sprite != null) return d.sprite;
+            var th = KitTheme.Current;
+            return th != null && th.storeFrames != null && d.variant >= 1 && d.variant <= th.storeFrames.Length ? th.storeFrames[d.variant - 1] : null;
+        }
+
+        private static string TitleOf(string id) { var d = Item(id); return d != null ? d.titleText : ""; }
+        private static int BubbleOf(string id) { var d = Item(id); return d != null && d.artKind == StoreArtKind.ChatBubble ? d.variant : 0; }
+        private static Color TintOf(string id) { var d = Item(id); return d != null ? d.tint : Color.clear; }
 
         private StageSync Stage => bound != null ? bound.Stage : null;
         private RoomMember Me => rooms.Members.FirstOrDefault(m => m.IsMe);
@@ -177,7 +197,7 @@ namespace MafiaNight.App
             {
                 Name = IsOfficial ? OfficialName(room) : room.Name, RoomId = ShortId(room.Id), Members = People.Count(), HeadLabel = IsOfficial ? "الأدمن" : "المضيف",
                 Badge = IsOfficial ? "رسمية" : room.Mode == RoomMode.Mafia ? "مباراة مافيا" : room.Kind == RoomKind.Private ? "خاصة" : room.Kind == RoomKind.Vip ? "VIP" : "",
-                CanType = room.ChatEnabled, CanLeaveSeat = seated,
+                CanType = room.ChatEnabled, CanLeaveSeat = seated, RoomTint = TintOf(room.BackgroundId), ChatTint = TintOf(Store?.GetEquipped("chat_bg")), MicOff = seated && audio != null && !audio.MicOn,
             };
             v.Head = SeatOf(stage.HeadHolder, true);
             for (int i = 0; i < stage.SeatCount; i++)
@@ -216,7 +236,7 @@ namespace MafiaNight.App
             return new KitRoomScreen.SeatVm
             {
                 Kind = KitRoomScreen.SeatKind.Taken, Id = m.Puid, Name = m.Name ?? "", Me = m.IsMe, Staff = Stage.Stage.IsStaff(m.Puid),
-                Talking = talking.Contains(m.Puid) && !silent, Muted = silent,
+                Talking = talking.Contains(m.Puid) && !silent, Muted = silent, Frame = FrameOf(m.FrameId), Title = TitleOf(m.TitleId),
             };
         }
 
@@ -388,7 +408,7 @@ namespace MafiaNight.App
             bool host = rooms.Members.Any(m => m.Puid == l.Puid && m.IsHost);
             return new KitRoomScreen.ChatVm
             {
-                Id = l.Puid ?? "", Name = l.Mine ? "أنت" : l.Name ?? "", Text = l.Text ?? "", Mine = l.Mine, Staff = staff && !l.Mine,
+                Id = l.Puid ?? "", Name = l.Mine ? "أنت" : l.Name ?? "", Text = l.Text ?? "", Mine = l.Mine, Staff = staff && !l.Mine, Bubble = BubbleOf(Find(l.Puid)?.BubbleId),
                 Tag = staff && !l.Mine ? (host ? "المضيف" : "أدمن") : "",
                 Time = DateTimeOffset.FromUnixTimeMilliseconds(l.Ts).ToLocalTime().ToString("h:mm"),
             };
@@ -461,7 +481,7 @@ namespace MafiaNight.App
             var member = People.FirstOrDefault(x => !string.IsNullOrEmpty(x.PlayFabId) && x.PlayFabId == l.FromPf);
             return new KitRoomScreen.ChatVm
             {
-                Id = member != null ? member.Puid : "", Name = mine ? "أنت" : l.Name ?? "", Text = l.Text ?? "", Mine = mine, System = l.System, Staff = admin && !mine,
+                Id = member != null ? member.Puid : "", Name = mine ? "أنت" : l.Name ?? "", Text = l.Text ?? "", Mine = mine, System = l.System, Staff = admin && !mine, Bubble = BubbleOf(member?.BubbleId),
                 Tag = admin && !mine ? "أدمن" : "",
                 Time = DateTimeOffset.FromUnixTimeMilliseconds(l.Ts).ToLocalTime().ToString("h:mm"),
             };

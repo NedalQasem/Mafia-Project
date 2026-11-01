@@ -47,6 +47,13 @@ namespace MafiaNight.App
         {
             screen = FindAnyObjectByType<KitChatScreen>(FindObjectsInactive.Include);
             if (screen == null) { Destroy(this); return; }
+            if (ServiceLocator.TryGet(out MafiaNight.Services.Store.IStoreService store) && store.Catalog != null)
+            {
+                var bubble = store.Catalog.GetItem(store.GetEquipped("bubbles"));
+                var bg = store.Catalog.GetItem(store.GetEquipped("chat_bg"));
+                screen.MyBubble = bubble != null ? bubble.variant : 0;
+                screen.ChatTint = bg != null ? bg.tint : Color.clear;
+            }
             toast = FindAnyObjectByType<KitToast>(FindObjectsInactive.Include);
             canvas = screen.GetComponentInParent<Canvas>() != null ? screen.GetComponentInParent<Canvas>().rootCanvas.transform : screen.transform.root;
             ServiceLocator.TryGet(out profile);

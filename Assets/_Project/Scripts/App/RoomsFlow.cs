@@ -193,6 +193,7 @@ namespace MafiaNight.App
 
         private void OnSubmit(RoomSettings settings)
         {
+            settings.BackgroundId = ServiceLocator.TryGet(out MafiaNight.Services.Store.IStoreService store) ? store.GetEquipped("room_bg") ?? "" : "";   // the room wears the host's store background
             rooms.Create(settings, r =>
             {
                 if (this == null || create == null) return;
