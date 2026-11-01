@@ -20,6 +20,10 @@
     <DefineConstants>$(DefineConstants);EOS_PLATFORM_WINDOWS_64</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <DefineConstants>$(DefineConstants);EOS_PLATFORM_LINUX</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="src/**/*.cs" />
     <Compile Include="../../Assets/ThirdParty/EOS-SDK/SDK/Source/**/*.cs" Link="eos/%(RecursiveDir)%(Filename)%(Extension)" />

@@ -1,0 +1,14 @@
+# The room bot next to the other containers. Start from the repository root:
+#   docker compose -f Server/room-bot/docker-compose.roombot.yml up -d --build
+services:
+  mafia-roombot:
+    build:
+      context: ../..
+      dockerfile: Server/room-bot/Dockerfile
+    container_name: mafia-roombot
+    restart: unless-stopped
+    env_file: /etc/mafia-roombot.env          # EOS_* ids, EOS_CLIENT_SECRET, BOT_KEY, API_URL (written by set-roombot.sh, chmod 600)
+    security_opt: ["no-new-privileges:true"]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
