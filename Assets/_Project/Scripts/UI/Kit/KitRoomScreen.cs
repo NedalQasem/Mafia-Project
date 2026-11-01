@@ -138,12 +138,21 @@ namespace MafiaNight.UI.Kit
 
         public void Hide() { gameObject.SetActive(false); }
 
-        public void ClearChat() { chat.Clear(); if (chatContent != null) for (int i = chatContent.childCount - 1; i >= 0; i--) Destroy(chatContent.GetChild(i).gameObject); }
+        public void ClearChat() { chat.Clear(); DropBubbles(); }
+
+        // the lines on screen are counted here, not by the children of the list: Destroy() is not instant, and counting the children twice in a frame drew every line again
+        private readonly List<GameObject> bubbles = new List<GameObject>();
+
+        private void DropBubbles()
+        {
+            foreach (var b in bubbles) if (b != null) { b.SetActive(false); Destroy(b); }
+            bubbles.Clear();
+        }
 
         public void AddChat(ChatVm m)
         {
             chat.Add(m);
-            if (chat.Count > 120) { chat.RemoveAt(0); if (chatContent.childCount > 0) Destroy(chatContent.GetChild(0).gameObject); }
+            if (chat.Count > 120) { chat.RemoveAt(0); if (bubbles.Count > 0) { var first = bubbles[0]; bubbles.RemoveAt(0); if (first != null) { first.SetActive(false); Destroy(first); } } }
             if (gameObject.activeSelf) AddBubble(m);
         }
 
@@ -389,7 +398,7 @@ namespace MafiaNight.UI.Kit
             field.gameObject.SetActive(true);
 
             // the chat is rebuilt after a closed and opened screen
-            if (chatContent.childCount != chat.Count) { for (int i = chatContent.childCount - 1; i >= 0; i--) Destroy(chatContent.GetChild(i).gameObject); foreach (var m in chat) AddBubble(m); }
+            if (bubbles.Count != chat.Count) { DropBubbles(); foreach (var m in chat) AddBubble(m); }
         }
 
         private void PlacePill()
@@ -562,6 +571,7 @@ namespace MafiaNight.UI.Kit
             if (m.System)
             {
                 var row0 = Rect(chatContent, "System", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                bubbles.Add(row0.gameObject);
                 var sl = row0.gameObject.AddComponent<HorizontalLayoutGroup>(); sl.childAlignment = TextAnchor.MiddleCenter; sl.childControlWidth = true; sl.childControlHeight = true; sl.childForceExpandWidth = false; sl.childForceExpandHeight = false;
                 var pill = Img(row0, "Pill", Sliced("sys", 9 * K, new Color(0, 0, 0, KitProc.LinA(0.4f)), Color.clear, 0), Color.white, true);
                 var pl = pill.gameObject.AddComponent<VerticalLayoutGroup>(); pl.padding = new RectOffset(Mathf.RoundToInt(10 * K), Mathf.RoundToInt(10 * K), Mathf.RoundToInt(1 * K), Mathf.RoundToInt(2 * K)); pl.childControlWidth = true; pl.childControlHeight = true; pl.childForceExpandWidth = true; pl.childForceExpandHeight = false;
@@ -574,6 +584,7 @@ namespace MafiaNight.UI.Kit
                 return;
             }
             var row = Rect(chatContent, "Msg", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            bubbles.Add(row.gameObject);
             var rowLayout = row.gameObject.AddComponent<HorizontalLayoutGroup>();
             rowLayout.childControlWidth = true; rowLayout.childControlHeight = true; rowLayout.childForceExpandWidth = false; rowLayout.childForceExpandHeight = false;
             rowLayout.childAlignment = m.Pinned ? TextAnchor.UpperCenter : m.Mine ? TextAnchor.UpperLeft : TextAnchor.UpperRight;     // other people's lines sit at the right (Arabic), mine at the left
