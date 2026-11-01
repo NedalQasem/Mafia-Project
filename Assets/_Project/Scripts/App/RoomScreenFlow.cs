@@ -36,6 +36,8 @@ namespace MafiaNight.App
         private readonly HashSet<string> talking = new HashSet<string>();
         private HashSet<string> known = new HashSet<string>();
         private bool wasSeated, active;
+        private string openedRoom = "";
+        private readonly HashSet<int> shownLines = new HashSet<int>();      // server chat lines already on the screen (by id)
         private string officialId = "";        // the room is an official one: its chat is the service's, its admins come from the admin board
         private ChatService serverChat;
 
@@ -111,6 +113,9 @@ namespace MafiaNight.App
         {
             var room = rooms.CurrentRoom;
             if (room == null || screen == null) return;
+            // the screen can be asked to open more than once (joined, entered, invited...): the second time only redraws, or every line and every subscription would be doubled
+            if (IsOpen && openedRoom == room.Id) { Redraw(); return; }
+            openedRoom = room.Id; shownLines.Clear();
             active = true;
             officialId = room.OfficialId ?? "";
             Bind();
@@ -431,6 +436,7 @@ namespace MafiaNight.App
         private void OpenServerChat()
         {
             serverChat = ChatService.Ensure();
+            serverChat.OnMessage -= OnServerLine;
             serverChat.OnMessage += OnServerLine;
             string id = officialId;
             OfficialRooms.Enter(id, (ok, history) =>
@@ -439,7 +445,7 @@ namespace MafiaNight.App
                 var def = OfficialRooms.Find(id);
                 if (def != null && !string.IsNullOrEmpty(def.DisplayWelcome)) screen.AddChat(new KitRoomScreen.ChatVm { System = true, Text = def.DisplayWelcome });
                 if (!ok) { Say("تعذّر تحميل دردشة الغرفة."); return; }
-                foreach (var l in history) screen.AddChat(ToChat(l));
+                foreach (var l in history) if (l.Id <= 0 || shownLines.Add(l.Id)) screen.AddChat(ToChat(l));
             });
         }
 
@@ -449,11 +455,13 @@ namespace MafiaNight.App
             serverChat = null;
             if (IsOfficial) OfficialRooms.Leave();
             officialId = "";
+            openedRoom = "";
         }
 
         private void OnServerLine(ChatMsg m)
         {
             if (!IsOpen || !IsOfficial || m.Channel != ChatChannel) return;
+            if (m.Id > 0 && !shownLines.Add(m.Id)) return;
             screen.AddChat(ToChat(new OfficialChatLine { Id = m.Id, FromPf = m.FromPf, Name = m.Name, Text = m.Text, Ts = m.Ts, System = m.System }));
         }
 
