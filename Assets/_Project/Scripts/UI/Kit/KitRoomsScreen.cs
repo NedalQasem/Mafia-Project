@@ -34,8 +34,14 @@ namespace MafiaNight.UI.Kit
             for (int i = content.childCount - 1; i >= 0; i--) Destroy(content.GetChild(i).gameObject);
             cards.Clear();
             if (emptyNote != null) emptyNote.SetActive(rooms.Count == 0);
+            if (rooms.Count > 0 && rooms[0].official) Spacer(30f);       // the seal and the pin tag of the first card stand out above it
             foreach (var r in rooms)
             {
+                if (r.official)
+                {
+                    var oc = KitOfficialCard.Create(content, r, 1000f, info => OnJoinRoom?.Invoke(info));
+                    continue;
+                }
                 var go = Instantiate(roomCardPrefab, content);
                 var v = go.GetComponent<RoomCardView>();
                 v.Bind(r);
@@ -44,13 +50,22 @@ namespace MafiaNight.UI.Kit
             }
         }
 
+        private void Spacer(float h)
+        {
+            var go = new GameObject("Spacer", typeof(RectTransform));
+            go.transform.SetParent(content, false);
+            ((RectTransform)go.transform).sizeDelta = new Vector2(1000f, h);
+        }
+
         /// <summary>Edit-mode helper for the builder so the saved scene already shows the list.</summary>
         public void SetRoomsImmediate(IList<RoomInfo> rooms)
         {
             for (int i = content.childCount - 1; i >= 0; i--) DestroyImmediate(content.GetChild(i).gameObject);
             cards.Clear();
+            if (rooms.Count > 0 && rooms[0].official) Spacer(30f);
             foreach (var r in rooms)
             {
+                if (r.official) { KitOfficialCard.Create(content, r, 1000f, null); continue; }
 #if UNITY_EDITOR
                 var go = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(roomCardPrefab, content);
 #else

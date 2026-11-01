@@ -126,7 +126,7 @@ namespace MafiaNight.App
                 if (!o.Open) continue;
                 // the room bot owns the lobby; this listing only carries what joining needs
                 byId[o.LobbyId] = new RoomListing { Id = o.LobbyId, Name = o.DisplayName, OfficialId = o.Id, Kind = RoomKind.Public, Mode = RoomMode.Hangout, Count = o.Online, Capacity = o.Capacity, ChatEnabled = o.ChatEnabled, MicSeats = o.MicSeats, MicByRequest = o.MicMode == "request" };
-                infos.Add(new RoomInfo { id = o.LobbyId, name = o.DisplayName, sub = o.DisplaySub, official = true, owner = "", ownerRank = 0, ownerLevel = 1, count = o.Online, capacity = o.Capacity, speakingSeat = -1, type = RoomType.Vip });
+                infos.Add(new RoomInfo { id = o.LobbyId, name = o.DisplayName, sub = o.DisplaySub, official = true, adminsOnline = o.AdminsOnline, pulse = (profile?.LocalProfile?.Level ?? 99) <= 3, owner = "", ownerRank = 0, ownerLevel = 1, count = o.Online, capacity = o.Capacity, speakingSeat = -1, type = RoomType.Vip });
             }
             foreach (var l in list)
             {
