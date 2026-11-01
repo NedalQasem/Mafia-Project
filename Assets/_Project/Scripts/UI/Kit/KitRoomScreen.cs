@@ -593,7 +593,7 @@ namespace MafiaNight.UI.Kit
             var v = bubble.gameObject.AddComponent<VerticalLayoutGroup>();
             v.padding = new RectOffset(Mathf.RoundToInt(10 * K), Mathf.RoundToInt(10 * K), Mathf.RoundToInt(6 * K), Mathf.RoundToInt(7 * K)); v.spacing = 2 * K;
             v.childControlWidth = true; v.childControlHeight = true; v.childForceExpandWidth = true; v.childForceExpandHeight = false;
-            var bl = bubble.gameObject.AddComponent<LayoutElement>(); bl.preferredWidth = 800;
+            var bl = bubble.gameObject.AddComponent<LayoutElement>(); bl.preferredWidth = 800; bl.flexibleWidth = 0;      // the time label inside is flexible: without this the bubble would grow to the full width
 
             // the sender line: name, tag, the pin note and the time
             var headRow = Rect(bubble.transform, "Head", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
