@@ -5,6 +5,7 @@
 - Reply to the owner **in Arabic**, every message, including progress updates. Code, comments and commit messages stay in English.
 - Work on the branch `refactor/architecture` and push it to `origin` when a piece of work is done.
 - New screens: an HTML mockup in `Docs/mockups/` first, the owner's approval, then Unity built to match it.
+- **Every build (APK) is a numbered version (owner's rule):** before building, bump `PlayerSettings.bundleVersion` (`major.feature.build`, e.g. `1.1.0`) and `AndroidBundleVersionCode` (+1), name the file `Builds/Android/MafiaNight-v<version>-dev.apk`, and add an entry at the top of `Docs/CHANGELOG.md` saying what changed since the last version (in Arabic, short). The version shows in the settings screen and, in development builds, in a screen corner (`App/VersionTag.cs`). Commit the bump with the changelog.
 - Never commit the Unity files that change by themselves (font `*SDF.asset`, URP/ProjectSettings assets, gradle `.backup` files).
 
 - **No dead code or old screens (owner's rule):** anything old or unused (a replaced screen, scene, script, art, prefab, a flow that nothing starts) is **deleted** from the project, not left behind: it only adds size and tempts a fix in the wrong place. Before deleting, check that nothing references it (GUID search in scenes/prefabs/assets, `grep` in scripts); git keeps the history. The living code is only the UIKit scenes (`UIKit*`) + `Bootstrap`.
