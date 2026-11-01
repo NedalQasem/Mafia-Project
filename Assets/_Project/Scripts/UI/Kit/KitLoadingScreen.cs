@@ -98,8 +98,8 @@ namespace MafiaNight.UI.Kit
             else if (!externalStatus)
                 for (int i = PhaseAt.Length - 1; i >= 0; i--) if (v >= PhaseAt[i]) { phase.Text = Phases[i]; break; }
             barFill.anchorMin = new Vector2(1f - progress, 0); barFill.anchorMax = new Vector2(1, 1); barFill.offsetMin = barFill.offsetMax = Vector2.zero;
-            if (progress >= 1f && !ready) { ready = true; if (status == null) phase.Text = "جاهز"; enterButton.SetActive(true); tip.gameObject.SetActive(false); StartCoroutine(Honk()); }
-            if (progress < 1f) { ready = false; if (enterButton != null) enterButton.SetActive(false); tip.gameObject.SetActive(true); }
+            if (progress >= 1f && !ready) { ready = true; if (status == null) phase.Text = "جاهز"; enterButton.SetActive(true); tip.gameObject.SetActive(false); SetTrack(false); StartCoroutine(Honk()); }
+            if (progress < 1f) { ready = false; if (enterButton != null) enterButton.SetActive(false); tip.gameObject.SetActive(true); SetTrack(true); }
         }
 
         // ---------- IBootView ----------
@@ -119,6 +119,14 @@ namespace MafiaNight.UI.Kit
             pendingRetry = retry;
             if (errorLabel != null) errorLabel.Text = message;
             if (errorPanel != null) errorPanel.SetActive(true);
+        }
+
+        /// <summary>The progress bar gives its place to the enter button when the game is ready (loading.html: ".ready .rd{display:none}").</summary>
+        private void SetTrack(bool on)
+        {
+            if (barFill == null || barFill.parent == null) return;
+            var track = barFill.parent.parent != null ? barFill.parent.parent : barFill.parent;      // Bar > FillArea > Fill
+            track.gameObject.SetActive(on);
         }
 
         void IBootView.ShowReady(Action enterCallback)
