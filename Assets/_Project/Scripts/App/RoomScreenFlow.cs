@@ -75,7 +75,7 @@ namespace MafiaNight.App
             screen.OnVoiceInfo += SwitchVoiceEngine;
             screen.OnSpeaker += on => { if (audio == null) return; audio.SetOutputVolume(on ? MafiaNight.Data.Settings.VoicePrefs.Speaker / 100f : 0f); };
             screen.OnGames += () => Say("الإيموجي والألعاب السريعة قريباً.");
-            if (audio != null) { audio.OnSpeaking += OnSpeaking; audio.OnChanged += Redraw; }
+            if (audio != null) { audio.OnSpeaking += OnSpeaking; audio.OnChanged += Redraw; audio.OnConnectionChanged += OnVoiceConnection; }
             rooms.OnRoomChanged += OnRoomChanged;
             rooms.OnRoomLeft += OnRoomLeft;
         }
@@ -83,7 +83,7 @@ namespace MafiaNight.App
         private void OnDestroy()
         {
             if (rooms != null) { rooms.OnRoomChanged -= OnRoomChanged; rooms.OnRoomLeft -= OnRoomLeft; }
-            if (audio != null) { audio.OnSpeaking -= OnSpeaking; audio.OnChanged -= Redraw; }
+            if (audio != null) { audio.OnSpeaking -= OnSpeaking; audio.OnChanged -= Redraw; audio.OnConnectionChanged -= OnVoiceConnection; }
             Unbind();
         }
 
@@ -147,9 +147,33 @@ namespace MafiaNight.App
             bound = null; boundRunner = null;
         }
 
+        // ---- the voice connection dropped while the player is still in the room (the phone lost its network for a moment): join it again by itself
+        private const float RejoinDelay = 4f;
+        private const int RejoinTries = 10;
+        private float rejoinAt = -1f;
+        private int rejoinTried;
+
+        private void OnVoiceConnection(bool on)
+        {
+            if (on) { rejoinAt = -1f; rejoinTried = 0; return; }
+            if (!active || rooms.CurrentRoom == null) return;
+            wasSeated = false;                                  // the mic opens again by itself once the voice is back and the player is still on his seat
+            rejoinAt = Time.unscaledTime + RejoinDelay;
+        }
+
+        private void RejoinVoice()
+        {
+            rejoinAt = -1f;
+            if (!active || audio == null || rooms.CurrentRoom == null || audio.IsConnected) return;
+            if (++rejoinTried > RejoinTries) return;
+            JoinVoice();
+            rejoinAt = Time.unscaledTime + RejoinDelay * 2f;    // if this try fails too, the next one is checked then
+        }
+
         private void Update()
         {
             if (!active) return;
+            if (rejoinAt >= 0f && Time.unscaledTime >= rejoinAt) RejoinVoice();
             var runner = MatchRunner.Instance;
             // the match session of this room is made a moment after the room opens: draw as soon as it exists
             if (runner != null && (runner.Session != bound || runner != boundRunner || !screen.IsOpen)) { Bind(); Redraw(); }
@@ -170,6 +194,7 @@ namespace MafiaNight.App
             else { PlayerPrefs.SetString("mafia.voice", "eos"); said = "صوت الغرفة: EOS."; }
             wasSeated = false;
             audio.Leave();
+            rejoinAt = -1f; rejoinTried = 0;                     // this drop was on purpose
             JoinVoice();
             Say(said);
         }
