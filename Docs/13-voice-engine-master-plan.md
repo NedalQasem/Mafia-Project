@@ -3,10 +3,26 @@
 > **النوع:** وثيقة تأسيس لمشروع **منفصل** عن لعبة المافيا، بيخدم كل ألعابنا (موبايل أولاً، ثم PC/Steam، ثم Web) ومحركاتها (Unity وUnreal).
 > **كاتبها:** Claude، بدور مدير المشروع + Scrum Master + المطوّر الرئيسي. **المالك (Product Owner):** صاحب المشروع.
 > **التاريخ:** 2026-11-02 · **الحالة:** مسودة 1.0 للموافقة.
-> **اسم المشروع المؤقت:** `VoiceCore` (الاسم النهائي بقرارك).
-> **قرار سابق ثابت:** LiveKit (self-hosted) **يبقى** مصدر الصوت الحالي بالمافيا، ولا نشيله إلا بعد ما `VoiceCore` يعدّي «بوابات الاستبدال» (القسم 14).
+> **اسم المشروع (اعتمده المالك 2026-11-02):** **MenaGamingVoiceCore** — الاختصار التقني `mgvc` (بالحزم والمكتبات والدوال)، والاسم الكامل بالواجهات والمنتج.
+> **قرار سابق ثابت:** LiveKit (self-hosted) **يبقى** مصدر الصوت الحالي بالمافيا، ولا نشيله إلا بعد ما MenaGamingVoiceCore يعدّي «بوابات الاستبدال» (القسم 14).
 
 **كيف تقرأ هالوثيقة:** القسم 1–3 للقرار والأهداف (٥ دقائق). القسم 4–9 المعمارية والتقنية (للمرجع). القسم 10–13 الربط بالمحركات والمنصات. القسم 14–19 الخطة والمخاطر والتشغيل. القسم 20 شو بحتاج منك. الملاحق: تفاصيل البروتوكول والـAPI.
+
+---
+
+## 0.5 التسمية (Naming)
+
+| العنصر | الاسم |
+|---|---|
+| المنتج | **MenaGamingVoiceCore** |
+| الاختصار التقني | `mgvc` |
+| مستودع Git | `menagaming-voice-core` |
+| حزم Rust | `mgvc-protocol`, `mgvc-core`, `mgvc-server`, `mgvc-cli` |
+| مكتبة أصلية | `libmgvc.so` / `mgvc.dll` / `libmgvc.a` / `mgvc.wasm` |
+| واجهة C | ملف `mgvc.h`، دوال `mgvc_*` |
+| حزمة Unity | `com.menagaming.voicecore` |
+| إضافة Unreal | `MenaGamingVoiceCore` |
+| نطاق السيرفر | `voice.mena-gaming.com` |
 
 ---
 
@@ -18,7 +34,7 @@
 
 **المبادئ:**
 1. **الجودة قبل الميزات:** صدى ضجيج تأخير انقطاع = لعبة ميتة. هدفنا صوت «مثل مكالمة» على موبايل متوسط وشبكة سيئة.
-2. **الواجهة ثابتة والتنفيذ قابل للتبديل:** لعبتنا بتحكي مع `IVoiceService` (موجود فعلاً). نقدر نبدّل LiveKit ↔ VoiceCore بسطر إعداد، وبنقدر نرجع فوراً.
+2. **الواجهة ثابتة والتنفيذ قابل للتبديل:** لعبتنا بتحكي مع `IVoiceService` (موجود فعلاً). نقدر نبدّل LiveKit ↔ MenaGamingVoiceCore بسطر إعداد، وبنقدر نرجع فوراً.
 3. **السيرفر يقرر القواعد، العميل ينفّذ:** من يحكي؟ من يسمع من؟ (ليل المافيا). كلها أوامر موقّعة من سيرفر اللعبة، مش من الجهاز (تحاشي الغش).
 4. **ملكية كاملة:** كل مكتبة نستخدمها داخل النواة ترخيصها متساهل (BSD/MIT/Apache)، ما في GPL، وما في خدمة خارجية وقت التشغيل.
 5. **نقيس كل شي:** ما في «بيبان إنه تمام». في أرقام وبوابات.
@@ -127,7 +143,7 @@
  │  Game code ──► VoiceService (IVoiceService / UVoiceSubsystem)  │
  │                    │ (غلاف رقيق لكل محرك)                        │
  │  ┌─────────────────▼───────────────────────────────────────┐   │
- │  │           voice-core  (Rust، واجهة C ABI)               │   │
+ │  │           mgvc-core  (Rust، واجهة C ABI)               │   │
  │  │  ┌────────┐ ┌──────┐ ┌─────┐ ┌────────┐ ┌─────────────┐ │   │
  │  │  │AudioIO │►│ APM  │►│Opus │►│Packetizer►│ Transport   │ │   │
  │  │  │(Oboe..)│ │AEC/NS│ │enc  │ │+AEAD   │ │ UDP | WS/TCP│ │   │
@@ -140,7 +156,7 @@
  └─────────────────────────────────┬───────────────────────────────┘
                  تحكم: WSS (TLS)   │   وسائط: UDP مشفّر
  ┌─────────────────────────────────▼───────────────────────────────┐
- │ voice-server (Rust، tokio):  Signaling │ Room/Forward table      │
+ │ mgvc-server (Rust، tokio):  Signaling │ Room/Forward table      │
  │  Token verify │ Permissions │ Active-speaker selection │ Metrics │
  └─────────────────────────────▲───────────────────────────────────┘
                                │ HTTPS + HMAC (أوامر الأذونات)
@@ -149,20 +165,20 @@
               └─────────────────────────────────┘
 ```
 
-### 5.1 المستودعات (monorepo واحد: `voice-engine/`)
+### 5.1 المستودعات (monorepo واحد: `menagaming-voice-core/`)
 
 ```
-voice-engine/
+menagaming-voice-core/
   crates/
-    voice-protocol/     # تعريف الحزم، الترميز، التشفير، أدوات الاختبار (مشتركة)
-    voice-core/         # محرك العميل (صوت، شبكة، jitter، واجهة C)
-    voice-server/       # السيرفر (SFU + signaling + metrics)
-    voice-cli/          # عميل سطر أوامر لاختبار/حمل/تسجيل (بدون صوت حقيقي)
+    mgvc-protocol/     # تعريف الحزم، الترميز، التشفير، أدوات الاختبار (مشتركة)
+    mgvc-core/         # محرك العميل (صوت، شبكة، jitter، واجهة C)
+    mgvc-server/       # السيرفر (SFU + signaling + metrics)
+    mgvc-cli/          # عميل سطر أوامر لاختبار/حمل/تسجيل (بدون صوت حقيقي)
   bindings/
     unity/              # UPM package: C# + مكتبات أصلية
     unreal/             # UE plugin
     web/                # TypeScript + WASM + AudioWorklet
-    c/                  # voice.h + أمثلة
+    c/                  # mgvc.h + أمثلة
   android/              # مكوّن Java/Kotlin الصغير (أذونات، صوت، توجيه)
   tools/                # محاكي شبكة، سكربتات netem، مقاييس جودة (ViSQOL)
   docs/                 # مواصفات البروتوكول (mdBook)، ADR، دليل الربط
@@ -174,7 +190,7 @@ voice-engine/
 1. **خيط الصوت (Realtime):** ممنوع فيه تخصيص ذاكرة أو قفل أو I/O أو سجلات. بيتواصل مع غيره بطوابير بدون أقفال (SPSC ring buffers).
 2. **خيط الشبكة:** UDP/TCP، التشفير، الـjitter buffer (إدخال).
 3. **خيط التحكم:** WebSocket، حالة الاتصال، إعادة المحاولة.
-4. **خيط اللعبة (Main):** بيستدعي `vc_poll_events()` فقط ويستقبل أحداثاً (بدون callbacks من خيوط أجنبية = أمان مع IL2CPP والـGC).
+4. **خيط اللعبة (Main):** بيستدعي `mgvc_poll_events()` فقط ويستقبل أحداثاً (بدون callbacks من خيوط أجنبية = أمان مع IL2CPP والـGC).
 
 ---
 
@@ -205,7 +221,7 @@ voice-engine/
 
 ---
 
-## 7. السيرفر (voice-server)
+## 7. السيرفر (mgvc-server)
 
 - **المكوّنات:** مستمع UDP (tokio + `socket2` مع `recvmmsg/sendmmsg` على لينكس)، مستمع WSS، جدول الغرف (room → peers)، محقق التوكن، واجهة إدارة HTTP (أذونات)، مقاييس Prometheus، سجل منظم (JSON).
 - **التحقق:** توكن JWT موقّع (HS256 مبدئياً بنفس مفتاح `voice.js` الحالي، ثم Ed25519). حقول: `sub`(هوية)، `room`، `exp`، `canPublish`، `canListen`، `name`.
@@ -220,7 +236,7 @@ voice-engine/
 
 ---
 
-## 8. العميل (voice-core)
+## 8. العميل (mgvc-core)
 
 ### 8.1 مسار الإرسال
 `التقاط (10 ms) → APM (AEC+NS+AGC) → VAD/DTX → Opus encode (20 ms) → AEAD → UDP`.
@@ -246,28 +262,28 @@ voice-engine/
 ## 9. واجهة C (C ABI) — الأساس الذي تقوم عليه كل الروابط
 
 ```c
-// voice.h — واجهة ثابتة ومرقّمة الإصدار (VC_API_VERSION)
-typedef struct vc_client vc_client;
+// mgvc.h — واجهة ثابتة ومرقّمة الإصدار (MGVC_API_VERSION)
+typedef struct mgvc_client mgvc_client;
 
-vc_client* vc_create(const vc_config* cfg);            // إعدادات: جودة، جهاز، تسجيل
-void       vc_destroy(vc_client*);
+mgvc_client* mgvc_create(const mgvc_config* cfg);            // إعدادات: جودة، جهاز، تسجيل
+void       mgvc_destroy(mgvc_client*);
 
-int  vc_connect(vc_client*, const char* url, const char* token);  // غير حاجب
-void vc_disconnect(vc_client*);
+int  mgvc_connect(mgvc_client*, const char* url, const char* token);  // غير حاجب
+void mgvc_disconnect(mgvc_client*);
 
-void vc_set_mic_enabled(vc_client*, int on);           // نشر/كتم
-void vc_set_ptt(vc_client*, int on);
-void vc_set_master_volume(vc_client*, float v);        // 0..1
-void vc_set_peer_volume(vc_client*, const char* peer, float v);
-void vc_set_peer_muted(vc_client*, const char* peer, int muted);  // محلي
-void vc_set_output_route(vc_client*, int route);       // سماعة/أذن/Bluetooth
+void mgvc_set_mic_enabled(mgvc_client*, int on);           // نشر/كتم
+void mgvc_set_ptt(mgvc_client*, int on);
+void mgvc_set_master_volume(mgvc_client*, float v);        // 0..1
+void mgvc_set_peer_volume(mgvc_client*, const char* peer, float v);
+void mgvc_set_peer_muted(mgvc_client*, const char* peer, int muted);  // محلي
+void mgvc_set_output_route(mgvc_client*, int route);       // سماعة/أذن/Bluetooth
 
 // أحداث: تُسحب من خيط اللعبة (لا callbacks من خيوط أجنبية)
-int  vc_poll_events(vc_client*, vc_event* out, int max);
+int  mgvc_poll_events(mgvc_client*, mgvc_event* out, int max);
 // الأنواع: CONNECTED, DISCONNECTED(reason), RECONNECTING, PEER_JOINED, PEER_LEFT,
 //          SPEAKING(peer,on,level), PERMISSIONS(can_publish), STATS, ERROR(code)
 
-int  vc_get_stats(vc_client*, vc_stats* out);          // rtt, loss, jitter, bitrate, transport
+int  mgvc_get_stats(mgvc_client*, mgvc_stats* out);          // rtt, loss, jitter, bitrate, transport
 ```
 **قواعد الـABI:** هياكل بحجم ثابت + حقل `size` أول، لا استثناءات تعبر الحدود، كل سلسلة UTF-8 منتهية بصفر، ملكية الذاكرة واضحة بالتعليقات، **توافق خلفي إلى إصدارين**.
 
@@ -275,24 +291,24 @@ int  vc_get_stats(vc_client*, vc_stats* out);          // rtt, loss, jitter, bit
 
 ## 10. الربط مع Unity (الأولوية 1)
 
-### 10.1 الحزمة (UPM: `com.mena.voice`)
+### 10.1 الحزمة (UPM: `com.menagaming.voicecore`)
 ```
 Runtime/
   Scripts/        VoiceClient.cs, VoiceEvents.cs, VoiceUnityBridge.cs  (+ asmdef)
   Plugins/
-    Android/arm64-v8a/libvoicecore.so  + voice-android.aar
-    iOS/libvoicecore.a
-    x86_64/voicecore.dll        (Windows)
-    macOS/voicecore.bundle
-    Linux/x86_64/libvoicecore.so
-    WebGL/voicecore.jslib + voicecore.wasm
+    Android/arm64-v8a/libmgvc.so  + voice-android.aar
+    iOS/libmgvc.a
+    x86_64/mgvc.dll        (Windows)
+    macOS/mgvc.bundle
+    Linux/x86_64/libmgvc.so
+    WebGL/mgvc.jslib + mgvc.wasm
 Editor/           أدوات إعداد الأذونات وفحص الإعدادات
 Samples~/         مشهد تجريبي
 ```
 
 ### 10.2 قواعد الاستخدام (Best practices)
-- **P/Invoke:** `[DllImport("voicecore")]`، وعلى iOS `[DllImport("__Internal")]`. التفاف أنيق بـ`SafeHandle`.
-- **الأحداث بالسحب:** `VoiceClient.Update()` بيستدعي `vc_poll_events` مرة بالإطار (لا `MonoPInvokeCallback` من خيط صوتي). آمن مع IL2CPP.
+- **P/Invoke:** `[DllImport("mgvc")]`، وعلى iOS `[DllImport("__Internal")]`. التفاف أنيق بـ`SafeHandle`.
+- **الأحداث بالسحب:** `VoiceClient.Update()` بيستدعي `mgvc_poll_events` مرة بالإطار (لا `MonoPInvokeCallback` من خيط صوتي). آمن مع IL2CPP.
 - **أندرويد:** AAR يضيف الأذونات والخدمة؛ طلب `RECORD_AUDIO` بـ`UnityEngine.Android.Permission`؛ تعديل `AndroidManifest` عبر ملف دمج بالحزمة؛ ABI **arm64-v8a** فقط (ومعه `x86_64` للمحاكي اختيارياً)؛ minSdk 26 مقترح (**للتحقق** من حد Unity 6 الحالي).
 - **IL2CPP/Stripping:** `link.xml` للأنواع المستعملة.
 - **دورة الحياة:** `OnApplicationPause/Focus` لتعليق/استئناف الصوت؛ إعادة الاتصال عند العودة.
@@ -300,7 +316,7 @@ Samples~/         مشهد تجريبي
 - **التكامل مع لعبتنا:** كلاس `OwnVoiceService : IVoiceService` يُسجَّل بـ`VoiceBackends` ويختاره `RoutedVoiceService` (نفس آلية LiveKit اليوم).
 
 ### 10.3 اختبارات Unity
-Play-mode tests مع `voice-cli` كلاعب ثانٍ؛ مشهد عينات؛ بناء Android تلقائي بالـCI (إن توفر).
+Play-mode tests مع `mgvc-cli` كلاعب ثانٍ؛ مشهد عينات؛ بناء Android تلقائي بالـCI (إن توفر).
 
 ---
 
@@ -308,8 +324,8 @@ Play-mode tests مع `voice-cli` كلاعب ثانٍ؛ مشهد عينات؛ ب�
 
 > الإصدارات المدعومة: UE 5.3+ كبداية (**للتحقق** وقت البدء). تنفيذ بالمرحلة 8.
 
-- **Plugin:** `VoiceCore.uplugin`، وحدة `VoiceCore` (C++) + `ThirdParty/VoiceCoreLibrary` (`.Build.cs` تربط المكتبات الثابتة/الديناميكية لكل منصة: Win64, Android arm64, iOS, Linux, Mac).
-- **Android:** ملف `VoiceCore_UPL.xml` لإضافة الأذونات والـAAR وإعدادات Gradle.
+- **Plugin:** `MenaGamingVoiceCore.uplugin`، وحدة `MenaGamingVoiceCore` (C++) + `ThirdParty/MenaGamingVoiceCoreLibrary` (`.Build.cs` تربط المكتبات الثابتة/الديناميكية لكل منصة: Win64, Android arm64, iOS, Linux, Mac).
+- **Android:** ملف `MenaGamingVoiceCore_UPL.xml` لإضافة الأذونات والـAAR وإعدادات Gradle.
 - **الواجهة:** `UVoiceSubsystem : UGameInstanceSubsystem` مع `UFUNCTION(BlueprintCallable)` و`BlueprintAssignable` delegates؛ يسحب الأحداث من `FTSTicker` على خيط اللعبة.
 - **`IVoiceChat`:** ننفذ واجهة UE القياسية (`VoiceChat` module) كي تشتغل أي ميزات/إضافات UE الموجودة (قنوات، كتم، مستويات) فوق محركنا.
 - **الصوت المكاني:** عبر `USoundWaveProcedural` أو `ISubmixBufferListener`؛ الافتراضي I/O أصلي كـUnity.
@@ -392,9 +408,9 @@ Play-mode tests مع `voice-cli` كلاعب ثانٍ؛ مشهد عينات؛ ب�
 - **تم =** CI أخضر، ملف مواصفة، `hello world` عبر FFI من Unity (Windows).
 
 ### M1 — البروتوكول + السيرفر + عميل CLI (8–10 أيام)
-- `voice-protocol`: ترميز/فك، AEAD، نافذة replay، اختبارات خاصية (proptest) + fuzzing.
-- `voice-server`: WSS، UDP، غرف، أذونات، مقاييس. 
-- `voice-cli`: يرسل ملف WAV كمتكلم، ويسجل مستقبل لملف (بدون صوت حقيقي) + أدوات محاكاة ضياع.
+- `mgvc-protocol`: ترميز/فك، AEAD، نافذة replay، اختبارات خاصية (proptest) + fuzzing.
+- `mgvc-server`: WSS، UDP، غرف، أذونات، مقاييس. 
+- `mgvc-cli`: يرسل ملف WAV كمتكلم، ويسجل مستقبل لملف (بدون صوت حقيقي) + أدوات محاكاة ضياع.
 - **تم =** ٣ عملاء CLI بغرفة، تسجيل المستقبل مطابق، ٥٠٠ مستمع وهمي على VPS بدون خطأ، تقرير حمل أولي.
 
 ### M2 — نواة العميل على سطح المكتب (8–10 أيام)
@@ -426,7 +442,7 @@ Play-mode tests مع `voice-cli` كلاعب ثانٍ؛ مشهد عينات؛ ب�
 - Plugin + `IVoiceChat` + Blueprints + مشروع عينات (Win64 + Android).
 - **تم =** مشروع UE عينات بمكالمة جهازين.
 
-**المجموع التقريبي:** ~75–105 يوم مثالي (حوالي 4–6 أشهر عمل متقطع). **الإطلاق المبكر الممكن** (المافيا على VoiceCore بيتا) بعد M4.
+**المجموع التقريبي:** ~75–105 يوم مثالي (حوالي 4–6 أشهر عمل متقطع). **الإطلاق المبكر الممكن** (المافيا على MenaGamingVoiceCore بيتا) بعد M4.
 
 ---
 
@@ -439,7 +455,7 @@ Play-mode tests مع `voice-cli` كلاعب ثانٍ؛ مشهد عينات؛ ب�
 5. **جودة الصوت:** إشارات مرجعية (جمل مسجلة) ← ViSQOL (MOS-LQO)؛ **ERLE للصدى:** سيناريو «طرف بعيد يحكي وطرف قريب صامت» ثم قياس الإشارة المتبقية.
 6. **مصفوفة أجهزة حقيقية:** جدول بأجهزة/نظم/شبكات (Wi-Fi 2.4/5 GHz، 4G/5G، Bluetooth، سماعات سلكية). **كل جولة تجارب بتسجل: الجهاز، الإصدار، الشبكة، النتيجة، ملاحظة صوتية.**
 7. **تحمّل (Soak):** ٢ ساعة، 20 جهاز وهمي + 2 حقيقي، مراقبة ذاكرة/CPU/اتصال.
-8. **حمل السيرفر:** أداة `voice-cli load` تحاكي غرف كبيرة؛ منحنى CPU مقابل الحزم/ث.
+8. **حمل السيرفر:** أداة `mgvc-cli load` تحاكي غرف كبيرة؛ منحنى CPU مقابل الحزم/ث.
 9. **اختبار تجريبي بشري (Dogfooding):** المالك وأصحابه بلعبة المافيا الحقيقية مع نموذج استبيان قصير.
 
 ---
@@ -489,7 +505,7 @@ Play-mode tests مع `voice-cli` كلاعب ثانٍ؛ مشهد عينات؛ ب�
 
 - LiveKit يضل المحرك الحالي للغرفة الرسمية، وEOS للغرف العادية والمباريات (قرار 2026-11-02).
 - كل الشغل الحالي بـ`IVoiceService` / `RoutedVoiceService` / `VoiceBackends` **هو الأساس** لـ`OwnVoiceService`. لا نغيّر العقد: `POST /v1/voice/token` يرجع `{url, token, canPublish, room}` والغرف `official:<id>` / `lobby:<id>` (+ `match:<id>` لاحقاً).
-- نقطة الألم الحالية (أذونات المقعد بإعادة اتصال) = أول ميزة تتحسن بـVoiceCore (أذونات حية).
+- نقطة الألم الحالية (أذونات المقعد بإعادة اتصال) = أول ميزة تتحسن بـMenaGamingVoiceCore (أذونات حية).
 
 ---
 
