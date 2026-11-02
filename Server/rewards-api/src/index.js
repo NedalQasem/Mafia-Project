@@ -25,6 +25,7 @@ const { createOfficialRooms } = require('./officialrooms');
 const { createBotFarm } = require('./botfarm');
 const { createVoice } = require('./voice');
 const { createAdmin } = require('./admin');
+const { createDiag } = require('./diag');
 
 const cfgPath = process.env.CONFIG || path.join(__dirname, '..', 'config.json');
 const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
@@ -65,16 +66,19 @@ const botKey = process.env.BOT_KEY || '';
 // the voice of the LiveKit rooms: LIVEKIT_API_KEY / LIVEKIT_API_SECRET / LIVEKIT_URL come from /etc/mafia-rewards.env (set-livekit.sh); without them there is no such voice
 const voice = createVoice({ apiKey: process.env.LIVEKIT_API_KEY || '', apiSecret: process.env.LIVEKIT_API_SECRET || '', url: process.env.LIVEKIT_URL || '', officialRooms });
 // the admin board: needs ADMIN_PASSWORD_HASH (made by set-admin.sh); without it the board does not exist
-const admin = createAdmin({ lbPrizes, officialRooms, botFarm,
+// the test journal of the test phones (admin board: /admin/diag)
+const diag = createDiag({ dir: dataDir + '/diag', nameOf: async pf => (await chat.who(pf)).name });
+const admin = createAdmin({ lbPrizes, officialRooms, botFarm, diag,
   cfg, store: adminStore, chat, friends, leaderboard, mail, playfab, events, codes, recovery, images, accounts, reportsFile: dataDir + '/chat-reports.jsonl',
   adminCfg: Object.assign({}, cfg.admin, process.env.ADMIN_PASSWORD_HASH ? { passwordHash: process.env.ADMIN_PASSWORD_HASH } : {}, process.env.ADMIN_PATH ? { path: process.env.ADMIN_PATH } : {}),
 });
-const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, images, accounts, identity, admin, officialRooms, botFarm, botKey, voice });
+const { server } = createApp({ cfg, playfab, store, chat, friends, leaderboard, offers, events, mail, codes, recovery, images, accounts, identity, admin, officialRooms, botFarm, botKey, voice, diag });
 if (admin.enabled) console.log('admin board on ' + admin.base); else console.log('admin board is off (no ADMIN_PASSWORD_HASH)');
 
 setInterval(() => { accounts.sweep().then(r => { if (r.warned || r.deleted || r.failed) console.log('guests', JSON.stringify(r)); }).catch(() => {}); }, 6 * 3600 * 1000).unref();     // warns and (only when config guests.purge is true) deletes abandoned guests
 setInterval(() => { events.autoDistribute().catch(() => {}); }, 60 * 1000).unref();      // prizes of the events that ended
 setInterval(() => { lbPrizes.payDue(); }, 60 * 1000).unref();                            // prizes of the day and the week that ended
+setInterval(() => { diag.purge(); }, 6 * 3600 * 1000).unref();
 setInterval(() => { chat.purge(); friends.purge(); leaderboard.purge(); events.purge(); mail.purge(); }, 3600 * 1000).unref();
 setInterval(() => store.purge(Date.now(), 48 * 3600 * 1000, new Date().toISOString().slice(0, 10)), 3600 * 1000).unref();
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { try { store.flushNow(); chat.flushNow(); friends.flushNow(); leaderboard.flushNow(); events.flushNow(); mail.flushNow(); adminStore.flushNow(); accounts.flushNow(); officialRooms.flushNow(); botFarm.flushNow(); } finally { process.exit(0); } });

@@ -99,6 +99,7 @@ namespace MafiaNight.App
             if (FindAnyObjectByType<KitChatScreen>(FindObjectsInactive.Include) != null) gameObject.AddComponent<ChatFlow>();
             MafiaNight.Services.Friends.FriendsService.Ensure();   // reports where the player sits and hears friend news in every scene
             InviteFlow.Ensure();
+            HealthWatch.Ensure();        // test builds: writes what happens in rooms to the journal and flags what makes no sense
             NetNoticeFlow.Ensure();      // tells the player when the connection is lost and when it is back
             ReconnectFlow.Ensure();      // offers the way back into a match the player lost with his connection
             if (SceneManager.GetActiveScene().name == AppScenes.Home) { gameObject.AddComponent<LaunchBannerFlow>(); gameObject.AddComponent<QuickMenuFlow>(); }       // the offers banner at the start of the game, and the quick menu that brings it back

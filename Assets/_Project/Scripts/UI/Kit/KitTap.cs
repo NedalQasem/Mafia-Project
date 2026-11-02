@@ -24,6 +24,19 @@ namespace MafiaNight.UI.Kit
             return tap;
         }
 
-        public void OnPointerClick(PointerEventData e) { Clicked?.Invoke(); }
+        public void OnPointerClick(PointerEventData e)
+        {
+            MafiaNight.Core.GameJournal.Tap(NameOf(transform));
+            Clicked?.Invoke();
+        }
+
+        /// <summary>Where the tap was, for the test journal: the object and the two above it (e.g. "Mic < Row < Bar").</summary>
+        private static string NameOf(Transform t)
+        {
+            string s = t.name;
+            var p = t.parent;
+            for (int i = 0; i < 2 && p != null; i++, p = p.parent) s += " < " + p.name;
+            return s;
+        }
     }
 }

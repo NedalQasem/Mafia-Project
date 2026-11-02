@@ -114,7 +114,7 @@ function cleanPack(b, id) {
   return { id, name, coins, gems, items };
 }
 
-function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, accounts = null, lbPrizes = null, officialRooms = null, botFarm = null, htmlFile = null, now = () => Date.now(), log = console }) {
+function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, leaderboard = null, mail = null, playfab = null, reportsFile = null, events = null, codes = null, recovery = null, images = null, accounts = null, lbPrizes = null, officialRooms = null, botFarm = null, diag = null, htmlFile = null, now = () => Date.now(), log = console }) {
   const base = '/' + String(adminCfg.path || '/admin').replace(/^\/+|\/+$/g, '');
   const passwordHash = adminCfg.passwordHash || '';
   const sessionMs = (adminCfg.sessionHours || 12) * 3600 * 1000;
@@ -451,6 +451,18 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
       return send(res, 200, { ok: true });
     }
 
+    // ---- the test journal (what the test phones recorded; see diag.js)
+    if (rest === '/api/diag/players' && method === 'GET') { if (!diag) throw new AdminError('no_diag', 404); return send(res, 200, { ok: true, players: diag.players() }); }
+    if (rest === '/api/diag/log' && method === 'GET') {
+      if (!diag) throw new AdminError('no_diag', 404);
+      const pfs = String(url.searchParams.get('pf') || '').split(',').filter(Boolean).slice(0, 6);
+      const day = String(url.searchParams.get('day') || '');
+      const text = pfs.length === 1 ? diag.log(pfs[0], day) : diag.merged(pfs, day);
+      if (text === null || text === '\n') throw new AdminError('not_found', 404);
+      res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Content-Length': Buffer.byteLength(text), 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'X-Robots-Tag': 'noindex, nofollow' });
+      return res.end(text);
+    }
+
     // ---- reports and players
     if (rest === '/api/reports' && method === 'GET') return send(res, 200, { ok: true, reports: await reportsView() });
     if (rest === '/api/reports/handle' && method === 'POST') {
@@ -737,6 +749,8 @@ function createAdmin({ cfg = {}, adminCfg = {}, store, chat, friends = null, lea
     try {
       const rest = url.pathname.slice(base.length) || '/';
       if (rest === '/' && req.method === 'GET') return send(res, 200, html);
+      // the test journal page: a small page of its own (it asks the api below, so it needs the same login)
+      if (rest === '/diag' && req.method === 'GET' && diag) return send(res, 200, diag.page(base));
       if (!rest.startsWith('/api/')) return send(res, 404, { ok: false, error: 'not_found' });
       await api(req, res, rest, url, ip);
     } catch (e) {

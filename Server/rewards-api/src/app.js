@@ -10,7 +10,7 @@ const { createLegal } = require('./legal');
 
 const PROGRESS_KEY = 'Progress';
 
-function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, accounts = null, identity = null, admin = null, officialRooms = null, botFarm = null, botKey = '', voice = null, now = () => Date.now(), log = console }) {
+function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboard = null, offers = null, events = null, mail = null, codes = null, recovery = null, images = null, accounts = null, identity = null, admin = null, officialRooms = null, botFarm = null, botKey = '', voice = null, diag = null, now = () => Date.now(), log = console }) {
   const buckets = new Map();   // ip -> { count, resetAt }
   const locks = new Map();     // playFabId -> promise chain (one update per player at a time)
   const tickets = new Map();   // ticket -> { pf, until }: PlayFab is asked about a ticket at most once every few minutes
@@ -181,7 +181,8 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
   } : {};
   // voice tokens for the LiveKit rooms (the voice where many listen and a few speak)
   const voicePost = voice && voice.enabled ? { '/v1/voice/token': async (pf, b) => voice.token(pf, chat ? (await chat.who(pf)).name : '', String(b.room || '')) } : {};
-  const posts = Object.assign({}, chat ? chatPost : {}, roomsPost, voicePost, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
+  const diagPost = diag ? { "/v1/diag/upload": (pf, b) => diag.upload(pf, b) } : {};
+  const posts = Object.assign({}, chat ? chatPost : {}, diagPost, roomsPost, voicePost, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
   const legal = createLegal();
 
   const server = http.createServer((req, res) => {
@@ -275,7 +276,7 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
           const out = await chat.poll(pf, parseInt(url.searchParams.get('since') || '0', 10), Math.min(parseInt(url.searchParams.get('wait') || '0', 10) * 1000 || 0, 25000), url.searchParams.get('history') === '1');
           return send(res, 200, Object.assign({ ok: true }, out));
         }
-        const body = await readJson(req, res);
+        const body = await readJson(req, res, url.pathname === "/v1/diag/upload" ? 262144 : 8192);      // the test journal comes in batches
         if (body === undefined) return;
         if (isChatPost) {
           const pf = await who(ticket);
