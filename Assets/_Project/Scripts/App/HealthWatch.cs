@@ -43,17 +43,48 @@ namespace MafiaNight.App
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
             NetworkWatch.Changed += OnNetwork;
+            GameJournal.OnTap += OnTap;
         }
 
         private void OnDestroy()
         {
             NetworkWatch.Changed -= OnNetwork;
+            GameJournal.OnTap -= OnTap;
             if (rooms != null) { rooms.OnRoomJoined -= OnJoined; rooms.OnRoomLeft -= OnLeft; rooms.OnHostChanged -= OnHost; }
             if (audio != null) audio.OnConnectionChanged -= OnVoice;
             if (Instance == this) Instance = null;
         }
 
         private void OnNetwork(bool online) => GameJournal.Event("Network", online ? "connection is back" : "connection lost (system says " + Application.internetReachability + ")");
+
+        // ---- a tap on a seat or the mic that changes nothing: the player pressed and the room did not answer (the host did not answer, the message never arrived...)
+        private string seatTapState;
+        private float seatTapAt = -1f;
+        private string seatTapWhat = "";
+
+        private void OnTap(string what)
+        {
+            if (rooms == null || rooms.CurrentRoom == null || !(what.StartsWith("Seat ") || what.StartsWith("Mic "))) return;
+            if (seatTapAt >= 0f) return;            // one watch at a time: a burst of taps is judged by the first
+            seatTapAt = Time.unscaledTime; seatTapWhat = what; seatTapState = StageState();
+        }
+
+        private string StageState()
+        {
+            var runner = MatchRunner.Instance;
+            var stage = runner != null && runner.Session != null ? runner.Session.Stage : null;
+            var me = rooms != null ? rooms.Members.FirstOrDefault(m => m.IsMe) : null;
+            if (stage == null || me == null) return "no stage";
+            return (stage.Stage.IsSeated(me.Puid) ? "seated" : "listening") + "/" + (stage.Stage.HandRaised(me.Puid) ? "hand up" : "hand down") + "/" + (audio != null && audio.MicOn ? "mic on" : "mic off");
+        }
+
+        private void CheckSeatTap()
+        {
+            if (seatTapAt < 0f || Time.unscaledTime - seatTapAt < 5f) return;
+            if (rooms.CurrentRoom != null && StageState() == seatTapState)
+                GameJournal.Anomaly(Tag, "tapped \"" + seatTapWhat + "\" and nothing changed for 5 s (" + seatTapState + "; host " + (rooms.Members.FirstOrDefault(m => m.IsHost)?.Name ?? "none") + (rooms.IAmHost ? ", I am the host" : "") + ")");
+            seatTapAt = -1f;
+        }
 
         private void Bind()
         {
@@ -72,7 +103,10 @@ namespace MafiaNight.App
         private void OnJoined(RoomListing room) => GameJournal.Event("Room", "joined \"" + room.Name + "\" (" + room.Kind + ", " + room.Mode + (string.IsNullOrEmpty(room.OfficialId) ? "" : ", official " + room.OfficialId) + ") · " + room.Count + "/" + room.Capacity + " · mic seats " + room.MicSeats + (room.MicByRequest ? " by request" : " free"));
         private void OnLeft(string reason) => GameJournal.Event("Room", string.IsNullOrEmpty(reason) ? "left the room (by choice, or switching rooms)" : "LOST the room: " + reason);
         private void OnHost(string text) => GameJournal.Event("Room", "host change: " + text);
-        private void OnVoice(bool connected) => GameJournal.Event("Voice", (connected ? "connected" : "DISCONNECTED") + " · " + (audio?.LastStatistics ?? ""));
+        private void OnVoice(bool connected) => GameJournal.Event("Voice", (connected ? "connected" : "DISCONNECTED") + " · " + ShortStats(audio?.LastStatistics));
+
+        /// <summary>EOS hands over its connection statistics as a long JSON text: only the fact that it is the EOS path is kept.</summary>
+        private static string ShortStats(string s) => string.IsNullOrEmpty(s) ? "" : s.StartsWith("[") || s.StartsWith("{") ? "EOS" : s;
 
         private void Update()
         {
@@ -80,6 +114,7 @@ namespace MafiaNight.App
             next = Time.unscaledTime + Every;
             Bind();
             if (rooms == null) return;
+            CheckSeatTap();
             Watch();
         }
 

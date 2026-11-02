@@ -73,7 +73,10 @@ namespace MafiaNight.Core
         public static void Event(string tag, string text) => Add("EV", tag, text);
 
         /// <summary>A button the player tapped.</summary>
-        public static void Tap(string what) => Add("TAP", "UI", what);
+        public static void Tap(string what) { Add("TAP", "UI", what); OnTap?.Invoke(what); }
+
+        /// <summary>Raised (on the main thread) for every tap, so a checker can see whether something happened after it.</summary>
+        public static event Action<string> OnTap;
 
         /// <summary>The game saw something that makes no sense (a state that should not exist). The first thing to read when a tester reports a problem.</summary>
         public static void Anomaly(string tag, string text) => Add("AN", tag, text);
@@ -176,13 +179,21 @@ namespace MafiaNight.Core
 
         private sealed class JournalHost : MonoBehaviour
         {
-            private float next;
+            private float next, perfAt, perfAcc, perfWorst;
+            private int perfFrames;
             private bool hitching;
 
             private void Update()
             {
                 float dt = Time.unscaledDeltaTime;
                 if (dt > 0.7f) { if (!hitching) Event("Perf", "a frame took " + (dt * 1000f).ToString("0") + " ms (the screen froze)"); hitching = true; } else hitching = false;
+                perfAcc += dt; perfFrames++; if (dt > perfWorst) perfWorst = dt;
+                if (Time.unscaledTime >= perfAt)
+                {
+                    // how smooth the game is, every ten seconds (the phone may hold the game to 30 fps or lower the resolution: the header says what the display reports)
+                    if (perfFrames > 0 && perfAt > 0f) Event("Perf", (perfFrames / perfAcc).ToString("0") + " fps · worst frame " + (perfWorst * 1000f).ToString("0") + " ms · memory " + (UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() >> 20) + " MB · display " + Screen.currentResolution.refreshRateRatio + " Hz " + Screen.width + "x" + Screen.height);
+                    perfAt = Time.unscaledTime + 10f; perfAcc = 0f; perfFrames = 0; perfWorst = 0f;
+                }
                 if (Time.unscaledTime < next) return;
                 next = Time.unscaledTime + 2f;
                 Flush();

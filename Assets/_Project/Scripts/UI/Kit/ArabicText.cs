@@ -26,7 +26,22 @@ namespace MafiaNight.UI.Kit
         public string Text
         {
             get => text;
-            set { if (text == value) return; text = value; Refresh(); }
+            set { value = DropEmoji(value); if (text == value) return; text = value; Refresh(); }
+        }
+
+        /// <summary>
+        /// The game's fonts have no emoji: every one a player types would be a square, and TMP logs a warning for each (a room's history of chat lines logged hundreds of them on entry, which froze the frame).
+        /// Emoji (the characters above the basic plane, with their joiners and variation selectors) are left out of what the screen draws.
+        /// </summary>
+        private static string DropEmoji(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            bool any = false;
+            foreach (char c in s) if (char.IsSurrogate(c) || c == '️' || c == '‍') { any = true; break; }
+            if (!any) return s;
+            var sb = new System.Text.StringBuilder(s.Length);
+            foreach (char c in s) if (!char.IsSurrogate(c) && c != '️' && c != '‍') sb.Append(c);
+            return sb.ToString();
         }
 
         public bool Wrap { get => wrap; set { wrap = value; Refresh(); } }
