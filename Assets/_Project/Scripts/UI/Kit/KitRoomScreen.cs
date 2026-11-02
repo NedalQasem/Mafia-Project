@@ -81,6 +81,8 @@ namespace MafiaNight.UI.Kit
             public string StartLabel = "";
             public bool StartEnabled;
             public bool CanLeaveSeat;
+            /// <summary>Development builds: a line about the voice connection (engine, room, how many are heard), so a tester sees why there is no sound. Empty hides it.</summary>
+            public string VoiceInfo = "";
             /// <summary>The host's store room background and the player's own chat background (colour washes; clear = none).</summary>
             public Color RoomTint = Color.clear, ChatTint = Color.clear;
         }
@@ -114,7 +116,8 @@ namespace MafiaNight.UI.Kit
         private readonly List<ChatVm> chat = new List<ChatVm>();
         private ViewVm view;
         private bool stickToBottom = true, speakerOn = true;
-        private Image backdrop, chatBg;
+        private Image backdrop;
+        private ArabicText voiceInfo;
         private Color chatTint = Color.clear;
 
         public static KitRoomScreen Create(Transform canvasRoot)
@@ -228,6 +231,9 @@ namespace MafiaNight.UI.Kit
         {
             seatsPanel = Rect(parent, "Seats", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             seatsLayout = seatsPanel.gameObject.AddComponent<LayoutElement>(); seatsLayout.preferredHeight = 800;
+            voiceInfo = Txt(seatsPanel, "VoiceInfo", "", th.fontBody, 8f * K, new Color32(0x6F, 0x67, 0x5A, 255), TextAlignmentOptions.TopLeft);
+            { var vr = voiceInfo.Rt(); vr.anchorMin = new Vector2(0, 1); vr.anchorMax = new Vector2(1, 1); vr.pivot = new Vector2(0, 1); vr.sizeDelta = new Vector2(-20, 12 * K); vr.anchoredPosition = new Vector2(10, -4); }
+            voiceInfo.GetComponent<TMP_Text>().raycastTarget = false;
             var bg = Img(seatsPanel, "Bg", null, Color.white, false, true);
             var plate = bg.gameObject.AddComponent<KitPlate>();
             plate.Key = "seats";
@@ -373,6 +379,8 @@ namespace MafiaNight.UI.Kit
             PlaceBadge(v.Badge);
 
             RenderSeats();
+            voiceInfo.Text = v.VoiceInfo ?? "";
+            voiceInfo.gameObject.SetActive(!string.IsNullOrEmpty(v.VoiceInfo));
 
             bool strip = !string.IsNullOrEmpty(v.Strip);
             stripGo.SetActive(strip);

@@ -203,6 +203,7 @@ namespace MafiaNight.App
                 Name = IsOfficial ? OfficialName(room) : room.Name, RoomId = ShortId(room.Id), Members = People.Count(), HeadLabel = IsOfficial ? "الأدمن" : "المضيف",
                 Badge = IsOfficial ? "رسمية" : room.Mode == RoomMode.Mafia ? "مباراة مافيا" : room.Kind == RoomKind.Private ? "خاصة" : room.Kind == RoomKind.Vip ? "VIP" : "",
                 CanType = room.ChatEnabled, CanLeaveSeat = seated, RoomTint = TintOf(room.BackgroundId), ChatTint = TintOf(Store?.GetEquipped("chat_bg")), MicOff = seated && audio != null && !audio.MicOn,
+                VoiceInfo = Debug.isDebugBuild && audio != null ? KitText.Clip(audio.LastStatistics ?? "", 90) : "",
             };
             v.Head = SeatOf(stage.HeadHolder, true);
             for (int i = 0; i < stage.SeatCount; i++)

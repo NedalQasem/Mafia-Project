@@ -44,10 +44,14 @@ namespace MafiaNight.Voice.LiveKit
         private HashSet<string> hearOnly;
         private float master = 0.5f;
         private string roomName = "";
+        private int generation;                                                  // every Leave and every new join moves it on: a join that sees another number was cancelled
+        private readonly List<Action<VoiceError>> waiting = new List<Action<VoiceError>>();
+        private string status = "";
 
         public bool IsConnected { get; private set; }
         public bool MicOn { get; private set; }
-        public string LastStatistics => "";
+        /// <summary>One line for testers (shown in development builds): where the voice is, whether this player may speak, how many he hears.</summary>
+        public string LastStatistics => (IsConnected ? "LK " + roomName + (canPublish ? " speak" : " listen") + " · hear " + remotes.Count + (MicOn ? " · mic on" : " · mic off") : "LK " + (joining ? "connecting" : "off")) + (status.Length > 0 ? " · " + status : "");
 
         public event Action<bool> OnConnectionChanged;
         public event Action<string, bool> OnSpeaking;
@@ -73,22 +77,29 @@ namespace MafiaNight.Voice.LiveKit
 
         public void Join(bool micOn, Action<VoiceError> done = null)
         {
-            if (joining || IsConnected) { done?.Invoke(IsConnected ? VoiceError.None : VoiceError.Failed); return; }
             var rooms = Rooms;
             if (rooms == null || !rooms.InRoom || rooms.CurrentRoom == null) { done?.Invoke(VoiceError.NotInRoom); return; }
-            roomName = "lobby:" + rooms.CurrentRoom.Id;
-            EnsureRunner();
-            wantMic = micOn;
-            runner.StartCoroutine(JoinRoutine(done));
+            Begin("lobby:" + rooms.CurrentRoom.Id, micOn, done);
         }
 
         /// <summary>Joins a named LiveKit room directly (an official room: "official:1001").</summary>
-        public void JoinNamed(string name, bool micOn, Action<VoiceError> done = null)
+        public void JoinNamed(string name, bool micOn, Action<VoiceError> done = null) => Begin(name, micOn, done);
+
+        private void Begin(string name, bool micOn, Action<VoiceError> done)
         {
-            if (joining || IsConnected) { done?.Invoke(IsConnected ? VoiceError.None : VoiceError.Failed); return; }
+            if (name == roomName && IsConnected) { done?.Invoke(VoiceError.None); return; }
+            if (name == roomName && joining) { if (done != null) waiting.Add(done); return; }      // the same join is on its way: its answer is this one's answer
+            if (IsConnected || joining) Leave();                                                   // the voice of another room is still up: leave it first
             roomName = name; wantMic = micOn;
+            if (done != null) waiting.Add(done);
             EnsureRunner();
-            runner.StartCoroutine(JoinRoutine(done));
+            runner.StartCoroutine(JoinRoutine(++generation));
+        }
+
+        private void Finish(VoiceError err)
+        {
+            var list = waiting.ToArray(); waiting.Clear();
+            foreach (var d in list) d(err);
         }
 
         private void EnsureRunner()
@@ -140,27 +151,33 @@ namespace MafiaNight.Voice.LiveKit
             upgrading = false;
         }
 
-        private IEnumerator JoinRoutine(Action<VoiceError> done)
+        private IEnumerator JoinRoutine(int gen)
         {
-            joining = true;
-            if (string.IsNullOrEmpty(Ticket) || string.IsNullOrEmpty(Base)) { joining = false; done?.Invoke(VoiceError.NotReady); yield break; }
+            joining = true; status = "";
+            if (string.IsNullOrEmpty(Ticket) || string.IsNullOrEmpty(Base)) { joining = false; status = "no login"; Finish(VoiceError.NotReady); yield break; }
 
             TokenDto dto = null;
             yield return FetchToken(d => dto = d);
-            if (dto == null || !dto.ok || string.IsNullOrEmpty(dto.token)) { joining = false; done?.Invoke(VoiceError.Failed); yield break; }
+            if (gen != generation) yield break;
+            if (dto == null || !dto.ok || string.IsNullOrEmpty(dto.token)) { joining = false; status = "token refused"; Touch(); Finish(VoiceError.Failed); yield break; }
             canPublish = dto.canPublish;
 
-            room = new Room();
-            room.TrackSubscribed += OnTrackSubscribed;
-            room.TrackUnsubscribed += OnTrackUnsubscribed;
-            room.TrackMuted += (p, part) => Touch();
-            room.TrackUnmuted += (p, part) => Touch();
-            room.ParticipantDisconnected += p => { Drop(p.Identity); };
-            room.ActiveSpeakersChanged += OnSpeakers;
-            room.Disconnected += _ => { if (IsConnected) { IsConnected = false; OnConnectionChanged?.Invoke(false); } };
-            var connect = room.Connect(dto.url, dto.token, new RoomOptions());
+            var mine = new Room();
+            room = mine;
+            mine.TrackSubscribed += OnTrackSubscribed;
+            mine.TrackUnsubscribed += OnTrackUnsubscribed;
+            mine.TrackMuted += (p, part) => Touch();
+            mine.TrackUnmuted += (p, part) => Touch();
+            mine.ParticipantDisconnected += p => { Drop(p.Identity); };
+            mine.ActiveSpeakersChanged += OnSpeakers;
+            mine.Reconnecting += _ => { if (room == mine) { status = "reconnecting"; Log.Warning("LiveKit is reconnecting", Tag); Touch(); } };
+            mine.Reconnected += _ => { if (room == mine) { status = "reconnected"; Log.Info("LiveKit reconnected", Tag); Touch(); } };
+            mine.DisconnectedWithReason += (_, reason) => { if (room == mine) { status = "lost: " + reason; Log.Warning("LiveKit disconnected: " + reason, Tag); } };
+            mine.Disconnected += _ => { if (room == mine && IsConnected) { IsConnected = false; OnConnectionChanged?.Invoke(false); Touch(); } };
+            var connect = mine.Connect(dto.url, dto.token, new RoomOptions());
             yield return connect;
-            if (connect.IsError) { Log.Warning("LiveKit connect failed", Tag); joining = false; CleanUp(); done?.Invoke(VoiceError.Failed); yield break; }
+            if (gen != generation) { try { mine.Disconnect(); } catch { /* it was cancelled */ } yield break; }
+            if (connect.IsError) { Log.Warning("LiveKit connect failed", Tag); joining = false; status = "connect failed"; CleanUp(); Finish(VoiceError.Failed); yield break; }
 
             IsConnected = true;
             joining = false;
@@ -168,7 +185,7 @@ namespace MafiaNight.Voice.LiveKit
             Log.Info("Voice room " + roomName + " joined (" + (canPublish ? "may speak" : "listening") + ")", Tag);
             VoiceError err = VoiceError.None;
             if (wantMic && canPublish) yield return PublishMic(e => err = e);
-            done?.Invoke(err);
+            Finish(err);
         }
 
         // ------------------------------------------------------------------ the microphone
@@ -297,7 +314,8 @@ namespace MafiaNight.Voice.LiveKit
 
         public void Leave()
         {
-            joining = false;
+            joining = false; generation++; status = "";
+            Finish(VoiceError.NotInRoom);
             StopMic();
             CleanUp();
             if (IsConnected) { IsConnected = false; OnConnectionChanged?.Invoke(false); }

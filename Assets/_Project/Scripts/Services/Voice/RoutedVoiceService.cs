@@ -85,7 +85,7 @@ namespace MafiaNight.Services.Voice
             });
         }
 
-        public void Leave() { current.Leave(); if (current != eos) eos.Leave(); current = eos; }
+        public void Leave() { lk?.Leave(); eos.Leave(); current = eos; }       // both engines: a LiveKit session that was left running would keep the player in the old room
         public void Tick() { current.Tick(); }
         public void SetMic(bool on) => current.SetMic(on);
         public void SetGameVoice(bool micAllowed, IReadOnlyCollection<string> hearOnly) => current.SetGameVoice(micAllowed, hearOnly);
