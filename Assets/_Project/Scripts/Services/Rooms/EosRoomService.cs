@@ -421,6 +421,7 @@ namespace MafiaNight.Services.Rooms
             if (room.Locked && (string.IsNullOrEmpty(room.OwnerPlayFabId) || room.OwnerPlayFabId != MyPf)) { done(RoomResult.Fail(RoomError.Locked)); return; }
             if (!Allow()) { done(RoomResult.Fail(RoomError.Busy)); return; }
 
+            float started = Time.realtimeSinceStartup;
             LeaveCurrent(() =>
             {
                 var jo = new JoinLobbyOptions
@@ -439,11 +440,14 @@ namespace MafiaNight.Services.Rooms
                         return;
                     }
                     string lobbyId = data.LobbyId;
+                    Log.Info($"Joined the lobby after {(Time.realtimeSinceStartup - started) * 1000f:0} ms", Tag);
+                    // the room opens as soon as the lobby is joined: my name, frame and title go up in the background (the lobby update they cause redraws the seats)
+                    Enter(lobbyId, done);
                     var uo = new UpdateLobbyModificationOptions { LocalUserId = Me, LobbyId = lobbyId };
-                    if (!IsOk(Lobby.UpdateLobbyModification(ref uo, out LobbyModification m)) || m == null) { Enter(lobbyId, done); return; }
+                    if (!IsOk(Lobby.UpdateLobbyModification(ref uo, out LobbyModification m)) || m == null) return;
                     FillMemberAttributes(m);
                     var upd = new UpdateLobbyOptions { LobbyModificationHandle = m };
-                    Lobby.UpdateLobby(ref upd, null, (ref UpdateLobbyCallbackInfo _) => { m.Release(); Enter(lobbyId, done); });
+                    Lobby.UpdateLobby(ref upd, null, (ref UpdateLobbyCallbackInfo _) => { m.Release(); Log.Info($"My member attributes are up after {(Time.realtimeSinceStartup - started) * 1000f:0} ms", Tag); });
                 });
             });
         }

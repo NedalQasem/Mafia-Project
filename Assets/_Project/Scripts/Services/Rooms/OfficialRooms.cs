@@ -58,15 +58,21 @@ namespace MafiaNight.Services.Rooms
         private static IEnumerator Post(string path, string body, Action<string> done)
         {
             if (string.IsNullOrEmpty(Ticket) || string.IsNullOrEmpty(Base)) { done(null); yield break; }
-            using (var req = new UnityWebRequest(Base + path, "POST"))
+            // a connection the server closed while it sat idle fails the first request on it ("Send failure: Broken pipe"): one more try opens a fresh one
+            for (int attempt = 0; attempt < 2; attempt++)
             {
-                req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(body));
-                req.downloadHandler = new DownloadHandlerBuffer();
-                req.SetRequestHeader("Content-Type", "application/json");
-                req.SetRequestHeader("X-Authorization", Ticket);
-                req.timeout = 15;
-                yield return req.SendWebRequest();
-                done(req.result == UnityWebRequest.Result.Success ? req.downloadHandler.text : null);
+                using (var req = new UnityWebRequest(Base + path, "POST"))
+                {
+                    req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(body));
+                    req.downloadHandler = new DownloadHandlerBuffer();
+                    req.SetRequestHeader("Content-Type", "application/json");
+                    req.SetRequestHeader("X-Authorization", Ticket);
+                    req.timeout = 15;
+                    yield return req.SendWebRequest();
+                    if (req.result == UnityWebRequest.Result.ConnectionError && attempt == 0) { Log.Warning("Request " + path + " failed (" + req.error + "): trying again", Tag); continue; }
+                    done(req.result == UnityWebRequest.Result.Success ? req.downloadHandler.text : null);
+                    yield break;
+                }
             }
         }
 

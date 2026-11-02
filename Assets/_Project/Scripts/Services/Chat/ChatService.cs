@@ -119,7 +119,9 @@ namespace MafiaNight.Services.Chat
                         continue;
                     }
                     Connected = false;
+                    bool staleConnection = failures == 0 && req.result == UnityWebRequest.Result.ConnectionError;   // a connection the server closed while it sat idle fails once: go again at once on a fresh one
                     failures++;
+                    if (staleConnection) continue;
                     if (req.responseCode == 401) { yield return new WaitForSecondsRealtime(15f); continue; }
                 }
                 yield return new WaitForSecondsRealtime(Mathf.Min(30f, Mathf.Pow(2f, Mathf.Min(failures, 5))));
@@ -306,15 +308,22 @@ namespace MafiaNight.Services.Chat
         private IEnumerator Post(string path, string json, Action<long, string> done)
         {
             if (string.IsNullOrEmpty(Ticket) || string.IsNullOrEmpty(Base)) { done?.Invoke(0, ""); yield break; }
-            using (var req = new UnityWebRequest(Base + path, "POST"))
+            for (int attempt = 0; attempt < 2; attempt++)
             {
-                req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
-                req.downloadHandler = new DownloadHandlerBuffer();
-                req.SetRequestHeader("Content-Type", "application/json");
-                req.SetRequestHeader("X-Authorization", Ticket);
-                req.timeout = 15;
-                yield return req.SendWebRequest();
-                done?.Invoke(req.responseCode, req.downloadHandler.text);
+                using (var req = new UnityWebRequest(Base + path, "POST"))
+                {
+                    req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+                    req.downloadHandler = new DownloadHandlerBuffer();
+                    req.SetRequestHeader("Content-Type", "application/json");
+                    req.SetRequestHeader("X-Authorization", Ticket);
+                    req.timeout = 15;
+                    yield return req.SendWebRequest();
+                    // a connection the server closed while it sat idle fails before anything is sent ("Send failure: Broken pipe"): once more on a fresh one (a timeout is not retried: the message may have arrived)
+                    bool neverSent = req.result == UnityWebRequest.Result.ConnectionError && req.responseCode == 0 && (req.error ?? "").Contains("Send failure");
+                    if (neverSent && attempt == 0) continue;
+                    done?.Invoke(req.responseCode, req.downloadHandler.text);
+                    yield break;
+                }
             }
         }
 

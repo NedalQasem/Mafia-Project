@@ -17,7 +17,7 @@ namespace MafiaNight.App
     public sealed class RoomsFlow : MonoBehaviour
     {
         private const string Tag = "RoomsFlow";
-        private const float ListEvery = 10f;
+        private const float ListEvery = 5f, ListGiveUp = 12f;      // 12 calls a minute at most: well under EOS's 30 (join and create share them)
 
         private IRoomService rooms;
         private IPlayerProfileService profile;
@@ -30,7 +30,7 @@ namespace MafiaNight.App
 
         private readonly Dictionary<string, RoomListing> byId = new Dictionary<string, RoomListing>();
         private string shownSignature = "";
-        private float nextList;
+        private float nextList, listStarted;
         private bool listing, busyJoin;
         private List<RoomListing> lastList = new List<RoomListing>();      // the last list EOS gave (the official rooms are drawn above it)
 
@@ -85,6 +85,7 @@ namespace MafiaNight.App
         private void Update()
         {
             if (audio != null) audio.Tick();
+            if (listing && Time.unscaledTime - listStarted > ListGiveUp) { listing = false; Log.Warning("The room list did not answer: asking again", Tag); }   // an answer that never comes must not freeze the list until the screen is reopened
             if (rooms == null || screen == null || listing || OverlayOpen || Time.unscaledTime < nextList) return;
             RefreshList();
         }
@@ -94,6 +95,7 @@ namespace MafiaNight.App
         private void RefreshList()
         {
             listing = true;
+            listStarted = Time.unscaledTime;
             nextList = Time.unscaledTime + ListEvery;
             rooms.RefreshList(r =>
             {
