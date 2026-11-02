@@ -85,6 +85,7 @@ namespace MafiaNight.App
             if (rooms != null) { rooms.OnRoomChanged -= OnRoomChanged; rooms.OnRoomLeft -= OnRoomLeft; }
             if (audio != null) { audio.OnSpeaking -= OnSpeaking; audio.OnChanged -= Redraw; audio.OnConnectionChanged -= OnVoiceConnection; }
             Unbind();
+            Screen.sleepTimeout = SleepTimeout.SystemSetting;
         }
 
         // ---- what players wear from the store (their ids come with their member attributes)
@@ -118,6 +119,7 @@ namespace MafiaNight.App
             if (IsOpen && openedRoom == room.Id) { Redraw(); return; }
             openedRoom = room.Id; shownLines.Clear();
             active = true;
+            Screen.sleepTimeout = SleepTimeout.NeverSleep;       // talking in a room without touching the phone must not let the screen lock (the phone then cuts the network and the room drops)
             officialId = room.OfficialId ?? "";
             Bind();
             screen.ClearChat();
@@ -230,6 +232,7 @@ namespace MafiaNight.App
             if (IsOpen && !string.IsNullOrEmpty(reason)) { screen.Hide(); active = false; }
             CloseServerChat();
             talking.Clear(); wasSeated = false;
+            if (!active || !string.IsNullOrEmpty(reason)) Screen.sleepTimeout = SleepTimeout.SystemSetting;
         }
 
         private void Redraw()
@@ -554,6 +557,7 @@ namespace MafiaNight.App
         private void Back()
         {
             screen.Hide(); active = false; wasSeated = false;
+            Screen.sleepTimeout = SleepTimeout.SystemSetting;
             CloseServerChat();
             if (audio != null) audio.Leave();
             rooms.Leave(() => { Left?.Invoke(); });
