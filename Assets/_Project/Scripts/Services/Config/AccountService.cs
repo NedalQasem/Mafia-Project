@@ -6,6 +6,8 @@ using PlayFab;
 using UnityEngine;
 using UnityEngine.Networking;
 
+using MafiaNight.Services.Net;
+
 namespace MafiaNight.Services.Config
 {
     /// <summary>What kind of account the player has: a guest (only the device holds it) or a linked one, and the days a guest has left.</summary>
@@ -29,16 +31,9 @@ namespace MafiaNight.Services.Config
             string ticket = PlayFabSettings.staticPlayer?.ClientSessionTicket;
             if (string.IsNullOrEmpty(Base) || string.IsNullOrEmpty(ticket)) { done?.Invoke(null); yield break; }
             string text = null;
-            using (var req = new UnityWebRequest(Base + "/v1/account", "POST"))
-            {
-                req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes("{}"));
-                req.downloadHandler = new DownloadHandlerBuffer();
-                req.SetRequestHeader("Content-Type", "application/json");
-                req.SetRequestHeader("X-Authorization", ticket);
-                req.timeout = 10;
-                yield return req.SendWebRequest();
-                if (req.result == UnityWebRequest.Result.Success) text = req.downloadHandler.text;
-            }
+            var net = new NetResult();
+            yield return Http.PostJson(Base + "/v1/account", "{}", ticket, 10, net, read: true);
+            if (net.Success) text = net.Text;
             AccountDto d = null;
             if (!string.IsNullOrEmpty(text)) { try { d = JsonUtility.FromJson<AccountDto>(text); } catch { } }
             if (d == null || !d.ok) { done?.Invoke(null); yield break; }

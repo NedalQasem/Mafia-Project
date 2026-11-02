@@ -7,6 +7,7 @@ using MafiaNight.Data.Store;
 using MafiaNight.MatchRules.Stage;
 using MafiaNight.Services.Chat;
 using MafiaNight.Services.Match;
+using MafiaNight.Services.Net;
 using MafiaNight.Services.Rooms;
 using MafiaNight.Services.Store;
 using MafiaNight.Services.Voice;
@@ -260,7 +261,7 @@ namespace MafiaNight.App
         {
             if (rooms.InRoom) { recovering = false; return; }                 // something else already put the player in a room
             if (joiningAgain || Time.unscaledTime < recoverAt) return;
-            if (Application.internetReachability == NetworkReachability.NotReachable) { recoverAt = Time.unscaledTime + 2f; return; }      // no network: waiting does not use up a try
+            if (!NetworkWatch.Online) { recoverAt = Time.unscaledTime + 2f; return; }      // no network: waiting does not use up a try
             if (++recoverTries > RecoverTries) { GiveUpRecovery(); return; }
             joiningAgain = true;
             Log.Info("Walking back into the room, try " + recoverTries, Tag);

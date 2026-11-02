@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MafiaNight.Core;
+using MafiaNight.Services.Net;
 using PlayFab;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -105,6 +106,8 @@ namespace MafiaNight.Services.Chat
                     req.SetRequestHeader("X-Authorization", Ticket);
                     req.timeout = PollWaitSeconds + 15;
                     yield return req.SendWebRequest();
+                    if (req.responseCode > 0) NetworkWatch.ReportSuccess();
+                    else if (req.result == UnityWebRequest.Result.ConnectionError && Http.NeverReachedServer(req.error)) NetworkWatch.ReportFailure();
                     PollDto dto = null;
                     if (req.result == UnityWebRequest.Result.Success) { try { dto = JsonUtility.FromJson<PollDto>(req.downloadHandler.text); } catch { /* not json */ } }
                     if (dto != null && dto.ok)
@@ -173,12 +176,11 @@ namespace MafiaNight.Services.Chat
         private IEnumerator RefreshInboxRoutine()
         {
             if (string.IsNullOrEmpty(Ticket) || string.IsNullOrEmpty(Base)) yield break;
-            using (var req = UnityWebRequest.Get(Base + "/v1/chat/inbox"))
+            var net = new NetResult();
+            yield return Http.Get(Base + "/v1/chat/inbox", Ticket, 15, net);
             {
-                req.SetRequestHeader("X-Authorization", Ticket); req.timeout = 15;
-                yield return req.SendWebRequest();
-                if (req.result != UnityWebRequest.Result.Success) yield break;
-                InboxDto dto = null; try { dto = JsonUtility.FromJson<InboxDto>(req.downloadHandler.text); } catch { }
+                if (!net.Success) yield break;
+                InboxDto dto = null; try { dto = JsonUtility.FromJson<InboxDto>(net.Text); } catch { }
                 if (dto == null || !dto.ok || dto.conversations == null) yield break;
                 var fresh = new List<ChatConv>();
                 foreach (var d in dto.conversations)
@@ -205,12 +207,11 @@ namespace MafiaNight.Services.Chat
 
         private IEnumerator LoadBlocked()
         {
-            using (var req = UnityWebRequest.Get(Base + "/v1/chat/blocked"))
+            var net = new NetResult();
+            yield return Http.Get(Base + "/v1/chat/blocked", Ticket, 15, net);
             {
-                req.SetRequestHeader("X-Authorization", Ticket); req.timeout = 15;
-                yield return req.SendWebRequest();
-                if (req.result != UnityWebRequest.Result.Success) yield break;
-                BlockedDto dto = null; try { dto = JsonUtility.FromJson<BlockedDto>(req.downloadHandler.text); } catch { }
+                if (!net.Success) yield break;
+                BlockedDto dto = null; try { dto = JsonUtility.FromJson<BlockedDto>(net.Text); } catch { }
                 if (dto == null || !dto.ok || dto.blocked == null) yield break;
                 blocked.Clear(); foreach (var b in dto.blocked) blocked.Add(b);
             }
@@ -308,23 +309,10 @@ namespace MafiaNight.Services.Chat
         private IEnumerator Post(string path, string json, Action<long, string> done)
         {
             if (string.IsNullOrEmpty(Ticket) || string.IsNullOrEmpty(Base)) { done?.Invoke(0, ""); yield break; }
-            for (int attempt = 0; attempt < 2; attempt++)
-            {
-                using (var req = new UnityWebRequest(Base + path, "POST"))
-                {
-                    req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
-                    req.downloadHandler = new DownloadHandlerBuffer();
-                    req.SetRequestHeader("Content-Type", "application/json");
-                    req.SetRequestHeader("X-Authorization", Ticket);
-                    req.timeout = 15;
-                    yield return req.SendWebRequest();
-                    // a connection the server closed while it sat idle fails before anything is sent ("Send failure: Broken pipe"): once more on a fresh one (a timeout is not retried: the message may have arrived)
-                    bool neverSent = req.result == UnityWebRequest.Result.ConnectionError && req.responseCode == 0 && (req.error ?? "").Contains("Send failure");
-                    if (neverSent && attempt == 0) continue;
-                    done?.Invoke(req.responseCode, req.downloadHandler.text);
-                    yield break;
-                }
-            }
+            // a write: repeated only when it cannot have reached the server (a timeout is not retried: the message may have arrived)
+            var net = new NetResult();
+            yield return Http.PostJson(Base + path, json, Ticket, 15, net);
+            done?.Invoke(net.Code, net.Text);
         }
 
         private static string Esc(string s) => JsonText.Esc(s);

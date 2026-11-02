@@ -7,6 +7,8 @@ using PlayFab;
 using UnityEngine;
 using UnityEngine.Networking;
 
+using MafiaNight.Services.Net;
+
 namespace MafiaNight.Services.Leaderboard
 {
     /// <summary>One line of a board.</summary>
@@ -125,16 +127,9 @@ namespace MafiaNight.Services.Leaderboard
         private static IEnumerator Post(string path, string json, Action<string> done)
         {
             if (!Ready) { done?.Invoke(null); yield break; }
-            using (var req = new UnityWebRequest(Base + path, "POST"))
-            {
-                req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
-                req.downloadHandler = new DownloadHandlerBuffer();
-                req.SetRequestHeader("Content-Type", "application/json");
-                req.SetRequestHeader("X-Authorization", Ticket);
-                req.timeout = 15;
-                yield return req.SendWebRequest();
-                done?.Invoke(req.result == UnityWebRequest.Result.Success ? req.downloadHandler.text : null);
-            }
+            var net = new NetResult();
+            yield return Http.PostJson(Base + path, json, Ticket, 15, net, read: true);      // the boards are read-only for the client (the server writes the stats)
+            done?.Invoke(net.Success ? net.Text : null);
         }
     }
 }

@@ -8,6 +8,8 @@ using PlayFab;
 using UnityEngine;
 using UnityEngine.Networking;
 
+using MafiaNight.Services.Net;
+
 namespace MafiaNight.Services.Rooms
 {
     /// <summary>One official room as the rewards service describes it (a room the game's team keeps open: the Mafia Office room...).</summary>
@@ -58,22 +60,10 @@ namespace MafiaNight.Services.Rooms
         private static IEnumerator Post(string path, string body, Action<string> done)
         {
             if (string.IsNullOrEmpty(Ticket) || string.IsNullOrEmpty(Base)) { done(null); yield break; }
-            // a connection the server closed while it sat idle fails the first request on it ("Send failure: Broken pipe"): one more try opens a fresh one
-            for (int attempt = 0; attempt < 2; attempt++)
-            {
-                using (var req = new UnityWebRequest(Base + path, "POST"))
-                {
-                    req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(body));
-                    req.downloadHandler = new DownloadHandlerBuffer();
-                    req.SetRequestHeader("Content-Type", "application/json");
-                    req.SetRequestHeader("X-Authorization", Ticket);
-                    req.timeout = 15;
-                    yield return req.SendWebRequest();
-                    if (req.result == UnityWebRequest.Result.ConnectionError && attempt == 0) { Log.Warning("Request " + path + " failed (" + req.error + "): trying again", Tag); continue; }
-                    done(req.result == UnityWebRequest.Result.Success ? req.downloadHandler.text : null);
-                    yield break;
-                }
-            }
+            // the list, entering and leaving a room can all be asked twice without harm
+            var net = new NetResult();
+            yield return Http.PostJson(Base + path, body, Ticket, 15, net, read: true);
+            done(net.Success ? net.Text : null);
         }
 
         /// <summary>Reloads the list (<paramref name="done"/>: true when the service answered).</summary>

@@ -16,6 +16,8 @@ using TrackSource = LiveKit.Proto.TrackSource;
 using UnityEngine.Android;
 #endif
 
+using MafiaNight.Services.Net;
+
 namespace MafiaNight.Voice.LiveKit
 {
     /// <summary>
@@ -125,17 +127,10 @@ namespace MafiaNight.Voice.LiveKit
         private IEnumerator FetchToken(Action<TokenDto> got)
         {
             TokenDto dto = null;
-            using (var req = new UnityWebRequest(Base + "/v1/voice/token", "POST"))
-            {
-                req.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes("{\"room\":\"" + roomName + "\"}"));
-                req.downloadHandler = new DownloadHandlerBuffer();
-                req.SetRequestHeader("Content-Type", "application/json");
-                req.SetRequestHeader("X-Authorization", Ticket);
-                req.timeout = 15;
-                yield return req.SendWebRequest();
-                if (req.result == UnityWebRequest.Result.Success) { try { dto = JsonUtility.FromJson<TokenDto>(req.downloadHandler.text); } catch { /* not json */ } }
-                else Log.Warning("Token request failed: " + req.responseCode + " " + req.error, Tag);
-            }
+            var net = new NetResult();
+            yield return Http.PostJson(Base + "/v1/voice/token", "{\"room\":\"" + roomName + "\"}", Ticket, 15, net, read: true);       // a token can be asked for again
+            if (net.Success) { try { dto = JsonUtility.FromJson<TokenDto>(net.Text); } catch { /* not json */ } }
+            else Log.Warning("Token request failed: " + net.Code + " " + net.Error, Tag);
             got(dto);
         }
 

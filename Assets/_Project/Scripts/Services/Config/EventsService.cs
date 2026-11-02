@@ -7,6 +7,8 @@ using PlayFab;
 using UnityEngine;
 using UnityEngine.Networking;
 
+using MafiaNight.Services.Net;
+
 namespace MafiaNight.Services.Config
 {
     public enum GameEventKind { Info, Bonus, Challenge }
@@ -127,16 +129,9 @@ namespace MafiaNight.Services.Config
         {
             string ticket = Ticket;
             if (string.IsNullOrEmpty(Base) || string.IsNullOrEmpty(ticket)) { done?.Invoke(false, null); yield break; }
-            using (var req = new UnityWebRequest(Base + path, "POST"))
-            {
-                req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
-                req.downloadHandler = new DownloadHandlerBuffer();
-                req.SetRequestHeader("Content-Type", "application/json");
-                req.SetRequestHeader("X-Authorization", ticket);
-                req.timeout = 10;
-                yield return req.SendWebRequest();
-                done?.Invoke(req.result == UnityWebRequest.Result.Success, req.downloadHandler != null ? req.downloadHandler.text : null);
-            }
+            var net = new NetResult();
+            yield return Http.PostJson(Base + path, json, ticket, 10, net);        // claims are writes: repeated only when they cannot have reached the server
+            done?.Invoke(net.Success, net.Text);
         }
     }
 }

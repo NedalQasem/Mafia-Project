@@ -6,6 +6,8 @@ using PlayFab;
 using UnityEngine;
 using UnityEngine.Networking;
 
+using MafiaNight.Services.Net;
+
 namespace MafiaNight.Services.Config
 {
     public sealed class IdentityResult
@@ -50,19 +52,14 @@ namespace MafiaNight.Services.Config
             string ticket = PlayFabSettings.staticPlayer?.ClientSessionTicket;
             if (string.IsNullOrEmpty(Base) || (withTicket && string.IsNullOrEmpty(ticket))) { done?.Invoke(new IdentityResult { Error = "network" }); yield break; }
             string text = null;
-            using (var req = new UnityWebRequest(Base + path, "POST"))
             {
                 // a Google JWT or a Facebook token only holds letters, digits, '-', '_' and '.', so nothing needs escaping; anything else is dropped
                 var clean = new StringBuilder();
                 foreach (char c in idToken ?? "") if (char.IsLetterOrDigit(c) || c == '-' || c == '_' || c == '.') clean.Append(c);
                 string json = "{\"" + field + "\":\"" + clean + "\"}";
-                req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
-                req.downloadHandler = new DownloadHandlerBuffer();
-                req.SetRequestHeader("Content-Type", "application/json");
-                if (withTicket) req.SetRequestHeader("X-Authorization", ticket);
-                req.timeout = 20;
-                yield return req.SendWebRequest();
-                text = req.downloadHandler != null ? req.downloadHandler.text : null;
+                var net = new NetResult();
+                yield return Http.PostJson(Base + path, json, withTicket ? ticket : null, 20, net);
+                text = net.Text;
             }
             IdentityDto d = null;
             if (!string.IsNullOrEmpty(text)) { try { d = JsonUtility.FromJson<IdentityDto>(text); } catch { } }

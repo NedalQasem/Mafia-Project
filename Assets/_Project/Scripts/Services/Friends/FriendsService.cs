@@ -11,6 +11,8 @@ using PlayFab;
 using UnityEngine;
 using UnityEngine.Networking;
 
+using MafiaNight.Services.Net;
+
 namespace MafiaNight.Services.Friends
 {
     /// <summary>A friend, or somebody who asked to be one.</summary>
@@ -156,12 +158,11 @@ namespace MafiaNight.Services.Friends
         private IEnumerator RefreshRoutine(Action<bool> done)
         {
             if (!Ready) { done?.Invoke(false); yield break; }
-            using (var req = UnityWebRequest.Get(Base + "/v1/friends"))
+            var net = new NetResult();
+            yield return Http.Get(Base + "/v1/friends", Ticket, 15, net);
             {
-                req.SetRequestHeader("X-Authorization", Ticket); req.timeout = 15;
-                yield return req.SendWebRequest();
                 FriendsDto d = null;
-                if (req.result == UnityWebRequest.Result.Success) { try { d = JsonUtility.FromJson<FriendsDto>(req.downloadHandler.text); } catch { } }
+                if (net.Success) { try { d = JsonUtility.FromJson<FriendsDto>(net.Text); } catch { } }
                 if (d == null || !d.ok) { done?.Invoke(false); yield break; }
                 Me = d.me != null ? Map(d.me) : Me; Max = d.max > 0 ? d.max : Max;
                 Friends.Clear(); Incoming.Clear(); Outgoing.Clear();
@@ -242,16 +243,9 @@ namespace MafiaNight.Services.Friends
         private IEnumerator Post(string path, string json, Action<long, string> done)
         {
             if (!Ready) { done?.Invoke(0, ""); yield break; }
-            using (var req = new UnityWebRequest(Base + path, "POST"))
-            {
-                req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
-                req.downloadHandler = new DownloadHandlerBuffer();
-                req.SetRequestHeader("Content-Type", "application/json");
-                req.SetRequestHeader("X-Authorization", Ticket);
-                req.timeout = 15;
-                yield return req.SendWebRequest();
-                done?.Invoke(req.responseCode, req.downloadHandler.text);
-            }
+            var net = new NetResult();
+            yield return Http.PostJson(Base + path, json, Ticket, 15, net);        // requests and answers are writes: repeated only when they cannot have reached the server
+            done?.Invoke(net.Code, net.Text);
         }
     }
 }

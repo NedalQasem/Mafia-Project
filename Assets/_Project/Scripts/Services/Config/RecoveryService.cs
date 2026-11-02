@@ -6,6 +6,8 @@ using MafiaNight.Services.Auth;
 using UnityEngine;
 using UnityEngine.Networking;
 
+using MafiaNight.Services.Net;
+
 namespace MafiaNight.Services.Config
 {
     public sealed class RecoveryResult
@@ -30,15 +32,11 @@ namespace MafiaNight.Services.Config
             if (string.IsNullOrEmpty(Base) || !ServiceLocator.TryGet<IAuthService>(out var auth)) { done?.Invoke(new RecoveryResult { Error = "network" }); yield break; }
 
             string text = null;
-            using (var req = new UnityWebRequest(Base + "/v1/recover/login", "POST"))
             {
                 string json = "{\"username\":\"" + Escape(username) + "\",\"password\":\"" + Escape(password) + "\"}";
-                req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
-                req.downloadHandler = new DownloadHandlerBuffer();
-                req.SetRequestHeader("Content-Type", "application/json");
-                req.timeout = 15;
-                yield return req.SendWebRequest();
-                text = req.downloadHandler != null ? req.downloadHandler.text : null;
+                var net = new NetResult();
+                yield return Http.PostJson(Base + "/v1/recover/login", json, null, 15, net);
+                text = net.Text;
             }
 
             RecoveryDto d = null;
