@@ -613,7 +613,7 @@ namespace MafiaNight.Services.Rooms
             Log.Warning("Still disconnected from the lobby after " + DisconnectGraceSeconds + " s: leaving the room", Tag);
             disconnectedAt = -1f;
             ClearCurrent();
-            OnRoomLeft?.Invoke("انقطع الاتصال بالغرفة.");
+            OnRoomLeft?.Invoke(RoomLoss.Disconnected);
         }
 
         private void ClearCurrent()

@@ -19,6 +19,13 @@ namespace MafiaNight.Services.Rooms
         Failed,
     }
 
+    /// <summary>The reasons <see cref="IRoomService.OnRoomLeft"/> gives that screens act on.</summary>
+    public static class RoomLoss
+    {
+        /// <summary>The connection to the room was lost and did not come back in time: the player did not choose to leave, so the room is worth rejoining.</summary>
+        public const string Disconnected = "انقطع الاتصال بالغرفة.";
+    }
+
     public sealed class RoomResult
     {
         public bool Ok => Error == RoomError.None;

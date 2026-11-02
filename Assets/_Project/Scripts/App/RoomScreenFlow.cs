@@ -175,6 +175,7 @@ namespace MafiaNight.App
         private void Update()
         {
             if (!active) return;
+            if (recovering) { Recover(); return; }
             if (rejoinAt >= 0f && Time.unscaledTime >= rejoinAt) RejoinVoice();
             var runner = MatchRunner.Instance;
             // the match session of this room is made a moment after the room opens: draw as soon as it exists
@@ -229,16 +230,65 @@ namespace MafiaNight.App
 
         private void OnRoomLeft(string reason)
         {
-            if (IsOpen && !string.IsNullOrEmpty(reason)) { screen.Hide(); active = false; }
+            // the connection to the room was lost without the player's choice: keep the screen up and walk back in (see Recover)
+            bool lost = reason == RoomLoss.Disconnected && IsOpen && lastRoom != null;
+            if (IsOpen && !string.IsNullOrEmpty(reason) && !lost) { screen.Hide(); active = false; }
             CloseServerChat();
             talking.Clear(); wasSeated = false;
+            if (lost)
+            {
+                recovering = true; recoverTries = 0; recoverAt = Time.unscaledTime + 3f; joiningAgain = false;
+                openedRoom = "";                                   // the next Open() must run in full (voice, chat, bindings)
+                rejoinAt = -1f;
+                if (audio != null) audio.Leave();
+                Say("انقطع الاتصال، عم نحاول نرجّعك للغرفة…");
+                Log.Warning("Room " + lastRoom.Id + " lost: trying to walk back in", Tag);
+                return;
+            }
             if (!active || !string.IsNullOrEmpty(reason)) Screen.sleepTimeout = SleepTimeout.SystemSetting;
+        }
+
+        // ---- a room lost to a connection problem: join the same room again every few seconds (while the phone has a network), then give up politely
+        private const float RecoverEvery = 5f;
+        private const int RecoverTries = 12;
+        private RoomListing lastRoom;
+        private bool recovering, joiningAgain;
+        private float recoverAt;
+        private int recoverTries;
+
+        private void Recover()
+        {
+            if (rooms.InRoom) { recovering = false; return; }                 // something else already put the player in a room
+            if (joiningAgain || Time.unscaledTime < recoverAt) return;
+            if (Application.internetReachability == NetworkReachability.NotReachable) { recoverAt = Time.unscaledTime + 2f; return; }      // no network: waiting does not use up a try
+            if (++recoverTries > RecoverTries) { GiveUpRecovery(); return; }
+            joiningAgain = true;
+            Log.Info("Walking back into the room, try " + recoverTries, Tag);
+            rooms.Join(lastRoom, r =>
+            {
+                joiningAgain = false;
+                if (this == null || !recovering) return;
+                if (r.Ok) { recovering = false; Open(); Say("رجعت للغرفة."); return; }
+                if (r.Error == RoomError.NotFound || r.Error == RoomError.Full || r.Error == RoomError.Locked) { GiveUpRecovery(); return; }
+                recoverAt = Time.unscaledTime + RecoverEvery;
+            });
+        }
+
+        private void GiveUpRecovery()
+        {
+            recovering = false;
+            if (screen != null && screen.IsOpen) screen.Hide();
+            active = false;
+            Screen.sleepTimeout = SleepTimeout.SystemSetting;
+            Say("ما قدرنا نرجّعك للغرفة.");
+            Left?.Invoke();
         }
 
         private void Redraw()
         {
             var room = rooms.CurrentRoom;
             if (!active || room == null || Stage == null) return;
+            lastRoom = room;
             var stage = Stage.Stage;
             var me = Me;
             string meId = me != null ? me.Puid : "";
@@ -556,7 +606,7 @@ namespace MafiaNight.App
 
         private void Back()
         {
-            screen.Hide(); active = false; wasSeated = false;
+            screen.Hide(); active = false; wasSeated = false; recovering = false;
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             CloseServerChat();
             if (audio != null) audio.Leave();
