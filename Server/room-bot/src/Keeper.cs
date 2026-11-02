@@ -24,7 +24,7 @@ namespace MafiaNight.RoomBot
     {
         private sealed class Def
         {
-            public string Id = "", Name = ""; public int Capacity = 64, MicSeats = 8; public bool MicRequest = true, ChatEnabled = true;
+            public string Id = "", Name = ""; public int Capacity = 64, MicSeats = 8; public bool MicRequest = true, ChatEnabled = true, Enabled = true;
             public HashSet<string> Admins = new HashSet<string>();
             public string Key => Id + "|" + Name + "|" + Capacity + "|" + MicSeats + "|" + MicRequest + "|" + ChatEnabled;
         }
@@ -136,6 +136,7 @@ namespace MafiaNight.RoomBot
                         {
                             Id = Str(e, "id"), Name = Str(e, "name"), Capacity = Math.Clamp(Int(e, "capacity", 64), 4, 64), MicSeats = Math.Clamp(Int(e, "micSeats", 8), 2, 12),
                             MicRequest = Str(e, "micMode") != "free", ChatEnabled = !e.TryGetProperty("chatEnabled", out var ce) || ce.ValueKind != JsonValueKind.False,
+                            Enabled = !e.TryGetProperty("enabled", out var en) || en.ValueKind != JsonValueKind.False,
                         };
                         if (e.TryGetProperty("admins", out var ad) && ad.ValueKind == JsonValueKind.Array) foreach (var a in ad.EnumerateArray()) if (a.ValueKind == JsonValueKind.String) d.Admins.Add(a.GetString());
                         if (d.Id.Length == 0) continue;
@@ -218,6 +219,12 @@ namespace MafiaNight.RoomBot
         private void Update(Kept r)
         {
             var now = DateTime.UtcNow;
+            if (!r.Def.Enabled)
+            {
+                // the admin closed the room: its lobby goes down (everybody inside is let go) and nothing is reopened until he opens it
+                if (r.LobbyId != null) { Log.Info("Room " + r.Def.Id + " was closed by the admin: taking its lobby down"); eos.Destroy(r.LobbyId); r.LobbyId = null; r.Stage = null; r.Crew = null; r.Members.Clear(); r.Known.Clear(); }
+                return;
+            }
             if (r.LobbyId == null)
             {
                 if (r.Creating || now < r.NextTry) return;

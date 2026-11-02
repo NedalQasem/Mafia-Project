@@ -54,7 +54,7 @@ namespace MafiaNight.UI.Kit
 
             // ---- the hint: its height is its text's
             string lead = closed || !hasAdmin ? "" : "أول مرة؟";
-            string body = closed ? "الغرفة بتفتح بعد لحظات، جرّب كمان شوي." : hasAdmin ? "ادخل واضغط «ارفع إيدك» ليعطيك الأدمن المايك." : "الأدمن مش موجود هلأ. تقدر تدخل وتسمع، والأدمن بيرجع بوقت الدوام.";
+            string body = closed ? (info.closedByAdmin ? "الغرفة مسكّرة مؤقتاً من الإدارة، وبتفتح قريباً." : "الغرفة بتفتح بعد لحظات، جرّب كمان شوي.") : hasAdmin ? "ادخل واضغط «ارفع إيدك» ليعطيك الأدمن المايك." : "الأدمن مش موجود هلأ. تقدر تدخل وتسمع، والأدمن بيرجع بوقت الدوام.";
             var hintBox = Rect(root, "Hint", 0, 0);
             float hintPadX = 10 * k, hintPadY = 6 * k, leadW = 0f;
             var leadLabel = lead.Length > 0 ? Label(hintBox, "Lead", lead, th.fontBody, 11.5f * k, Gold, TextAlignmentOptions.TopRight, true) : null;

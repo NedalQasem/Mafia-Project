@@ -15,7 +15,7 @@ namespace MafiaNight.Services.Rooms
     {
         public string Id = "", Name = "", NameEn = "", Sub = "", SubEn = "", Welcome = "", WelcomeEn = "", LobbyId = "", MicMode = "request";
         public int Capacity = 64, MicSeats = 8, Online, AdminsOnline;
-        public bool Pinned = true, ChatEnabled = true, Staff;
+        public bool Pinned = true, ChatEnabled = true, Staff, Enabled = true;
         public List<string> Admins = new List<string>();
         /// <summary>The room bot reports it open: there is a lobby to join.</summary>
         public bool Open => !string.IsNullOrEmpty(LobbyId);
@@ -36,7 +36,7 @@ namespace MafiaNight.Services.Rooms
 
         private sealed class Runner : MonoBehaviour { }
 
-        [Serializable] private class RoomDto { public string id, name, nameEn, sub, subEn, welcome, welcomeEn, lobbyId, micMode; public int capacity, micSeats, online, adminsOnline; public bool pinned, chatEnabled, staff; public List<string> admins; }
+        [Serializable] private class RoomDto { public string id, name, nameEn, sub, subEn, welcome, welcomeEn, lobbyId, micMode; public int capacity, micSeats, online, adminsOnline; public bool pinned, chatEnabled, staff, enabled; public List<string> admins; }
         [Serializable] private class ListDto { public bool ok; public List<RoomDto> rooms; }
         [Serializable] private class LineDto { public int id; public string from, name, text; public long ts; public int sys; }
         [Serializable] private class EnterDto { public bool ok; public string welcome, welcomeEn; public List<LineDto> history; }
@@ -84,7 +84,7 @@ namespace MafiaNight.Services.Rooms
                     cache.Add(new OfficialRoom
                     {
                         Id = r.id ?? "", Name = r.name ?? "", NameEn = r.nameEn ?? "", Sub = r.sub ?? "", SubEn = r.subEn ?? "", Welcome = r.welcome ?? "", WelcomeEn = r.welcomeEn ?? "", LobbyId = r.lobbyId ?? "",
-                        MicMode = r.micMode ?? "request", Capacity = r.capacity, MicSeats = r.micSeats, Online = r.online, AdminsOnline = r.adminsOnline, Pinned = r.pinned, ChatEnabled = r.chatEnabled, Staff = r.staff,
+                        MicMode = r.micMode ?? "request", Capacity = r.capacity, MicSeats = r.micSeats, Online = r.online, AdminsOnline = r.adminsOnline, Pinned = r.pinned, ChatEnabled = r.chatEnabled, Staff = r.staff, Enabled = r.enabled,
                         Admins = r.admins ?? new List<string>(),
                     });
                 done?.Invoke(true);

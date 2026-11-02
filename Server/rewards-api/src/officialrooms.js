@@ -54,6 +54,7 @@ function createOfficialRooms({ file = null, now = () => Date.now(), chat = null,
       capacity: int(b.capacity, 4, 64, old.capacity || 64), micSeats: int(b.micSeats, 2, 12, old.micSeats || 8),
       micMode: b.micMode === 'free' ? 'free' : 'request',
       pinned: b.pinned !== false, hidden: !!b.hidden, chatEnabled: b.chatEnabled !== false,
+      enabled: b.enabled !== false,          // false = the admin closed the room: the keeper takes its lobby down and keeps it down
       slowMs: int(b.slowSeconds !== undefined ? Number(b.slowSeconds) * 1000 : b.slowMs, 0, 60000, old.slowMs !== undefined ? old.slowMs : 3000),
       welcome: text(b.welcome, 220), welcomeEn: text(b.welcomeEn, 220),
       admins: Array.isArray(old.admins) ? old.admins.slice() : [],
@@ -116,7 +117,7 @@ function createOfficialRooms({ file = null, now = () => Date.now(), chat = null,
       const b = beats.get(r.id);
       return {
         id: r.id, name: r.name, nameEn: r.nameEn, sub: r.sub, subEn: r.subEn, capacity: r.capacity, micSeats: r.micSeats, micMode: r.micMode,
-        pinned: r.pinned, hidden: r.hidden, chatEnabled: r.chatEnabled, welcome: r.welcome, welcomeEn: r.welcomeEn,
+        pinned: r.pinned, hidden: r.hidden, chatEnabled: r.chatEnabled, enabled: r.enabled !== false, welcome: r.welcome, welcomeEn: r.welcomeEn,
         lobbyId: isOpen(r.id) ? b.lobbyId : '', online: m.length, adminsOnline: m.filter(x => r.admins.includes(x.pf)).length, admins: r.admins.slice(), staff: r.admins.includes(pf),
       };
     });
@@ -170,7 +171,7 @@ function createOfficialRooms({ file = null, now = () => Date.now(), chat = null,
       beats.set(r.id, { at: t, lobbyId: String(rep.lobbyId || '').slice(0, 80), members: mem, stage });
     }
     const out = commands.splice(0, commands.length);
-    return { ok: true, commands: out, rooms: Object.values(state.rooms).map(r => ({ id: r.id, name: r.name, capacity: r.capacity, micSeats: r.micSeats, micMode: r.micMode, chatEnabled: r.chatEnabled, admins: r.admins.slice(), hidden: r.hidden })) };
+    return { ok: true, commands: out, rooms: Object.values(state.rooms).map(r => ({ id: r.id, name: r.name, capacity: r.capacity, micSeats: r.micSeats, micMode: r.micMode, chatEnabled: r.chatEnabled, enabled: r.enabled !== false, admins: r.admins.slice(), hidden: r.hidden })) };
   }
 
   /** What the admin tells the bot to do to somebody in a room. */

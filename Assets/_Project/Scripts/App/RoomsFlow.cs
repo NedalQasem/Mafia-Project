@@ -130,7 +130,7 @@ namespace MafiaNight.App
                 if (!o.Open)
                 {
                     // the room bot has not reported it open: the card stays in the list (dimmed) so the room does not just vanish
-                    infos.Add(new RoomInfo { id = "", name = o.DisplayName, sub = o.DisplaySub, official = true, closed = true, count = 0, capacity = o.Capacity, speakingSeat = -1, type = RoomType.Vip });
+                    infos.Add(new RoomInfo { id = "", name = o.DisplayName, sub = o.DisplaySub, official = true, closed = true, closedByAdmin = !o.Enabled, count = 0, capacity = o.Capacity, speakingSeat = -1, type = RoomType.Vip });
                     continue;
                 }
                 // the room bot owns the lobby; this listing only carries what joining needs

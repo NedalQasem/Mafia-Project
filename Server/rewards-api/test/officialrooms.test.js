@@ -251,3 +251,21 @@ test('a bot says a line in the room chat; closed chat and unknown rooms refuse i
     assert.equal((await b.bot('/v1/bot/say', { room: id, bot: { id: 'b3', name: 'x' }, text: 'hi' })).json.ok, false);
   } finally { b.close(); }
 });
+
+test('an admin can close a room: the flag reaches the bot and the list of the players, and it stays closed until opened again', async () => {
+  const b = await boot2();
+  try {
+    const id = (await b.board('/api/office/save', { name: 'غرفة', capacity: 16 })).json.room.id;
+    let beat = await b.bot('/v1/bot/beat', { rooms: [] });
+    assert.equal(beat.json.rooms.find(r => r.id === id).enabled, true);
+    await b.board('/api/office/save', { id, name: 'غرفة', capacity: 16, enabled: false });
+    beat = await b.bot('/v1/bot/beat', { rooms: [] });
+    assert.equal(beat.json.rooms.find(r => r.id === id).enabled, false);
+    const list = await b.player(P1, '/v1/rooms/official', {});
+    assert.equal(list.json.rooms[0].enabled, false);
+    assert.equal(list.json.rooms[0].lobbyId, '');
+    await b.board('/api/office/save', { id, name: 'غرفة', capacity: 16, enabled: true });
+    beat = await b.bot('/v1/bot/beat', { rooms: [] });
+    assert.equal(beat.json.rooms.find(r => r.id === id).enabled, true);
+  } finally { b.close(); }
+});
