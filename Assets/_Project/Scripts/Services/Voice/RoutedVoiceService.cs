@@ -10,7 +10,7 @@ namespace MafiaNight.Services.Voice
     /// <summary>
     /// The game's voice: picks the engine for the room the player is in. Match rooms stay on EOS (16 players, the night rules of the match);
     /// the other rooms (where many listen and a few speak) use LiveKit when it is in this build and the server answers, and fall back to EOS when it does not.
-    /// The player can force EOS for every room with PlayerPrefs "mafia.voice" = "eos". All calls and events go to the engine in use.
+    /// Ordinary rooms use EOS (what is tested); LiveKit is used for the official rooms, and for ordinary rooms when PlayerPrefs "mafia.voice" = "livekit" (the status line of a development build switches it). All calls and events go to the engine in use.
     /// </summary>
     public sealed class RoutedVoiceService : IVoiceService
     {
@@ -45,7 +45,7 @@ namespace MafiaNight.Services.Voice
 
         private static bool WantsLiveKit()
         {
-            if (VoiceBackends.LiveKit == null || PlayerPrefs.GetString("mafia.voice", "livekit") == "eos") return false;
+            if (VoiceBackends.LiveKit == null || PlayerPrefs.GetString("mafia.voice", "eos") != "livekit") return false;      // LiveKit is for the official room (it needs more than 16) until it proves itself on phones
             if (!ServiceLocator.TryGet(out IRoomService rooms) || rooms.CurrentRoom == null) return false;
             return rooms.CurrentRoom.Mode != RoomMode.Mafia;
         }

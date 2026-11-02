@@ -92,6 +92,8 @@ namespace MafiaNight.UI.Kit
         public event Action OnBack, OnMembers, OnMic, OnLeaveSeat, OnStart, OnGames, OnTitle;
         /// <summary>The speaker button: true = hear the room, false = silence it on this device.</summary>
         public event Action<bool> OnSpeaker;
+        /// <summary>Development builds: the voice status line was tapped (switches the voice engine of an ordinary room).</summary>
+        public event Action OnVoiceInfo;
         /// <summary>A seat was tapped: its index, or -1 for the big seat.</summary>
         public event Action<int> OnSeat;
         public event Action<string> OnSend;
@@ -231,9 +233,12 @@ namespace MafiaNight.UI.Kit
         {
             seatsPanel = Rect(parent, "Seats", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             seatsLayout = seatsPanel.gameObject.AddComponent<LayoutElement>(); seatsLayout.preferredHeight = 800;
-            voiceInfo = Txt(seatsPanel, "VoiceInfo", "", th.fontBody, 8f * K, new Color32(0x6F, 0x67, 0x5A, 255), TextAlignmentOptions.TopLeft);
-            { var vr = voiceInfo.Rt(); vr.anchorMin = new Vector2(0, 1); vr.anchorMax = new Vector2(1, 1); vr.pivot = new Vector2(0, 1); vr.sizeDelta = new Vector2(-20, 12 * K); vr.anchoredPosition = new Vector2(10, -4); }
-            voiceInfo.GetComponent<TMP_Text>().raycastTarget = false;
+            var voiceBox = Rect(seatsPanel, "VoiceInfoBox", new Vector2(0, 1), new Vector2(1, 1), Vector2.zero, Vector2.zero);
+            voiceBox.pivot = new Vector2(0, 1); voiceBox.sizeDelta = new Vector2(-20, 14 * K); voiceBox.anchoredPosition = new Vector2(10, -4);
+            voiceInfo = Txt(voiceBox, "VoiceInfo", "", th.fontBody, 8f * K, new Color32(0x6F, 0x67, 0x5A, 255), TextAlignmentOptions.TopLeft);
+            Anchor(voiceInfo.Rt(), Vector2.zero, Vector2.one);
+            KitTap.On(voiceBox, () => OnVoiceInfo?.Invoke());
+            voiceBox.gameObject.name = "VoiceInfoBox";
             var bg = Img(seatsPanel, "Bg", null, Color.white, false, true);
             var plate = bg.gameObject.AddComponent<KitPlate>();
             plate.Key = "seats";
@@ -380,7 +385,7 @@ namespace MafiaNight.UI.Kit
 
             RenderSeats();
             voiceInfo.Text = v.VoiceInfo ?? "";
-            voiceInfo.gameObject.SetActive(!string.IsNullOrEmpty(v.VoiceInfo));
+            voiceInfo.transform.parent.gameObject.SetActive(!string.IsNullOrEmpty(v.VoiceInfo));
 
             bool strip = !string.IsNullOrEmpty(v.Strip);
             stripGo.SetActive(strip);

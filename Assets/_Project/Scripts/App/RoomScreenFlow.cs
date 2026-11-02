@@ -72,6 +72,7 @@ namespace MafiaNight.App
             screen.OnSend += Send;
             screen.OnMessage += OnMessage;
             screen.OnStart += StartMatch;
+            screen.OnVoiceInfo += SwitchVoiceEngine;
             screen.OnSpeaker += on => { if (audio == null) return; audio.SetOutputVolume(on ? MafiaNight.Data.Settings.VoicePrefs.Speaker / 100f : 0f); };
             screen.OnGames += () => Say("الإيموجي والألعاب السريعة قريباً.");
             if (audio != null) { audio.OnSpeaking += OnSpeaking; audio.OnChanged += Redraw; }
@@ -152,6 +153,18 @@ namespace MafiaNight.App
             var runner = MatchRunner.Instance;
             // the match session of this room is made a moment after the room opens: draw as soon as it exists
             if (runner != null && (runner.Session != bound || runner != boundRunner || !screen.IsOpen)) { Bind(); Redraw(); }
+        }
+
+        /// <summary>Development builds: tapping the voice status line switches an ordinary room between EOS voice and LiveKit voice and joins again, to compare them on the same phones.</summary>
+        private void SwitchVoiceEngine()
+        {
+            if (!Debug.isDebugBuild || audio == null || IsOfficial) return;
+            bool wasEos = PlayerPrefs.GetString("mafia.voice", "eos") != "livekit";
+            PlayerPrefs.SetString("mafia.voice", wasEos ? "livekit" : "eos");
+            wasSeated = false;
+            audio.Leave();
+            JoinVoice();
+            Say(wasEos ? "صوت الغرفة صار LiveKit." : "صوت الغرفة صار EOS.");
         }
 
         private void JoinVoice()
