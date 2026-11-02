@@ -39,6 +39,7 @@ namespace MafiaNight.UI.Kit
         private float timer, dragStart;
         private bool dragging;
         private float secondsLeft = 2 * 3600 + 14 * 60 + 33;
+        private int shownSecond = -1;
         private Coroutine turn;
 
         public void SetAds(IList<Ad> ads)
@@ -200,8 +201,12 @@ namespace MafiaNight.UI.Kit
             if (!Application.isPlaying) return;
             secondsLeft -= Time.unscaledDeltaTime;
             int s = Mathf.Max(0, (int)secondsLeft);
-            string txt = CoinPill.Format(s / 3600).PadLeft(2, '٠') + ":" + CoinPill.Format(s % 3600 / 60).PadLeft(2, '٠') + ":" + CoinPill.Format(s % 60).PadLeft(2, '٠');
-            foreach (var c in countdowns) c.Text = txt;
+            if (s != shownSecond)
+            {
+                shownSecond = s;      // the text is built (and the labels touched) once a second, not every frame
+                string txt = CoinPill.Format(s / 3600).PadLeft(2, '٠') + ":" + CoinPill.Format(s % 3600 / 60).PadLeft(2, '٠') + ":" + CoinPill.Format(s % 60).PadLeft(2, '٠');
+                foreach (var c in countdowns) c.Text = txt;
+            }
             if (progress != null) { progress.anchorMin = new Vector2(Mathf.Clamp01(timer / period), 0f); progress.anchorMax = Vector2.one; }
             if (dragging || pages.Count < 2) return;
             timer += Time.unscaledDeltaTime;

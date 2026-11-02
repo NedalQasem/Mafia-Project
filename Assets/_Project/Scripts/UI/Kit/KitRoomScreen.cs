@@ -167,9 +167,11 @@ namespace MafiaNight.UI.Kit
 
         private void Update()
         {
-            if (sendBox != null && field != null) { bool has = field.Text.Trim().Length > 0; if (sendBox.activeSelf != has) sendBox.SetActive(has); }
+            if (sendBox != null && field != null) { bool has = HasText(field.Text); if (sendBox.activeSelf != has) sendBox.SetActive(has); }
             LiftForKeyboard();
         }
+
+        private static bool HasText(string t) { if (t == null) return false; for (int i = 0; i < t.Length; i++) if (!char.IsWhiteSpace(t[i])) return true; return false; }
 
         /// <summary>
         /// The phone keyboard is drawn over the game: while it is up the whole column is lifted above it (the message bar stays visible)

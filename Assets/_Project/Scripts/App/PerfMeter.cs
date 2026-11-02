@@ -13,6 +13,8 @@ namespace MafiaNight.App
         private int frames;
         private GUIStyle style, buttonStyle;
         private float copied;
+        private string label = "";
+        private Rect labelRect;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Create()
@@ -30,6 +32,7 @@ namespace MafiaNight.App
             if (acc < 0.5f) return;
             shownFps = frames / acc; shownWorst = worst * 1000f;
             acc = 0f; frames = 0; worst = 0f;
+            label = $"{shownFps:0} fps · worst {shownWorst:0} ms · mem {(UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() >> 20)} MB · target {Application.targetFrameRate} · vsync {QualitySettings.vSyncCount}";
         }
 
         private void OnGUI()
@@ -48,7 +51,8 @@ namespace MafiaNight.App
                     copied = Time.unscaledTime + 2f;
                 }
             }
-            GUI.Label(new Rect(6, 2, Screen.width - Screen.width * 0.14f, style.fontSize * 2f),$"{shownFps:0} fps · worst {shownWorst:0} ms · mem {(UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() >> 20)} MB · target {Application.targetFrameRate} · vsync {QualitySettings.vSyncCount}", style);
+            if (labelRect.width == 0f) labelRect = new Rect(6, 2, Screen.width - Screen.width * 0.14f, style.fontSize * 2f);
+            GUI.Label(labelRect, label, style);
         }
     }
 }

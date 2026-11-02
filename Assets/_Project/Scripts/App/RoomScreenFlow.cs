@@ -455,7 +455,7 @@ namespace MafiaNight.App
                 rows.Add(new KitMembersSheet.Row
                 {
                     Id = m.Puid, Name = m.Name ?? "", Me = m.IsMe, Staff = staffM, Tag = staffM ? (m.IsHost && !IsOfficial ? "المضيف" : "أدمن") : "",
-                    State = st.IsSeated(m.Puid) ? "على المايك" : st.HandRaised(m.Puid) ? "✋ ينتظر" : "",
+                    State = st.IsSeated(m.Puid) ? "على المايك" : st.HandRaised(m.Puid) ? "ينتظر المايك" : "",
                 });
             }
             KitMembersSheet.Show(canvas, "الحضور", People.Count() + " من " + rooms.CurrentRoom.Capacity, rows, r =>
