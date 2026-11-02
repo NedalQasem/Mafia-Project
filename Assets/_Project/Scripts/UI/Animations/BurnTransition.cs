@@ -100,8 +100,17 @@ namespace MafiaNight.UI.Animations
                 int x0 = Mathf.Clamp(Mathf.RoundToInt(lo.x), 0, Screen.width - 1), y0 = Mathf.Clamp(Mathf.RoundToInt(lo.y), 0, Screen.height - 1);
                 int x1 = Mathf.Clamp(Mathf.RoundToInt(hi.x), x0 + 1, Screen.width), y1 = Mathf.Clamp(Mathf.RoundToInt(hi.y), y0 + 1, Screen.height);
                 full = ScreenCapture.CaptureScreenshotAsTexture();
-                crop = new Texture2D(x1 - x0, y1 - y0, TextureFormat.RGBA32, false);
-                crop.SetPixels(full.GetPixels(x0, y0, x1 - x0, y1 - y0)); crop.Apply(false, true);
+                if (SystemInfo.copyTextureSupport != UnityEngine.Rendering.CopyTextureSupport.None)
+                {
+                    // the rectangle is copied on the GPU: GetPixels on a phone-sized screenshot is tens of megabytes of colors and a visible stall
+                    crop = new Texture2D(x1 - x0, y1 - y0, full.format, false);
+                    Graphics.CopyTexture(full, 0, 0, x0, y0, x1 - x0, y1 - y0, crop, 0, 0, 0, 0);
+                }
+                else
+                {
+                    crop = new Texture2D(x1 - x0, y1 - y0, TextureFormat.RGBA32, false);
+                    crop.SetPixels(full.GetPixels(x0, y0, x1 - x0, y1 - y0)); crop.Apply(false, true);
+                }
             }
             catch (Exception) { if (crop != null) Destroy(crop); crop = null; }
             if (full != null) Destroy(full);
@@ -148,6 +157,7 @@ namespace MafiaNight.UI.Animations
             var layer = new GameObject("Sparks", typeof(RectTransform));
             layer.transform.SetParent(go.transform, false);
             b.sparkLayer = (RectTransform)layer.transform; b.sparkLayer.anchorMin = Vector2.zero; b.sparkLayer.anchorMax = Vector2.one; b.sparkLayer.offsetMin = b.sparkLayer.offsetMax = Vector2.zero;
+            layer.AddComponent<Canvas>();      // its own canvas: the sparks move every frame, and that must rebuild only their mesh, not the whole screen's
             return b;
         }
 

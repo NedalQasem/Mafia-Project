@@ -62,14 +62,18 @@ namespace MafiaNight.Services.Scenes
                 yield break;
             }
             Texture2D snap = null;
+            float t0 = Time.realtimeSinceStartup;
             yield return BurnTransition.Capture(t => snap = t);
             if (snap != null)
             {
                 // the old screen is frozen on top, the new one loads under it, then the old one burns away (or fades)
+                float tCaptured = Time.realtimeSinceStartup;
                 var burn = BurnTransition.Begin(snap);
                 yield return SceneManager.LoadSceneAsync(sceneName);
+                float tLoaded = Time.realtimeSinceStartup;
                 for (int i = 0; i < 3; i++) yield return null;                 // the new screen builds its UI in its first frames
                 yield return new WaitForEndOfFrame();
+                Log.Info($"Scene {sceneName}: screenshot {(tCaptured - t0) * 1000f:0} ms, load {(tLoaded - tCaptured) * 1000f:0} ms, first frames {(Time.realtimeSinceStartup - tLoaded) * 1000f:0} ms (the old screen stays frozen all that time)", Tag);
                 yield return burn.Play(corner, burnSeconds);
                 Log.Info($"✅ Loaded scene: {sceneName}", Tag);
                 isTransitioning = false;
