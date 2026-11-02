@@ -115,6 +115,8 @@ namespace MafiaNight.UI.Kit
         private GameObject startBox, leaveBox, micBox, stripGo, sendBox, badgeGo;
         private KitArabicInput field;
         private LayoutElement seatsLayout;
+        private VerticalLayoutGroup safeCol;
+        private const int BasePadBottom = 24;
         private readonly List<ChatVm> chat = new List<ChatVm>();
         private ViewVm view;
         private bool stickToBottom = true, speakerOn = true;
@@ -166,6 +168,29 @@ namespace MafiaNight.UI.Kit
         private void Update()
         {
             if (sendBox != null && field != null) { bool has = field.Text.Trim().Length > 0; if (sendBox.activeSelf != has) sendBox.SetActive(has); }
+            LiftForKeyboard();
+        }
+
+        /// <summary>
+        /// The phone keyboard is drawn over the game: while it is up the whole column is lifted above it (the message bar stays visible)
+        /// and the seats step aside, so the chat keeps room to show what is typed.
+        /// </summary>
+        private void LiftForKeyboard()
+        {
+            if (safeCol == null || Screen.height <= 0) return;
+            float lift = 0f;
+            if (TouchScreenKeyboard.visible)
+            {
+                float px = TouchScreenKeyboard.area.height;
+                if (px <= 0f) px = Screen.height * 0.4f;                           // some phones do not report the keyboard's size
+                lift = px * (root.rect.height / Screen.height);
+            }
+            int bottom = BasePadBottom + Mathf.RoundToInt(lift);
+            if (safeCol.padding.bottom == bottom) return;
+            safeCol.padding.bottom = bottom;
+            seatsPanel.gameObject.SetActive(lift <= 0f);
+            LayoutRebuilder.MarkLayoutForRebuild((RectTransform)safeCol.transform);
+            if (lift > 0f) stickToBottom = true;
         }
 
         // ---- building ------------------------------------------------------------------------------------------------
@@ -180,7 +205,8 @@ namespace MafiaNight.UI.Kit
             safe.gameObject.AddComponent<KitSafeArea>();
 
             var col = safe.gameObject.AddComponent<VerticalLayoutGroup>();
-            col.padding = new RectOffset(34, 34, 24, 24); col.spacing = Mathf.RoundToInt(8 * K);
+            safeCol = col;
+            col.padding = new RectOffset(34, 34, 24, BasePadBottom); col.spacing = Mathf.RoundToInt(8 * K);
             col.childControlWidth = true; col.childControlHeight = true; col.childForceExpandWidth = true; col.childForceExpandHeight = false;
 
             BuildHeader(safe);
@@ -547,7 +573,7 @@ namespace MafiaNight.UI.Kit
             Color ring = new Color32(0x6B, 0x5A, 0x3F, 255); float ringW = 1f * K;
             if (staff) { ring = Brass; ringW = head ? 2f * K : 1f * K; }
             if (s.Talking) { ring = Teal; ringW = head ? 2f * K : 1f * K; sp.Shadow = new Color32(0x4F, 0xA5, 0x8B, 0x99); sp.ShadowBlur = 14 * K; }
-            if (s.Me) { ring = Red; ringW = 1f * K; sp.Shadow = new Color32(0xE0, 0x52, 0x5A, 0x77); sp.ShadowBlur = 14 * K; }
+            if (s.Me && !s.Talking) { ring = Red; ringW = 1f * K; sp.Shadow = new Color32(0xE0, 0x52, 0x5A, 0x77); sp.ShadowBlur = 14 * K; }     // your own seat is red until you talk: then it is teal like everybody's
             sp.Rings.Add(new KeyValuePair<Color, float>(Color.black, 2 * K));
             sp.Rings.Add(new KeyValuePair<Color, float>(ring, ringW));
             return sp;

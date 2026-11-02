@@ -494,6 +494,7 @@ namespace MafiaNight.Services.Rooms
         private void Changed(string lobbyId)
         {
             if (CurrentRoom == null || CurrentRoom.Id != lobbyId) return;
+            disconnectedAt = -1f;       // an update from the lobby means the connection is back
             ReadCurrent();
             AnnounceHostChange();
             ReturnHostToOwner();
@@ -573,14 +574,46 @@ namespace MafiaNight.Services.Rooms
         {
             if (CurrentRoom == null || CurrentRoom.Id != lobbyId) return;
             bool me = who != null && Me != null && who.ToString() == Me.ToString();
-            if (me && (status == LobbyMemberStatus.Kicked || status == LobbyMemberStatus.Closed || status == LobbyMemberStatus.Disconnected))
+            if (me) Log.Info("My lobby status: " + status, Tag);
+            if (me && status == LobbyMemberStatus.Disconnected)
             {
-                string why = status == LobbyMemberStatus.Kicked ? "طُردت من الغرفة." : status == LobbyMemberStatus.Closed ? "انسكّرت الغرفة." : "انقطع الاتصال بالغرفة.";
+                // EOS says "unexpectedly lost connection" and reconnects by itself within moments: give it time before giving up the room
+                disconnectedAt = Time.unscaledTime;
+                GraceRunner().StartCoroutine(DisconnectGrace(lobbyId, disconnectedAt));
+                return;
+            }
+            if (me && (status == LobbyMemberStatus.Kicked || status == LobbyMemberStatus.Closed))
+            {
+                string why = status == LobbyMemberStatus.Kicked ? "طُردت من الغرفة." : "انسكّرت الغرفة.";
                 ClearCurrent();
                 OnRoomLeft?.Invoke(why);
                 return;
             }
+            if (me) disconnectedAt = -1f;
             Changed(lobbyId);
+        }
+
+        private const float DisconnectGraceSeconds = 25f;
+        private float disconnectedAt = -1f;
+        private static MonoBehaviour graceRunner;
+        private sealed class GraceBehaviour : MonoBehaviour { }
+
+        private static MonoBehaviour GraceRunner()
+        {
+            if (graceRunner != null) return graceRunner;
+            var go = new GameObject("RoomGrace");
+            UnityEngine.Object.DontDestroyOnLoad(go);
+            return graceRunner = go.AddComponent<GraceBehaviour>();
+        }
+
+        private System.Collections.IEnumerator DisconnectGrace(string lobbyId, float stamp)
+        {
+            yield return new WaitForSecondsRealtime(DisconnectGraceSeconds);
+            if (disconnectedAt != stamp || CurrentRoom == null || CurrentRoom.Id != lobbyId) yield break;      // it came back (or the room was left meanwhile)
+            Log.Warning("Still disconnected from the lobby after " + DisconnectGraceSeconds + " s: leaving the room", Tag);
+            disconnectedAt = -1f;
+            ClearCurrent();
+            OnRoomLeft?.Invoke("انقطع الاتصال بالغرفة.");
         }
 
         private void ClearCurrent()
@@ -589,6 +622,7 @@ namespace MafiaNight.Services.Rooms
             currentDetails = null;
             CurrentRoom = null;
             lastHost = null;
+            disconnectedAt = -1f;
             members.Clear();
         }
 
