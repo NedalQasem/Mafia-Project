@@ -189,18 +189,20 @@ namespace MafiaNight.Core
         private sealed class JournalHost : MonoBehaviour
         {
             private float next, perfAt, perfAcc, perfWorst;
+            private bool justResumed;
             private int perfFrames;
             private bool hitching;
 
             private void Update()
             {
                 float dt = Time.unscaledDeltaTime;
+                if (justResumed) { justResumed = false; dt = 0f; }          // the first frame after the app was in the background carries all that time: not a freeze
                 if (dt > 0.7f) { if (!hitching) Event("Perf", "a frame took " + (dt * 1000f).ToString("0") + " ms (the screen froze)"); hitching = true; } else hitching = false;
                 perfAcc += dt; perfFrames++; if (dt > perfWorst) perfWorst = dt;
                 if (Time.unscaledTime >= perfAt)
                 {
                     // how smooth the game is, every ten seconds (the phone may hold the game to 30 fps or lower the resolution: the header says what the display reports)
-                    if (perfFrames > 0 && perfAt > 0f) Event("Perf", (perfFrames / perfAcc).ToString("0") + " fps · worst frame " + (perfWorst * 1000f).ToString("0") + " ms · memory " + (UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() >> 20) + " MB · display " + Screen.currentResolution.refreshRateRatio + " Hz " + Screen.width + "x" + Screen.height);
+                    if (perfFrames > 0 && perfAt > 0f) Event("Perf", (perfFrames / perfAcc).ToString("0") + " fps · worst frame " + (perfWorst * 1000f).ToString("0") + " ms · memory " + (UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() >> 20) + " MB · display " + Screen.currentResolution.refreshRateRatio + " Hz " + Screen.width + "x" + Screen.height + Timings());
                     perfAt = Time.unscaledTime + 10f; perfAcc = 0f; perfFrames = 0; perfWorst = 0f;
                 }
                 if (Time.unscaledTime < next) return;
@@ -208,7 +210,22 @@ namespace MafiaNight.Core
                 Flush();
             }
 
-            private void OnApplicationPause(bool paused) { Event("App", paused ? "went to the background" : "came back to the foreground (network " + Application.internetReachability + ")"); if (paused) Flush(); }
+            private readonly FrameTiming[] timings = new FrameTiming[1];
+
+            /// <summary>Who is the slow one: the main thread (scripts, UI), the render thread, or the GPU. Empty when the phone does not report it.</summary>
+            private string Timings()
+            {
+                try
+                {
+                    FrameTimingManager.CaptureFrameTimings();
+                    if (FrameTimingManager.GetLatestTimings(1, timings) < 1) return "";
+                    var t = timings[0];
+                    return " · cpu frame " + t.cpuFrameTime.ToString("0.0") + " ms (main " + t.cpuMainThreadFrameTime.ToString("0.0") + ", render " + t.cpuRenderThreadFrameTime.ToString("0.0") + ") · gpu " + t.gpuFrameTime.ToString("0.0") + " ms";
+                }
+                catch { return ""; }
+            }
+
+            private void OnApplicationPause(bool paused) { if (!paused) justResumed = true; Event("App", paused ? "went to the background" : "came back to the foreground (network " + Application.internetReachability + ")"); if (paused) Flush(); }
             private void OnApplicationQuit() { Event("App", "quit"); Flush(); }
         }
     }

@@ -64,7 +64,11 @@ namespace MafiaNight.App
 
         private void OnTap(string what)
         {
-            if (rooms == null || rooms.CurrentRoom == null || !(what.StartsWith("Seat ") || what.StartsWith("Mic "))) return;
+            if (rooms == null || rooms.CurrentRoom == null || !what.StartsWith("Seat ")) return;
+            // the host and the admins get a sheet (sit here / lock this seat) from a seat tap, not a change of state; and a mic tap can be undone by the next one: neither is judged
+            var runner = MatchRunner.Instance;
+            var me = rooms.Members.FirstOrDefault(m => m.IsMe);
+            if (runner == null || runner.Session == null || me == null || runner.Session.Stage.Stage.IsStaff(me.Puid)) return;
             if (seatTapAt >= 0f) return;            // one watch at a time: a burst of taps is judged by the first
             seatTapAt = Time.unscaledTime; seatTapWhat = what; seatTapState = StageState();
         }
