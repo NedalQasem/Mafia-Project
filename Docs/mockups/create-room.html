@@ -164,6 +164,14 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ivory);outline-
     </div>
 
     <div class="card">
+      <div class="lab">مقاعد المايك <small>اللي بيحكوا فوق، والباقي بيسمعوا</small></div>
+      <div class="seg" id="mics"><button data-n="4">٤</button><button class="on" data-n="6">٦</button><button data-n="8">٨</button></div>
+      <div class="lab" style="margin-top:2px">مين بيقعد على المايك؟</div>
+      <div class="seg" id="micmode"><button class="on" data-m="free">حر — اللي بدّه بيقعد</button><button data-m="request">بالطلب — يرفع إيده</button></div>
+      <div class="hint"><svg viewBox="0 0 24 24"><use href="#info"/></svg><span id="mhint"></span></div>
+    </div>
+
+    <div class="card">
       <div class="lab">خلفية الغرفة <small>من مقتنياتك</small></div>
       <div class="bgs">
         <button class="bg on" style="background:linear-gradient(180deg,#8a6a4e,#3a2418)"><span>الغرفة الخلفية</span></button>
@@ -251,6 +259,11 @@ function drawSeats(){
 $('#plus').onclick=()=>{if(seats<16){seats++;drawSeats()}};
 $('#minus').onclick=()=>{if(seats>4){seats--;drawSeats()}};
 function sub(){const n={public:'غرفة عامة',private:'غرفة خاصة',vip:'غرفة VIP'}[type];$('#gosub').textContent=n+' · '+ar(seats)+' كرسي'}
+// mic seats + mic mode
+const mh={free:'أي واحد بيقعد على مقعد فاضي ويحكي. بتقدر تغيّرها وإنتم جوّا.',request:'اللي بدّه يحكي بيرفع إيده وإنت بتختار مين بيطلع. أنسب للغرف الكبيرة.'};
+document.querySelectorAll('#mics button').forEach(b=>b.onclick=()=>document.querySelectorAll('#mics button').forEach(x=>x.classList.toggle('on',x===b)));
+function setMM(m){document.querySelectorAll('#micmode button').forEach(x=>x.classList.toggle('on',x.dataset.m===m));$('#mhint').textContent=mh[m]}
+document.querySelectorAll('#micmode button').forEach(b=>b.onclick=()=>setMM(b.dataset.m));setMM('free');
 // toggles + backgrounds
 document.querySelectorAll('.tg').forEach(t=>t.onclick=()=>t.setAttribute('aria-checked',t.getAttribute('aria-checked')!=='true'));
 document.querySelectorAll('.bg:not(.get)').forEach(b=>b.onclick=()=>document.querySelectorAll('.bg:not(.get)').forEach(x=>x.classList.toggle('on',x===b)));
