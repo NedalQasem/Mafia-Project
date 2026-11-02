@@ -69,3 +69,14 @@ test('without a ticket nothing is accepted', async () => {
   assert.deepEqual(h.diag.players(), []);
   h.close();
 });
+
+test('a full batch of long lines (300 lines of 450 characters) is accepted, and the next batch of the same run follows it', async () => {
+  const h = await boot();
+  const big = Array.from({ length: 300 }, (_, i) => '12:00:' + String(i % 60).padStart(2, '0') + '.000 +' + i + ' W Unity | ' + 'The character with Unicode value \uDE04 was not found "x" '.repeat(8));
+  const a = await h.send('AAA111', { sid: 'run1', lines: big });
+  assert.equal(a.status, 200); assert.equal(a.body.saved, 300);
+  const b = await h.send('AAA111', { sid: 'run1', lines: ['12:01:00.000 +300 EV Room | next batch'] });
+  assert.equal(b.status, 200); assert.equal(b.body.saved, 1);
+  assert.match(h.diag.log('AAA111', '2026-11-03'), /next batch/);
+  h.close();
+});

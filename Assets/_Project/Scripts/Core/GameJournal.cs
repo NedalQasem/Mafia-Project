@@ -131,11 +131,20 @@ namespace MafiaNight.Core
 
         // ------------------------------------------------------------------------------------------ for the uploader and the file
 
-        /// <summary>Takes up to <paramref name="max"/> lines waiting to be sent (they leave the queue; give them back with <see cref="Requeue"/> if the send fails).</summary>
-        public static List<string> TakeForUpload(int max)
+        /// <summary>
+        /// Takes lines waiting to be sent, at most <paramref name="maxLines"/> and about <paramref name="maxChars"/> characters in all (a small body gets through any proxy; a big one may be refused and never go).
+        /// They leave the queue; give them back with <see cref="Requeue"/> if the send fails.
+        /// </summary>
+        public static List<string> TakeForUpload(int maxLines, int maxChars)
         {
             var list = new List<string>();
-            while (list.Count < max && forUpload.TryDequeue(out var line)) list.Add(line);
+            int chars = 0;
+            while (list.Count < maxLines && forUpload.TryPeek(out var next))
+            {
+                if (list.Count > 0 && chars + next.Length > maxChars) break;
+                forUpload.TryDequeue(out var line);
+                list.Add(line); chars += line.Length;
+            }
             return list;
         }
 

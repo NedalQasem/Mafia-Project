@@ -15,7 +15,9 @@ namespace MafiaNight.Services.Telemetry
     public sealed class JournalUploader : MonoBehaviour
     {
         private const float Every = 15f;
-        private const int BatchLines = 300;
+        private const int BatchLines = 200;
+        private const int BatchChars = 8000;          // a small body goes through any proxy; a big one can be refused (413) and then never leaves
+        private const int BatchesPerTurn = 6;
 
         private static JournalUploader instance;
         private float next = 8f;
@@ -56,19 +58,25 @@ namespace MafiaNight.Services.Telemetry
                 introduced = true;
                 GameJournal.Event("Session", "signed in as " + PlayFabSettings.staticPlayer?.PlayFabId + " (journal id " + sessionId + ")");
             }
-            var lines = GameJournal.TakeForUpload(BatchLines);
-            if (lines.Count == 0) yield break;
             sending = true;
-            var sb = new StringBuilder(lines.Count * 120);
-            sb.Append("{\"sid\":\"").Append(sessionId).Append("\",\"build\":\"").Append(JsonText.Esc(Application.version)).Append("\",\"device\":\"").Append(JsonText.Esc(SystemInfo.deviceModel)).Append("\",\"lines\":[");
-            for (int i = 0; i < lines.Count; i++) { if (i > 0) sb.Append(','); sb.Append('"').Append(JsonText.Esc(lines[i])).Append('"'); }
-            sb.Append("]}");
-            var net = new NetResult();
-            yield return Http.PostJson(Base + "/v1/diag/upload", sb.ToString(), Ticket, 20, net);
+            for (int round = 0; round < BatchesPerTurn; round++)
+            {
+                var lines = GameJournal.TakeForUpload(BatchLines, BatchChars);
+                if (lines.Count == 0) break;
+                var sb = new StringBuilder(lines.Count * 120);
+                sb.Append("{\"sid\":\"").Append(sessionId).Append("\",\"build\":\"").Append(JsonText.Esc(Application.version)).Append("\",\"device\":\"").Append(JsonText.Esc(SystemInfo.deviceModel)).Append("\",\"lines\":[");
+                for (int i = 0; i < lines.Count; i++) { if (i > 0) sb.Append(','); sb.Append('"').Append(JsonText.Esc(lines[i])).Append('"'); }
+                sb.Append("]}");
+                var net = new NetResult();
+                yield return Http.PostJson(Base + "/v1/diag/upload", sb.ToString(), Ticket, 20, net);
+                if (net.Success) continue;
+                if (net.Code == 404) { serverHasNoJournal = true; GameJournal.Event("Journal", "the server has no journal endpoint yet: lines stay in the file on the phone only"); break; }
+                if (net.Code == 400 || net.Code == 413) { GameJournal.Event("Journal", "the server refused a batch of " + lines.Count + " lines (HTTP " + net.Code + "): dropped, the file on the phone still has them"); continue; }     // sending the same batch again would never work
+                GameJournal.Requeue(lines);          // the connection or the server was busy: they go out with the next try
+                next = Time.unscaledTime + Every * 2f;
+                break;
+            }
             sending = false;
-            if (!net.Success && net.Code == 404) { serverHasNoJournal = true; GameJournal.Event("Journal", "the server has no journal endpoint yet: lines stay in the file on the phone only"); yield break; }
-            if (!net.Success) GameJournal.Requeue(lines);          // they go out with the next batch (their order among themselves is kept)
         }
-
     }
 }
