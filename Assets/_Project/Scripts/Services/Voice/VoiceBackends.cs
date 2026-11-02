@@ -10,5 +10,8 @@ namespace MafiaNight.Services.Voice
     {
         /// <summary>Makes the LiveKit voice (rooms where many listen and a few speak), or null when the package is not in this project.</summary>
         public static Func<IVoiceService> LiveKit;
+
+        /// <summary>PlayerPrefs key of LiveKit's audio path: "unity" (Unity microphone, software echo cancellation) or "platform" (the phone's voice-call audio path).</summary>
+        public const string LiveKitModeKey = "mafia.lkmode";
     }
 }

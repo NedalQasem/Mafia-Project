@@ -155,16 +155,23 @@ namespace MafiaNight.App
             if (runner != null && (runner.Session != bound || runner != boundRunner || !screen.IsOpen)) { Bind(); Redraw(); }
         }
 
-        /// <summary>Development builds: tapping the voice status line switches an ordinary room between EOS voice and LiveKit voice and joins again, to compare them on the same phones.</summary>
+        /// <summary>
+        /// Development builds: tapping the voice status line steps through the voice paths and joins again, to compare them on the same phones.
+        /// An ordinary room: EOS, LiveKit with Unity audio, LiveKit with the phone's voice-call audio. An official room (LiveKit only): the last two.
+        /// </summary>
         private void SwitchVoiceEngine()
         {
-            if (!Debug.isDebugBuild || audio == null || IsOfficial) return;
-            bool wasEos = PlayerPrefs.GetString("mafia.voice", "eos") != "livekit";
-            PlayerPrefs.SetString("mafia.voice", wasEos ? "livekit" : "eos");
+            if (!Debug.isDebugBuild || audio == null) return;
+            bool eos = PlayerPrefs.GetString("mafia.voice", "eos") != "livekit";
+            bool platform = PlayerPrefs.GetString(VoiceBackends.LiveKitModeKey, "unity") == "platform";
+            string said;
+            if (IsOfficial || !eos && !platform) { PlayerPrefs.SetString(VoiceBackends.LiveKitModeKey, platform ? "unity" : "platform"); said = platform ? "صوت الغرفة: LiveKit (صوت Unity)." : "صوت الغرفة: LiveKit (صوت الهاتف)."; }
+            else if (eos) { PlayerPrefs.SetString("mafia.voice", "livekit"); PlayerPrefs.SetString(VoiceBackends.LiveKitModeKey, "unity"); said = "صوت الغرفة: LiveKit (صوت Unity)."; }
+            else { PlayerPrefs.SetString("mafia.voice", "eos"); said = "صوت الغرفة: EOS."; }
             wasSeated = false;
             audio.Leave();
             JoinVoice();
-            Say(wasEos ? "صوت الغرفة صار LiveKit." : "صوت الغرفة صار EOS.");
+            Say(said);
         }
 
         private void JoinVoice()

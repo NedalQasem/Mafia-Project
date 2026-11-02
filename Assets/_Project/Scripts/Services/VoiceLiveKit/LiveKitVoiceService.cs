@@ -29,11 +29,21 @@ namespace MafiaNight.Voice.LiveKit
         private const string Tag = "LiveKit";
 
         private sealed class Runner : MonoBehaviour { }
-        private sealed class Remote { public GameObject Go; public AudioSource Source; public AudioStream Stream; public bool HasMic; public float Volume = 0.5f; public bool Muted; }
+        private sealed class Remote { public GameObject Go; public AudioSource Source; public AudioStream Stream; public RemoteAudioTrack Track; public bool HasMic; public bool Enabled = true; public float Volume = 0.5f; public bool Muted; }
+
+        /// <summary>
+        /// Which capture and playout path a joining player uses. Unity (default): Unity's Microphone with libwebrtc's software echo cancellation, remote voices played by Unity AudioSources (per-player volume).
+        /// Platform: the phone's own voice-call audio path (WebRTC audio device module: communication mode, the phone's echo canceller), remote voices played by the system.
+        /// The status line of a development build switches it, to compare the two on the same phones.
+        /// </summary>
+        public static bool PlatformMode => PlayerPrefs.GetString(VoiceBackends.LiveKitModeKey, "unity") == "platform";
 
         private Runner runner;
         private Room room;
         private MicrophoneSource mic;
+        private PlatformAudio platform;                                          // this session's audio device module (platform mode only)
+        private PlatformAudioSource platformMic;
+        private bool usePlatform;
         private LocalAudioTrack micTrack;
         private GameObject micObject;
         private readonly Dictionary<string, Remote> remotes = new Dictionary<string, Remote>();      // PlayFab id -> his audio
@@ -51,7 +61,7 @@ namespace MafiaNight.Voice.LiveKit
         public bool IsConnected { get; private set; }
         public bool MicOn { get; private set; }
         /// <summary>One line for testers (shown in development builds): where the voice is, whether this player may speak, how many he hears.</summary>
-        public string LastStatistics => (IsConnected ? "LK " + roomName + (canPublish ? " speak" : " listen") + " · hear " + remotes.Count + (MicOn ? " · mic on" : " · mic off") : "LK " + (joining ? "connecting" : "off")) + (status.Length > 0 ? " · " + status : "");
+        public string LastStatistics => (IsConnected ? (usePlatform ? "LK-P " : "LK-U ") + roomName + (canPublish ? " speak" : " listen") + " · hear " + remotes.Count + (MicOn ? " · mic on" : " · mic off") : "LK " + (joining ? "connecting" : "off")) + (status.Length > 0 ? " · " + status : "");
 
         public event Action<bool> OnConnectionChanged;
         public event Action<string, bool> OnSpeaking;
@@ -162,6 +172,20 @@ namespace MafiaNight.Voice.LiveKit
             if (dto == null || !dto.ok || string.IsNullOrEmpty(dto.token)) { joining = false; status = "token refused"; Touch(); Finish(VoiceError.Failed); yield break; }
             canPublish = dto.canPublish;
 
+            // platform mode: the audio device module must exist before the room connects (it plays the remote voices), and it needs the microphone permission
+            usePlatform = false;
+            if (PlatformMode && canPublish)
+            {
+                bool allowed = false;
+                yield return AskMicPermission(ok => allowed = ok);
+                if (gen != generation) yield break;
+                if (allowed)
+                {
+                    try { platform = new PlatformAudio(); usePlatform = true; }
+                    catch (Exception e) { Log.Warning("Platform audio is not available, using Unity audio: " + e.Message, Tag); status = "platform audio failed"; platform = null; }
+                }
+            }
+
             var mine = new Room();
             room = mine;
             mine.TrackSubscribed += OnTrackSubscribed;
@@ -190,23 +214,52 @@ namespace MafiaNight.Voice.LiveKit
 
         // ------------------------------------------------------------------ the microphone
 
-        private IEnumerator PublishMic(Action<VoiceError> done)
+        private IEnumerator AskMicPermission(Action<bool> result)
         {
-            if (room == null || !IsConnected) { done?.Invoke(VoiceError.NotInRoom); yield break; }
-            if (micTrack != null) { mic?.SetMute(false); MicOn = true; Touch(); done?.Invoke(VoiceError.None); yield break; }
-
 #if UNITY_ANDROID && !UNITY_EDITOR
             if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
             {
                 Permission.RequestUserPermission(Permission.Microphone);
                 float waited = 0f;
                 while (!Permission.HasUserAuthorizedPermission(Permission.Microphone) && waited < 20f) { waited += Time.unscaledDeltaTime; yield return null; }
-                if (!Permission.HasUserAuthorizedPermission(Permission.Microphone)) { done?.Invoke(VoiceError.NoPermission); yield break; }
             }
+            result(Permission.HasUserAuthorizedPermission(Permission.Microphone));
 #else
             if (!Application.HasUserAuthorization(UserAuthorization.Microphone)) yield return Application.RequestUserAuthorization(UserAuthorization.Microphone);
-            if (!Application.HasUserAuthorization(UserAuthorization.Microphone)) { done?.Invoke(VoiceError.NoPermission); yield break; }
+            result(Application.HasUserAuthorization(UserAuthorization.Microphone));
 #endif
+        }
+
+        /// <summary>Opens or closes what the room hears from this phone, whichever capture path is in use.</summary>
+        private void SetCapture(bool on)
+        {
+            if (usePlatform) { if (micTrack != null) ((ILocalTrack)micTrack).SetMute(!on); }
+            else mic?.SetMute(!on);
+        }
+
+        private IEnumerator PublishPlatformMic(Action<VoiceError> done)
+        {
+            platformMic = new PlatformAudioSource(platform, AudioProcessingOptions.Default);
+            micTrack = LocalAudioTrack.CreateAudioTrack("mic", platformMic, room);
+            var options = new TrackPublishOptions { Source = TrackSource.SourceMicrophone, AudioEncoding = new AudioEncoding { MaxBitrate = 32000 } };
+            var publish = room.LocalParticipant.PublishTrack(micTrack, options);
+            yield return publish;
+            if (publish.IsError) { Log.Warning("Publishing the microphone (platform audio) failed", Tag); StopMic(); done?.Invoke(VoiceError.Failed); yield break; }
+            MicOn = gameMicAllowed;
+            if (!gameMicAllowed) SetCapture(false);
+            Touch();
+            done?.Invoke(VoiceError.None);
+        }
+
+        private IEnumerator PublishMic(Action<VoiceError> done)
+        {
+            if (room == null || !IsConnected) { done?.Invoke(VoiceError.NotInRoom); yield break; }
+            if (micTrack != null) { SetCapture(true); MicOn = true; Touch(); done?.Invoke(VoiceError.None); yield break; }
+
+            bool granted = false;
+            yield return AskMicPermission(ok => granted = ok);
+            if (!granted) { done?.Invoke(VoiceError.NoPermission); yield break; }
+            if (usePlatform) { yield return PublishPlatformMic(done); yield break; }
             if (Microphone.devices.Length == 0) { done?.Invoke(VoiceError.Failed); yield break; }
 
             micObject = new GameObject("LiveKitMic");
@@ -227,7 +280,8 @@ namespace MafiaNight.Voice.LiveKit
         private void StopMic()
         {
             try { if (mic != null) { mic.Stop(); mic.Dispose(); } } catch (Exception e) { Log.Warning("Stopping the microphone: " + e.Message, Tag); }
-            mic = null; micTrack = null;
+            try { platformMic?.Dispose(); } catch (Exception e) { Log.Warning("Stopping the platform microphone: " + e.Message, Tag); }
+            mic = null; platformMic = null; micTrack = null;
             if (micObject != null) UnityEngine.Object.Destroy(micObject);
             micObject = null; MicOn = false;
         }
@@ -239,14 +293,14 @@ namespace MafiaNight.Voice.LiveKit
             if (on && !gameMicAllowed) return;
             if (on && !canPublish && roomName.StartsWith("official:") && runner != null) { if (!upgrading) runner.StartCoroutine(Upgrade()); return; }
             if (on && micTrack == null && runner != null) { runner.StartCoroutine(PublishMic(null)); return; }
-            if (mic != null) { mic.SetMute(!on); MicOn = on; Touch(); }
+            if (micTrack != null) { SetCapture(on); MicOn = on; Touch(); }
         }
 
         public void SetGameVoice(bool micAllowed, IReadOnlyCollection<string> hearOnlyIds)
         {
             gameMicAllowed = micAllowed;
             hearOnly = hearOnlyIds == null ? null : new HashSet<string>(hearOnlyIds);
-            if (mic != null) { bool open = micAllowed && wantMic; mic.SetMute(!open); MicOn = open; }
+            if (micTrack != null) { bool open = micAllowed && wantMic; SetCapture(open); MicOn = open; }
             ApplyVolumes();
             Touch();
         }
@@ -259,6 +313,15 @@ namespace MafiaNight.Voice.LiveKit
         {
             if (!(track is RemoteAudioTrack audio)) return;
             Drop(who.Identity);
+            if (usePlatform)
+            {
+                // the audio device module plays this voice by itself: no Unity AudioSource, so no per-player volume (muting him disables his track)
+                var plat = new Remote { Track = audio, HasMic = true };
+                remotes[who.Identity] = plat;
+                ApplyVolume(who.Identity, plat);
+                Touch();
+                return;
+            }
             var go = new GameObject("lk-" + who.Identity);
             UnityEngine.Object.DontDestroyOnLoad(go);
             var src = go.AddComponent<AudioSource>();
@@ -306,6 +369,11 @@ namespace MafiaNight.Voice.LiveKit
             bool silent = (puid != null && muted.Contains(puid)) || (hearOnly != null && (puid == null || !hearOnly.Contains(puid)));
             float own = puid != null && volumes.TryGetValue(puid, out var v) ? v : 0.5f;
             if (r.Source != null) r.Source.volume = silent ? 0f : Mathf.Clamp01(master * own * 4f);
+            else if (r.Track != null && r.Enabled == silent)
+            {
+                r.Enabled = !silent;
+                try { ((IRemoteTrack)r.Track).SetEnabled(r.Enabled); } catch (Exception e) { Log.Warning("Muting a voice: " + e.Message, Tag); }
+            }
         }
 
         // ------------------------------------------------------------------ leaving
@@ -328,6 +396,8 @@ namespace MafiaNight.Voice.LiveKit
             speaking.Clear();
             try { room?.Disconnect(); } catch (Exception e) { Log.Warning("Disconnect: " + e.Message, Tag); }
             room = null;
+            try { platform?.Dispose(); } catch (Exception e) { Log.Warning("Platform audio: " + e.Message, Tag); }
+            platform = null; usePlatform = false;
         }
 
         private void Touch() => OnChanged?.Invoke();
