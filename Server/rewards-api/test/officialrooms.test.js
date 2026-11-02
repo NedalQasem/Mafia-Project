@@ -269,3 +269,16 @@ test('an admin can close a room: the flag reaches the bot and the list of the pl
     assert.equal(beat.json.rooms.find(r => r.id === id).enabled, true);
   } finally { b.close(); }
 });
+
+test('the conversation list works while the player is inside an official room (its chat is not a conversation)', async () => {
+  const b = await boot2();
+  try {
+    await b.board('/api/office/save', { name: 'مكتب', slowSeconds: 0 });
+    await b.player(P1, '/v1/rooms/official/enter', { id: '1001' });
+    await b.player(P1, '/v1/chat/send', { channel: 'room:1001', text: 'مرحبا' });
+    const inbox = await b.player(P1, '/v1/chat/inbox', undefined);
+    assert.equal(inbox.status, 200);
+    assert.equal(inbox.json.ok, true);
+    assert.ok(!inbox.json.conversations.some(c => String(c.ch).startsWith('room:')));
+  } finally { b.close(); }
+});

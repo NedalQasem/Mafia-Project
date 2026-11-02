@@ -246,7 +246,7 @@ function createChat({ cfg, playfab, extraWords = null, now = () => Date.now(), l
     const reads = state.reads[pf] || {};
     const items = [];
     for (const ch of visibleChannels(pf)) {
-      if (ch === PUBLIC) continue;
+      if (ch === PUBLIC || ch.startsWith('room:')) continue;       // the chat of an official room is read through its own screen, not listed as a conversation (it has no group record: listing it threw)
       const msgs = state.messages[ch] || [];
       const last = msgs[msgs.length - 1] || null;
       const unread = msgs.filter(m => m.id > (reads[ch] || 0) && m.from !== pf && !m.sys).length;
