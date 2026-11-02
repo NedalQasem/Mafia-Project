@@ -86,6 +86,7 @@
 - **التضحية:** ما في «ICE/TURN» جاهز. تعويضه: السيرفر على IP عام (العميل هو اللي بيبدأ) + بديل TCP/WebSocket (قسم 6.4).
 
 **ADR-3: النواة بلغة Rust، بواجهة C ثابتة (C ABI).**
+- **✅ اعتمده المالك (2026-11-02): Rust للنواة وللسيرفر معاً (ADR-3 + ADR-11).**
 - السبب: بدنا كود **بدون GC** للصوت الحي (Unity C# فيه GC يعمل تقطيع)، آمن للذاكرة، يترجم لكل المنصات (Android/iOS/Windows/Linux/macOS/WASM)، ومكتبة واحدة تخدم Unity (P/Invoke) وUnreal (C++) وWeb (WASM) بدون إعادة كتابة.
 - البدائل: C++ (مألوف بـUnreal لكن أخطر)، C#/.NET (NativeAOT) — GC ومشاكل الوقت الحقيقي بالموبايل.
 - **ملاحظة حالة الجهاز:** على جهاز التطوير الحالي مثبّت .NET وNode وDocker، **ما في Rust/CMake/Go**. المرحلة 0 بتثبّتهم (`winget install Rustlang.Rustup`, `cargo install cargo-ndk`, وNDK من Unity أو Android Studio).
