@@ -23,9 +23,19 @@ namespace MafiaNight.UI.Kit
         public string Key = "";
         private Image img;
         private Vector2 painted;
+        private int bornFrame = -1;
 
         private void Awake() { img = GetComponent<Image>(); }
-        private void OnEnable() { Repaint(); }
+
+        private void OnEnable()
+        {
+            bornFrame = Time.frameCount;
+            if (img == null) img = GetComponent<Image>();
+            // in play mode a plate waits for its real size (below), so it is hidden until it has its picture instead of showing a white box
+            if (Application.isPlaying && img != null && img.sprite == null) img.enabled = false;
+            if (!Application.isPlaying) Repaint();
+        }
+
         public void Reset2() { painted = Vector2.zero; Repaint(); }
         private void LateUpdate() { Repaint(); }
         private void OnRectTransformDimensionsChange() { if (isActiveAndEnabled) Repaint(); }
@@ -33,11 +43,15 @@ namespace MafiaNight.UI.Kit
         private void Repaint()
         {
             if (img == null) img = GetComponent<Image>();
+            // In the frame a plate is born its rectangle is still the stretch of its anchors (the screen size): the layout sizes it at the end of that frame (or of the next one). Painting then
+            // made a screen-sized picture (4.4 MB, ~0.4 s each, four of them for the room screen) that was thrown away a frame later. So it paints from the next frame on.
+            if (Application.isPlaying && Time.frameCount <= bornFrame + 1) return;
             var r = ((RectTransform)transform).rect;
             float w = Mathf.Round(r.width / 4f) * 4f, h = Mathf.Round(r.height / 4f) * 4f;
             if (w < 8f || h < 8f || (painted.x == w && painted.y == h) || Maker == null) return;
             painted = new Vector2(w, h);
             img.sprite = KitProc.Paint(Key + Mathf.RoundToInt(w) + "x" + Mathf.RoundToInt(h), Maker(w, h));
+            img.enabled = true;
         }
     }
 
