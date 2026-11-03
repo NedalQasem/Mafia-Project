@@ -160,6 +160,8 @@ namespace MafiaNight.App
         private void OnJoinCard(RoomInfo info)
         {
             if (busyJoin || string.IsNullOrEmpty(info.id) || !byId.TryGetValue(info.id, out var listing)) return;
+            // a second line of defence behind the screens that stop taps: while the player's own room screen is up, a card of the list below is not his to press
+            if (OverlayOpen) { Log.Warning("Join ignored: a card of the list was hit while a screen is open on top of it (" + info.name + ")", Tag); return; }
             busyJoin = true;
             rooms.Join(listing, Entered);
         }
