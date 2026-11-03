@@ -13,6 +13,8 @@ namespace MafiaNight.App
         private int frames;
         private GUIStyle style, buttonStyle;
         private float copied;
+        // the very top edge belongs to the system (the swipe that pulls down the notifications starts there): the meter and the LOG button stay below it
+        private static float TopGap => Screen.height * 0.055f;
         private string label = "";
         private Rect labelRect;
 
@@ -43,7 +45,7 @@ namespace MafiaNight.App
             {
                 if (buttonStyle == null) buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = Mathf.Max(10, Screen.height / 110) };
                 float bw = Screen.width * 0.13f, bh = Mathf.Max(28, Screen.height / 45f);
-                if (GUI.Button(new Rect(Screen.width - bw - 6, 2, bw, bh), copied > Time.unscaledTime ? "copied" : "LOG", buttonStyle))
+                if (GUI.Button(new Rect(Screen.width - bw - 6, TopGap, bw, bh), copied > Time.unscaledTime ? "copied" : "LOG", buttonStyle))
                 {
                     MafiaNight.Services.Telemetry.JournalUploader.Flush();
                     GameJournal.Event("Journal", "the tester copied the journal");
@@ -51,7 +53,7 @@ namespace MafiaNight.App
                     copied = Time.unscaledTime + 2f;
                 }
             }
-            if (labelRect.width == 0f) labelRect = new Rect(6, 2, Screen.width - Screen.width * 0.14f, style.fontSize * 2f);
+            if (labelRect.width == 0f) labelRect = new Rect(6, TopGap, Screen.width - Screen.width * 0.14f, style.fontSize * 2f);
             GUI.Label(labelRect, label, style);
         }
     }

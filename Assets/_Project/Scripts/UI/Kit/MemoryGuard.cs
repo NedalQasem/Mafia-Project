@@ -14,10 +14,13 @@ namespace MafiaNight.UI.Kit
 
         private static void OnLowMemory()
         {
+            // Android also reports memory trims when the player pulls down the notifications or leaves for the home screen: that must not stall the game in the middle of the gesture.
+            // So the cheap part (half of the painted sprites) goes at once, and the heavy part (scanning every asset) only when the game is no longer in front.
             long before = KitProc.CachedBytes;
-            KitProc.Trim(0);
-            Resources.UnloadUnusedAssets();
-            GameJournal.Event("Memory", "the phone is low on memory: dropped " + (before >> 20) + " MB of painted sprites and unused assets");
+            KitProc.Trim(before / 2);
+            bool heavy = !Application.isFocused;
+            if (heavy) Resources.UnloadUnusedAssets();
+            GameJournal.Event("Memory", "the phone reports low memory: dropped " + ((before - KitProc.CachedBytes) >> 20) + " MB of painted sprites" + (heavy ? " and unused assets" : ""));
         }
     }
 }
