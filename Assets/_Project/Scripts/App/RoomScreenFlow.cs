@@ -79,6 +79,7 @@ namespace MafiaNight.App
             if (audio != null) { audio.OnSpeaking += OnSpeaking; audio.OnChanged += Redraw; audio.OnConnectionChanged += OnVoiceConnection; }
             rooms.OnRoomChanged += OnRoomChanged;
             rooms.OnRoomLeft += OnRoomLeft;
+            gameObject.AddComponent<RoomBotsFlow>().Init(rooms, () => bound);      // the bots the admin board puts into this room (only while this device is its host)
         }
 
         private void OnDestroy()
@@ -324,7 +325,7 @@ namespace MafiaNight.App
 
             if (room.Mode == RoomMode.Mafia)
             {
-                int n = People.Count();
+                int n = bound != null ? bound.PlayerCount : People.Count();       // the bots count only when they play
                 if (!rooms.IAmHost) { v.StartLabel = "بانتظار المضيف"; v.StartEnabled = false; }
                 else { v.StartEnabled = n >= MatchMinPlayers; v.StartLabel = v.StartEnabled ? "ابدأ المباراة" : "تحتاج " + MatchMinPlayers + " لاعبين"; }
             }

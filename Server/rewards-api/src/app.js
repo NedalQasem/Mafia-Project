@@ -182,7 +182,9 @@ function createApp({ cfg, playfab, store, chat = null, friends = null, leaderboa
   // voice tokens for the LiveKit rooms (the voice where many listen and a few speak)
   const voicePost = voice && voice.enabled ? { '/v1/voice/token': async (pf, b) => voice.token(pf, chat ? (await chat.who(pf)).name : '', String(b.room || '')) } : {};
   const diagPost = diag ? { "/v1/diag/upload": (pf, b) => diag.upload(pf, b) } : {};
-  const posts = Object.assign({}, chat ? chatPost : {}, diagPost, roomsPost, voicePost, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
+  // the host of a player's room says "this is my room" and hears how many bots the admin board wants in it
+  const botsPost = botFarm ? { '/v1/bots/room': async (pf, b) => botFarm.hostReport(b) } : {};
+  const posts = Object.assign({}, chat ? chatPost : {}, diagPost, botsPost, roomsPost, voicePost, friendsPost, boardPost, offersPost, eventsPost, mailPost, codesPost, accountPost, identityPost);
   const legal = createLegal();
 
   const server = http.createServer((req, res) => {

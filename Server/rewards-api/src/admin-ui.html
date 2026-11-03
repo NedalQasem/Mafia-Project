@@ -1246,7 +1246,7 @@ async function loadBots() {
   $('#btStatus').classList.toggle('hide', v.alive);
   $('#btTotal').textContent = ar(v.stats.total); $('#btRun').textContent = ar(v.stats.running); $('#btRooms').textContent = ar(v.stats.rooms); $('#btMatch').textContent = ar(v.stats.matches); $('#btReal').textContent = ar(v.real);
   const sel = $('#btOrder [data-k=room]'), keep = sel.value;
-  sel.innerHTML = o.rooms.map(r => '<option value="official:' + esc(r.id) + '">' + esc(r.name) + ' (رسمية)</option>').join('') + v.lobbies.map(l => '<option value="lobby:' + esc(l.id) + '">' + esc(l.name) + ' · ' + ar(l.count) + ' من ' + ar(l.capacity) + (l.mafia ? ' · مافيا' : '') + '</option>').join('');
+  sel.innerHTML = o.rooms.map(r => '<option value="official:' + esc(r.id) + '">' + esc(r.name) + ' (رسمية)</option>').join('') + v.lobbies.map(l => '<option value="lobby:' + esc(l.id) + '">' + esc(l.name) + ' · ID ' + esc(l.short || '') + ' · ' + ar(l.count) + ' من ' + ar(l.capacity) + (l.mafia ? ' · مافيا' : '') + '</option>').join('');
   if (keep) sel.value = keep;
   const roomName = ref => { const f = [...sel.options].find(x => x.value === ref); return f ? f.textContent : ref; };
   $('#btOrdEmpty').classList.toggle('hide', v.orders.length > 0);

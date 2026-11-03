@@ -35,7 +35,8 @@ async function boot() {
   };
   const beat = async body => { const res = await fetch(url + '/v1/bot/beat', { method: 'POST', headers: { 'x-bot-key': KEY, 'content-type': 'application/json' }, body: JSON.stringify(body || {}) }); return { status: res.status, json: await res.json() }; };
   await board('/api/login', { password: PASSWORD });
-  return { board, beat, clock, farm, close: () => server.close() };
+  const host = async (body, who = 'PLAYER0001') => { const res = await fetch(url + '/v1/bots/room', { method: 'POST', headers: { 'x-authorization': who + '-ticket', 'content-type': 'application/json' }, body: JSON.stringify(body) }); return { status: res.status, json: await res.json() }; };
+  return { board, beat, host, clock, farm, close: () => server.close() };
 }
 
 test('the board makes bots with Arabic names in the level range, and never twice the same name', async () => {
@@ -102,5 +103,48 @@ test('the bot program learns what is wanted and reports what it runs', async () 
     b.clock.tick(31_000);
     const gone = (await b.board('/api/bots')).json;
     assert.equal(gone.alive, false); assert.equal(gone.running.length, 0);
+  } finally { b.close(); }
+});
+
+test('the host of a player room is listed on the board with its number and hears how many bots are wanted', async () => {
+  const b = await boot();
+  try {
+    await b.board('/api/bots/generate', { count: 10 });
+    // no order yet: nothing is wanted, but the room already shows in the board's list
+    const first = await b.host({ id: 'LOBBYABC123', name: 'سهرة', count: 1, capacity: 16, mafia: true, real: 1 });
+    assert.deepEqual(first.json, { ok: true, wanted: 0 });
+    const lobby = (await b.board('/api/bots')).json.lobbies.find(l => l.id === 'LOBBYABC123');
+    assert.ok(lobby); assert.match(lobby.short, /^[1-9]\d{4}$/); assert.equal(lobby.name, 'سهرة');
+    // "complete the room to 4": with one real player three bots are wanted, and they come with their profiles
+    await b.board('/api/bots/order', { room: 'lobby:LOBBYABC123', count: 1, fillTo: 4, sit: true, chat: false, play: true });
+    const a = (await b.host({ id: 'LOBBYABC123', name: 'سهرة', count: 1, capacity: 16, mafia: true, real: 1 })).json;
+    assert.equal(a.wanted, 3); assert.equal(a.sit, true); assert.equal(a.chat, false); assert.equal(a.play, true);
+    assert.ok(a.profiles.length >= 3 && a.profiles[0].name); assert.ok(a.profiles[0].lines.length <= 8);
+    // a real player joined: one bot less; the room full of real players: none
+    assert.equal((await b.host({ id: 'LOBBYABC123', capacity: 16, real: 2 })).json.wanted, 2);
+    assert.equal((await b.host({ id: 'LOBBYABC123', capacity: 16, real: 4 })).json.wanted, 0);
+    // another room does not get this room's order
+    assert.equal((await b.host({ id: 'OTHERROOM99', capacity: 16, real: 1 })).json.wanted, 0);
+  } finally { b.close(); }
+});
+
+test('a plain count of bots never exceeds the free seats, and the host report is checked', async () => {
+  const b = await boot();
+  try {
+    await b.board('/api/bots/generate', { count: 10 });
+    await b.board('/api/bots/order', { room: 'lobby:LOBBYABC123', count: 12 });
+    assert.equal((await b.host({ id: 'LOBBYABC123', capacity: 6, real: 2 })).json.wanted, 4);
+    assert.equal((await b.host({ id: 'x' })).status, 400);                                   // not a lobby id
+    assert.equal((await b.host({ id: '../etc' })).status, 400);
+  } finally { b.close(); }
+});
+
+test('a room whose host stopped reporting leaves the board list after a while', async () => {
+  const b = await boot();
+  try {
+    await b.host({ id: 'LOBBYABC123', name: 'سهرة', capacity: 16, real: 1 });
+    assert.equal((await b.board('/api/bots')).json.lobbies.length, 1);
+    b.clock.tick(60 * 1000);
+    assert.equal((await b.board('/api/bots')).json.lobbies.length, 0);
   } finally { b.close(); }
 });

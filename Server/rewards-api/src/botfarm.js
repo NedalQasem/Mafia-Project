@@ -137,15 +137,60 @@ function createBotFarm({ file = null, now = () => Date.now(), log = console } = 
 
   const alive = () => now() - last.at < 30 * 1000;
 
+  // ------------------------------------------------------------------ the rooms of players
+  // The bot program only keeps the official rooms. A room a player opened is run by its host's device: the host reports the room here every few seconds
+  // (so the board can list it with the number the players see) and the answer says how many bots the board wants in it and which ones.
+
+  const HOST_SEEN_MS = 45 * 1000;
+  const seen = new Map();          // EOS lobby id -> what its host last said
+
+  /** The short number the game shows for a room ("ID 39339"): the same arithmetic as RoomScreenFlow.ShortId. */
+  function shortId(id) {
+    let h = 17;
+    for (let i = 0; i < id.length; i++) h = (Math.imul(h, 31) + id.charCodeAt(i)) | 0;
+    return String(10000 + (h >>> 0) % 90000);
+  }
+
+  function pruneSeen() {
+    const t = now();
+    for (const [k, v] of seen) if (t - v.at > HOST_SEEN_MS) seen.delete(k);
+  }
+
+  /**
+   * A host's device says "this is my room and these are the people in it". Answers with the bots the board wants there:
+   * { ok, wanted, sit, chat, play, profiles, matchLines }. A room with no order gets wanted 0 and nothing else.
+   */
+  function hostReport(b) {
+    const id = text(b && b.id, 80);
+    if (!/^[A-Za-z0-9_-]{4,80}$/.test(id)) throw new BotError('bad_room');
+    pruneSeen();
+    if (!seen.has(id) && seen.size >= 300) return { ok: true, wanted: 0 };      // a flood of made-up rooms is not kept
+    const real = int(b.real, 0, 99, 0);
+    const capacity = int(b.capacity, 0, 99, 0);
+    seen.set(id, { id, name: text(b.name, 40), count: int(b.count, 0, 99, 0), capacity, mafia: !!b.mafia, locked: false, inMatch: !!b.inMatch, real, short: shortId(id), at: now() });
+
+    const mine = state.orders.filter(o => o.room === 'lobby:' + id);
+    if (!mine.length) return { ok: true, wanted: 0 };
+    let wanted = mine.reduce((n, o) => n + (o.fillTo ? 0 : o.count), 0);
+    const fill = Math.max(...mine.map(o => o.fillTo || 0));
+    if (fill > 0) wanted = Math.max(wanted, fill - real);
+    wanted = Math.max(0, Math.min(wanted, 15, capacity > 0 ? capacity - real : 15));
+    const profiles = state.profiles.slice(0, wanted + 4).map(p => ({ id: p.id, name: p.name, level: p.level, rank: p.rank, style: p.style, lines: (p.lines || []).slice(0, 8) }));
+    return { ok: true, wanted, sit: mine.some(o => o.sit), chat: mine.some(o => o.chat), play: mine.some(o => o.play), profiles, matchLines: state.matchLines };
+  }
+
   function view() {
+    pruneSeen();
+    const reported = alive() ? last.lobbies.map(l => Object.assign({ short: shortId(l.id) }, l)) : [];
+    const hosts = [...seen.values()].filter(h => !reported.some(l => l.id === h.id));
     return {
       ok: true, alive: alive(), profiles: state.profiles, orders: state.orders, launch: state.launch,
-      lobbies: alive() ? last.lobbies : [], running: alive() ? last.bots : [], real: alive() ? last.real : 0,
+      lobbies: reported.concat(hosts), running: alive() ? last.bots : [], real: alive() ? last.real : 0,
       stats: { total: state.profiles.length, running: alive() ? last.bots.length : 0, rooms: alive() ? new Set(last.bots.map(b => b.room)).size : 0, matches: alive() ? last.bots.filter(b => b.status === 'match').length : 0 },
     };
   }
 
-  return { saveProfile, removeProfile, generate, addOrder, removeOrder, setLaunch, beat, view, flushNow, BotError };
+  return { saveProfile, removeProfile, generate, addOrder, removeOrder, setLaunch, beat, hostReport, view, flushNow, BotError };
 }
 
 module.exports = { createBotFarm, BotError };

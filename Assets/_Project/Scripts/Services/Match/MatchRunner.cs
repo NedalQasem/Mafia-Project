@@ -68,6 +68,11 @@ namespace MafiaNight.Services.Match
         {
             if (rooms == null || !rooms.InRoom || (rooms.CurrentRoom != null && !rooms.CurrentRoom.ChatEnabled)) return;
             var from = System.Linq.Enumerable.FirstOrDefault(rooms.Members, m => m.Puid == senderPuid);
+            if (from == null && Session != null)
+            {   // a bot the host put into the room: the host speaks for it
+                var bot = System.Linq.Enumerable.FirstOrDefault(Session.Stage.Virtuals, v => v.Id == senderPuid);
+                if (bot != null) from = new MafiaNight.Data.Rooms.RoomMember { Puid = bot.Id, PlayFabId = "", Name = bot.Name, Rank = bot.Rank, Level = bot.Level };
+            }
             if (from == null || from.IsMe) return;                     // only people in this room, and never an echo of ourselves
             text = CleanChat(text);
             if (string.IsNullOrEmpty(text)) return;
