@@ -219,6 +219,7 @@ namespace MafiaNight.UI.Kit
             root = (RectTransform)transform;
             root.anchorMin = Vector2.zero; root.anchorMax = Vector2.one; root.offsetMin = root.offsetMax = Vector2.zero;
             backdrop = Img(root, "Backdrop", null, Backdrop, false, true);
+            backdrop.raycastTarget = true;       // the screen is an overlay on the rooms list: a tap on an empty spot (the empty chat, a gap between seats) must stop here, not fall through onto a room card below and join it
             var safe = Rect(root, "Safe", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             safe.gameObject.AddComponent<KitSafeArea>();
 
