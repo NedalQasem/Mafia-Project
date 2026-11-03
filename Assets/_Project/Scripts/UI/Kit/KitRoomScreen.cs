@@ -148,6 +148,7 @@ namespace MafiaNight.UI.Kit
         public void ClearChat() { chat.Clear(); DropBubbles(); }
 
         // the lines on screen are counted here, not by the children of the list: Destroy() is not instant, and counting the children twice in a frame drew every line again
+        private const int MaxLines = 80;
         private readonly List<GameObject> bubbles = new List<GameObject>();
 
         private void DropBubbles()
@@ -159,7 +160,7 @@ namespace MafiaNight.UI.Kit
         public void AddChat(ChatVm m)
         {
             chat.Add(m);
-            if (chat.Count > 120) { chat.RemoveAt(0); if (bubbles.Count > 0) { var first = bubbles[0]; bubbles.RemoveAt(0); if (first != null) { first.SetActive(false); Destroy(first); } } }
+            if (chat.Count > MaxLines) { chat.RemoveAt(0); if (bubbles.Count > 0) { var first = bubbles[0]; bubbles.RemoveAt(0); if (first != null) { first.SetActive(false); Destroy(first); } } }
             if (gameObject.activeSelf) AddBubble(m);
         }
 
@@ -169,6 +170,7 @@ namespace MafiaNight.UI.Kit
         {
             if (sendBox != null && field != null) { bool has = HasText(field.Text); if (sendBox.activeSelf != has) sendBox.SetActive(has); }
             LiftForKeyboard();
+            if (scrollWanted) { scrollWanted = false; ScrollDown(); }
         }
 
         private static bool HasText(string t) { if (t == null) return false; for (int i = 0; i < t.Length; i++) if (!char.IsWhiteSpace(t[i])) return true; return false; }
@@ -621,7 +623,7 @@ namespace MafiaNight.UI.Kit
                 var le = s.gameObject.AddComponent<LayoutElement>(); le.preferredHeight = 14 * K;
                 var tt = s.GetComponent<TMP_Text>(); tt.ForceMeshUpdate();
                 pill.gameObject.AddComponent<LayoutElement>().preferredWidth = Mathf.Min(900, tt.preferredWidth + 22 * K);
-                ScrollDown();
+                scrollWanted = true;
                 return;
             }
             var row = Rect(chatContent, "Msg", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
@@ -693,8 +695,10 @@ namespace MafiaNight.UI.Kit
             var vm = m;
             KitTap.On(bubble.transform, () => OnMessage?.Invoke(vm));
             LayoutRebuilder.ForceRebuildLayoutImmediate(row);
-            ScrollDown();
+            scrollWanted = true;          // scrolling needs the whole canvas laid out: once per frame, not once per line (a room's history comes as a burst of lines)
         }
+
+        private bool scrollWanted;
 
         private void ScrollDown()
         {
