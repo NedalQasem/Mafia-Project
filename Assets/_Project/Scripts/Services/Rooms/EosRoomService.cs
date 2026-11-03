@@ -285,7 +285,7 @@ namespace MafiaNight.Services.Rooms
 
         // ------------------------------------------------------------------------------------------ create
 
-        private const float AnswerWithinSeconds = 20f;
+        private const float AnswerWithinSeconds = 15f;
 
         /// <summary>
         /// A room action (create, join) ends with exactly one answer. EOS answers through a callback; when the connection is dead (after the phone was in the background, or the network dropped)
