@@ -17,3 +17,6 @@
 1. **Content size must never break the look.** Text of any length (a one-word title, a 600-character body, Arabic or English) keeps the same shape and beauty: heights come from the real text (TMP preferred size, never a guess by letter count), long single lines shrink (auto-size) or are cut with "…", long bodies scroll or the whole panel scales down. Test each new screen with a very short and a very long text.
 2. **Responsive on every device.** The canvas is 1080x2400 scaled by width; screens must also hold on short, wide and tablet-like aspect ratios (panels scale down to fit with a margin, nothing is cut or overlapped, safe areas respected). Screenshot a new screen at more than one aspect ratio before showing it.
 3. **The player chooses the language** (Settings → الحساب → اللغة, saved in PlayerPrefs `mafia.lang`, Arabic by default). Never guess it from the device language.
+
+## Performance (owner's rule, 2026-11-03)
+Fix performance by logic and measurement, never by guessing, and keep the game light however much art is added: read [Docs/13-performance-rules.md](Docs/13-performance-rules.md) before adding pictures, screens or per-frame code. Every picture under `Art/` is compressed automatically (ASTC) by `TextureImportRules`; `PerformanceBudgetTests` fail when a picture or a screen breaks its budget.
