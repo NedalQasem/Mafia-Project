@@ -285,8 +285,34 @@ namespace MafiaNight.Services.Rooms
 
         // ------------------------------------------------------------------------------------------ create
 
+        private const float AnswerWithinSeconds = 20f;
+
+        /// <summary>
+        /// A room action (create, join) ends with exactly one answer. EOS answers through a callback; when the connection is dead (after the phone was in the background, or the network dropped)
+        /// the callback may never come and the screen would wait for ever with no message. This answers "failed" after <see cref="AnswerWithinSeconds"/> and ignores a late real answer.
+        /// </summary>
+        private Action<RoomResult> Once(Action<RoomResult> done, string what)
+        {
+            bool answered = false;
+            GraceRunner().StartCoroutine(AnswerLate(() =>
+            {
+                if (answered) return;
+                answered = true;
+                Log.Warning(what + ": EOS did not answer in " + AnswerWithinSeconds + " s", Tag);
+                done(RoomResult.Fail(RoomError.Failed, what + " timeout"));
+            }));
+            return r => { if (answered) return; answered = true; done(r); };
+        }
+
+        private static System.Collections.IEnumerator AnswerLate(Action fire)
+        {
+            yield return new WaitForSecondsRealtime(AnswerWithinSeconds);
+            fire();
+        }
+
         public void Create(RoomSettings s, Action<RoomResult> done)
         {
+            done = Once(done, "Create");
             if (!Ready()) { done(RoomResult.Fail(RoomError.NotReady)); return; }
             string name = (s.Name ?? "").Trim();
             if (name.Length == 0) { done(RoomResult.Fail(RoomError.BadName)); return; }
@@ -361,6 +387,7 @@ namespace MafiaNight.Services.Rooms
 
         public void Join(RoomListing room, Action<RoomResult> done)
         {
+            done = Once(done, "Join");
             if (!Ready()) { done(RoomResult.Fail(RoomError.NotReady)); return; }
             if (room == null) { done(RoomResult.Fail(RoomError.NotFound)); return; }
             if (CurrentRoom != null && CurrentRoom.Id == room.Id) { done(RoomResult.Success(CurrentRoom)); return; }
@@ -379,6 +406,7 @@ namespace MafiaNight.Services.Rooms
 
         public void JoinByCode(string code, Action<RoomResult> done)
         {
+            done = Once(done, "JoinByCode");
             if (!Ready()) { done(RoomResult.Fail(RoomError.NotReady)); return; }
             code = RoomRules.NormalizeCode(code);
             if (code.Length != RoomRules.CodeLength) { done(RoomResult.Fail(RoomError.NotFound)); return; }
@@ -398,6 +426,7 @@ namespace MafiaNight.Services.Rooms
 
         public void QuickJoin(Action<RoomResult> done)
         {
+            done = Once(done, "QuickJoin");
             RefreshList(r =>
             {
                 if (!r.Ok) { done(r); return; }

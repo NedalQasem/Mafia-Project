@@ -156,6 +156,7 @@ namespace MafiaNight.Services.Auth
         private void Update()
         {
             if (s_PlatformInterface == null) return;
+            CheckNetworkStatus();
 
             m_PlatformTickTimer += Time.deltaTime;
             if (m_PlatformTickTimer >= c_PlatformTickInterval)
@@ -163,6 +164,35 @@ namespace MafiaNight.Services.Auth
                 m_PlatformTickTimer = 0;
                 s_PlatformInterface.Tick();
             }
+        }
+
+        // ---- the phone's life cycle: EOS has to be told when the game goes to the background and when it comes back, and when the network goes away or returns.
+        // Without it, after the game was in the background (a swipe to the home screen, a call) EOS could keep its old connections and every lobby call failed until the game was restarted.
+
+        private bool lastReachable = true;
+        private float nextNetworkCheck;
+
+        private void OnApplicationPause(bool paused)
+        {
+            if (s_PlatformInterface == null) return;
+            try
+            {
+                var r = s_PlatformInterface.SetApplicationStatus(paused ? ApplicationStatus.BackgroundSuspended : ApplicationStatus.Foreground);
+                Log.Info("EOS application status: " + (paused ? "background" : "foreground") + " -> " + r, Tag);
+                if (!paused) { lastReachable = Application.internetReachability != NetworkReachability.NotReachable; s_PlatformInterface.SetNetworkStatus(lastReachable ? NetworkStatus.Online : NetworkStatus.Offline); }
+            }
+            catch (Exception e) { Log.Warning("EOS application status: " + e.Message, Tag); }
+        }
+
+        private void CheckNetworkStatus()
+        {
+            if (s_PlatformInterface == null || Time.unscaledTime < nextNetworkCheck) return;
+            nextNetworkCheck = Time.unscaledTime + 1f;
+            bool reachable = Application.internetReachability != NetworkReachability.NotReachable;
+            if (reachable == lastReachable) return;
+            lastReachable = reachable;
+            try { Log.Info("EOS network status: " + (reachable ? "online" : "offline") + " -> " + s_PlatformInterface.SetNetworkStatus(reachable ? NetworkStatus.Online : NetworkStatus.Offline), Tag); }
+            catch (Exception e) { Log.Warning("EOS network status: " + e.Message, Tag); }
         }
 
         private void OnDestroy()
