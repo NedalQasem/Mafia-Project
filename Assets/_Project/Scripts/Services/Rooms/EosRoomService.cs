@@ -313,6 +313,8 @@ namespace MafiaNight.Services.Rooms
         public void Create(RoomSettings s, Action<RoomResult> done)
         {
             done = Once(done, "Create");
+            float createdAt = Time.realtimeSinceStartup;
+            Log.Info("Create room: asked (EOS ready=" + Ready() + ", in a room=" + InRoom + ")", Tag);
             if (!Ready()) { done(RoomResult.Fail(RoomError.NotReady)); return; }
             string name = (s.Name ?? "").Trim();
             if (name.Length == 0) { done(RoomResult.Fail(RoomError.BadName)); return; }
@@ -338,8 +340,10 @@ namespace MafiaNight.Services.Rooms
                     EnableJoinById = true,
                     CrossplayOptOut = false,
                 };
+                Log.Info("Create room: calling CreateLobby after " + ((Time.realtimeSinceStartup - createdAt) * 1000f).ToString("0") + " ms", Tag);
                 Lobby.CreateLobby(ref co, null, (ref CreateLobbyCallbackInfo data) =>
                 {
+                    Log.Info("Create room: CreateLobby answered " + data.ResultCode + " after " + ((Time.realtimeSinceStartup - createdAt) * 1000f).ToString("0") + " ms", Tag);
                     if (!IsOk(data.ResultCode)) { done(RoomResult.Fail(RoomError.Failed, "CreateLobby " + data.ResultCode)); return; }
                     string lobbyId = data.LobbyId;
                     string code = s.Kind == RoomKind.Private ? RoomRules.NewCode() : "";

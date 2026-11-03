@@ -85,7 +85,7 @@ namespace MafiaNight.UI.Kit
 
         public void Close() { gameObject.SetActive(false); }
 
-        public void SetBusy(bool value) { busy = value; createButton.interactable = !value; if (value) errorLabel.Text = ""; }
+        public void SetBusy(bool value) { busy = value; createButton.interactable = !value; errorLabel.Text = value ? "جاري فتح الطاولة…" : ""; }       // while EOS answers the player sees that something is happening, not a button that does nothing
 
         public void ShowError(string text) { busy = false; createButton.interactable = true; errorLabel.Text = text; }
 
