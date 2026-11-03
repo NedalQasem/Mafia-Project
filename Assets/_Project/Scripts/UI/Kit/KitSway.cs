@@ -11,7 +11,7 @@ namespace MafiaNight.UI.Kit
 
         private void LateUpdate()
         {
-            if (!Application.isPlaying) return;
+            if (!Application.isPlaying || !MafiaNight.Core.DevicePerf.DecorativeMotion) return;
             float a = Mathf.Sin((Time.unscaledTime + phase) / period * Mathf.PI * 2f) * degrees;
             transform.localRotation = Quaternion.Euler(0f, 0f, a);
         }

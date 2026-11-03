@@ -1,3 +1,4 @@
+using MafiaNight.Core;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace MafiaNight.UI.Animations
         /// <summary>Exactly what the player picked in settings.</summary>
         public static string Chosen
         {
-            get { var m = PlayerPrefs.GetString(Key, Fire); return m == Simple || m == Off ? m : Fire; }
+            get { var m = PlayerPrefs.GetString(Key, DevicePerf.DefaultTransition); return m == Simple || m == Off ? m : Fire; }       // never chosen: the phone's tier decides (fire / fade / none)
             set { PlayerPrefs.SetString(Key, value == Simple || value == Off ? value : Fire); PlayerPrefs.Save(); }
         }
 

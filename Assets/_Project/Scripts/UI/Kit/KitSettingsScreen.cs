@@ -56,7 +56,32 @@ namespace MafiaNight.UI.Kit
                 };
             }
             SetupFx();
+            SetupPerformance();
             Paint(0);
+        }
+
+        /// <summary>The rows are named by the builder ("Seg_" / "Toggle_" + the title).</summary>
+        private T Row<T>(string rowName) where T : Component
+        {
+            foreach (var t in GetComponentsInChildren<Transform>(true)) if (t.name == rowName) return t.GetComponentInChildren<T>(true);
+            return null;
+        }
+
+        /// <summary>Graphics quality (low / medium / high: what the phone is allowed to spend, see DevicePerf) and the battery saver.</summary>
+        private void SetupPerformance()
+        {
+            var quality = Row<KitSegmented>("Seg_جودة الرسوم");
+            if (quality != null)
+            {
+                quality.Set((int)(MafiaNight.Core.DevicePerf.Chosen ?? MafiaNight.Core.DevicePerf.Detected));
+                quality.OnChanged += i => MafiaNight.Core.DevicePerf.Chosen = (MafiaNight.Core.DeviceTier)Mathf.Clamp(i, 0, 2);
+            }
+            var saver = Row<KitToggle>("Toggle_توفير البطارية");
+            if (saver != null)
+            {
+                saver.IsOn = MafiaNight.Core.DevicePerf.BatterySaver;
+                saver.OnChanged += on => MafiaNight.Core.DevicePerf.BatterySaver = on;
+            }
         }
 
         private static readonly string[] FxModes = { BurnSettings.Fire, BurnSettings.Simple, BurnSettings.Off };

@@ -12,7 +12,7 @@ namespace MafiaNight.UI.Kit
 
         private void LateUpdate()
         {
-            if (!Application.isPlaying) return;
+            if (!Application.isPlaying || !MafiaNight.Core.DevicePerf.DecorativeMotion) return;
             if (rt == null) rt = (RectTransform)transform;
             var p = rt.anchoredPosition;
             if (float.IsNaN(last) || !Mathf.Approximately(p.y, last)) baseY = p.y;

@@ -35,16 +35,52 @@ namespace MafiaNight.UI.Kit
             public bool Sliced;
         }
 
-        private static readonly Dictionary<string, Sprite> cache = new Dictionary<string, Sprite>();
+        // The painted sprites are kept so a screen opens fast the second time, but only up to a memory budget by device tier (DevicePerf.SpriteCacheMb): the least recently used go first.
+        // An evicted sprite that a screen still shows stays alive through that screen; it is only painted again if somebody asks for it later.
+        private sealed class Entry { public Sprite Sprite; public long Bytes, Tick; }
+        private static readonly Dictionary<string, Entry> cache = new Dictionary<string, Entry>();
+        private static long clock, cachedBytes;
+
+        private static bool TryGet(string key, out Sprite sprite)
+        {
+            if (cache.TryGetValue(key, out var e) && e.Sprite != null) { e.Tick = ++clock; sprite = e.Sprite; return true; }
+            sprite = null; return false;
+        }
+
+        private static void Put(string key, Sprite sprite)
+        {
+            if (cache.TryGetValue(key, out var old)) cachedBytes -= old.Bytes;
+            long bytes = sprite != null && sprite.texture != null ? (long)sprite.texture.width * sprite.texture.height * 4 : 0;
+            cache[key] = new Entry { Sprite = sprite, Bytes = bytes, Tick = ++clock };
+            cachedBytes += bytes;
+            long cap = (long)MafiaNight.Core.DevicePerf.SpriteCacheMb * 1048576L;
+            if (cachedBytes > cap) Trim((long)(cap * 0.8));
+        }
+
+        /// <summary>Drops the least recently used sprites until the cache holds at most <paramref name="keepBytes"/> (0 = everything). Also called when the phone runs low on memory.</summary>
+        public static void Trim(long keepBytes)
+        {
+            if (cachedBytes <= keepBytes) return;
+            var order = new List<KeyValuePair<string, Entry>>(cache);
+            order.Sort((a, b) => a.Value.Tick.CompareTo(b.Value.Tick));
+            foreach (var kv in order)
+            {
+                if (cachedBytes <= keepBytes) break;
+                cache.Remove(kv.Key); cachedBytes -= kv.Value.Bytes;
+            }
+        }
+
+        public static long CachedBytes => cachedBytes;
+        public static int CachedCount => cache.Count;
 
         /// <summary>A black overlay with this alpha, as it must be drawn in linear space to look like it does in the browser.</summary>
         public static float LinA(float a) => 1f - Mathf.Pow(1f - Mathf.Clamp01(a), 2.2f);
 
         public static Sprite Paint(string key, Spec s)
         {
-            if (cache.TryGetValue(key, out var hit) && hit != null) return hit;
+            if (TryGet(key, out var hit)) return hit;
             var sp = Make(s);
-            cache[key] = sp;
+            Put(key, sp);
             return sp;
         }
 
@@ -173,7 +209,7 @@ namespace MafiaNight.UI.Kit
         public static Sprite Pin(Color color)
         {
             string key = "pin" + ColorUtility.ToHtmlStringRGBA(color);
-            if (cache.TryGetValue(key, out var hit) && hit != null) return hit;
+            if (TryGet(key, out var hit)) return hit;
             const int n = 48;
             var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             var px = new Color32[n * n];
@@ -190,7 +226,7 @@ namespace MafiaNight.UI.Kit
                 }
             tex.SetPixels32(px); tex.Apply(false, true);
             var sp = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 48f);
-            cache[key] = sp;
+            Put(key, sp);
             return sp;
         }
     }
