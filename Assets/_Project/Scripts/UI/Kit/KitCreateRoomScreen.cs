@@ -71,7 +71,8 @@ namespace MafiaNight.UI.Kit
         /// <summary>Shows an empty form. <paramref name="suggestedName"/> goes in the name field.</summary>
         public void Open(int playerLevel, bool isVip, string suggestedName)
         {
-            level = playerLevel; vip = isVip; busy = false; created = null;
+            level = playerLevel; vip = isVip; created = null;
+            SetBusy(false);       // a public room that opened closes this screen while the button is still switched off: without this the next visit has a button that does nothing
             formRoot.SetActive(true); successRoot.SetActive(false);
             gameObject.SetActive(true); transform.SetAsLastSibling();
             nameInput.Text = suggestedName ?? "";

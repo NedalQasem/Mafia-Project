@@ -116,11 +116,12 @@ namespace MafiaNight.App
         public void Open()
         {
             var room = rooms.CurrentRoom;
-            if (room == null || screen == null) return;
+            if (room == null || screen == null) { Log.Warning("Room screen: asked to open but there is no current room", Tag); return; }
             // the screen can be asked to open more than once (joined, entered, invited...): the second time only redraws, or every line and every subscription would be doubled
             if (IsOpen && openedRoom == room.Id) { Redraw(); return; }
             openedRoom = room.Id; shownLines.Clear();
             active = true;
+            Log.Info("Room screen opened: '" + room.Name + "'" + (string.IsNullOrEmpty(room.OfficialId) ? "" : " (official " + room.OfficialId + ")"), Tag);
             Screen.sleepTimeout = SleepTimeout.NeverSleep;       // talking in a room without touching the phone must not let the screen lock (the phone then cuts the network and the room drops)
             officialId = room.OfficialId ?? "";
             Bind();
@@ -234,7 +235,7 @@ namespace MafiaNight.App
         {
             // the connection to the room was lost without the player's choice: keep the screen up and walk back in (see Recover)
             bool lost = reason == RoomLoss.Disconnected && IsOpen && lastRoom != null;
-            if (IsOpen && !string.IsNullOrEmpty(reason) && !lost) { screen.Hide(); active = false; }
+            if (IsOpen && !string.IsNullOrEmpty(reason) && !lost) { Log.Info("Room screen closed: " + reason, Tag); screen.Hide(); active = false; }
             CloseServerChat();
             talking.Clear(); wasSeated = false;
             if (lost)
