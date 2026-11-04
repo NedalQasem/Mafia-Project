@@ -62,12 +62,12 @@ section{max-width:1000px;margin:0 auto 38px}
 .gem{position:absolute;z-index:5;width:34px;height:42px;display:grid;place-items:center;clip-path:polygon(50% 0,100% 24%,100% 72%,50% 100%,0 72%,0 24%);background:linear-gradient(180deg,#ff8a90,var(--ac) 40%,var(--ac2) 100%);filter:drop-shadow(0 2px 2px #000)}
 .gem::before{content:"";position:absolute;inset:2.5px;clip-path:inherit;background:linear-gradient(180deg,var(--ac),var(--ac2) 70%,#000);}
 .gem svg{position:relative;width:16px;height:16px;fill:#fff3d8;margin-top:-3px}
-.gem.t{top:6px;right:16px}.gem.b{bottom:8px;left:16px;transform:rotate(180deg)}.gem.b svg{transform:rotate(180deg)}
+.gem.t{top:6px;right:16px}.gem.b{z-index:8;bottom:12px;left:12px;transform:rotate(180deg)}.gem.b svg{transform:rotate(180deg)}
 .bul{position:absolute;z-index:5;top:50px;right:16px;display:flex;flex-direction:column;gap:2px;align-items:center}
 .bul i{width:7px;height:11px;border-radius:3px 3px 1px 1px;background:linear-gradient(90deg,#f5e2a8,#b98a2e);box-shadow:0 0 0 1px #000a}
 .bul i.off{background:#3a2e22}
-.nameplate{position:absolute;left:24px;right:24px;bottom:24px;z-index:5;text-align:center;padding:6px 6px 7px;border-radius:6px;background:linear-gradient(180deg,#000c,#000e);box-shadow:0 0 0 1.5px var(--line),0 0 0 3px #000}
-.nameplate b{display:block;font-family:Lalezar;font-weight:400;font-size:1.5rem;line-height:1.1;color:var(--orn);text-shadow:0 2px 0 #000}
+.nameplate{position:absolute;left:34px;right:34px;bottom:26px;z-index:5;text-align:center;padding:6px 6px 7px;border-radius:6px;background:linear-gradient(180deg,#000c,#000e);box-shadow:0 0 0 1.5px var(--line),0 0 0 3px #000}
+.nameplate b{display:block;font-family:Lalezar;font-weight:400;font-size:1.35rem;line-height:1.1;color:var(--orn);text-shadow:0 2px 0 #000;white-space:nowrap}
 .nameplate small{display:block;font-family:Cinzel,serif;font-weight:700;font-size:.6rem;letter-spacing:.28em;color:var(--orn);opacity:.75;margin-top:1px;direction:ltr}
 .tier{position:absolute;left:22px;top:28px;z-index:5;font-weight:800;font-size:.56rem;color:#fff;text-shadow:0 1px 3px #000;writing-mode:vertical-rl;letter-spacing:.04em;opacity:.9}
 /* back: the explanation */
