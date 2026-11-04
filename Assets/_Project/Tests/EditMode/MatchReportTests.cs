@@ -47,6 +47,22 @@ namespace MafiaNight.Tests
         }
 
         [Test]
+        public void A_table_with_too_few_real_accounts_sends_no_report()
+        {
+            // five players but only three of them have an account (the rest are bots with an empty PlayFab id): the server refuses fewer than four players
+            var players = Enumerable.Range(0, 5).Select(i => new KeyValuePair<string, string>("p" + i, "Player " + i)).ToList();
+            var match = new MafiaMatch(new MatchConfig(), players, new First());
+            var wire = new Wire();
+            var clients = players.ToDictionary(p => p.Key, p => new ClientMatchController(p.Key, _ => { }));
+            var host = new HostMatchController(match, wire, "p0", m => clients["p0"].Apply(WireMessage.FromBytes(m.ToBytes())));
+            var roster = players.ToDictionary(p => p.Key, p => int.Parse(p.Key.Substring(1)) < 3 ? "PF" + p.Key.ToUpper() + "000000" : "");
+            host.Begin("0123456789abcdef", roster);
+            Deliver(wire, clients);
+            FinishWithTownWin(host, match, wire, clients);
+            foreach (var p in match.Players.Where(p => !p.IsMafia && p.Id != "p0")) Assert.IsNull(clients[p.Id].BuildReport(), p.Id + ": only three accounts");
+        }
+
+        [Test]
         public void Every_device_learns_the_match_id_and_who_is_who_at_the_start()
         {
             var (host, wire, clients, match) = Play(6);

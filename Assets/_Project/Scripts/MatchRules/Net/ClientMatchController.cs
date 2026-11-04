@@ -193,6 +193,9 @@ namespace MafiaNight.MatchRules.Net
         /// What this device tells the rewards server when the match is over: who played (PlayFab ids), who won, and this player's own role and fate.
         /// Null when there is nothing to report (practice, a spectator, no winner, or too few known PlayFab ids).
         /// </summary>
+        /// <summary>The fewest real accounts (PlayFab ids) at the table for a report to be sent: the rewards server's own minimum of players.</summary>
+        public const int MinAccountsToReport = 4;
+
         public MatchReport BuildReport()
         {
             if (Phase != Phase.GameOver || Winner == Winner.None || string.IsNullOrEmpty(MatchId) || !MyRole.HasValue) return null;
@@ -200,6 +203,7 @@ namespace MafiaNight.MatchRules.Net
             if (me == null) return null;
             var ids = new List<string>();
             foreach (var s in seats) if (roster.TryGetValue(s.Id, out var pf) && !string.IsNullOrEmpty(pf)) ids.Add(pf);
+            if (ids.Count < MinAccountsToReport) return null;       // bots have no account: a table that is mostly bots earns nothing, and the server would refuse the report anyway
             return new MatchReport { MatchId = MatchId, PlayFabIds = ids, Winner = Winner.ToString(), MyRole = MyRole.Value.ToString(), Survived = me.Alive && !me.Left, Rounds = Math.Max(1, Round), DurationSec = (int)Math.Max(0, DurationSeconds) };
         }
 
