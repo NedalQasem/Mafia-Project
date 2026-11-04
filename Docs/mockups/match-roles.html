@@ -272,6 +272,15 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 .inp .chtab{border-radius:4px}
 .tbar{height:3px;margin:0 -12px}
 .lk{padding:6px 0}
+
+.tape{position:absolute;left:-4px;right:-4px;top:56%;height:11px;background:repeating-linear-gradient(45deg,#cdbd90 0 5px,#a8985f 5px 10px);box-shadow:0 2px 3px #0009;rotate:-9deg;z-index:6;opacity:0;transform:scale(1.7)}
+.tape.on{opacity:1;transform:none;transition:opacity .2s,transform .35s cubic-bezier(.3,1.7,.5,1)}
+.seat.awake-snip .av{box-shadow:0 0 0 2px #000,0 0 0 4px #8a6a30,0 4px 6px #000a}
+.go2.small{padding:6px;font-size:.82rem;margin-top:-2px}
+.lk.tapeLock{position:relative;padding:8px 0}
+.lk.tapeLock::before{content:"";position:absolute;left:-6px;right:-6px;top:50%;height:12px;margin-top:-6px;background:repeating-linear-gradient(45deg,#cdbd9066 0 5px,#a8985f66 5px 10px);rotate:-1.5deg}
+.lk.tapeLock span{position:relative;background:#120c08;padding:1px 10px;border-radius:3px}
+.new{font-size:.6rem;color:#2a1a08;background:#f5e2a8;border-radius:4px;padding:0 4px;margin-inline-start:4px}
 </style>
 </head>
 <body>
@@ -279,7 +288,7 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 <p class="sub">اختر دور اللاعب (مافيا، طبيب، شيخ، مواطن، متفرج) وشوف شو بيطلعله، شو بيسأله الراوي، وشو بيعمل، وشو بيشوف الباقي.</p>
 <div class="wrap">
   <div class="side">
-    <div class="lab">أنا…</div><div class="tabs" id="roleTabs"></div><div class="lab">نتيجة فحص الشيخ (للتجربة)</div><div class="tabs" id="resTabs"></div><div class="lab">المرحلة</div><div class="tabs" id="tabs"></div>
+    <div class="lab">أنا…</div><div class="tabs" id="roleTabs"></div><div class="lab">النتيجة (للتجربة)</div><div class="tabs" id="resTabs"></div><div class="lab">المرحلة</div><div class="tabs" id="tabs"></div>
     <button class="play" id="chatBtn" style="background:linear-gradient(180deg,#4a3526,#2b1e17);margin-inline-start:8px">افتح الدردشة (شوف الحالة الموسّعة)</button><button class="play" id="play">▶ شغّل من جديد</button>
     <div class="card" id="desc"></div>
   </div>
@@ -333,6 +342,13 @@ function setSky(c){$('sky').className='sky '+c}
 /* ---------- what each player sees: the same night, five points of view ---------- */
 const ROLES={mafia:{n:'مافيا',k:'red',c:'#e0585f'},doctor:{n:'طبيب',k:'teal',c:'#4fa58b'},sheikh:{n:'شيخ المواطنين',k:'blue',c:'#6fa0d6'},civ:{n:'مواطن',k:'',c:'#c9a050'},spec:{n:'متفرج',k:'',c:'#b8bff0'}};
 const STEPS=[['night','الليل يبدأ'],['call','ندائي'],['dawn','الفجر'],['day','النقاش'],['vote','التصويت']];
+Object.assign(ROLES,{
+ silencer:{n:'كاتم الصوت ✦',k:'red',c:'#e0585f',steps:[['night','الليل يبدأ'],['call','ندائي'],['dawn','الفجر'],['day','النقاش']]},
+ muted:{n:'اللاعب المُسكَت ✦',k:'',c:'#b9a67e',steps:[['dawn','الفجر'],['day','النقاش']]},
+ sniper:{n:'القنّاص ✦',k:'',c:'#c9a050',steps:[['night','الليل يبدأ'],['call','ندائي'],['dawn','الفجر: نتيجة القنص']]},
+ kid:{n:'الولد ✦',k:'',c:'#c9a050',steps:[['night','الليل يبدأ'],['dawn','انقتل بالليل'],['decide','قراره'],['watch','شو بيشوف الباقي']]}});
+const curSteps=()=>ROLES[role].steps||STEPS;
+let snres='mafia',kres='mafia';
 let role='mafia',step=0,fres='mafia';
 const CALLED={mafia:'يا مافيا… اصحوا. مين بدكم تقتلوا الليلة؟',doctor:'يا دكتور… اصحى. مين بدك تحمي الليلة؟',sheikh:'يا شيخ… اصحى. مين بدك تفحص الليلة؟'};
 function resetDock(){act='';sysline='';notes=[]}
@@ -363,12 +379,12 @@ const IMPACT='<svg class="impact go" viewBox="0 0 150 150" style="position:absol
 let chatOpen=false;
 const CH={table:{n:'الطاولة',lines:[['خالد','صباح الخير، مين شاكك بحدا؟'],['هديل','لسا بدري، خلونا نسمع'],['ريم','أنا شاكّة بسامر'],['لينا','ليش؟ شو شفتي؟'],['ريم','كان ساكت طول الليلة'],['أنت','خلينا نسمع منه',1]]},mafia:{n:'المافيا · سري',pr:1,lines:[['سامر','مين بنختار؟'],['أنت','نضال حاسس إنه الشيخ'],['سامر','نضال؟'],['أنت','تمام، نضال',1]]},room:{n:'الغرفة',lines:[['نضال','مين المافيا برأيكم؟'],['مازن','سامر مشبوه من البداية'],['نضال','وأنا بشك بخالد'],['مازن','خلينا نشوف الفجر']]}};
 const LOCK='<svg viewBox="0 0 24 24"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V8a3 3 0 0 0-6 0z"/></svg>';
-function chatKind(){const st=STEPS[step][0];if(role=='spec')return{k:'room'};if(st=='night'||st=='call'){if(role=='mafia'&&st=='call')return{k:'mafia'};return{locked:1}}return{k:'table'}}
+function chatKind(){const st=curSteps()[step][0];if(role=='muted'&&st=='day')return{locked:1,msg:'انسكتّ اليوم: الراوي سكّتك لحد الفجر',tape:1};if(role=='silencer'&&st=='call')return{k:'mafia'};if(role=='kid'&&(st=='decide'||st=='watch'||st=='dawn'))return{k:'table'};if(role=='sniper'||role=='kid'||role=='silencer'&&st=='night')return(st=='night'||st=='call')?{locked:1}:{k:'table'};if(role=='spec')return{k:'room'};if(st=='night'||st=='call'){if(role=='mafia'&&st=='call')return{k:'mafia'};return{locked:1}}return{k:'table'}}
 let act='',sysline='',notes=[];
 function chatHTML(){const c=chatKind();const o=chatOpen?' open':'';
  let ls=[];if(!c.locked){ls=CH[c.k].lines.slice();if(chatOpen)ls=ls.concat([['هديل','أنا بصوّت معكم'],['خالد','لحظة، خلونا نسمع الكل'],['ريم','تمام']])}
  const msgs=ls.map(l=>'<div class="m2'+(l[2]?' me':'')+'"><b>'+l[0]+'</b><p>'+l[1]+'</p></div>').join('')+notes.map(t=>'<div class="m2 sys"><p>'+t+'</p></div>').join('')+(sysline?'<div class="m2 sys"><p>'+sysline+'</p></div>':'');
- const foot=c.locked?'<div class="lk">'+LOCK+'الدردشة مقفلة بالليل</div>':'<div class="inp"><span class="chtab'+(CH[c.k].pr?' pr':'')+'">'+CH[c.k].n+'</span><span class="t">'+(role=='spec'?'اكتب للمتفرجين…':c.k=='mafia'?'اكتب للمافيا فقط…':'اكتب رسالة…')+'</span><i></i></div>';
+ const foot=c.locked?'<div class="lk'+(c.tape?' tapeLock':'')+'">'+(c.tape?'':LOCK)+'<span>'+(c.msg||'الدردشة مقفلة بالليل')+'</span></div>':'<div class="inp"><span class="chtab'+(CH[c.k].pr?' pr':'')+'">'+CH[c.k].n+'</span><span class="t">'+(role=='spec'?'اكتب للمتفرجين…':c.k=='mafia'?'اكتب للمافيا فقط…':'اكتب رسالة…')+'</span><i></i></div>';
  return '<div class="chat2'+o+'"><div class="msgs">'+msgs+'</div>'+foot+'</div>'}
 function renderDock(){$('bot').innerHTML=act+chatHTML();$('stage').classList.toggle('shrunk',chatOpen)}
 function hint(t){act='';sysline=t;renderDock()}
@@ -382,7 +398,7 @@ const SC={
   at(600,()=>{setSky('night');$('moon').classList.add('show');$('veil').classList.add('on');$('sm').textContent='الليل'});
   at(900,()=>cap('الكل ينام',role=='spec'?'أنت متفرج: بتشوف الطاولة وبتحكي مع المتفرجين':'أغمض عينيك… ولا تحكي'));
   at(1100,()=>{if(role=='spec'){seats[0].classList.add('dead');seats.forEach((x,i)=>{if(i)x.classList.add('sleep')});mic(true,'تحكي مع المتفرجين')}else{sleepAll();mic(false,'المايك مغلق — الليل')}});
-  at(3600,()=>{uncap();const t={mafia:'انتظر النداء: المافيا بيصحوا أول',doctor:'بعد المافيا بيجي دورك، خليك صاحي بقلبك',sheikh:'بعد الدكتور بيجي دورك',civ:'نام… الراوي بينادي غيرك. ما بتعمل شي هالليلة',spec:'أفعال الليل سرية، ما بتشوفها'}[role];hint(t)})},
+  at(3600,()=>{uncap();const t={silencer:'المافيا أول، وبعدها بيجي دورك تسكّت لاعب',sniper:'ناموا… بآخر الليل بيجي دورك. عندك طلقة وحدة',kid:'نام. دورك بيبلّش لما تطلع من اللعبة',muted:'',mafia:'انتظر النداء: المافيا بيصحوا أول',doctor:'بعد المافيا بيجي دورك، خليك صاحي بقلبك',sheikh:'بعد الدكتور بيجي دورك',civ:'نام… الراوي بينادي غيرك. ما بتعمل شي هالليلة',spec:'أفعال الليل سرية، ما بتشوفها'}[role];hint(t)})},
  call(){night();sleepAll();
   if(role=='mafia'){
    at(400,()=>say(CALLED.mafia,'red'));
@@ -452,19 +468,102 @@ const SC={
   at(11000,()=>{$('rc').className='roleCard';$('stamp').className='stamp';$('veil').className='veil';$('stage').style.transform='';undim()})}
 };
 
+
+function shotAt(i){const av=seats[i].querySelector('.av');$('flash').classList.add('go');$('phone').classList.remove('shake');void $('phone').offsetWidth;$('phone').classList.add('shake');av.insertAdjacentHTML('beforeend',IMPACT)}
+function cardFlip(icon,name,sub){$('rcb').innerHTML=icon+'<b>'+name+'</b><small>'+sub+'</small>';$('rc').className='roleCard show';setTimeout(()=>$('rc').classList.add('flip'),150)}
+function cardAway(){$('rc').className='roleCard'}
+function tape(i,on=true){let t=seats[i].querySelector('.tape');if(!t){seats[i].querySelector('.av').insertAdjacentHTML('beforeend','<div class="tape"></div>');t=seats[i].querySelector('.tape')}void t.offsetWidth;t.classList.toggle('on',on)}
+function dawnBase(){reset('night');rolePill();$('veil').classList.add('on');sleepAll();mic(false,'المايك مغلق — الليل');at(400,()=>{setSky('dawn');$('sun').classList.add('show');$('veil').className='veil';seats.forEach(x=>x.classList.remove('sleep'));$('sm').textContent='الفجر';mic(true,'المايك مفتوح — النهار')});at(900,()=>cap('طلع الصبح','الجميع يفتح عيونه'))}
+const NSC={
+ silencer:{
+  call(){night();sleepAll();
+   at(400,()=>say('يا كاتم الصوت… اصحى. مين بدك تسكّت بكرة؟ ما بيحكي النهار كله.','red'));
+   at(1500,()=>{wake(0,'mafia');wake(2,'mafia');dimOthers([0,2]);tag(2,'سامر · رفيقك','');mic(true,'المايك مفتوح — مع المافيا فقط');panel('red','','',[],['ثبّت الإسكات','off'],20)});
+   at(3400,()=>{seats.forEach((x,i)=>{if(![0,2,1].includes(i)){x.classList.remove('dim','sleep');x.classList.add('pickable')}})});
+   at(5200,()=>{seats.forEach(x=>x.classList.remove('pickable'));seats[4].classList.remove('dim');tape(4);tag(4,'مُسكَت','');enableBtn();panel('red','','',[],['ثبّت الإسكات'],20)});
+   at(6800,()=>confirmBtn('تم: لينا ما بتحكي بكرة'));
+   at(8000,()=>say('تمام. كاتم الصوت ينام.','red'));
+   at(8800,()=>{seats.forEach(x=>{x.classList.remove('awake-mafia','pickable');x.classList.add('sleep','dim')});tape(4,false);tag(4,'','');const t=seats[4].querySelector('.stag');if(t)t.remove();mic(false,'المايك مغلق — الليل');hush();hint('انتهى دورك.')})},
+  dawn(){dawnBase();
+   at(2400,()=>{uncap();say('ما مات أحد الليلة… بس لينا انسكتت اليوم. ما بتحكي.','red')});
+   at(4200,()=>{hush();$('veil').classList.add('on');zoomTo(4,1.9);seats.forEach((x,i)=>{if(i!=4)x.classList.add('dim')})});
+   at(5600,()=>{tape(4);tag(4,'مُسكَت','')});
+   at(7600,()=>{$('stage').style.transform='';$('veil').classList.remove('on');undim();note('إشعار خاص: إسكاتك نجح. لينا ما بتحكي اليوم.')})},
+  day(){reset('day');rolePill();mic(true,'المايك مفتوح — النهار');$('sm').textContent='النهار';tape(4);tag(4,'مُسكَت','');tag(2,'رفيقك','');
+   at(300,()=>{seats[3].classList.add('talk');hint('ريم عم تحكي… (لينا مُسكَتة، ما بتحكي)')});at(2800,()=>{seats[3].classList.remove('talk');seats[5].classList.add('talk')});at(5000,()=>seats[5].classList.remove('talk'))}},
+ muted:{
+  dawn(){dawnBase();
+   at(2400,()=>{uncap();say('ما مات أحد الليلة… بس سامي انسكت اليوم. ما بيحكي.','red')});
+   at(4200,()=>{hush();$('veil').classList.add('on');zoomTo(0,1.7);seats.forEach((x,i)=>{if(i)x.classList.add('dim')})});
+   at(5600,()=>{tape(0);tag(0,'مُسكَت','')});
+   at(7800,()=>{$('stage').style.transform='';$('veil').classList.remove('on');undim();hint('انسكتّ لحد الفجر الجاي. بتسمع وبتصوّت، بس ما بتحكي.')})},
+  day(){reset('day');rolePill();mic(false,'المايك مقفول عليك اليوم');$('sm').textContent='النهار';tape(0);tag(0,'مُسكَت','');
+   at(300,()=>{seats[3].classList.add('talk');hint('اسمع النقاش… تقدر تصوّت بآخر النهار.')});at(3000,()=>{seats[3].classList.remove('talk');seats[2].classList.add('talk')});at(5500,()=>seats[2].classList.remove('talk'))}},
+ sniper:{
+  call(){night();sleepAll();
+   at(400,()=>say('يا قنّاص… اصحى. معك طلقة وحدة بالمباراة. بدك تقنص الليلة؟',''));
+   at(1500,()=>{wake(0,'snip');dimOthers([0]);panel('neutral','','',[],['اطلق الطلقة الوحيدة','off'],20);act+='<div class="go2 neutral small">مش هالليلة، خليني أستنى</div>';renderDock()});
+   at(3600,()=>{seats.forEach((x,i)=>{if(i){x.classList.remove('dim','sleep');x.classList.add('pickable')}})});
+   at(5400,()=>{seats.forEach(x=>x.classList.remove('pickable'));pickSeat(5,'red');enableBtn();panel('neutral','','',[],['اطلق الطلقة الوحيدة'],20);act+='<div class="go2 neutral small">مش هالليلة، خليني أستنى</div>';renderDock()});
+   at(7000,()=>confirmBtn('الطلقة انحجزت: خالد'));
+   at(8200,()=>say('تمام. القنّاص ينام.',''));
+   at(9000,()=>{seats.forEach(x=>{x.classList.remove('awake-snip','target','pickable');x.classList.add('sleep','dim')});hush();hint('انتهى دورك. النتيجة بالفجر للكل.')})},
+  dawn(){dawnBase();const isM=snres=='mafia';
+   at(2400,()=>{uncap();say('هالليلة… القنّاص أطلق طلقته على خالد.','')});
+   at(4200,()=>{hush();$('veil').classList.add('on');zoomTo(5,1.9);seats.forEach((x,i)=>{if(i!=5)x.classList.add('dim')})});
+   at(5600,()=>{shotAt(5)});
+   at(6000,()=>{seats[5].classList.remove('dim');seats[5].classList.add('dead')});
+   at(6800,()=>{$('stage').style.transform='';$('veil').classList.remove('on');undim();cardFlip(isM?ICON.mafia:ICON.civ,isM?'مافيا':'مواطن','خالد كان…')});
+   at(9000,()=>{cardAway();if(isM){say('خالد كان من المافيا! والقنّاص بقي باللعبة.','');note('طلقتك انتهت. بتضل باللعبة، بس الكل صار يعرف إنك القنّاص.')}else{say('خالد كان مواطن بريء… طلعوا الاتنين: خالد والقنّاص.','');seats[0].classList.add('dead');note('خرجت من اللعبة: صرت متفرج. بتحكي مع المتفرجين.')}});
+   at(12500,()=>hush())}},
+ kid:{
+  dawn(){dawnBase();seats[0].querySelector('.nm').textContent='سامي (أنت)';
+   at(2400,()=>{uncap();say('هالليلة… قامت المافيا بقتل سامي.','red')});
+   at(4200,()=>{hush();$('veil').classList.add('on');zoomTo(0,1.7);seats.forEach((x,i)=>{if(i)x.classList.add('dim')})});
+   at(5600,()=>shotAt(0));
+   at(6000,()=>{seats[0].classList.remove('dim');seats[0].classList.add('dead')});
+   at(6800,()=>{$('stage').style.transform='';$('veil').classList.remove('on');undim();cardFlip(ICON.civ,'الولد','سامي كان…')});
+   at(9000,()=>{cardAway();say('تم إخراج الولد! وعنده قرار: بياخد معه لاعب.','');mic(true,'المايك مفتوح — كل الناس بتحكي معه')});
+   at(11500,()=>{hush();hint('عندك ٣٠ ثانية تفكّر. الكل بيناقشك. بعدها بتختار مين بيطلع معك.')})},
+  decide(){reset('day');rolePill();seats[0].querySelector('.nm').textContent='سامي (أنت)';seats[0].classList.add('dead');$('sm').textContent='قرار الولد';mic(true,'المايك مفتوح — الكل بيناقشك');const isM=kres=='mafia';
+   at(300,()=>{say('الولد عنده قرار… الكل بيسمعه.','');panel('red','','',[],['أطلّع هذا معي','off'],30)});
+   at(1800,()=>{hush();seats.forEach((x,i)=>{if(i&&i!=1)x.classList.add('pickable')});seats[3].classList.add('talk')});
+   at(3800,()=>{seats[3].classList.remove('talk');seats[5].classList.add('talk')});
+   at(6000,()=>{seats[5].classList.remove('talk');seats.forEach(x=>x.classList.remove('pickable'));pickSeat(2,'red');enableBtn();panel('red','','',[],['أطلّع هذا معي'],30)});
+   at(8000,()=>confirmBtn('اخترت: سامر'));
+   at(9200,()=>say('الولد اختار سامر.',''));
+   at(10800,()=>{hush();$('veil').classList.add('on');zoomTo(2,1.8);seats.forEach((x,i)=>{if(i!=2)x.classList.add('dim')});$('stamp').textContent='خرج مع الولد';$('stamp').classList.add('show')});
+   at(12000,()=>{seats[2].classList.remove('dim');seats[2].classList.add('dead');cardFlip(isM?ICON.mafia:ICON.civ,isM?'مافيا':'مواطن','سامر كان…')});
+   at(14500,()=>{cardAway();$('stamp').className='stamp';$('veil').className='veil';$('stage').style.transform='';undim();say(isM?'سامر كان من المافيا! ضربة معلّم من الولد.':'سامر كان مواطن… الولد جرّ بريء معه.','')});
+   at(17500,()=>hush())},
+  watch(){reset('day');rolePill();seats[0].classList.add('dead');$('sm').textContent='قرار الولد';mic(true,'المايك مفتوح — الكل بيناقش الولد');const isM=kres=='mafia';
+   // the others' point of view: the same moment, nothing to choose
+   at(300,()=>{say('تم إخراج الولد! وعنده قرار: بياخد معه لاعب.','');panel('','','',[],null,30)});
+   at(2000,()=>{hush();seats[3].classList.add('talk');hint('الولد عم يفكّر… ناقشوه بالصوت وأقنعوه.')});
+   at(4500,()=>{seats[3].classList.remove('talk');seats[2].classList.add('talk')});
+   at(7200,()=>{seats[2].classList.remove('talk');say('الولد اختار سامر.','')});
+   at(8800,()=>{hush();$('veil').classList.add('on');zoomTo(2,1.8);seats.forEach((x,i)=>{if(i!=2)x.classList.add('dim')});$('stamp').textContent='خرج مع الولد';$('stamp').classList.add('show')});
+   at(10000,()=>{seats[2].classList.remove('dim');seats[2].classList.add('dead');cardFlip(isM?ICON.mafia:ICON.civ,isM?'مافيا':'مواطن','سامر كان…')});
+   at(12500,()=>{cardAway();$('stamp').className='stamp';$('veil').className='veil';$('stage').style.transform='';undim();say(isM?'سامر كان من المافيا! المواطنين استفادوا.':'سامر كان مواطن… المافيا استفادت.','')})}}};
 const DESC={
  mafia:{h:'مافيا — شو بيشوف',p:'بالليل أول واحد بيصحى. الراوي بينادي «يا مافيا… اصحوا» وبتطلع لوحة جلد تحت الشاشة: «اختر ضحية الليلة» مع عدّاد ٢٠ ثانية. رفيقك المافيا بيضوي أحمر وبيطلع فوقه اسمه واختياره («سامر ← نضال»). بتضغط لاعب وبتثبّت. المايك بيفتح مع المافيا بس. بعدها «المافيا ينامون».',l:['الباقي بيشوفوا شاشة نايمة بس، ما بيعرفوا مين صحي.','بالنهار بتشوف كرت رفيقك وبتحس بتحذير «لا تكشف حالك».']},
  doctor:{h:'طبيب — شو بيشوف',p:'الراوي بيناديه بعد المافيا: «يا دكتور… اصحى». لوحة خضراء «مين بدك تحمي؟» مع عدّاد، وسطر «حماية نفسك: ١ متبقي». بيختار ويثبّت وبتطلع درع على اللاعب. بعدها ينام.',l:['ما بيعرف إذا حدا هاجم اللي حماه، بيعرف من إعلان الراوي بالفجر بس.','بالفجر بيجيه إشعار خاص: «حميت فلان».']},
  sheikh:{h:'شيخ المواطنين — شو بيشوف',p:'بعد الدكتور: «يا شيخ… اصحى». لوحة زرقاء «مين بدك تفحص؟». بيختار ويثبّت، فالكاميرا بتقرّب على اللاعب وبيضوي عليه ضوء مصباح (جو تحقيق)، وبعدها بيطلع ملف سري (جلد) فيه صورة اللاعب وسطور بتنكتب وحدة وحدة، وبآخرها ختم أحمر «مافيا» (أو أخضر «مواطن») بينضرب بقوة مع هزّة. الجواب إله وحده، وبينحفظ بدفتر الفحص ونهاراً بيظهر.',l:['الجواب ما بيطلع لأي حدا غيره.','التحذير الدائم: «لا تكشف حالك» لأن المافيا بتصطاده.']},
  civ:{h:'مواطن — شو بيشوف',p:'بالليل شاشة نايمة بنفس إيقاع الباقي: الراوي بيحكي جمل جوّ («الليل عم يمشي… اهدأ»)، ولوحة «إنت نايم» مع عدّاد. ما عنده قدرة.',l:['مدة النداءات ثابتة حتى لو الدور صاحبه ميت، عشان ما حدا يعرف مين صحي من طول الصمت (قاعدة منع التسريب).','المايك مغلق طول الليل.']},
+ silencer:{h:'كاتم الصوت (مافيا) — شو بيشوف',p:'مافيا من نوع تاني: بدل ما يقتل، بيسكّت. بعد نداء المافيا، الراوي بيناديه: «يا كاتم الصوت… مين بدك تسكّت بكرة؟». بيختار لاعب ويثبّت، فبينحط شريط لاصق ورقي على مقعده ووسم «مُسكَت». بالفجر الكل بيعرف إنه فلان انسكت (من غير ما يعرفوا مين سكّته).',l:['بيشوف رفيقه المافيا وبيحكي معه بدردشة المافيا السرية.','بالنهار بيشوف الشريط على المُسكَت.','قرار مفتوح: مدة الإسكات، ودردشة المُسكَت المكتوبة، وهل بيصوّت (المعاينة: بيصوّت بس ما بيحكي ولا بيكتب).']},
+ muted:{h:'اللاعب المُسكَت — شو بيشوف',p:'بالفجر الراوي بيعلن إنه انسكت، وبينحط شريط على مقعده. نهاراً مايكه مقفول والدردشة عليها شريط «انسكتّ اليوم». بيسمع كل شي وبيصوّت.',l:['مش بيعرف مين سكّته.','الإسكات بيخلص بالفجر الجاي.']},
+ sniper:{h:'القنّاص — شو بيشوف',p:'آخر واحد بينادوه بالليل: «يا قنّاص… اصحى. معك طلقة وحدة». زر «اطلق الطلقة الوحيدة» وزر صغير «مش هالليلة». بيختار هدف وبيثبّت. بالفجر الراوي بيعلن القنص: الطلقة، ثم كرت الهدف بينقلب. هدف مافيا ← بيطلع وبيضل القنّاص (وبينكشف إنه القنّاص). هدف مواطن ← بيطلعوا الاتنين. (بدّل النتيجة من فوق).',l:['الطلقة مرة وحدة بالمباراة.','قرار مفتوح: هل بينكشف مين القنّاص؟ (المعاينة: أيوه).']},
+ kid:{h:'الولد — شو بيشوف',p:'ليلاً نايم مثل المواطن. لما يطلع (بالتصويت أو بالاغتيال): كرته بينقلب، والراوي: «تم إخراج الولد!»، وبتنفتح المايكات: الكل بيناقشه ٣٠ ثانية. بعدين هو بيختار علناً مين بيطلع معه، وبيطلعوا الاتنين. لو الهدف مافيا بيفيد المواطنين، ولو مواطن بيفيد المافيا. (جرّب «قراره» و«شو بيشوف الباقي»).',l:['دوره مخيف: لازم يفكّر بحذر.','قرار مفتوح: مدة التفكير، واسم الدور.']},
  spec:{h:'متفرج (ميت أو داخل متأخر) — شو بيشوف',p:'بيشوف الطاولة بس، وأفعال الليل سرية عنه كمان. لوحة «أنت متفرج»، وبيحكي مع باقي المتفرجين ويسمع نقاش اللاعبين نهاراً (واللاعبين ما بيسمعوه).',l:['بالفجر والتصويت بيشوف نفس المشاهد العامة.','قرار مفتوح: هل المتفرج بيشوف أدوار اللاعبين الأحياء؟ (حالياً لأ).']}};
 function renderTabs(){
- tabs2($('roleTabs'),Object.entries(ROLES).map(([k,v])=>[k,v.n]),role,k=>{role=k;renderTabs();play()});
- tabs2($('resTabs'),[['mafia','مافيا ❗'],['civ','مواطن ✔']],fres,k=>{fres=k;renderTabs();role='sheikh';step=1;renderTabs();play()});
- tabs2($('tabs'),STEPS.map((x,i)=>[i,x[1]]),step,k=>{step=+k;renderTabs();play()});
- const d=DESC[role];$('desc').innerHTML='<h2>'+d.h+'</h2>'+d.p+'<ul>'+d.l.map(x=>'<li>'+x+'</li>').join('')+'</ul><div class="tech">المرحلة المعروضة: '+STEPS[step][1]+'</div>'}
+ tabs2($('roleTabs'),Object.entries(ROLES).map(([k,v])=>[k,v.n]),role,k=>{role=k;step=0;renderTabs();play()});
+ const RT=role=='sniper'?[['mafia','القنّاص صاب مافيا'],['civ','القنّاص صاب مواطن']]:role=='kid'?[['mafia','الولد اختار مافيا'],['civ','الولد اختار مواطن']]:role=='sheikh'?[['mafia','مافيا ❗'],['civ','مواطن ✔']]:[];
+ $('resTabs').parentElement.querySelectorAll('.lab')[1].style.display=RT.length?'':'none';
+ tabs2($('resTabs'),RT,role=='sniper'?snres:role=='kid'?kres:fres,k=>{if(role=='sniper')snres=k;else if(role=='kid')kres=k;else fres=k;renderTabs();play()});
+ tabs2($('tabs'),curSteps().map((x,i)=>[i,x[1]]),step,k=>{step=+k;renderTabs();play()});
+ const d=DESC[role];$('desc').innerHTML='<h2>'+d.h+'</h2>'+d.p+'<ul>'+d.l.map(x=>'<li>'+x+'</li>').join('')+'</ul><div class="tech">المرحلة المعروضة: '+curSteps()[step][1]+(ROLES[role].steps?'  ·  دور جديد من كتالوج الأدوار (مش منفّذ بعد)':'')+'</div>'}
 function tabs2(el,list,cur,fn){el.innerHTML='';list.forEach(([k,t])=>{const b=document.createElement('button');b.textContent=t;b.className=String(k)==String(cur)?'on':'';b.onclick=()=>fn(k);el.appendChild(b)})}
-function play(){SC[STEPS[step][0]]()}
+function play(){const st=curSteps()[step][0];const f=(NSC[role]&&NSC[role][st])||SC[st];f()}
 $('play').onclick=play;
 $('chatBtn').onclick=toggleChat;
 renderTabs();play();
