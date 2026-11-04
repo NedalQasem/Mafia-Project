@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المباراة من عين كل لاعب</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--crim:#8a1c24;--crim2:#e0585f;--teal:#4fa58b;--blue:#6fa0d6;--brass:#b99048;--gold:#f5e2a8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:14px 10px 40px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-align:center}
+.sub{color:#8d744a;text-align:center;font-size:.8rem;margin:0 0 14px}
+.wrap{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start;max-width:980px;margin:0 auto}
+.side{flex:1 1 300px;max-width:430px;display:grid;gap:10px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{padding:7px 12px;border-radius:14px;font:800 .78rem Cairo;color:#b9a67e;background:#000a;border:0;box-shadow:inset 0 0 0 1px #3a2e22;cursor:pointer}
+.tabs button.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30)}
+.card{background:#120d0a;border-radius:14px;padding:12px 14px;box-shadow:inset 0 0 0 1px #2c2219;font-size:.82rem;line-height:1.75;color:#cfc6b2}
+.card h2{font-family:Lalezar;font-weight:400;font-size:1.15rem;margin:0 0 4px;color:var(--gold)}
+.card ul{margin:6px 0 0;padding:0 18px 0 0}
+.card .tech{margin-top:8px;padding-top:8px;border-top:1px dashed #3a2e22;color:#8d744a;font-size:.74rem}
+.play{align-self:flex-start;padding:8px 18px;border-radius:14px;border:0;cursor:pointer;font:800 .85rem Cairo;color:#fff;background:linear-gradient(180deg,#a3242d,#5a0f15)}
+.phone{width:min(390px,100%);height:790px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;flex:none;box-shadow:0 0 0 2px #000,0 0 0 4px #2a2118,0 20px 50px #000;background:#0b0e1c}
+.sky{position:absolute;inset:0;transition:background 1.2s,opacity 1s;z-index:0}
+.sky.day{background:radial-gradient(ellipse 90% 34% at 50% 0,#f0c06a40,transparent 70%),linear-gradient(180deg,#2a1d12,#0b0705)}
+.sky.night{background:radial-gradient(ellipse 80% 40% at 50% 8%,#2a3a7a55,transparent 70%),linear-gradient(180deg,#0b0e1c,#05060b)}
+.sky.dawn{background:radial-gradient(ellipse 100% 45% at 50% 0,#ffb35a66,transparent 72%),linear-gradient(180deg,#3a2414,#0b0705)}
+.moon{position:absolute;top:70px;left:50%;width:70px;height:70px;margin-left:-35px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff7d8,#d8d2b0 60%,#9a947a);box-shadow:0 0 40px 10px #aab6ff44;opacity:0;transform:translateY(40px);transition:opacity 1s,transform 1.2s;z-index:1}
+.moon.show{opacity:.95;transform:none}
+.sun{position:absolute;top:60px;left:50%;width:84px;height:84px;margin-left:-42px;border-radius:50%;background:radial-gradient(circle,#fff1c2,#ffb35a 60%,#d9762c);box-shadow:0 0 70px 24px #ffb35a66;opacity:0;transform:translateY(80px);transition:opacity 1s,transform 1.4s;z-index:1}
+.sun.show{opacity:1;transform:none}
+.top{position:absolute;top:0;left:0;right:0;padding:30px 14px 8px;display:flex;align-items:center;gap:10px;z-index:8}
+.ttl{flex:1;font-family:Lalezar;font-size:1.5rem;line-height:1}
+.ttl small{display:block;font-family:Cairo;font-weight:600;font-size:.62rem;color:#8d744a}
+.pill{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:14px;font-weight:800;font-size:.68rem;background:#000b;box-shadow:inset 0 0 0 1px #3a2e22;color:#b9a67e;transition:all .4s}
+.pill.on{color:#bfe8d8;box-shadow:inset 0 0 0 1px #4fa58b99}
+.pill.off{color:#e6b3b6;box-shadow:inset 0 0 0 1px #8a1c2488}
+.pill i{width:8px;height:8px;border-radius:50%;background:currentColor;display:block}
+.stage{position:absolute;left:0;right:0;top:100px;height:430px;z-index:3;transition:transform .9s cubic-bezier(.2,.7,.2,1),filter .6s}
+.felt{position:absolute;left:11%;right:11%;top:9%;bottom:9%;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#1f5a3d,#123a28 70%,#0b2418);box-shadow:inset 0 0 0 7px #3a2417,inset 0 0 0 9px #8a6a30,0 10px 30px #000a;transition:filter 1s}
+.seat{position:absolute;width:64px;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;transition:filter .5s,transform .6s}
+.av{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#3b2a20,#1a110d);box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 4px 8px #000a;transition:box-shadow .4s}
+.av svg{width:27px;height:27px;fill:#cfc6b2;transition:opacity .5s}
+.nm{max-width:66px;padding:1px 7px;border-radius:5px;font-weight:800;font-size:.6rem;line-height:1.4;white-space:nowrap;background:#000a;color:#cfc6b2}
+.seat.me .av{box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 0 0 4px var(--brass)}
+.seat.sleep .av svg{opacity:.35}
+.seat.sleep .av::after{content:"z";position:absolute;top:-8px;left:-4px;font-family:Lalezar;font-size:1.05rem;color:#9bb0ff;animation:zz 2s infinite}
+@keyframes zz{0%{opacity:0;transform:translateY(4px)}50%{opacity:1}100%{opacity:0;transform:translate(6px,-8px)}}
+.seat.dim{filter:brightness(.35)}
+.seat.awake-mafia .av{box-shadow:0 0 0 2px #000,0 0 0 4px var(--crim2),0 0 22px 6px #e0585faa}
+.seat.awake-doc .av{box-shadow:0 0 0 2px #000,0 0 0 4px var(--teal),0 0 22px 6px #4fa58baa}
+.seat.awake-sher .av{box-shadow:0 0 0 2px #000,0 0 0 4px var(--blue),0 0 22px 6px #6fa0d6aa}
+.seat.target .av{animation:target 1s infinite}
+@keyframes target{0%,100%{box-shadow:0 0 0 2px #000,0 0 0 4px var(--crim2),0 0 8px 2px #e0585f88}50%{box-shadow:0 0 0 2px #000,0 0 0 6px var(--crim2),0 0 26px 8px #e0585fcc}}
+.seat.dead{filter:grayscale(1) brightness(.5)}
+.seat.dead .av::after{content:"✕";position:absolute;inset:0;display:grid;place-items:center;font-size:1.7rem;font-weight:800;color:#e0585f;text-shadow:0 0 4px #000}
+.seat.talk .av{box-shadow:0 0 0 2px #000,0 0 0 4px var(--teal),0 0 16px 4px #4fa58bcc}
+.shield{position:absolute;inset:-9px;border-radius:50%;border:3px solid var(--teal);box-shadow:0 0 22px 6px #4fa58bcc,inset 0 0 14px #4fa58b88;opacity:0;transform:scale(.4)}
+.shield.pop{animation:shield 1.3s ease-out forwards}
+@keyframes shield{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.15)}60%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
+.scan{position:absolute;inset:-12px;border-radius:50%;border:2px dashed var(--blue);opacity:0}
+.scan.go{animation:scan 1.6s linear forwards}
+@keyframes scan{0%{opacity:0;transform:rotate(0) scale(1.6)}30%{opacity:1}100%{opacity:1;transform:rotate(360deg) scale(1)}}
+.cross{position:absolute;inset:-14px;opacity:0;background:
+ linear-gradient(var(--crim2),var(--crim2)) center/2px 100% no-repeat,linear-gradient(var(--crim2),var(--crim2)) center/100% 2px no-repeat;border-radius:50%;border:2px solid var(--crim2)}
+.cross.go{animation:cross .9s ease-out forwards}
+@keyframes cross{0%{opacity:0;transform:scale(2.4) rotate(45deg)}60%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:1;transform:scale(1)}}
+.impact{position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;opacity:0;pointer-events:none;z-index:6}
+.impact.go{animation:impact 1.8s ease-out forwards}
+@keyframes impact{0%{opacity:0;transform:scale(.2)}8%{opacity:1;transform:scale(1.15)}16%{transform:scale(1)}80%{opacity:1}100%{opacity:0}}
+.bullet{position:absolute;left:50%;top:50%;width:30px;height:9px;margin:-4px 0 0 -15px;border-radius:2px 5px 5px 2px;background:linear-gradient(180deg,#fff1b8,#c9992e 55%,#7a5a10);box-shadow:-34px 0 14px 2px #ffd27a77,0 0 8px #fff;opacity:0;z-index:7}
+.bullet.fly{animation:fly .32s cubic-bezier(.5,0,1,.6) forwards}
+@keyframes fly{0%{opacity:1;transform:translate(-230px,-60px) rotate(14deg)}100%{opacity:1;transform:translate(-10px,-2px) rotate(14deg)}}
+.bullet.ric{animation:ric .9s ease-out forwards}
+@keyframes ric{0%{opacity:1;transform:translate(-10px,-2px) rotate(14deg)}30%{opacity:1;transform:translate(-60px,-46px) rotate(-120deg)}100%{opacity:0;transform:translate(-110px,40px) rotate(-420deg)}}
+.av svg.dshield{width:104px;height:116px;fill:none}
+.dshield{position:absolute;left:50%;top:50%;width:104px;height:116px;margin:-60px 0 0 -52px;z-index:8;opacity:0;transform:scale(.3);filter:drop-shadow(0 0 16px #4fa58bcc)}
+.dshield.pop{animation:dsh 2.2s cubic-bezier(.2,1.3,.4,1) forwards}
+@keyframes dsh{0%{opacity:0;transform:scale(.3)}14%{opacity:1;transform:scale(1.18)}26%{transform:scale(1)}78%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.25)}}
+.ring2{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;border:3px solid #7fe0c0;opacity:0;z-index:7}
+.ring2.go{animation:rip 1s ease-out forwards}
+@keyframes rip{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(3.2)}}
+.spk{position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2px;border-radius:50%;background:#fff3b0;box-shadow:0 0 8px 2px #ffd27a;z-index:9;opacity:0}
+.spk.go{animation:spk .6s ease-out forwards}
+@keyframes spk{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:30;pointer-events:none}
+.flash.go{animation:flash .5s ease-out}
+@keyframes flash{0%{opacity:.95}100%{opacity:0}}
+.phone.shake{animation:shake .5s}
+@keyframes shake{0%,100%{transform:none}15%{transform:translate(-6px,3px)}30%{transform:translate(5px,-4px)}45%{transform:translate(-4px,2px)}60%{transform:translate(3px,-2px)}}
+.veil{position:absolute;inset:0;background:#000;opacity:0;z-index:5;transition:opacity .8s;pointer-events:none}
+.veil.on{opacity:.6}
+.veil.deep{opacity:.82}
+.narr{position:absolute;left:0;right:0;top:80px;z-index:12;display:grid;justify-items:center;gap:8px;opacity:0;transform:translateY(-14px);transition:opacity .6s,transform .6s;pointer-events:none}
+.narr.show{opacity:1;transform:none}
+
+/* the narrator: a leather medallion with a brass ring, and his message as a telegram slip with a wax seal (the language of quick-notify.html) */
+.medal{position:relative;width:78px;height:78px;border-radius:50%;display:grid;place-items:center;background:var(--grain),linear-gradient(180deg,#3b2a20,#2b1e17 55%,#1a110d);background-blend-mode:multiply,normal;box-shadow:0 0 0 2px #000,0 0 0 5px var(--brass),0 0 0 7px #000,0 10px 24px #000c,0 0 36px 6px #ffb35a30}
+.medal::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1.5px dashed #c9a05077}
+.medal svg{width:40px;height:40px;position:relative;z-index:1;filter:drop-shadow(0 2px 3px #000a)}
+.plate{margin-top:-4px;padding:2px 14px 3px;border-radius:5px;font-family:Lalezar;font-size:.82rem;color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:0 0 0 1.5px #000,0 3px 6px #000a,inset 0 1px 0 #fff9}
+.slip{--s1:#f5e2a8;--s2:#b98a2e;--s3:#5a3a10;--ic:#2a1a08;position:relative;width:min(340px,90%);padding:12px 16px 20px 14px;display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:center;color:var(--ink);rotate:-1.2deg;
+  background:var(--grain),linear-gradient(180deg,#e3d9bd,#d3c8a6);background-blend-mode:multiply,normal;box-shadow:inset 0 0 26px #8a7a5a99;
+  filter:drop-shadow(0 8px 10px #000c)}
+.slip::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:10px;background:linear-gradient(-45deg,transparent 7px,#d3c8a6 0) 0 0/14px 10px,linear-gradient(45deg,transparent 7px,#d3c8a6 0) 0 0/14px 10px;pointer-events:none}
+.slip::before{content:"";position:absolute;inset:5px 5px 13px 5px;border:1.5px dashed #1c170f55;pointer-events:none}
+.slip>*{position:relative;z-index:1}
+.seal{position:relative;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 28%,var(--s1),var(--s2) 55%,var(--s3));box-shadow:0 0 0 2px color-mix(in srgb,var(--s2) 75%,#000),0 4px 6px #0009,inset 0 1px 0 #ffffff55}
+.seal::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1px dashed #ffffff44}
+.seal svg{width:26px;height:26px;position:relative;z-index:1;filter:drop-shadow(0 1px 0 #0006)}
+.slip .hd{display:block;font-weight:800;font-size:.58rem;letter-spacing:.06em;color:#6a5a3a;border-bottom:1px solid #1c170f33;padding-bottom:2px;margin-bottom:4px}
+.slip .tx{display:block;font-family:"Aref Ruqaa",Cairo;font-weight:700;font-size:1.28rem;line-height:1.45;color:var(--ink)}
+.slip.k-mafia{--s1:#d8404a;--s2:#8a1c24;--s3:#4a0b10;--ic:#f3e6c8}
+.slip.k-doc{--s1:#4fa884;--s2:#1d4a3c;--s3:#0c2219;--ic:#f3e6c8}
+.slip.k-sher{--s1:#6fa0d6;--s2:#24476e;--s3:#0e1f33;--ic:#f3e6c8}
+.slip.drop{animation:drop .7s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes drop{0%{opacity:0;transform:translateY(-40px) rotate(-6deg)}100%{opacity:1;transform:none}}
+.slip.drop .seal{animation:stampin .45s .3s cubic-bezier(.3,1.8,.5,1) both}
+@keyframes stampin{0%{transform:scale(2.4);opacity:0}100%{transform:none;opacity:1}}
+.cap{position:absolute;left:0;right:0;bottom:200px;z-index:12;text-align:center;font-family:Lalezar;font-size:2.4rem;line-height:1.1;text-shadow:0 4px 18px #000;opacity:0;transform:scale(.8);transition:opacity .5s,transform .5s;pointer-events:none}
+.cap small{display:block;font-family:Cairo;font-weight:800;font-size:.8rem;color:#b9a67e;margin-top:4px}
+.cap.show{opacity:1;transform:none}
+.roleCard{position:absolute;left:50%;top:230px;width:150px;margin-left:-75px;height:210px;z-index:14;perspective:700px;opacity:0;pointer-events:none}
+.roleCard.show{opacity:1}
+.roleCard .in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.3,.8,.3,1)}
+.roleCard.flip .in{transform:rotateY(180deg)}
+.roleCard .f,.roleCard .b{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:grid;place-items:center;text-align:center;box-shadow:0 0 0 3px #000,0 0 0 5px var(--brass),0 12px 30px #000c}
+.roleCard .f{background:repeating-linear-gradient(45deg,#2a1810,#2a1810 6px,#1a0f0a 6px,#1a0f0a 12px);font-family:Lalezar;font-size:3rem;color:var(--brass)}
+.roleCard .b{transform:rotateY(180deg);background:linear-gradient(180deg,#f0e6c8,#cdbf98);color:var(--ink);font-family:Lalezar}
+.roleCard .b svg{width:62px;height:62px}
+.roleCard .b b{font-size:1.7rem;font-weight:400;display:block}
+.roleCard .b small{font-family:Cairo;font-weight:800;font-size:.7rem;color:#6a5a3a;display:block}
+.stamp{position:absolute;left:50%;top:300px;z-index:14;font-family:Lalezar;font-size:2.2rem;color:var(--crim2);border:5px solid var(--crim2);border-radius:10px;padding:2px 16px;transform:translateX(-50%) rotate(-12deg) scale(2.4);opacity:0;transition:opacity .25s,transform .35s cubic-bezier(.2,1.4,.4,1);pointer-events:none;background:#000a}
+.stamp.show{opacity:1;transform:translateX(-50%) rotate(-12deg) scale(1)}
+.bot{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 18px;z-index:13;display:grid;gap:9px;background:linear-gradient(0deg,#090605 66%,transparent)}
+.hint{padding:10px 14px;border-radius:12px;background:#000b;box-shadow:inset 0 0 0 1px #3a2e22;font-weight:800;font-size:.8rem;text-align:center;color:#cfc6b2}
+.btn{padding:13px;border-radius:14px;font-family:Lalezar;font-size:1.15rem;text-align:center;color:#fff;background:linear-gradient(180deg,#a3242d,#5a0f15);box-shadow:inset 0 1px 0 #ffffff33,0 4px 0 #2a0508}
+.btn.gold{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:inset 0 1px 0 #fff8,0 4px 0 #4a3512}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;font-weight:800;font-size:.66rem}
+.chip.tealc{background:#0f2e26;color:#c9f0e2}.chip.goldc{background:#2b2210;color:var(--gold)}
+.tally{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.tally span{padding:3px 9px;border-radius:10px;background:#000b;box-shadow:inset 0 0 0 1px #3a2e22;font-weight:800;font-size:.68rem}
+.spec{position:absolute;top:96px;left:0;right:0;z-index:9;text-align:center;opacity:0;transition:opacity .6s}
+.spec.show{opacity:1}
+.spec b{display:inline-block;padding:5px 16px;border-radius:14px;background:#1a1a2a;color:#cfd3ff;font-family:Lalezar;font-weight:400;font-size:1rem;box-shadow:inset 0 0 0 1px #4a4f8a}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+
+@property --p{syntax:'<percentage>';inherits:false;initial-value:100%}
+.lab{color:#8d744a;font-size:.72rem;font-weight:800;margin:2px 0 -4px}
+.pick{position:relative;display:grid;gap:8px;padding:12px 14px 14px;border-radius:16px;background:var(--grain),linear-gradient(180deg,#3b2a20,#1a110d);background-blend-mode:multiply,normal;box-shadow:0 0 0 2px #000,0 0 0 3.5px #8a6a30,0 10px 24px #000c;animation:rise .5s cubic-bezier(.3,1.3,.5,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.pick::after{content:"";position:absolute;inset:5px;border:1.5px dashed #c9a05055;border-radius:11px;pointer-events:none}
+.pick>*{position:relative;z-index:1}
+.pt{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pt b{font-family:Lalezar;font-weight:400;font-size:1.12rem;color:var(--gold);line-height:1.1}
+.tm{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;font-family:Lalezar;font-size:.85rem;color:#ffb35a;background:conic-gradient(#ffb35a var(--p),#2a2118 0);position:relative;animation:tmr var(--dur,8s) linear forwards;flex:none}
+.tm::before{content:"";position:absolute;inset:4px;border-radius:50%;background:#150e0a}
+.tm span{position:relative}
+@keyframes tmr{from{--p:100%}to{--p:0%}}
+.sub2{font-weight:800;font-size:.68rem;color:#b9a67e;line-height:1.5}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip2{padding:3px 10px;border-radius:10px;font-weight:800;font-size:.64rem;background:#000b;box-shadow:inset 0 0 0 1px #3a2e22;color:#cfc6b2}
+.chip2.red{color:#ffd9dc;box-shadow:inset 0 0 0 1px #8a1c2499}.chip2.teal{color:#c9f0e2;box-shadow:inset 0 0 0 1px #4fa58b88}.chip2.blue{color:#d3e5fa;box-shadow:inset 0 0 0 1px #6fa0d688}.chip2.gold{color:var(--gold);box-shadow:inset 0 0 0 1px #b9904888}
+.go2{padding:11px;border-radius:12px;text-align:center;font-family:Lalezar;font-size:1.05rem;color:#fff;box-shadow:inset 0 1px 0 #ffffff33,0 4px 0 #000a;transition:filter .3s,transform .2s}
+.go2.red{background:linear-gradient(180deg,#a3242d,#5a0f15)}.go2.teal{background:linear-gradient(180deg,#3f9a7e,#1d4a3c)}.go2.blue{background:linear-gradient(180deg,#4f84bd,#1d3c60)}.go2.neutral{background:linear-gradient(180deg,#5a4a38,#2a2118)}
+.go2.off{filter:grayscale(.9) brightness(.6)}
+.go2.done{background:#0f2e26;color:#c9f0e2;box-shadow:inset 0 0 0 1px #4fa58b88}
+.stag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:1px 7px;border-radius:8px;font-weight:800;font-size:.52rem;background:#3a0d12;color:#ffd9dc;box-shadow:0 0 0 1px #e0585f;z-index:5;animation:rise .4s both}
+.stag.teal{background:#0f2e26;color:#c9f0e2;box-shadow:0 0 0 1px #4fa58b}.stag.blue{background:#13243a;color:#d3e5fa;box-shadow:0 0 0 1px #6fa0d6}.stag.gold{background:#2b2210;color:var(--gold);box-shadow:0 0 0 1px #b99048}
+.seat.pickable .av{animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:none}50%{transform:translateY(-3px)}}
+#rp{font-weight:800}
+.dispbox{display:grid;gap:5px;margin-top:2px}.dispbox h3{margin:6px 0 0;font-family:Lalezar;font-weight:400;font-size:.95rem;color:var(--gold)}
+.dispbox p{margin:0}
+</style>
+</head>
+<body>
+<h1>المباراة من عين كل لاعب</h1>
+<p class="sub">اختر دور اللاعب (مافيا، طبيب، شيخ، مواطن، متفرج) وشوف شو بيطلعله، شو بيسأله الراوي، وشو بيعمل، وشو بيشوف الباقي.</p>
+<div class="wrap">
+  <div class="side">
+    <div class="lab">أنا…</div><div class="tabs" id="roleTabs"></div><div class="lab">المرحلة</div><div class="tabs" id="tabs"></div>
+    <button class="play" id="play">▶ شغّل من جديد</button>
+    <div class="card" id="desc"></div>
+  </div>
+  <div class="phone" id="phone">
+    <div class="sky day" id="sky"></div>
+    <div class="moon" id="moon"></div><div class="sun" id="sun"></div>
+    <div class="top"><div class="ttl" id="ttl">الجولة ١<small id="sm">النهار</small></div><div class="pill" id="rp"></div><div class="pill on" id="mic"><i></i><span id="micT">المايك مفتوح</span></div></div>
+    <div class="stage" id="stage"><div class="felt"></div></div>
+    <div class="veil" id="veil"></div>
+    <div class="spec" id="spec"><b>أنت متفرج الآن</b></div>
+    <div class="narr" id="narr"><div class="medal"><svg viewBox="0 0 24 24" fill="#e8c27a"><path d="M9 2h6v2h-1v1.2c2.3.9 4 3.2 4 5.8v3l2 3v2H4v-2l2-3v-3c0-2.6 1.7-4.9 4-5.8V4H9zM7 19h10v2H7z"/><path d="M12 8c1.6 1.6 2.4 2.8 2.4 4a2.4 2.4 0 0 1-4.8 0c0-1.2.8-2.4 2.4-4z" fill="#fff3c4"/></svg></div><div class="plate">الراوي</div><div class="slip" id="slip"><div class="seal" id="seal"></div><div><span class="hd">برقية عاجلة · من الراوي</span><span class="tx" id="bub"></span></div></div></div>
+    <div class="cap" id="cap"></div>
+    <div class="roleCard" id="rc"><div class="in"><div class="f">؟</div><div class="b" id="rcb"></div></div></div>
+    <div class="stamp" id="stamp"></div>
+    <div class="flash" id="flash"></div>
+    <div class="bot" id="bot"></div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const NAMES=['أنت','نضال','سامر','ريم','لينا','خالد','مازن','هديل'];
+const AV='<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.6 3.6-7.4 8-7.4s8 2.8 8 7.4z"/></svg>';
+const ICON={mafia:'<svg viewBox="0 0 24 24" fill="#8a1c24"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6zM9 11h6v2H9z"/></svg>',doc:'<svg viewBox="0 0 24 24" fill="#2f7a63"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z"/></svg>',sher:'<svg viewBox="0 0 24 24" fill="#2e5f94"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.2l7.1-.6z"/></svg>',civ:'<svg viewBox="0 0 24 24" fill="#5a4a2a"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.6 3.6-7.4 8-7.4s8 2.8 8 7.4z"/></svg>'};
+let timers=[],cur=0,seats=[];
+const at=(ms,fn)=>timers.push(setTimeout(fn,ms));
+function reset(bg='day'){timers.forEach(clearTimeout);timers=[];
+  $('sky').className='sky '+bg;$('moon').className='moon';$('sun').className='sun';
+  ['veil','narr','cap','rc','stamp','spec'].forEach(i=>{$(i).className=$(i).className.split(' ')[0]});
+  $('rc').className='roleCard';$('stamp').className='stamp';$('cap').className='cap';$('narr').className='narr';$('veil').className='veil';$('spec').className='spec';
+  $('stage').style.transform='';$('phone').classList.remove('shake');$('bot').innerHTML='';
+  const st=$('stage');st.querySelectorAll('.seat').forEach(s=>s.remove());seats=[];
+  const cx=195,cy=215,rx=150,ry=170;
+  NAMES.forEach((n,i)=>{const a=Math.PI/2+i*(2*Math.PI/8);const s=document.createElement('div');s.className='seat'+(i==0?' me':'');
+    s.style.left=(cx+rx*Math.cos(a))+'px';s.style.top=(cy+ry*Math.sin(a))+'px';
+    s.innerHTML='<div class="av">'+AV+'<div class="shield"></div><div class="scan"></div><div class="cross"></div></div><div class="nm">'+n+'</div>';st.appendChild(s);seats.push(s)});
+  mic(true,'المايك مفتوح — النهار');$('ttl').firstChild.textContent='الجولة ١';$('sm').textContent=bg=='night'?'الليل':'النهار';
+}
+function zoomTo(i,k){const x=parseFloat(seats[i].style.left),y=parseFloat(seats[i].style.top);$('stage').style.transform='translate('+(k*(195-x))+'px,'+(k*(215-y)+40)+'px) scale('+k+')'}
+function mic(on,t){const m=$('mic');m.className='pill '+(on?'on':'off');$('micT').textContent=t}
+const SEAL={'':'<svg viewBox="0 0 24 24" fill="#2a1a08"><path d="M9 2h6v2h-1v1.2c2.3.9 4 3.2 4 5.8v3l2 3v2H4v-2l2-3v-3c0-2.6 1.7-4.9 4-5.8V4H9zM7 19h10v2H7z"/></svg>',red:'<svg viewBox="0 0 24 24" fill="#f3e6c8"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6zM9 11h6v2H9z"/></svg>',teal:'<svg viewBox="0 0 24 24" fill="#f3e6c8"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z"/></svg>',blue:'<svg viewBox="0 0 24 24" fill="#f3e6c8"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.2l7.1-.6z"/></svg>'};
+const KIND={'':'',red:'k-mafia',teal:'k-doc',blue:'k-sher'};
+function say(t,cls=''){const sl=$('slip');sl.className='slip '+KIND[cls];$('bub').textContent=t;$('seal').innerHTML=SEAL[cls];$('narr').classList.add('show');void sl.offsetWidth;sl.classList.add('drop')}
+function hush(){$('narr').classList.remove('show')}
+function cap(t,small=''){const c=$('cap');c.innerHTML=t+(small?'<small>'+small+'</small>':'');c.classList.add('show')}
+function uncap(){$('cap').classList.remove('show')}
+function hint(t){$('bot').innerHTML='<div class="hint">'+t+'</div>'}
+function setSky(c){$('sky').className='sky '+c}
+
+
+/* ---------- what each player sees: the same night, five points of view ---------- */
+const ROLES={mafia:{n:'مافيا',k:'red',c:'#e0585f'},doctor:{n:'طبيب',k:'teal',c:'#4fa58b'},sheikh:{n:'شيخ المواطنين',k:'blue',c:'#6fa0d6'},civ:{n:'مواطن',k:'',c:'#c9a050'},spec:{n:'متفرج',k:'',c:'#b8bff0'}};
+const STEPS=[['night','الليل يبدأ'],['call','ندائي'],['dawn','الفجر'],['day','النقاش'],['vote','التصويت']];
+let role='mafia',step=0;
+const CALLED={mafia:'يا مافيا… اصحوا. مين بدكم تقتلوا الليلة؟',doctor:'يا دكتور… اصحى. مين بدك تحمي الليلة؟',sheikh:'يا شيخ… اصحى. مين بدك تفحص الليلة؟'};
+function rolePill(){const r=ROLES[role];const p=$('rp');p.textContent='دورك: '+r.n;p.style.color=r.c;p.style.boxShadow='inset 0 0 0 1px '+r.c+'88'}
+function sleepAll(){seats.forEach(x=>x.classList.add('sleep'))}
+function wake(i,k){seats[i].classList.remove('sleep','dim');seats[i].classList.add('awake-'+k)}
+function dimOthers(keep){seats.forEach((x,i)=>{if(!keep.includes(i))x.classList.add('dim')})}
+function undim(){seats.forEach(x=>x.classList.remove('dim'))}
+function tag(i,t,k=''){const old=seats[i].querySelector('.stag');if(old)old.remove();seats[i].insertAdjacentHTML('afterbegin','<div class="stag '+k+'">'+t+'</div>')}
+function pickSeat(i,k){seats[i].classList.remove('dim');
+  if(k=='red'){seats[i].querySelector('.cross').classList.add('go');seats[i].classList.add('target')}
+  if(k=='teal')seats[i].querySelector('.shield').classList.add('pop');
+  if(k=='blue')seats[i].querySelector('.scan').classList.add('go')}
+function panel(k,title,sub,chips,btn,secs){$('bot').innerHTML='<div class="pick"><div class="pt"><b>'+title+'</b>'+(secs?'<div class="tm" style="--dur:'+secs+'s"><span>'+secs+'</span></div>':'')+'</div>'+(sub?'<div class="sub2">'+sub+'</div>':'')+(chips&&chips.length?'<div class="chips">'+chips.map(c=>'<span class="chip2 '+c[0]+'">'+c[1]+'</span>').join('')+'</div>':'')+(btn?'<div class="go2 '+k+(btn[1]?' '+btn[1]:'')+'" id="go2">'+btn[0]+'</div>':'')+'</div>'}
+function confirmBtn(t){const g=$('go2');if(g){g.className='go2 done';g.textContent=t}}
+function enableBtn(){const g=$('go2');if(g)g.classList.remove('off')}
+function night(bg){reset(bg||'night');rolePill();$('veil').classList.add('on');$('sm').textContent='الليل';mic(role=='spec','المايك مغلق — الليل');if(role=='spec')mic(true,'تحكي مع المتفرجين');}
+const IMPACT='<svg class="impact go" viewBox="0 0 150 150" style="position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;overflow:visible"><g stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"><path d="M75 75 L75 20 M75 75 L128 42 M75 75 L134 96 M75 75 L88 140 M75 75 L22 112 M75 75 L16 52"/></g><circle cx="75" cy="75" r="10" fill="#1a0606" stroke="#e0585f" stroke-width="3"/></svg>';
+
+const SC={
+ night(){reset('day');rolePill();mic(role=='spec','المايك مفتوح — النهار');$('sm').textContent='النهار';hint('انتهى النهار…');
+  at(600,()=>{setSky('night');$('moon').classList.add('show');$('veil').classList.add('on');$('sm').textContent='الليل'});
+  at(900,()=>cap('الكل ينام',role=='spec'?'أنت متفرج: بتشوف الطاولة وبتحكي مع المتفرجين':'أغمض عينيك… ولا تحكي'));
+  at(1100,()=>{if(role=='spec'){seats[0].classList.add('dead');seats.forEach((x,i)=>{if(i)x.classList.add('sleep')});mic(true,'تحكي مع المتفرجين')}else{sleepAll();mic(false,'المايك مغلق — الليل')}});
+  at(3600,()=>{uncap();const t={mafia:'انتظر النداء: المافيا بيصحوا أول',doctor:'بعد المافيا بيجي دورك، خليك صاحي بقلبك',sheikh:'بعد الدكتور بيجي دورك',civ:'نام… الراوي بينادي غيرك. ما بتعمل شي هالليلة',spec:'أفعال الليل سرية، ما بتشوفها'}[role];hint(t)})},
+ call(){night();sleepAll();
+  if(role=='mafia'){
+   at(400,()=>say(CALLED.mafia,'red'));
+   at(1500,()=>{wake(0,'mafia');wake(2,'mafia');dimOthers([0,2]);mic(true,'المايك مفتوح — مع المافيا فقط');tag(2,'سامر · رفيقك','');panel('red','اختر ضحية الليلة','اتفقوا بالصوت مع رفيقك. اضغط على لاعب لتختاره.',[['red','رفيقك: سامر']],['ثبّت الاختيار','off'],20)});
+   at(3600,()=>{[1,3,4,5,7].forEach(i=>seats[i].classList.remove('dim'));seats.forEach(x=>x.classList.remove('sleep'));[1,3,4,5,7].forEach(i=>seats[i].classList.add('pickable'));tag(2,'سامر ← نضال','')});
+   at(5200,()=>{seats.forEach(x=>x.classList.remove('pickable'));pickSeat(1,'red');enableBtn();panel('red','اختر ضحية الليلة','اختيارك: نضال  ·  اختيار رفيقك: نضال',[['red','متفقين ✔']],['ثبّت الاختيار'],20)});
+   at(6800,()=>confirmBtn('تم التثبيت: نضال'));
+   at(8000,()=>{say('تمام. المافيا ينامون.','red')});
+   at(8800,()=>{seats.forEach(x=>{x.classList.remove('awake-mafia','target','pickable');x.classList.add('sleep','dim')});mic(false,'المايك مغلق — الليل');hush();$('bot').innerHTML='<div class="hint">انتهى دورك. بانتظار باقي الأدوار…</div>'})}
+  else if(role=='doctor'){
+   at(400,()=>say('الليل… المافيا بيشتغلوا. (ما بتسمع ولا بتشوف شي)',''));
+   at(2600,()=>{say(CALLED.doctor,'teal');wake(0,'doc');dimOthers([0]);panel('teal','مين بدك تحمي؟','بتقدر تحمي حالك مرة وحدة بس بالمباراة.',[['teal','حماية نفسك: ١ متبقي']],['ثبّت الاختيار','off'],20)});
+   at(4200,()=>{seats.forEach((x,i)=>{if(i)x.classList.remove('dim','sleep');if(i&&i!=6)x.classList.add('pickable')})});
+   at(5600,()=>{seats.forEach(x=>x.classList.remove('pickable'));pickSeat(3,'teal');enableBtn();panel('teal','مين بدك تحمي؟','اختيارك: ريم',[['teal','حماية نفسك: ١ متبقي']],['ثبّت الاختيار'],20)});
+   at(7000,()=>confirmBtn('تم: بتحمي ريم'));
+   at(8200,()=>{say('تمام. الدكتور ينام.','teal')});
+   at(9000,()=>{seats.forEach(x=>{x.classList.remove('awake-doc','pickable');x.classList.add('sleep','dim')});hush();$('bot').innerHTML='<div class="hint">انتهى دورك. إنت ما بتعرف إذا حدا هاجمها.</div>'})}
+  else if(role=='sheikh'){
+   at(400,()=>say('الليل… المافيا والدكتور بيشتغلوا. (ما بتسمع ولا بتشوف شي)',''));
+   at(2600,()=>{say(CALLED.sheikh,'blue');wake(0,'sher');dimOthers([0]);panel('blue','مين بدك تفحص؟','الجواب بيجيك إنت وحدك.',[['blue','دفتر الفحص: فاضي']],['ثبّت الاختيار','off'],20)});
+   at(4200,()=>{seats.forEach((x,i)=>{if(i){x.classList.remove('dim','sleep');if(i!=6)x.classList.add('pickable')}})});
+   at(5600,()=>{seats.forEach(x=>x.classList.remove('pickable'));pickSeat(2,'blue');enableBtn();panel('blue','مين بدك تفحص؟','اختيارك: سامر',[['blue','دفتر الفحص: فاضي']],['ثبّت الاختيار'],20)});
+   at(7000,()=>confirmBtn('جاري الفحص…'));
+   at(8800,()=>{say('سامر… مافيا ❗  (الجواب إلك وحدك)','red');panel('blue','نتيجة الفحص','انحفظت بدفتر الفحص. لا تكشف حالك بسهولة.',[['red','سامر: مافيا ❗']])});
+   at(11200,()=>{say('تمام. الشيخ ينام.','blue')});
+   at(12000,()=>{seats.forEach(x=>{x.classList.remove('awake-sher','pickable');x.classList.add('sleep','dim')});hush();$('bot').innerHTML='<div class="hint">انتهى دورك.</div>'})}
+  else if(role=='civ'){
+   at(400,()=>say('الليل عم يمشي… الكل نايم.',''));
+   at(1200,()=>panel('neutral','إنت نايم','ما في شي تعمله الليلة. اسمع الراوي ولا تحكي.',[['','المايك مغلق'],['gold','مدة الليل ثابتة']],null,20));
+   at(4200,()=>say('…',''));at(6200,()=>say('الراوي بينادي غيرك…',''));at(9000,()=>say('اهدأ. لا تفتح عيونك.',''));
+   at(12000,()=>{hush();$('bot').innerHTML='<div class="hint">ما حدا بيعرف مين صحي: مدة النداءات ثابتة حتى لو الدور صاحبه ميت.</div>'})}
+  else{ // spectator
+   at(400,()=>{seats[0].classList.add('dead');seats.forEach((x,i)=>{if(i)x.classList.add('sleep')});say('الليل عم يمشي…','')});
+   at(1500,()=>panel('neutral','أنت متفرج','بتشوف الطاولة بس. أفعال الليل سرية عن الكل، حتى المتفرجين.',[['gold','تحكي مع المتفرجين'],['','تسمع المتفرجين فقط ليلاً']],null,20))}},
+ dawn(){reset('night');rolePill();$('veil').classList.add('on');sleepAll();mic(false,'المايك مغلق — الليل');if(role=='spec'){seats[0].classList.add('dead');mic(true,'تحكي مع المتفرجين')}
+  at(400,()=>{setSky('dawn');$('sun').classList.add('show');$('veil').className='veil';seats.forEach(x=>x.classList.remove('sleep'));$('sm').textContent='الفجر';if(role!='spec')mic(true,'المايك مفتوح — النهار')});
+  at(900,()=>cap('طلع الصبح','الجميع يفتح عيونه'));
+  at(2400,()=>{uncap();say('هالليلة… قامت المافيا بقتل نضال.','red')});
+  at(4200,()=>{hush();$('veil').classList.add('on');zoomTo(1,1.9);seats.forEach((x,i)=>{if(i!=1)x.classList.add('dim')})});
+  at(5600,()=>{$('flash').classList.add('go');$('phone').classList.add('shake');seats[1].querySelector('.av').insertAdjacentHTML('beforeend',IMPACT)});
+  at(6000,()=>{seats[1].classList.remove('dim');seats[1].classList.add('dead')});
+  at(6800,()=>{$('stage').style.transform='';$('veil').classList.remove('on');undim();
+   const n={mafia:['red','خطتكم نجحت: نضال خرج من اللعبة'],doctor:['teal','إنت حميت ريم الليلة، ونضال ما كان هدفك. (ما بتعرف النتيجة غير من إعلان الراوي)'],sheikh:['blue','نتيجة فحصك محفوظة: سامر مافيا ❗'],civ:null,spec:['gold','نضال صار متفرج وانضم لغرفتكم']}[role];
+   if(n)panel('neutral','إشعار خاص',n[1],[[n[0],'إلك وحدك']]);else $('bot').innerHTML='<div class="hint">النقاش بلّش • عندكم دقيقتين</div>'});
+  at(9800,()=>{$('sm').textContent='النهار'})},
+ day(){reset('day');rolePill();mic(true,role=='spec'?'تحكي مع المتفرجين':'المايك مفتوح — النهار');$('sm').textContent='النهار';seats[1].classList.add('dead');if(role=='spec')seats[0].classList.add('dead');
+  const info={mafia:[['red','رفيقك: سامر'],['gold','لا تكشف حالك']],doctor:[['teal','حماية نفسك: ١ متبقي'],['gold','لا تكشف حالك']],sheikh:[['blue','دفتر الفحص: سامر مافيا ❗'],['gold','لا تكشف حالك']],civ:[['gold','صوتك سلاحك: ناقش وصوّت']],spec:[['gold','تسمع نقاش اللاعبين'],['','اللاعبين ما بيسمعوك']]}[role];
+  if(role=='mafia')tag(2,'رفيقك','');
+  at(300,()=>{seats[3].classList.add('talk');panel('neutral','النقاش','اللي عم يحكي: ريم',info,null,60)});
+  at(2600,()=>{seats[3].classList.remove('talk');seats[2].classList.add('talk');panel('neutral','النقاش','اللي عم يحكي: سامر',info,null,60)});
+  at(4800,()=>{seats[2].classList.remove('talk');seats[4].classList.add('talk');panel('neutral','النقاش','اللي عم يحكي: لينا',info,null,60)});
+  at(7000,()=>seats[4].classList.remove('talk'))},
+ vote(){reset('day');rolePill();mic(true,role=='spec'?'تحكي مع المتفرجين':'المايك مفتوح — النهار');$('sm').textContent='التصويت';seats[1].classList.add('dead');if(role=='spec')seats[0].classList.add('dead');
+  const my=role=='mafia'?['لينا',4]:['سامر',2];
+  if(role=='mafia')tag(2,'رفيقك','');
+  if(role=='spec'){at(300,()=>panel('neutral','التصويت','اللاعبين عم يصوّتوا. بتتفرج وبتحكي مع المتفرجين.',[['gold','سامر ٣'],['','لينا ١'],['','امتنعوا ١']],null,15))}
+  else{
+   at(300,()=>panel(ROLES[role].k||'neutral','صوّت لمين تشك فيه','اضغط على لاعب ثم ثبّت صوتك.',[['','سامر ٢'],['','لينا ١']],['ثبّت صوتي','off'],15));
+   at(1800,()=>{seats.forEach((x,i)=>{if(i&&i!=1)x.classList.add('pickable')})});
+   at(3200,()=>{seats.forEach(x=>x.classList.remove('pickable'));pickSeat(my[1],'red');enableBtn();panel(ROLES[role].k||'neutral','صوّت لمين تشك فيه','صوتك: '+my[0],[['','سامر ٣'],['','لينا ١']],['ثبّت صوتي'],15)});
+   at(4600,()=>confirmBtn('تم تثبيت صوتك'))}
+  at(6500,()=>{$('veil').classList.add('on');seats.forEach((x,i)=>{if(i!=2)x.classList.add('dim')});$('stamp').textContent='طُرد';$('stamp').classList.add('show');zoomTo(2,1.7)});
+  at(7500,()=>{$('rcb').innerHTML=ICON.mafia+'<b>مافيا</b><small>سامر كان…</small>';$('rc').classList.add('show');setTimeout(()=>$('rc').classList.add('flip'),150);seats[2].classList.remove('dim');seats[2].classList.add('dead')});
+  at(9000,()=>{const m={mafia:'رفيقك انطرد. ظل صامد: باقيلكم مافيا واحد.',doctor:'طلع مافيا! إنت وشيخ المواطنين قريبين من الفوز.',sheikh:'فحصك طلع صح. بس انتبه: المافيا بتصطادك بعد هيك.',civ:'طلع مافيا! أحسنتم.',spec:'سامر انضم لغرفة المتفرجين.'}[role];$('bot').innerHTML='<div class="hint">'+m+'</div>'});
+  at(11000,()=>{$('rc').className='roleCard';$('stamp').className='stamp';$('veil').className='veil';$('stage').style.transform='';undim()})}
+};
+
+const DESC={
+ mafia:{h:'مافيا — شو بيشوف',p:'بالليل أول واحد بيصحى. الراوي بينادي «يا مافيا… اصحوا» وبتطلع لوحة جلد تحت الشاشة: «اختر ضحية الليلة» مع عدّاد ٢٠ ثانية. رفيقك المافيا بيضوي أحمر وبيطلع فوقه اسمه واختياره («سامر ← نضال»). بتضغط لاعب وبتثبّت. المايك بيفتح مع المافيا بس. بعدها «المافيا ينامون».',l:['الباقي بيشوفوا شاشة نايمة بس، ما بيعرفوا مين صحي.','بالنهار بتشوف كرت رفيقك وبتحس بتحذير «لا تكشف حالك».']},
+ doctor:{h:'طبيب — شو بيشوف',p:'الراوي بيناديه بعد المافيا: «يا دكتور… اصحى». لوحة خضراء «مين بدك تحمي؟» مع عدّاد، وسطر «حماية نفسك: ١ متبقي». بيختار ويثبّت وبتطلع درع على اللاعب. بعدها ينام.',l:['ما بيعرف إذا حدا هاجم اللي حماه، بيعرف من إعلان الراوي بالفجر بس.','بالفجر بيجيه إشعار خاص: «حميت فلان».']},
+ sheikh:{h:'شيخ المواطنين — شو بيشوف',p:'بعد الدكتور: «يا شيخ… اصحى». لوحة زرقاء «مين بدك تفحص؟». بيختار ويثبّت، وحلقة مسح بتلف، وبعدها برقية سرية: «سامر… مافيا ❗» إله وحده. بتنحفظ بدفتر الفحص وبتظهر نهاراً.',l:['الجواب ما بيطلع لأي حدا غيره.','التحذير الدائم: «لا تكشف حالك» لأن المافيا بتصطاده.']},
+ civ:{h:'مواطن — شو بيشوف',p:'بالليل شاشة نايمة بنفس إيقاع الباقي: الراوي بيحكي جمل جوّ («الليل عم يمشي… اهدأ»)، ولوحة «إنت نايم» مع عدّاد. ما عنده قدرة.',l:['مدة النداءات ثابتة حتى لو الدور صاحبه ميت، عشان ما حدا يعرف مين صحي من طول الصمت (قاعدة منع التسريب).','المايك مغلق طول الليل.']},
+ spec:{h:'متفرج (ميت أو داخل متأخر) — شو بيشوف',p:'بيشوف الطاولة بس، وأفعال الليل سرية عنه كمان. لوحة «أنت متفرج»، وبيحكي مع باقي المتفرجين ويسمع نقاش اللاعبين نهاراً (واللاعبين ما بيسمعوه).',l:['بالفجر والتصويت بيشوف نفس المشاهد العامة.','قرار مفتوح: هل المتفرج بيشوف أدوار اللاعبين الأحياء؟ (حالياً لأ).']}};
+function renderTabs(){
+ tabs2($('roleTabs'),Object.entries(ROLES).map(([k,v])=>[k,v.n]),role,k=>{role=k;renderTabs();play()});
+ tabs2($('tabs'),STEPS.map((x,i)=>[i,x[1]]),step,k=>{step=+k;renderTabs();play()});
+ const d=DESC[role];$('desc').innerHTML='<h2>'+d.h+'</h2>'+d.p+'<ul>'+d.l.map(x=>'<li>'+x+'</li>').join('')+'</ul><div class="tech">المرحلة المعروضة: '+STEPS[step][1]+'</div>'}
+function tabs2(el,list,cur,fn){el.innerHTML='';list.forEach(([k,t])=>{const b=document.createElement('button');b.textContent=t;b.className=String(k)==String(cur)?'on':'';b.onclick=()=>fn(k);el.appendChild(b)})}
+function play(){SC[STEPS[step][0]]()}
+$('play').onclick=play;
+renderTabs();play();
+</script>
+</body>
+</html>
