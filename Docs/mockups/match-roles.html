@@ -353,7 +353,7 @@ Object.assign(ROLES,{
  silencer:{n:'كاتم الصوت ✦',k:'red',c:'#e0585f',steps:[['night','الليل يبدأ'],['call','ندائي'],['dawn','الفجر'],['day','النقاش']]},
  muted:{n:'اللاعب المُسكَت ✦',k:'',c:'#b9a67e',steps:[['dawn','الفجر'],['day','النقاش']]},
  sniper:{n:'القنّاص ✦',k:'',c:'#c9a050',steps:[['night','الليل يبدأ'],['call','ندائي'],['dawn','الفجر: نتيجة القنص']]},
- kid:{n:'الولد ✦',k:'',c:'#c9a050',steps:[['night','الليل يبدأ'],['dawn','انقتل بالليل'],['decide','قراره'],['watch','شو بيشوف الباقي']]}});
+ kid:{n:'الثأري ✦',k:'',c:'#c9a050',steps:[['night','الليل يبدأ'],['dawn','انقتل بالليل'],['decide','قراره'],['watch','شو بيشوف الباقي']]}});
 const curSteps=()=>ROLES[role].steps||STEPS;
 let snres='mafia',kres='mafia';
 let role='mafia',step=0,fres='mafia';
@@ -529,27 +529,27 @@ const NSC={
    at(4200,()=>{hush();$('veil').classList.add('on');zoomTo(0,1.7);seats.forEach((x,i)=>{if(i)x.classList.add('dim')})});
    at(5600,()=>shotAt(0));
    at(6000,()=>{seats[0].classList.remove('dim');seats[0].classList.add('dead')});
-   at(6800,()=>{$('stage').style.transform='';$('veil').classList.remove('on');undim();cardFlip(ICON.civ,'الولد','سامي كان…')});
-   at(9000,()=>{cardAway();say('تم إخراج الولد! وعنده قرار: بياخد معه لاعب.','');mic(true,'المايك مفتوح — كل الناس بتحكي معه')});
+   at(6800,()=>{$('stage').style.transform='';$('veil').classList.remove('on');undim();cardFlip(ICON.civ,'الثأري','سامي كان…')});
+   at(9000,()=>{cardAway();say('تم إخراج الثأري! وعنده قرار: بياخد معه لاعب.','');mic(true,'المايك مفتوح — كل الناس بتحكي معه')});
    at(11500,()=>{hush();hint('عندك ٣٠ ثانية تفكّر. الكل بيناقشك. بعدها بتختار مين بيطلع معك.')})},
-  decide(){reset('day');rolePill();seats[0].querySelector('.nm').textContent='سامي (أنت)';seats[0].classList.add('dead');$('sm').textContent='قرار الولد';mic(true,'المايك مفتوح — الكل بيناقشك');const isM=kres=='mafia';
-   at(300,()=>{say('الولد عنده قرار… الكل بيسمعه.','');panel('red','','',[],['أطلّع هذا معي','off'],30)});
+  decide(){reset('day');rolePill();seats[0].querySelector('.nm').textContent='سامي (أنت)';seats[0].classList.add('dead');$('sm').textContent='قرار الثأري';mic(true,'المايك مفتوح — الكل بيناقشك');const isM=kres=='mafia';
+   at(300,()=>{say('الثأري عنده قرار… الكل بيسمعه.','');panel('red','','',[],['أطلّع هذا معي','off'],30)});
    at(1800,()=>{hush();seats.forEach((x,i)=>{if(i&&i!=1)x.classList.add('pickable')});seats[3].classList.add('talk')});
    at(3800,()=>{seats[3].classList.remove('talk');seats[5].classList.add('talk')});
    at(6000,()=>{seats[5].classList.remove('talk');seats.forEach(x=>x.classList.remove('pickable'));pickSeat(2,'red');enableBtn();panel('red','','',[],['أطلّع هذا معي'],30)});
    at(8000,()=>confirmBtn('اخترت: سامر'));
-   at(9200,()=>say('الولد اختار سامر.',''));
-   at(10800,()=>{hush();$('veil').classList.add('on');zoomTo(2,1.8);seats.forEach((x,i)=>{if(i!=2)x.classList.add('dim')});$('stamp').textContent='خرج مع الولد';$('stamp').classList.add('show')});
+   at(9200,()=>say('الثأري اختار سامر.',''));
+   at(10800,()=>{hush();$('veil').classList.add('on');zoomTo(2,1.8);seats.forEach((x,i)=>{if(i!=2)x.classList.add('dim')});$('stamp').textContent='خرج مع الثأري';$('stamp').classList.add('show')});
    at(12000,()=>{seats[2].classList.remove('dim');seats[2].classList.add('dead');cardFlip(isM?ICON.mafia:ICON.civ,isM?'مافيا':'مواطن','سامر كان…')});
-   at(14500,()=>{cardAway();$('stamp').className='stamp';$('veil').className='veil';$('stage').style.transform='';undim();say(isM?'سامر كان من المافيا! ضربة معلّم من الولد.':'سامر كان مواطن… الولد جرّ بريء معه.','')});
+   at(14500,()=>{cardAway();$('stamp').className='stamp';$('veil').className='veil';$('stage').style.transform='';undim();say(isM?'سامر كان من المافيا! ضربة معلّم من الثأري.':'سامر كان مواطن… الثأري جرّ بريء معه.','')});
    at(17500,()=>hush())},
-  watch(){reset('day');rolePill();seats[0].classList.add('dead');$('sm').textContent='قرار الولد';mic(true,'المايك مفتوح — الكل بيناقش الولد');const isM=kres=='mafia';
+  watch(){reset('day');rolePill();seats[0].classList.add('dead');$('sm').textContent='قرار الثأري';mic(true,'المايك مفتوح — الكل بيناقش الثأري');const isM=kres=='mafia';
    // the others' point of view: the same moment, nothing to choose
-   at(300,()=>{say('تم إخراج الولد! وعنده قرار: بياخد معه لاعب.','');panel('','','',[],null,30)});
-   at(2000,()=>{hush();seats[3].classList.add('talk');hint('الولد عم يفكّر… ناقشوه بالصوت وأقنعوه.')});
+   at(300,()=>{say('تم إخراج الثأري! وعنده قرار: بياخد معه لاعب.','');panel('','','',[],null,30)});
+   at(2000,()=>{hush();seats[3].classList.add('talk');hint('الثأري عم يفكّر… ناقشوه بالصوت وأقنعوه.')});
    at(4500,()=>{seats[3].classList.remove('talk');seats[2].classList.add('talk')});
-   at(7200,()=>{seats[2].classList.remove('talk');say('الولد اختار سامر.','')});
-   at(8800,()=>{hush();$('veil').classList.add('on');zoomTo(2,1.8);seats.forEach((x,i)=>{if(i!=2)x.classList.add('dim')});$('stamp').textContent='خرج مع الولد';$('stamp').classList.add('show')});
+   at(7200,()=>{seats[2].classList.remove('talk');say('الثأري اختار سامر.','')});
+   at(8800,()=>{hush();$('veil').classList.add('on');zoomTo(2,1.8);seats.forEach((x,i)=>{if(i!=2)x.classList.add('dim')});$('stamp').textContent='خرج مع الثأري';$('stamp').classList.add('show')});
    at(10000,()=>{seats[2].classList.remove('dim');seats[2].classList.add('dead');cardFlip(isM?ICON.mafia:ICON.civ,isM?'مافيا':'مواطن','سامر كان…')});
    at(12500,()=>{cardAway();$('stamp').className='stamp';$('veil').className='veil';$('stage').style.transform='';undim();say(isM?'سامر كان من المافيا! المواطنين استفادوا.':'سامر كان مواطن… المافيا استفادت.','')})}}};
 const DESC={
@@ -560,11 +560,11 @@ const DESC={
  silencer:{h:'كاتم الصوت (مافيا) — شو بيشوف',p:'مافيا من نوع تاني: بدل ما يقتل، بيسكّت. بعد نداء المافيا، الراوي بيناديه: «يا كاتم الصوت… مين بدك تسكّت بكرة؟». بيختار لاعب ويثبّت، فبينحط شريط لاصق ورقي على مقعده ووسم «مُسكَت». بالفجر الكل بيعرف إنه فلان انسكت (من غير ما يعرفوا مين سكّته).',l:['بيشوف رفيقه المافيا وبيحكي معه بدردشة المافيا السرية.','بالنهار بيشوف الشريط على المُسكَت.','قرار مفتوح: مدة الإسكات، ودردشة المُسكَت المكتوبة، وهل بيصوّت (المعاينة: بيصوّت بس ما بيحكي ولا بيكتب).']},
  muted:{h:'اللاعب المُسكَت — شو بيشوف',p:'بالفجر الراوي بيعلن إنه انسكت، وبينحط شريط على مقعده. نهاراً مايكه مقفول والدردشة عليها شريط «انسكتّ اليوم». بيسمع كل شي وبيصوّت.',l:['مش بيعرف مين سكّته.','الإسكات بيخلص بالفجر الجاي.']},
  sniper:{h:'القنّاص — شو بيشوف',p:'آخر واحد بينادوه بالليل: «يا قنّاص… اصحى. معك طلقة وحدة». زر «اطلق الطلقة الوحيدة» وزر صغير «مش هالليلة». بيختار هدف وبيثبّت. بالفجر الراوي بيعلن القنص: الطلقة، ثم كرت الهدف بينقلب. هدف مافيا ← بيطلع وبيضل القنّاص (وبينكشف إنه القنّاص). هدف مواطن ← بيطلعوا الاتنين. (بدّل النتيجة من فوق).',l:['الطلقة مرة وحدة بالمباراة.','قرار مفتوح: هل بينكشف مين القنّاص؟ (المعاينة: أيوه).']},
- kid:{h:'الولد — شو بيشوف',p:'ليلاً نايم مثل المواطن. لما يطلع (بالتصويت أو بالاغتيال): كرته بينقلب، والراوي: «تم إخراج الولد!»، وبتنفتح المايكات: الكل بيناقشه ٣٠ ثانية. بعدين هو بيختار علناً مين بيطلع معه، وبيطلعوا الاتنين. لو الهدف مافيا بيفيد المواطنين، ولو مواطن بيفيد المافيا. (جرّب «قراره» و«شو بيشوف الباقي»).',l:['دوره مخيف: لازم يفكّر بحذر.','قرار مفتوح: مدة التفكير، واسم الدور.']},
+ kid:{h:'الثأري — شو بيشوف',p:'ليلاً نايم مثل المواطن. لما يطلع (بالتصويت أو بالاغتيال): كرته بينقلب، والراوي: «تم إخراج الثأري!»، وبتنفتح المايكات: الكل بيناقشه ٣٠ ثانية. بعدين هو بيختار علناً مين بيطلع معه، وبيطلعوا الاتنين. لو الهدف مافيا بيفيد المواطنين، ولو مواطن بيفيد المافيا. (جرّب «قراره» و«شو بيشوف الباقي»).',l:['دوره مخيف: لازم يفكّر بحذر.','قرار مفتوح: مدة التفكير، واسم الدور.']},
  spec:{h:'متفرج (ميت أو داخل متأخر) — شو بيشوف',p:'بيشوف الطاولة بس، وأفعال الليل سرية عنه كمان. لوحة «أنت متفرج»، وبيحكي مع باقي المتفرجين ويسمع نقاش اللاعبين نهاراً (واللاعبين ما بيسمعوه).',l:['بالفجر والتصويت بيشوف نفس المشاهد العامة.','قرار مفتوح: هل المتفرج بيشوف أدوار اللاعبين الأحياء؟ (حالياً لأ).']}};
 function renderTabs(){
  tabs2($('roleTabs'),Object.entries(ROLES).map(([k,v])=>[k,v.n]),role,k=>{role=k;step=0;renderTabs();play()});
- const RT=role=='sniper'?[['mafia','القنّاص صاب مافيا'],['civ','القنّاص صاب مواطن']]:role=='kid'?[['mafia','الولد اختار مافيا'],['civ','الولد اختار مواطن']]:role=='sheikh'?[['mafia','مافيا ❗'],['civ','مواطن ✔']]:[];
+ const RT=role=='sniper'?[['mafia','القنّاص صاب مافيا'],['civ','القنّاص صاب مواطن']]:role=='kid'?[['mafia','الثأري اختار مافيا'],['civ','الثأري اختار مواطن']]:role=='sheikh'?[['mafia','مافيا ❗'],['civ','مواطن ✔']]:[];
  $('resTabs').parentElement.querySelectorAll('.lab')[1].style.display=RT.length?'':'none';
  tabs2($('resTabs'),RT,role=='sniper'?snres:role=='kid'?kres:fres,k=>{if(role=='sniper')snres=k;else if(role=='kid')kres=k;else fres=k;renderTabs();play()});
  tabs2($('tabs'),curSteps().map((x,i)=>[i,x[1]]),step,k=>{step=+k;renderTabs();play()});
