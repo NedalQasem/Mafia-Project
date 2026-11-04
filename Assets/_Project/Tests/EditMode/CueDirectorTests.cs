@@ -136,6 +136,18 @@ namespace MafiaNight.Tests
         }
 
         [Test]
+        public void TheArabicVoiceReadsTheSameLineAsTheSlip_WithDiacriticsAndNoName()
+        {
+            foreach (var cue in CueCatalog.All)
+            {
+                if (string.IsNullOrEmpty(cue.Subtitle)) continue;
+                string said = cue.VoiceText;
+                Assert.AreEqual(CueCatalog.StripDiacritics(cue.Subtitle).Replace("{name}", CueCatalog.SomeoneInVoice), CueCatalog.StripDiacritics(said), cue.Id + ": the voice line and the slip line say different things");
+                Assert.IsTrue(said.Any(ch => ch >= 'ً' && ch <= 'ْ'), cue.Id + ": the voice line has no diacritics (the voice model needs them to read the dialect)");
+            }
+        }
+
+        [Test]
         public void EveryNarratedCueHasAnEnglishLine_ItIsInTheRecordingList_AndTheSlipFollowsTheLanguage()
         {
             string list = System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "../Docs/narrator-lines.md"));

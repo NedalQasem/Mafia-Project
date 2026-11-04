@@ -35,7 +35,7 @@ namespace MafiaNight.MatchRules
         public List<CueStep> Steps = new List<CueStep>();
         public string Subtitle => Steps.FirstOrDefault(s => s.Kind == CueStepKind.Subtitle)?.Value ?? "";
         /// <summary>What the voice-over says: the line with no player name (a name changes every match and cannot be recorded; the slip of text still shows it).</summary>
-        public string VoiceText => Subtitle.Replace("{name}", CueCatalog.SomeoneInVoice);
+        public string VoiceText => CueCatalog.VoiceText(this, "ar");
     }
 
     /// <summary>The ids of the cues. A new role adds <c>call.&lt;role&gt;</c> and its own events; a new state adds its id here.</summary>
@@ -108,33 +108,33 @@ namespace MafiaNight.MatchRules
         {
             var list = new List<Cue>
             {
-                Make(CueIds.MatchStart, 4f, "تم توزيع الأدوار. السهرة بدأت.", Anim("role_reveal", 0f)),
-                Make(CueIds.NightFalls, 4f, "الكل ينام… أغمض عينيك.", Anim("night_falls", 0f)),
-                Make(CueIds.NightIdle, NightCallSeconds, "الليل عم يمشي… اهدأ."),
-                Make(CueIds.Call(Role.Mafia), NightCallSeconds, "يا مافيا… اصحوا. مين بدكم تقتلوا الليلة؟", Anim("wake_mafia", 0f)),
-                Make(CueIds.Call(Role.Doctor), NightCallSeconds, "يا دكتور… اصحى. مين بدك تحمي الليلة؟", Anim("wake_doctor", 0f)),
-                Make(CueIds.Call(Role.Sheriff), NightCallSeconds, "يا شيخ… اصحى. مين بدك تفحص الليلة؟", Anim("wake_sheikh", 0f)),
-                Make(CueIds.Call(Role.Silencer), NightCallSeconds, "يا كاتم الصوت… اصحى. مين بدك تسكّت بكرة؟ ما بيحكي النهار كله.", Anim("wake_silencer", 0f)),
-                Make(CueIds.Call(Role.Sniper), NightCallSeconds, "يا قنّاص… اصحى. معك طلقة وحدة. بدك تقنص الليلة ولا نأجلها؟", Anim("wake_sniper", 0f)),
-                Make(CueIds.Sleep(Role.Silencer), 2f, "تمام. كاتم الصوت ينام.", Anim("sleep_silencer", 0f)),
-                Make(CueIds.Sleep(Role.Sniper), 2f, "تمام. القنّاص ينام.", Anim("sleep_sniper", 0f)),
-                Make(CueIds.DawnShot, 9f, "وسُمعت طلقة قنّاص بالليل… سقط {name}.", Anim("zoom_seat", 0f), Sfx("gunshot", 2f), Anim("shot", 2f)),
+                Make(CueIds.MatchStart, 4f, "وُزّعت الأدوار. السهرة بدت.", Anim("role_reveal", 0f)),
+                Make(CueIds.NightFalls, 4f, "الكل ينام… غمّضوا عيونكم.", Anim("night_falls", 0f)),
+                Make(CueIds.NightIdle, NightCallSeconds, "الليل يمشي… اهدا."),
+                Make(CueIds.Call(Role.Mafia), NightCallSeconds, "يا مافيا… قوموا. منو تبون تقتلون الليلة؟", Anim("wake_mafia", 0f)),
+                Make(CueIds.Call(Role.Doctor), NightCallSeconds, "يا دكتور… قوم. منو تبي تحمي الليلة؟", Anim("wake_doctor", 0f)),
+                Make(CueIds.Call(Role.Sheriff), NightCallSeconds, "يا شيخ… قوم. منو تبي تفحص الليلة؟", Anim("wake_sheikh", 0f)),
+                Make(CueIds.Call(Role.Silencer), NightCallSeconds, "يا كاتم الصوت… قوم. منو تبي تسكته باجر؟ ما راح يتكلم النهار كله.", Anim("wake_silencer", 0f)),
+                Make(CueIds.Call(Role.Sniper), NightCallSeconds, "يا قنّاص… قوم. عندك رصاصة وحدة. تبي تقنص الليلة ولا نأجلها؟", Anim("wake_sniper", 0f)),
+                Make(CueIds.Sleep(Role.Silencer), 2f, "زين. كاتم الصوت ينام.", Anim("sleep_silencer", 0f)),
+                Make(CueIds.Sleep(Role.Sniper), 2f, "زين. القنّاص ينام.", Anim("sleep_sniper", 0f)),
+                Make(CueIds.DawnShot, 9f, "انسمعت طلقة قنّاص بالليل… طاح {name}.", Anim("zoom_seat", 0f), Sfx("gunshot", 2f), Anim("shot", 2f)),
                 Make(CueIds.DawnSilenced, 4f, "كاتم الصوت كتم صوت {name} لهالنهار."),
-                Make(CueIds.AvengeStart, 6f, "تم إخراج الثأري! وعنده قرار: بياخد معه لاعب.", Anim("zoom_seat", 0f), Anim(CueIds.CardReveal(Role.Avenger), 1f)),
-                Make(CueIds.AvengeDone, 7f, "الثأري اختار {name}. خرجوا الاتنين.", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f)),
-                Make(CueIds.Sleep(Role.Mafia), 2f, "تمام. المافيا ينامون.", Anim("sleep_mafia", 0f)),
-                Make(CueIds.Sleep(Role.Doctor), 2f, "تمام. الدكتور ينام.", Anim("sleep_doctor", 0f)),
-                Make(CueIds.Sleep(Role.Sheriff), 2f, "تمام. الشيخ ينام.", Anim("sleep_sheikh", 0f)),
-                Make(CueIds.DawnQuiet, 6f, "طلع الصبح. ما مات أحد الليلة.", Anim("dawn", 0f)),
-                Make(CueIds.DawnKill, 9f, "طلع الصبح. هالليلة… قامت المافيا بقتل {name}.", Anim("dawn", 0f), Anim("zoom_seat", 3f), Sfx("gunshot", 5.4f), Anim("shot", 5.4f)),
-                Make(CueIds.DawnSaved, 9f, "طلع الصبح. المافيا حاولت تقتل {name}… بس في مين أنقذه!", Anim("dawn", 0f), Anim("zoom_seat", 3f), Sfx("gunshot", 5.4f), Anim("shield", 5.6f)),
-                Make(CueIds.DayStart, 3f, "النقاش بلّش.", Anim("day", 0f)),
-                Make(CueIds.VoteStart, 3f, "وقت التصويت. مين بتشكّوا فيه؟", Anim("vote", 0f)),
-                Make(CueIds.VerdictMafia, 7f, "تم إخراج {name}. كان من المافيا!", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f), Anim(CueIds.CardReveal(Role.Mafia), 2f)),
-                Make(CueIds.VerdictTown, 7f, "تم إخراج {name}. كان مواطناً بريئاً…", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f)),
-                Make(CueIds.VerdictNobody, 4f, "ما استقروا على أحد. ما انطرد حدا."),
-                Make(CueIds.OverTown, 8f, "انتهت السهرة. فاز أهل الحارة!", Anim("over", 0f)),
-                Make(CueIds.OverMafia, 8f, "انتهت السهرة. فازت المافيا!", Anim("over", 0f)),
+                Make(CueIds.AvengeStart, 6f, "انطرد الثأري! وعنده قرار: ياخذ معاه لاعب.", Anim("zoom_seat", 0f), Anim(CueIds.CardReveal(Role.Avenger), 1f)),
+                Make(CueIds.AvengeDone, 7f, "الثأري اختار {name}. طلعوا الثنين.", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f)),
+                Make(CueIds.Sleep(Role.Mafia), 2f, "زين. المافيا ينامون.", Anim("sleep_mafia", 0f)),
+                Make(CueIds.Sleep(Role.Doctor), 2f, "زين. الدكتور ينام.", Anim("sleep_doctor", 0f)),
+                Make(CueIds.Sleep(Role.Sheriff), 2f, "زين. الشيخ ينام.", Anim("sleep_sheikh", 0f)),
+                Make(CueIds.DawnQuiet, 6f, "طلع الصبح. محد مات الليلة.", Anim("dawn", 0f)),
+                Make(CueIds.DawnKill, 9f, "طلع الصبح. الليلة… المافيا قتلت {name}.", Anim("dawn", 0f), Anim("zoom_seat", 3f), Sfx("gunshot", 5.4f), Anim("shot", 5.4f)),
+                Make(CueIds.DawnSaved, 9f, "طلع الصبح. المافيا حاولت تقتل {name}… بس فيه أحد أنقذه!", Anim("dawn", 0f), Anim("zoom_seat", 3f), Sfx("gunshot", 5.4f), Anim("shield", 5.6f)),
+                Make(CueIds.DayStart, 3f, "بدا النقاش.", Anim("day", 0f)),
+                Make(CueIds.VoteStart, 3f, "وقت التصويت. منو تشكون فيه؟", Anim("vote", 0f)),
+                Make(CueIds.VerdictMafia, 7f, "انطرد {name}. وكان من المافيا!", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f), Anim(CueIds.CardReveal(Role.Mafia), 2f)),
+                Make(CueIds.VerdictTown, 7f, "انطرد {name}. وكان مواطن بريء…", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f)),
+                Make(CueIds.VerdictNobody, 4f, "ما اتفقوا على أحد. محد انطرد."),
+                Make(CueIds.OverTown, 8f, "خلصت السهرة. فاز أهل الفريج!", Anim("over", 0f)),
+                Make(CueIds.OverMafia, 8f, "خلصت السهرة. فازت المافيا!", Anim("over", 0f)),
             };
             foreach (Role r in System.Enum.GetValues(typeof(Role)))
                 list.Add(Make(CueIds.CardReveal(r), 3f, "", Anim("card_flip", 0f)));
@@ -189,6 +189,44 @@ namespace MafiaNight.MatchRules
             { CueIds.OverMafia, "The night is over. The Mafia wins!" },
         };
 
+        /// <summary>
+        /// What the Arabic voice-over says: the same Gulf line as the slip but with the diacritics (tashkeel) a voice model needs to read the dialect, and with "أحد اللاعبين" in place of a name.
+        /// Taking the diacritics off must give back the slip's line exactly (a test keeps the two together).
+        /// </summary>
+        private static readonly Dictionary<string, string> arabicVoice = new Dictionary<string, string>
+        {
+            { CueIds.MatchStart, "وُزِّعَتِ الأَدْوَار. السَّهْرَةُ بَدَت." },
+            { CueIds.NightFalls, "الكُلّ يِنَام… غَمِّضُوا عُيُونَكُم." },
+            { CueIds.NightIdle, "اللَّيْلُ يِمْشِي… اهْدَا." },
+            { CueIds.Call(Role.Mafia), "يَا مَافِيَا… قُومُوا. مِنُو تَبُّونَ تَقْتُلُونَ اللَّيْلَة؟" },
+            { CueIds.Call(Role.Doctor), "يَا دُكْتُور… قُوم. مِنُو تَبِي تَحْمِي اللَّيْلَة؟" },
+            { CueIds.Call(Role.Sheriff), "يَا شَيْخ… قُوم. مِنُو تَبِي تَفْحَصُ اللَّيْلَة؟" },
+            { CueIds.Call(Role.Silencer), "يَا كَاتِمَ الصَّوْت… قُوم. مِنُو تَبِي تَسْكِتُه بَاجِر؟ مَا رَاح يِتْكَلَّمُ النَّهَارَ كُلَّه." },
+            { CueIds.Call(Role.Sniper), "يَا قَنَّاص… قُوم. عِنْدَكَ رَصَاصَةٌ وَحْدَة. تَبِي تَقْنِصُ اللَّيْلَة وَلَّا نَأَجِّلْهَا؟" },
+            { CueIds.Sleep(Role.Silencer), "زِين. كَاتِمُ الصَّوْتِ يِنَام." },
+            { CueIds.Sleep(Role.Sniper), "زِين. القَنَّاصُ يِنَام." },
+            { CueIds.DawnShot, "اِنْسَمَعَتْ طَلْقَةُ قَنَّاصٍ بِاللَّيْل… طَاحَ أَحَدُ اللَّاعِبِين." },
+            { CueIds.DawnSilenced, "كَاتِمُ الصَّوْتِ كَتَمَ صَوْتَ أَحَدِ اللَّاعِبِين لِهَالنَّهَار." },
+            { CueIds.AvengeStart, "اِنْطَرَدَ الثَّأْرِي! وَعِنْدَهُ قَرَار: يَاخُذُ مَعَاهُ لَاعِب." },
+            { CueIds.AvengeDone, "الثَّأْرِي اِخْتَارَ أَحَدَ اللَّاعِبِين. طَلَعُوا الثِّنْيَن." },
+            { CueIds.Sleep(Role.Mafia), "زِين. المَافِيَا يِنَامُون." },
+            { CueIds.Sleep(Role.Doctor), "زِين. الدُّكْتُورُ يِنَام." },
+            { CueIds.Sleep(Role.Sheriff), "زِين. الشَّيْخُ يِنَام." },
+            { CueIds.DawnQuiet, "طَلَعَ الصُّبْح. مَحَدْ مَاتَ اللَّيْلَة." },
+            { CueIds.DawnKill, "طَلَعَ الصُّبْح. اللَّيْلَة… المَافِيَا قَتَلَتْ أَحَدَ اللَّاعِبِين." },
+            { CueIds.DawnSaved, "طَلَعَ الصُّبْح. المَافِيَا حَاوَلَتْ تَقْتُلُ أَحَدَ اللَّاعِبِين… بَسْ فِيهِ أَحَدٌ أَنْقَذَه!" },
+            { CueIds.DayStart, "بَدَا النِّقَاش." },
+            { CueIds.VoteStart, "وَقْتُ التَّصْوِيت. مِنُو تَشُكُّونَ فِيه؟" },
+            { CueIds.VerdictMafia, "اِنْطَرَدَ أَحَدُ اللَّاعِبِين. وَكَانَ مِنَ المَافِيَا!" },
+            { CueIds.VerdictTown, "اِنْطَرَدَ أَحَدُ اللَّاعِبِين. وَكَانَ مُوَاطِن بَرِيء…" },
+            { CueIds.VerdictNobody, "مَا اِتَّفَقُوا عَلَى أَحَد. مَحَدْ اِنْطَرَد." },
+            { CueIds.OverTown, "خَلَصَتِ السَّهْرَة. فَازَ أَهْلُ الفَرِيج!" },
+            { CueIds.OverMafia, "خَلَصَتِ السَّهْرَة. فَازَتِ المَافِيَا!" },
+        };
+
+        /// <summary>The Arabic diacritics (harakat, shadda, sukun, dagger alef): what a diacritized voice line has over the slip's line.</summary>
+        public static string StripDiacritics(string s) => System.Text.RegularExpressions.Regex.Replace(s ?? "", "[ً-ٰٟ]", "");
+
         /// <summary>The line of a cue in a language ("ar" or "en"), with <c>{name}</c> left in; the Arabic line when the language has none.</summary>
         public static string Text(Cue cue, string lang)
         {
@@ -199,6 +237,7 @@ namespace MafiaNight.MatchRules
         /// <summary>What the voice-over says in a language: the line with no player name (a name cannot be recorded).</summary>
         public static string VoiceText(Cue cue, string lang)
         {
+            if (cue != null && lang != "en" && arabicVoice.TryGetValue(cue.Id, out var diacritized)) return diacritized;
             string line = Text(cue, lang);
             bool en = lang == "en" && english.ContainsKey(cue?.Id ?? "");
             string said = line.Replace("{name}", en ? SomeoneInVoiceEn : SomeoneInVoice);

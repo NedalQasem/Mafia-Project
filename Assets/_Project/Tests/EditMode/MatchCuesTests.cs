@@ -58,7 +58,7 @@ namespace MafiaNight.Tests
         [Test]
         public void ANameIsPutIntoTheLine()
         {
-            Assert.AreEqual("طلع الصبح. هالليلة… قامت المافيا بقتل نضال.", CueCatalog.Format(CueCatalog.Find(CueIds.DawnKill), "نضال"));
+            Assert.AreEqual("طلع الصبح. الليلة… المافيا قتلت نضال.", CueCatalog.Format(CueCatalog.Find(CueIds.DawnKill), "نضال"));
             Assert.AreEqual("", CueCatalog.Format(null, "x"));
         }
     }
