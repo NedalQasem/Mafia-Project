@@ -258,6 +258,20 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 .fpr{position:absolute;right:12px;bottom:10px;width:46px;height:56px;opacity:0;transition:opacity .6s}
 .fpr.in{opacity:.55}
 .dl div:last-child span{font-family:Lalezar}
+
+/* ===== the dock: no panel, the chat is part of the room's background ===== */
+.bot{padding:6px 12px 12px;gap:6px;background:linear-gradient(0deg,#0b0705f0 0,#0b0705a0 45%,transparent)}
+.chat2{background:none;box-shadow:none;padding:0;border-radius:0;gap:6px}
+.msgs{max-height:168px;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 30%);mask-image:linear-gradient(180deg,transparent 0,#000 30%)}
+.chat2.open .msgs{max-height:300px}
+.m2{background:#1c1410cc;box-shadow:inset 0 0 0 1px #ffffff0d}
+.m2.sys{align-self:stretch;max-width:none;background:var(--grain),linear-gradient(180deg,#e3d9bd,#d0c4a0);background-blend-mode:multiply,normal;color:var(--ink);border-radius:2px;box-shadow:0 2px 4px #0009;rotate:-.4deg;text-align:center;padding:4px 10px}
+.m2.sys p{font-family:"Aref Ruqaa",serif;font-weight:700;font-size:.82rem;color:#2a2114}
+.inp{gap:8px;background:#0e0a07b0;box-shadow:inset 0 0 0 1px #2a2018}
+.inp span.t{flex:1}
+.inp .chtab{border-radius:4px}
+.tbar{height:3px;margin:0 -12px}
+.lk{padding:6px 0}
 </style>
 </head>
 <body>
@@ -321,8 +335,9 @@ const ROLES={mafia:{n:'مافيا',k:'red',c:'#e0585f'},doctor:{n:'طبيب',k:'
 const STEPS=[['night','الليل يبدأ'],['call','ندائي'],['dawn','الفجر'],['day','النقاش'],['vote','التصويت']];
 let role='mafia',step=0,fres='mafia';
 const CALLED={mafia:'يا مافيا… اصحوا. مين بدكم تقتلوا الليلة؟',doctor:'يا دكتور… اصحى. مين بدك تحمي الليلة؟',sheikh:'يا شيخ… اصحى. مين بدك تفحص الليلة؟'};
+function resetDock(){act='';sysline='';notes=[]}
 function clearDossier(){const d=$('dos');if(d){d.className='dossier';d.innerHTML=''}}
-function rolePill(){clearDossier();const r=ROLES[role];const p=$('rp');p.textContent='دورك: '+r.n;p.style.color=r.c;p.style.boxShadow='inset 0 0 0 1px '+r.c+'88'}
+function rolePill(){resetDock();clearDossier();const r=ROLES[role];const p=$('rp');p.textContent='دورك: '+r.n;p.style.color=r.c;p.style.boxShadow='inset 0 0 0 1px '+r.c+'88'}
 function sleepAll(){seats.forEach(x=>x.classList.add('sleep'))}
 function wake(i,k){seats[i].classList.remove('sleep','dim');seats[i].classList.add('awake-'+k)}
 function dimOthers(keep){seats.forEach((x,i)=>{if(!keep.includes(i))x.classList.add('dim')})}
@@ -346,22 +361,22 @@ function night(bg){reset(bg||'night');rolePill();$('veil').classList.add('on');$
 const IMPACT='<svg class="impact go" viewBox="0 0 150 150" style="position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;overflow:visible"><g stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"><path d="M75 75 L75 20 M75 75 L128 42 M75 75 L134 96 M75 75 L88 140 M75 75 L22 112 M75 75 L16 52"/></g><circle cx="75" cy="75" r="10" fill="#1a0606" stroke="#e0585f" stroke-width="3"/></svg>';
 
 let chatOpen=false;
-const CH={table:{n:'الطاولة',lines:[['ريم','أنا شاكّة بسامر'],['لينا','ليش؟ شو شفتي؟']]},mafia:{n:'المافيا · سري',pr:1,lines:[['سامر','نضال؟'],['أنت','تمام، نضال',1]]},room:{n:'الغرفة',lines:[['نضال','مين المافيا برأيكم؟'],['مازن','سامر مشبوه من البداية']]}};
+const CH={table:{n:'الطاولة',lines:[['خالد','صباح الخير، مين شاكك بحدا؟'],['هديل','لسا بدري، خلونا نسمع'],['ريم','أنا شاكّة بسامر'],['لينا','ليش؟ شو شفتي؟'],['ريم','كان ساكت طول الليلة'],['أنت','خلينا نسمع منه',1]]},mafia:{n:'المافيا · سري',pr:1,lines:[['سامر','مين بنختار؟'],['أنت','نضال حاسس إنه الشيخ'],['سامر','نضال؟'],['أنت','تمام، نضال',1]]},room:{n:'الغرفة',lines:[['نضال','مين المافيا برأيكم؟'],['مازن','سامر مشبوه من البداية'],['نضال','وأنا بشك بخالد'],['مازن','خلينا نشوف الفجر']]}};
 const LOCK='<svg viewBox="0 0 24 24"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V8a3 3 0 0 0-6 0z"/></svg>';
 function chatKind(){const st=STEPS[step][0];if(role=='spec')return{k:'room'};if(st=='night'||st=='call'){if(role=='mafia'&&st=='call')return{k:'mafia'};return{locked:1}}return{k:'table'}}
+let act='',sysline='',notes=[];
 function chatHTML(){const c=chatKind();const o=chatOpen?' open':'';
- if(c.locked)return '<div class="chat2 locked'+o+'"><div class="lk">'+LOCK+'الدردشة مقفلة بالليل</div></div>';
- const ch=CH[c.k];let ls=ch.lines;if(chatOpen)ls=ls.concat([['هديل','أنا بصوّت معكم'],['خالد','لحظة، خلونا نسمع الكل'],['ريم','تمام']]);
- return '<div class="chat2'+o+'"><div class="chhd"><span class="chtab'+(ch.pr?' pr':'')+'">'+ch.n+'</span><span class="chn">'+(role=='spec'?'تكتب للمتفرجين فقط':c.k=='mafia'?'ما حدا غيركم بيشوفها':'اللاعبين الأحياء')+'</span></div><div class="msgs">'+ls.map(l=>'<div class="m2'+(l[2]?' me':'')+'"><b>'+l[0]+'</b><p>'+l[1]+'</p></div>').join('')+'</div><div class="inp"><span>اكتب رسالة…</span><i></i></div></div>'}
-function dock(inner){$('bot').innerHTML=inner+chatHTML();$('stage').classList.toggle('shrunk',chatOpen)}
-function hint(t){dock('<div class="tk"><span>'+t+'</span></div>')}
+ let ls=[];if(!c.locked){ls=CH[c.k].lines.slice();if(chatOpen)ls=ls.concat([['هديل','أنا بصوّت معكم'],['خالد','لحظة، خلونا نسمع الكل'],['ريم','تمام']])}
+ const msgs=ls.map(l=>'<div class="m2'+(l[2]?' me':'')+'"><b>'+l[0]+'</b><p>'+l[1]+'</p></div>').join('')+notes.map(t=>'<div class="m2 sys"><p>'+t+'</p></div>').join('')+(sysline?'<div class="m2 sys"><p>'+sysline+'</p></div>':'');
+ const foot=c.locked?'<div class="lk">'+LOCK+'الدردشة مقفلة بالليل</div>':'<div class="inp"><span class="chtab'+(CH[c.k].pr?' pr':'')+'">'+CH[c.k].n+'</span><span class="t">'+(role=='spec'?'اكتب للمتفرجين…':c.k=='mafia'?'اكتب للمافيا فقط…':'اكتب رسالة…')+'</span><i></i></div>';
+ return '<div class="chat2'+o+'"><div class="msgs">'+msgs+'</div>'+foot+'</div>'}
+function renderDock(){$('bot').innerHTML=act+chatHTML();$('stage').classList.toggle('shrunk',chatOpen)}
+function hint(t){act='';sysline=t;renderDock()}
+function note(t){notes.push(t);renderDock()}
 function panel(k,title,sub,chips,btn,secs){
- let h='<div class="tk"><b>'+title+'</b>'+(sub&&!btn?'<span>'+sub+'</span>':'')+'</div>';
- if(chips&&chips.length)h+='<div class="stamps">'+chips.map(c=>'<span class="stp '+(c[0]||'plain')+'">'+c[1]+'</span>').join('')+'</div>';
- if(btn)h+='<div class="go2 '+k+(btn[1]?' '+btn[1]:'')+'" id="go2">'+btn[0]+'</div>'+(secs?'<div class="tbar"><i style="--dur:'+secs+'s"></i></div>':'');
- else if(secs)h+='<div class="tbar"><i style="--dur:'+secs+'s"></i></div>';
- dock(h)}
-function toggleChat(){chatOpen=!chatOpen;const c=document.querySelector('#bot .chat2');if(c)c.outerHTML=chatHTML();$('stage').classList.toggle('shrunk',chatOpen);$('chatBtn').textContent=chatOpen?'اقفل الدردشة':'افتح الدردشة (شوف الحالة الموسّعة)'}
+ act=btn?'<div class="go2 '+k+(btn[1]?' '+btn[1]:'')+'" id="go2">'+btn[0]+'</div>'+(secs?'<div class="tbar"><i style="--dur:'+secs+'s"></i></div>':''):(secs?'<div class="tbar"><i style="--dur:'+secs+'s"></i></div>':'');
+ sysline='';renderDock()}
+function toggleChat(){chatOpen=!chatOpen;renderDock();$('stage').classList.toggle('shrunk',chatOpen);$('chatBtn').textContent=chatOpen?'اقفل الدردشة':'افتح الدردشة (شوف الحالة الموسّعة)'}
 const SC={
  night(){reset('day');rolePill();mic(role=='spec','المايك مفتوح — النهار');$('sm').textContent='النهار';hint('انتهى النهار…');
   at(600,()=>{setSky('night');$('moon').classList.add('show');$('veil').classList.add('on');$('sm').textContent='الليل'});
@@ -392,18 +407,18 @@ const SC={
    at(5600,()=>{seats.forEach(x=>x.classList.remove('pickable'));hush();enableBtn();panel('blue','مين بدك تفحص؟','اختيارك: سامر',[['blue','دفتر الفحص: فاضي']],['ثبّت الاختيار'],20)});
    at(6800,()=>{confirmBtn('جاري الفحص…');seats.forEach((x,i)=>{if(i!=2&&i!=0)x.classList.add('dim')});seats[2].classList.remove('dim');seats[2].classList.add('interrog');zoomTo(2,1.5);$('veil').classList.add('deep')});
    at(10000,()=>{seats[2].classList.remove('interrog');$('stage').style.transform='';undim();dossier('سامر',fres=='mafia')});
-   at(14200,()=>{panel('blue','نتيجة الفحص','انحفظت بدفتر الفحص. لا تكشف حالك بسهولة.',[[fres=='mafia'?'red':'teal','سامر: '+(fres=='mafia'?'مافيا ❗':'مواطن ✔')]])});
+   at(14200,()=>{note('نتيجة الفحص: سامر — '+(fres=='mafia'?'مافيا ❗':'مواطن ✔')+' (انحفظت بدفتر الفحص)')});
    at(16200,()=>{dossierAway();$('veil').classList.remove('deep')});
    at(16800,()=>{say('تمام. الشيخ ينام.','blue')});
    at(17600,()=>{seats.forEach(x=>{x.classList.remove('awake-sher','pickable');x.classList.add('sleep','dim')});hush();hint('انتهى دورك.')})}
   else if(role=='civ'){
    at(400,()=>say('الليل عم يمشي… الكل نايم.',''));
-   at(1200,()=>panel('neutral','إنت نايم','ما في شي تعمله الليلة. اسمع الراوي ولا تحكي.',[['','المايك مغلق'],['gold','مدة الليل ثابتة']],null,20));
+   at(1200,()=>hint('إنت نايم: ما في شي تعمله الليلة. اسمع الراوي ولا تحكي.'));
    at(4200,()=>say('…',''));at(6200,()=>say('الراوي بينادي غيرك…',''));at(9000,()=>say('اهدأ. لا تفتح عيونك.',''));
    at(12000,()=>{hush();hint('ما حدا بيعرف مين صحي: مدة النداءات ثابتة حتى لو الدور صاحبه ميت.')})}
   else{ // spectator
    at(400,()=>{seats[0].classList.add('dead');seats.forEach((x,i)=>{if(i)x.classList.add('sleep')});say('الليل عم يمشي…','')});
-   at(1500,()=>panel('neutral','أنت متفرج','بتشوف الطاولة بس. أفعال الليل سرية عن الكل، حتى المتفرجين.',[['gold','تحكي مع المتفرجين'],['','تسمع المتفرجين فقط ليلاً']],null,20))}},
+   at(1500,()=>hint('أنت متفرج: بتشوف الطاولة بس. أفعال الليل سرية عن الكل.'))}},
  dawn(){reset('night');rolePill();$('veil').classList.add('on');sleepAll();mic(false,'المايك مغلق — الليل');if(role=='spec'){seats[0].classList.add('dead');mic(true,'تحكي مع المتفرجين')}
   at(400,()=>{setSky('dawn');$('sun').classList.add('show');$('veil').className='veil';seats.forEach(x=>x.classList.remove('sleep'));$('sm').textContent='الفجر';if(role!='spec')mic(true,'المايك مفتوح — النهار')});
   at(900,()=>cap('طلع الصبح','الجميع يفتح عيونه'));
@@ -413,7 +428,7 @@ const SC={
   at(6000,()=>{seats[1].classList.remove('dim');seats[1].classList.add('dead')});
   at(6800,()=>{$('stage').style.transform='';$('veil').classList.remove('on');undim();
    const n={mafia:['red','خطتكم نجحت: نضال خرج من اللعبة'],doctor:['teal','إنت حميت ريم الليلة، ونضال ما كان هدفك. (ما بتعرف النتيجة غير من إعلان الراوي)'],sheikh:['blue','نتيجة فحصك محفوظة: سامر مافيا ❗'],civ:null,spec:['gold','نضال صار متفرج وانضم لغرفتكم']}[role];
-   if(n)panel('neutral','إشعار خاص',n[1],[[n[0],'إلك وحدك']]);else hint('النقاش بلّش • عندكم دقيقتين')});
+   if(n)note('إشعار خاص: '+n[1]);else hint('النقاش بلّش • عندكم دقيقتين')});
   at(9800,()=>{$('sm').textContent='النهار'})},
  day(){reset('day');rolePill();mic(true,role=='spec'?'تحكي مع المتفرجين':'المايك مفتوح — النهار');$('sm').textContent='النهار';seats[1].classList.add('dead');if(role=='spec')seats[0].classList.add('dead');
   const info={mafia:[['red','رفيقك: سامر'],['gold','لا تكشف حالك']],doctor:[['teal','حماية نفسك: ١ متبقي'],['gold','لا تكشف حالك']],sheikh:[['blue','دفتر الفحص: سامر مافيا ❗'],['gold','لا تكشف حالك']],civ:[['gold','صوتك سلاحك: ناقش وصوّت']],spec:[['gold','تسمع نقاش اللاعبين'],['','اللاعبين ما بيسمعوك']]}[role];
