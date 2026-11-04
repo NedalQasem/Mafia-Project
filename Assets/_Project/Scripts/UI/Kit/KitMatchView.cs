@@ -10,6 +10,9 @@ namespace MafiaNight.UI.Kit
     public enum SeatLook { Normal, Pick, PickDoc, PickSher, Talk, Dead, Sleep }
     public enum SeatTag { None, Mafia, Count, Check }
 
+    /// <summary>Marks a seat of the table with the id of its player, so the moments (the close-up, the shot) can find him.</summary>
+    public sealed class KitSeatTag : MonoBehaviour { public string Id = ""; }
+
     /// <summary>One player at the table, as the table screens draw him.</summary>
     public sealed class SeatSpec
     {
@@ -85,6 +88,14 @@ namespace MafiaNight.UI.Kit
             if (!byName.TryGetValue(frame, out var idx)) { Debug.LogWarning("[Match] no frame " + frame); return; }
             Current = frame;
             for (int k = 0; k < frames.Length; k++) if (frames[k] != null) frames[k].SetActive(k == idx);
+        }
+
+        /// <summary>Shows no frame at all (the role card has the whole screen).</summary>
+        public void HideFrames()
+        {
+            Init();
+            Current = null;
+            for (int k = 0; k < frames.Length; k++) if (frames[k] != null) frames[k].SetActive(false);
         }
 
         // ---------------------------------------------------------------- parts by number
@@ -296,6 +307,7 @@ namespace MafiaNight.UI.Kit
                 var spec = specs[(meAt + k) % n];
                 var seat = Instantiate(seatProto, stage);
                 seat.name = "Seat"; seat.SetActive(true);
+                seat.AddComponent<KitSeatTag>().Id = spec.Id;
                 var rt = (RectTransform)seat.transform;
                 float a = k * Mathf.PI * 2f / n;
                 rt.anchoredPosition = new Vector2(CenterX - RadiusX * Mathf.Sin(a), CenterY - RadiusY * Mathf.Cos(a));
@@ -306,6 +318,20 @@ namespace MafiaNight.UI.Kit
             }
             // the table's own picture stays behind the seats
             var felt = stage.Find("f_felt"); if (felt != null) felt.SetAsFirstSibling();
+        }
+
+        /// <summary>The seat of a player on the table now showing, or null (the frame has no table, or he is not on it).</summary>
+        public RectTransform SeatOf(string playerId)
+        {
+            if (string.IsNullOrEmpty(playerId) || string.IsNullOrEmpty(Current) || !byName.TryGetValue(Current, out var idx)) return null;
+            var stage = frames[idx].transform.Find("f_stage");
+            if (stage == null) return null;
+            for (int i = 0; i < stage.childCount; i++)
+            {
+                var t = stage.GetChild(i).GetComponent<KitSeatTag>();
+                if (t != null && t.Id == playerId && stage.GetChild(i).gameObject.activeInHierarchy) return (RectTransform)stage.GetChild(i);
+            }
+            return null;
         }
 
         /// <summary>A card was pressed (a role that player may know): the screen shows it big.</summary>

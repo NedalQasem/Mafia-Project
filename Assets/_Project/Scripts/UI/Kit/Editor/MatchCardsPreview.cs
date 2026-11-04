@@ -88,6 +88,58 @@ namespace MafiaNight.UI.Kit.Editor
             return log;
         }
 
+        private static void Step(int n, params System.Collections.IEnumerator[] routines)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                foreach (var r in routines) if (r != null) r.MoveNext();
+                Canvas.ForceUpdateCanvases();
+            }
+        }
+
+        /// <summary>The table's moments, stepped by hand (edit mode has no frames): the close-up with the shot's mark, the doctor's shield, and the "out" stamp.</summary>
+        public static string RenderMoments(string folder)
+        {
+            var v = Object.FindFirstObjectByType<KitMatchView>();
+            if (v == null) return "open the match scene first";
+            string log = "";
+            KitMomentFx.StepOverride = 1f / 30f;
+            try
+            {
+                foreach (var size in new[] { new Vector2Int(540, 1200), new Vector2Int(540, 760) })
+                {
+                    string tag = size.x + "x" + size.y;
+                    var cam = Camera.main; var rt0 = new RenderTexture(size.x, size.y, 24); cam.targetTexture = rt0; cam.Render(); Canvas.ForceUpdateCanvases(); cam.targetTexture = null; rt0.Release();
+                    foreach (var kind in new[] { "shot", "shield", "stamp_out" })
+                    {
+                        var seats = new List<SeatSpec>
+                        {
+                            new SeatSpec { Id = "me", Name = "أنت", Me = true, RoleId = "civilian" }, new SeatSpec { Id = "a", Name = "سامر" }, new SeatSpec { Id = "b", Name = "ريم" },
+                            new SeatSpec { Id = "c", Name = "لينا" }, new SeatSpec { Id = "d", Name = "خالد" }, new SeatSpec { Id = "e", Name = "مازن" },
+                        };
+                        v.Show("p4");
+                        var stage = v.Frame("p4").Find("f_stage");
+                        for (int i = stage.childCount - 1; i >= 0; i--) { var c = stage.GetChild(i); if (c.name.StartsWith("f_seat") || c.name == "Seat") Object.DestroyImmediate(c.gameObject); }
+                        v.SetSeats("p4", seats, null);
+                        foreach (var g in v.GetComponentsInChildren<KitFitGroup>(true)) g.Apply();
+                        Canvas.ForceUpdateCanvases();
+                        var fxGo = KitMomentFx.Create(v, (RectTransform)v.transform);
+                        try
+                        {
+                            var zoom = fxGo.Routine("zoom_seat", "b", 9f);
+                            Step(16, zoom);                                                       // the camera is close
+                            var effect = fxGo.Routine(kind, "b", 9f);
+                            Step(kind == "shot" ? 9 : kind == "shield" ? 26 : 14, zoom, effect);
+                            log += Snap(System.IO.Path.Combine(folder, "moment-" + kind + "-" + tag + ".png"), size.x, size.y);
+                        }
+                        finally { Object.DestroyImmediate(fxGo.gameObject); }
+                    }
+                }
+            }
+            finally { KitMomentFx.StepOverride = 0f; }
+            return log;
+        }
+
         [MenuItem("MafiaNight/Match/Render the table cards to the project folder")]
         public static void Menu() { Debug.Log(RenderAll(System.IO.Path.GetFullPath("Library"))); }
     }

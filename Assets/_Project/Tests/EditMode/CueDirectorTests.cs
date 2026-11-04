@@ -136,6 +136,29 @@ namespace MafiaNight.Tests
         }
 
         [Test]
+        public void EveryMomentThatIsAboutAPlayerCarriesHisSeat_SoTheTableCanAimAtIt()
+        {
+            Role(MafiaNight.MatchRules.Role.Civilian);
+            Table(Phase.Dawn, "ali");
+            client.Apply(new WireMessage(Msg.Dawn, "ali", "0", "ali", "Civilian", "sara", "omar", "Civilian"));
+            Assert.AreEqual("ali", played[0].SeatId, "the kill is about the victim");
+            Assert.AreEqual("omar", played[1].SeatId, "the shot is about the one it hit");
+            Assert.AreEqual("sara", played[2].SeatId, "the silence is about the silenced");
+            played.Clear();
+            client.Apply(new WireMessage(Msg.Dawn, "omar", "1", "", "", ""));
+            Assert.AreEqual("omar", played.Single().SeatId, "the shield is about the one it saved");
+            played.Clear();
+            Table(Phase.Verdict, "ali");
+            client.Apply(new WireMessage(Msg.Verdict, "ali", "Civilian", "3", "0"));
+            Assert.AreEqual("ali", played.Last().SeatId, "the stamp is about the one voted out");
+            played.Clear();
+            client.Apply(new WireMessage(Msg.Dawn, "", "0", "", "", ""));
+            Assert.AreEqual("", played.Single().SeatId, "a quiet night is about nobody");
+            foreach (var id in new[] { CueIds.DawnKill, CueIds.DawnSaved, CueIds.DawnShot, CueIds.VerdictMafia, CueIds.VerdictTown, CueIds.AvengeDone })
+                Assert.IsTrue(CueCatalog.Find(id).Steps.Any(s => s.Kind == CueStepKind.Animation && s.Value == "zoom_seat"), id + ": the close-up on the seat");
+        }
+
+        [Test]
         public void TheArabicVoiceReadsTheSameLineAsTheSlip_WithDiacriticsAndNoName()
         {
             foreach (var cue in CueCatalog.All)

@@ -150,7 +150,7 @@
   window.extractAll = async function () {
     const style = document.createElement('style'); style.id = '__norot';
     const variants = [
-      ['p1', '#t1', ['mafia', 'doc', 'sher', 'civ']], ['p2', '#t2', ['mafia', 'doc', 'sher', 'civ']], ['p3', '#t3', ['kill', 'save']],
+      ['p2', '#t2', ['mafia', 'doc', 'sher', 'civ']], ['p3', '#t3', ['kill', 'save']],
       ['p4'], ['p5'], ['p6', '#t6', ['civ', 'mafia']], ['p7'], ['p8', '#t8', ['civ', 'mafia']]];
     const frames = [];
     for (const [id, tab, keys] of variants) {

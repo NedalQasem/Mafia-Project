@@ -132,6 +132,13 @@ namespace MafiaNight.Tests
         }
 
         [Test]
+        public void TheMomentLayerOfTheTableTakesNoTap()
+        {
+            var fx = KitMomentFx.Create(null, (RectTransform)canvas.transform);
+            foreach (var g in fx.GetComponentsInChildren<UnityEngine.UI.Graphic>(true)) Assert.IsFalse(g.raycastTarget, g.name + ": the moment layer must never take a tap away from the table");
+        }
+
+        [Test]
         public void TheBigCardOfAPlayerStopsEveryTap_AndHoldsAnyName()
         {
             foreach (var id in new[] { "mafia", "sheikh", "doctor", "civilian", "silencer", "sniper", "avenger" })

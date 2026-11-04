@@ -47,6 +47,7 @@ namespace MafiaNight.App
         private float nextDockAt;
         private MatchCuePlayer cues;
         private KitNarratorSlip slip;
+        private KitMomentFx fx;
         // the second choices of the new roles, made in a sheet: the silencer's target, the sniper's shot
         private string silencePicked, sniperPicked;
         private bool silenceConfirmed, sniperDecided, sheetWanted, silencerSuggesting;
@@ -69,6 +70,7 @@ namespace MafiaNight.App
             var live = MatchRunner.Instance;
             runner = live != null && live.Session != null && live.Session.Client == client ? live : null;
             if (runner != null) runner.ChatChanged += RefreshDock;
+            if (fx == null && view.transform is RectTransform fxRoot) fx = KitMomentFx.Create(view, fxRoot);      // under the dock and the slip
             if (dock == null && view.transform is RectTransform root)
             {
                 dock = KitMatchDock.Create(root);
@@ -77,7 +79,7 @@ namespace MafiaNight.App
             c.Changed += Redraw; c.PhaseChanged += OnPhase;
             if (cues == null) cues = gameObject.AddComponent<MatchCuePlayer>();
             if (slip == null && view.transform is RectTransform slipRoot) slip = KitNarratorSlip.Create(slipRoot);
-            cues.Attach(c, slip);
+            cues.Attach(c, slip, fx);
             Redraw();
         }
 
@@ -268,7 +270,7 @@ namespace MafiaNight.App
         private void DrawReveal()
         {
             var role = c.MyRole ?? Role.Civilian;
-            Use("p1_civ");
+            frame = "reveal"; view.HideFrames();       // the card has the whole screen: no table behind it
             if (KitRoleReveal.IsOpen) { KitRoleReveal.SetButton(confirmed ? "بانتظار البقية" : "فهمت، ابدأ"); return; }      // already on screen: do not turn the card back over
             var def = RoleCards.Find(CardId(role));
             string line = (def != null ? def.Sub : "") + " · الجولة الأولى · " + c.Seats.Count + " لاعبين";

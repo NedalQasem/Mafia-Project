@@ -21,12 +21,13 @@ namespace MafiaNight.App
 
         private CueDirector director;
         private KitNarratorSlip slip;
+        private KitMomentFx fx;
         private AudioSource voice;
 
-        public void Attach(ClientMatchController client, KitNarratorSlip slipView)
+        public void Attach(ClientMatchController client, KitNarratorSlip slipView, KitMomentFx momentFx = null)
         {
             if (director != null) director.Dispose();
-            slip = slipView;
+            slip = slipView; fx = momentFx;
             if (voice == null) { voice = gameObject.AddComponent<AudioSource>(); voice.playOnAwake = false; voice.spatialBlend = 0f; }
             director = new CueDirector(client) { Language = Language() };      // the slip tells the line in the language the player chose
             director.Play += OnPlay;
@@ -43,9 +44,10 @@ namespace MafiaNight.App
             float elapsed = 0f;
             foreach (var step in play.Cue.Steps)
             {
-                if (step.Kind != CueStepKind.Voice && step.Kind != CueStepKind.Sound) continue;
+                if (step.Kind == CueStepKind.Subtitle || (step.Kind == CueStepKind.Animation && fx == null)) continue;
                 if (step.At > elapsed) { yield return new WaitForSecondsRealtime(step.At - elapsed); elapsed = step.At; }
-                Clip(step);
+                if (step.Kind == CueStepKind.Animation) fx.Play(step.Value, play.SeatId, Mathf.Max(0.5f, play.Cue.Duration - step.At));      // the table's own animations (close-up, shot, shield, stamp)
+                else Clip(step);
             }
         }
 
