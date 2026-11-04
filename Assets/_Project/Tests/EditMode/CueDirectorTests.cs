@@ -120,5 +120,19 @@ namespace MafiaNight.Tests
             foreach (var cue in CueCatalog.All)
                 if (!cue.Id.StartsWith("card.") && !cue.Id.StartsWith("sleep.")) Assert.IsNotEmpty(cue.Subtitle, cue.Id + " must have its line (the slip works with no audio)");
         }
+
+        [Test]
+        public void TheRecordingListMatchesTheCues_AndNoRecordedLineHasAPlayersName()
+        {
+            string list = System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "../Docs/narrator-lines.md"));
+            foreach (var cue in CueCatalog.All)
+            {
+                if (string.IsNullOrEmpty(cue.VoiceText)) continue;
+                StringAssert.DoesNotContain("{name}", cue.VoiceText, cue.Id + ": a name cannot be recorded");
+                StringAssert.Contains("| `" + CueCatalog.FileName(cue.Id) + "` | " + cue.VoiceText + " |", list, cue.Id + ": Docs/narrator-lines.md is out of date (the lines changed)");
+                StringAssert.DoesNotContain(".", CueCatalog.FileName(cue.Id), "no dots in a clip's file name");
+            }
+            CollectionAssert.AreEqual(new[] { "m", "f" }, CueCatalog.Voices);
+        }
     }
 }

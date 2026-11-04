@@ -8,13 +8,15 @@ namespace MafiaNight.App
 {
     /// <summary>
     /// Plays what the <see cref="CueDirector"/> chooses: the narrator's line on a slip of paper, the voice-over clip when the project has one, and the named sound effects when it has them.
-    /// Clips are looked up in Resources as <c>Narrator/&lt;language&gt;/&lt;cue id&gt;</c> (for example Narrator/ar/dawn.kill) and <c>Narrator/sfx/&lt;name&gt;</c>; a clip that is not there is skipped
+    /// Clips are looked up in Resources as <c>Narrator/&lt;language&gt;/&lt;m or f&gt;/&lt;file&gt;</c> (see <see cref="CueCatalog.ClipPath"/>, for example Narrator/ar/m/dawn_kill) and <c>Narrator/sfx/&lt;name&gt;</c>; a clip that is not there is skipped
     /// and the slip still tells the line, so the narration works with no audio at all. The table animations of the cues are not played here yet (the screens draw their own).
     /// </summary>
     public sealed class MatchCuePlayer : MonoBehaviour
     {
         /// <summary>PlayerPrefs key of the narrator's volume (0..1, default 1).</summary>
         public const string VolumeKey = "mafia.narrator";
+        /// <summary>PlayerPrefs key of the narrator's voice: "m" (a man, the default) or "f" (a woman).</summary>
+        public const string VoiceKey = "mafia.narrator.voice";
         private const string LangKey = "mafia.lang";
 
         private CueDirector director;
@@ -49,9 +51,16 @@ namespace MafiaNight.App
 
         private void Clip(CueStep step)
         {
-            string path = step.Kind == CueStepKind.Sound ? "Narrator/sfx/" + step.Value : "Narrator/" + Language() + "/" + step.Value.Substring(step.Value.IndexOf('/') + 1);
-            var clip = Resources.Load<AudioClip>(path);
-            if (clip == null && step.Kind == CueStepKind.Voice) clip = Resources.Load<AudioClip>("Narrator/" + step.Value);            // the Arabic narrator when the chosen language has no clip
+            AudioClip clip;
+            if (step.Kind == CueStepKind.Sound) clip = Resources.Load<AudioClip>("Narrator/sfx/" + step.Value);
+            else
+            {
+                string id = step.Value.Substring(step.Value.IndexOf('/') + 1);
+                string mine = PlayerPrefs.GetString(VoiceKey, "m") == "f" ? "f" : "m", other = mine == "f" ? "m" : "f";
+                // his voice in his language first, then the other voice, then the Arabic narrator: a missing clip never silences the line, and the slip still tells it
+                clip = Resources.Load<AudioClip>(CueCatalog.ClipPath(Language(), mine, id)) ?? Resources.Load<AudioClip>(CueCatalog.ClipPath(Language(), other, id))
+                    ?? Resources.Load<AudioClip>(CueCatalog.ClipPath("ar", mine, id)) ?? Resources.Load<AudioClip>(CueCatalog.ClipPath("ar", other, id));
+            }
             if (clip == null || voice == null) return;
             voice.PlayOneShot(clip, Mathf.Clamp01(PlayerPrefs.GetFloat(VolumeKey, 1f)));
         }

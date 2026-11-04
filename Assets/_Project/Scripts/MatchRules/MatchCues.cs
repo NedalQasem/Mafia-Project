@@ -34,6 +34,8 @@ namespace MafiaNight.MatchRules
         public float Duration;
         public List<CueStep> Steps = new List<CueStep>();
         public string Subtitle => Steps.FirstOrDefault(s => s.Kind == CueStepKind.Subtitle)?.Value ?? "";
+        /// <summary>What the voice-over says: the line with no player name (a name changes every match and cannot be recorded; the slip of text still shows it).</summary>
+        public string VoiceText => Subtitle.Replace("{name}", CueCatalog.SomeoneInVoice);
     }
 
     /// <summary>The ids of the cues. A new role adds <c>call.&lt;role&gt;</c> and its own events; a new state adds its id here.</summary>
@@ -74,6 +76,17 @@ namespace MafiaNight.MatchRules
         public const float NightCallSeconds = 20f;     // the owner's night choice time
 
         public static readonly string[] Languages = { "ar", "en" };
+
+        /// <summary>Said instead of a player's name in the recorded voice.</summary>
+        public const string SomeoneInVoice = "أحد اللاعبين";
+        /// <summary>The two narrator voices: a man's ("m") and a woman's ("f"); every cue is recorded in both.</summary>
+        public static readonly string[] Voices = { "m", "f" };
+
+        /// <summary>The clip's file name for a cue (no dots, so Resources.Load never mistakes the end of the id for an extension): "dawn.kill" -> "dawn_kill".</summary>
+        public static string FileName(string cueId) => cueId.Replace('.', '_');
+
+        /// <summary>Where a clip lives under Resources: Narrator/&lt;language&gt;/&lt;m or f&gt;/&lt;file name&gt;.</summary>
+        public static string ClipPath(string lang, string voice, string cueId) => "Narrator/" + lang + "/" + voice + "/" + FileName(cueId);
 
         public static string VoiceKey(string lang, string cueId) => lang + "/" + cueId;
 
