@@ -284,8 +284,11 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 </style>
 </head>
 <body>
+<div id="errbar" style="display:none;position:fixed;left:8px;right:8px;top:8px;z-index:99;padding:8px 12px;border-radius:8px;background:#5a0f15;color:#fff;font:800 .8rem Cairo;text-align:center"></div>
+<script>window.addEventListener("error",function(e){var b=document.getElementById("errbar");if(b){b.style.display="block";b.textContent="خطأ بالصفحة: "+e.message}});</script>
+
 <h1>المباراة من عين كل لاعب</h1>
-<p class="sub">اختر دور اللاعب (مافيا، طبيب، شيخ، مواطن، متفرج) وشوف شو بيطلعله، شو بيسأله الراوي، وشو بيعمل، وشو بيشوف الباقي.</p>
+<p class="sub">اختر دور اللاعب (مافيا، طبيب، شيخ، مواطن، متفرج) وشوف شو بيطلعله، شو بيسأله الراوي، وشو بيعمل، وشو بيشوف الباقي. <b style="color:#f5e2a8">(نسخة الأدوار الجديدة ✦ — ٤ نوفمبر)</b></p>
 <div class="wrap">
   <div class="side">
     <div class="lab">أنا…</div><div class="tabs" id="roleTabs"></div><div class="lab">النتيجة (للتجربة)</div><div class="tabs" id="resTabs"></div><div class="lab">المرحلة</div><div class="tabs" id="tabs"></div>
