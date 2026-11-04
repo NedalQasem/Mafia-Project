@@ -36,15 +36,6 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 .clock{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-family:Lalezar;font-size:1rem;background:#000b;box-shadow:inset 0 0 0 3px #3a2e22}
 .clock:empty{visibility:hidden}
 .clock.live{box-shadow:inset 0 0 0 3px var(--brass)}
-/* the turn strip: who the narrator calls, in order */
-.strip{position:absolute;top:86px;left:10px;right:10px;z-index:8;display:flex;gap:5px;justify-content:center;flex-wrap:nowrap}
-.chip{flex:1 1 0;min-width:0;padding:5px 2px 4px;border-radius:9px;text-align:center;font-weight:800;font-size:.62rem;line-height:1.2;color:#8d744a;background:linear-gradient(180deg,#241913,#150f0b);box-shadow:inset 0 0 0 1px #3a2e22;position:relative;transition:all .3s}
-.chip b{display:block;font-family:Lalezar;font-weight:400;font-size:.82rem;letter-spacing:0;color:inherit}
-.chip.on{color:var(--ink);background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:0 2px 0 #4a3512}
-.chip.done{opacity:.45}
-.chip.done::after{content:"✓";position:absolute;top:1px;left:4px;font-size:.6rem;color:var(--teal)}
-.chip.mine::before{content:"★";position:absolute;top:0;right:4px;font-size:.62rem;color:var(--gold)}
-.chip.on.mine::before{color:var(--crim)}
 .stage{position:absolute;left:0;right:0;top:138px;height:400px;z-index:3}
 .felt{position:absolute;left:12%;right:12%;top:10%;bottom:10%;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#1f5a3d,#123a28 70%,#0b2418);box-shadow:inset 0 0 0 7px #3a2417,inset 0 0 0 9px #8a6a30,0 10px 30px #000a;transition:filter .6s}
 .felt .mid{position:absolute;inset:0;display:grid;place-content:center;text-align:center;font-family:Lalezar;font-size:1.15rem;line-height:1.2}
@@ -62,10 +53,16 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 .seat.mate .av::before{content:"م";position:absolute;top:-6px;right:-6px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font:800 .62rem Cairo;color:#fff;background:var(--crim);box-shadow:0 0 0 2px #000}
 .veil{position:absolute;inset:0;z-index:4;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,#0000,#000d 78%);opacity:0;transition:opacity .6s}
 .veil.on{opacity:1}
-/* the ribbon that says "your turn" */
-.ribbon{position:absolute;left:0;right:0;top:250px;z-index:12;transform:translateY(-60px);opacity:0;transition:transform .45s cubic-bezier(.3,1.5,.5,1),opacity .3s;display:grid;place-items:center;pointer-events:none}
+/* the banner in the middle of the table: whose turn it is, for everybody to see */
+.ribbon{position:absolute;left:0;right:0;top:292px;z-index:12;transform:scale(.7);opacity:0;transition:transform .45s cubic-bezier(.3,1.5,.5,1),opacity .3s;display:grid;place-items:center;pointer-events:none}
 .ribbon.show{transform:none;opacity:1}
-.ribbon div{padding:8px 26px 9px;font-family:Lalezar;font-size:1.35rem;color:var(--ink);background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);border-radius:6px;box-shadow:0 4px 0 #4a3512,0 10px 20px #000a;clip-path:polygon(0 0,100% 0,96% 50%,100% 100%,0 100%,4% 50%)}
+.tb{min-width:230px;padding:10px 34px 12px;text-align:center;border-radius:6px;clip-path:polygon(0 0,100% 0,97% 50%,100% 100%,0 100%,3% 50%)}
+.tb b{display:block;font-family:Lalezar;font-weight:400;font-size:2rem;line-height:1.15}
+.tb small{display:block;font-family:Cairo;font-weight:800;font-size:.78rem}
+.tb.mine{color:var(--ink);background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);filter:drop-shadow(0 5px 0 #4a3512) drop-shadow(0 12px 14px #000a)}
+.tb.other{color:var(--gold);background:linear-gradient(180deg,#33251a,#1a110b);filter:drop-shadow(0 4px 0 #000) drop-shadow(0 10px 14px #000a);outline:0}
+.tb.other small{color:#cfc6b2}
+.tb.sleepy{color:#cfc6b2;background:linear-gradient(180deg,#1c2038,#0e1022);filter:drop-shadow(0 8px 12px #000a)}
 /* the bottom: your panel, or the narrator's slip */
 .bot{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 18px;z-index:10;display:grid;gap:9px;background:linear-gradient(0deg,#090605 68%,transparent)}
 .panel{padding:12px 14px 12px;border-radius:14px;background:linear-gradient(180deg,#2f2118,#1c130d);box-shadow:inset 0 0 0 1px #4a3826,0 6px 14px #000a;position:relative}
@@ -100,7 +97,7 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 </head>
 <body>
 <h1>سيناريو المباراة: دور بدور</h1>
-<p class="sub">الليل صار دور بدور، والكل بيعرف متى دوره ومتى لا. اختر دورك ومرحلة الليل وشوف الشاشة.</p>
+<p class="sub">الليل صار دور بدور، والكل بيعرف متى دوره ومتى لا. اختر دورك ومرحلة الليل وشوف الشاشة. بانر الدور بنص الطاولة قدام الكل.</p>
 <div class="wrap">
  <div class="side">
   <div class="lbl">الشاشة</div>
@@ -112,13 +109,13 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
   <div class="row"><button class="play" id="auto">▶ شغّل الليل كامل</button></div>
   <div class="card" id="what"></div>
   <div class="card"><h2>قواعد الليل الجديد</h2><ul>
-   <li>الراوي بينادي الأدوار <b>واحد بعد واحد</b>. اللي منادى عليه بيصحى ويختار، وكل الباقي نايمين وما بيقدروا يضغطوا شي.</li>
+   <li>الراوي بينادي الأدوار <b>واحد بعد واحد</b>، وبيطلع <b>بانر بنص الطاولة قدام الكل</b> باسم الدور («المافيا · اختاروا الآن»). كلهم بيشوفوا مين دوره، بس ما حدا بيشوف شو بيختار. اللي منادى عليه بيصحى ويختار، وكل الباقي نايمين وما بيقدروا يضغطوا شي.</li>
    <li>كل نداء <b>١٥ ثانية ثابتة</b>، وبعده «تمام، ينام» ثانيتين. بتخلص اختياراتك بدري؟ بتستنى لآخر الوقت (ما في إنهاء بدري).</li>
    <li>الدور الميت بيطلع نداؤه بنفس المدة: صوت الراوي ونافذة اللعب، وما حدا بيعرف إنه ميت.</li>
    <li>الأدوار اللي مش بالمباراة بنتخطاها، والأدوار اللي مالها قدرة بالليل (المواطن والثأري) ما إلها نداء.</li>
    <li>المافيا بتصحى مع كاتم الصوت (هو بيقترح بس)، وبعدين <b>كاتم الصوت لحاله</b> يختار مين يسكّت.</li>
    <li>الشيخ بيعرف جواب فحصه بدوره فقط.</li>
-   <li>أدوار المباراة بتنعلن للكل بالبداية، عشان شريط الأدوار ما يفضح شي.</li></ul></div>
+   <li>أدوار المباراة بتنعلن للكل بالبداية، عشان نداء الدور ما يفضح شي.</li></ul></div>
   <div class="card"><h2>مدة الليل حسب اللاعبين</h2>
    <table><tr><th>اللاعبين</th><th>النداءات</th><th>الليل كله</th></tr>
    <tr><td>٤–٥</td><td>مافيا، طبيب، شيخ (٣)</td><td>٤ + ٣×١٧ = <b>٥٥ ث</b></td></tr>
@@ -129,10 +126,9 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
  <div class="phone" id="phone">
   <div class="sky night" id="sky"></div>
   <div class="top"><div class="ttl" id="ttl">الليل<small id="ttlS">الجولة ٢</small></div><div class="clock" id="clock">١٥</div></div>
-  <div class="strip" id="strip"></div>
   <div class="stage" id="stage"><div class="felt" id="felt"><div class="mid" id="mid"></div></div></div>
   <div class="veil" id="veil"></div>
-  <div class="ribbon" id="ribbon"><div>دورك الآن ★</div></div>
+  <div class="ribbon" id="ribbon"><div class="tb" id="tb"><b></b><small></small></div></div>
   <div class="roster" id="roster" hidden></div>
   <div class="bot" id="bot"></div>
  </div>
@@ -164,8 +160,7 @@ function build(){
 function draw(){
   const phone=$('phone');
   $('roster').hidden=screen!=='start';
-  $('strip').hidden=screen!=='night';
-  $('ribbon').classList.remove('show');
+    $('ribbon').classList.remove('show');
   seats();
   if(screen==='start') return drawStart();
   if(screen==='day') return drawDay();
@@ -188,38 +183,28 @@ function seats(sleep,pickable,mates){
     st.appendChild(s);
   });
 }
-function strip(){
-  const el=$('strip');el.innerHTML='';
-  STEPS.forEach(([k,t],i)=>{
-    const c=document.createElement('div');c.className='chip';
-    c.innerHTML='<b>'+(i+1)+'</b>'+t;
-    if(i===step&&step>=0&&step<5)c.classList.add('on');
-    if(step===9||i<step)c.classList.add('done');
-    if(who(k,me)||(k==='mafia'&&me==='silencer'))c.classList.add('mine');
-    el.appendChild(c);
-  });
-}
+function banner(cls,title,sub){const t=$("tb");t.className="tb "+cls;t.querySelector("b").textContent=title;t.querySelector("small").textContent=sub;$("ribbon").classList.add("show")}
 function clock(sec){
   const c=$('clock');c.textContent=sec==null?'':sec.toString().replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);c.classList.toggle('live',sec!=null);
 }
 function drawNight(){
   $('stage').style.visibility='visible';
-  $('sky').className='sky night';$('ttl').firstChild.nodeValue='الليل';$('ttlS').textContent='الجولة ٢';strip();
+  $('sky').className='sky night';$('ttl').firstChild.nodeValue='الليل';$('ttlS').textContent='الجولة ٢';
   const bot=$('bot');const mid=$('mid');
   if(step===9){ // dawn
     $('sky').className='sky day';seats(null);clock(null);$('veil').classList.remove('on');$('ttl').firstChild.nodeValue='الفجر';
-    mid.innerHTML='طلع الصبح<small>الراوي بيعلن شو صار</small>';
+    mid.innerHTML='';
     bot.innerHTML='<div class="slip">طلع الصبح. الليلة… المافيا قتلت لينا.<small>بس فيه أحد أنقذه! — أو: محد مات الليلة.</small></div>';return;
   }
   if(step===-1){
-    seats('all');$('veil').classList.add('on');clock(null);mid.innerHTML='الكل ينام<small>أغمض عيونك</small>';
+    seats('all');$('veil').classList.add('on');clock(null);mid.innerHTML='';banner('sleepy','الكل ينام','أغمضوا عيونكم');
     bot.innerHTML='<div class="slip">الكل ينام… غمّضوا عيونكم.<small>بعد قليل الراوي بينادي الأدوار واحد واحد.</small></div>'+nextLine();return;
   }
   const key=STEPS[step][0],mine=who(key,me);
   const silencerSecond=(key==='silencer'&&me==='silencer');
   $('veil').classList.toggle('on',!mine);
   if(!mine){
-    seats('all');clock(15);mid.innerHTML='الراوي ينادي<small>'+STEPS[step][1]+'</small>';
+    seats('all');clock(15);mid.innerHTML='';banner('other',STEPS[step][1],key==='mafia'?'دورهم · يختارون الآن':'دوره · يختار الآن');
     const has=STEPS.some(([k])=>who(k,me));
     let l2;
     if(!has) l2='ما عندك دور ليلي. اسمع الصمت وبالصباح تعرف شو صار.';
@@ -229,10 +214,10 @@ function drawNight(){
     return;
   }
   // my turn
-  clock(15);$('ribbon').classList.add('show');
+  clock(15);banner('mine',STEPS[step][1],'دورك · اختر الآن');
   const mateLine=(key==='mafia'&&(me==='mafia'||me==='silencer'));
   seats(true,true,mateLine);const me0=$('stage').querySelector('.seat.me');if(me0)me0.classList.remove('sleep');
-  mid.innerHTML=(key==='mafia'?'اختر ضحية':'اختر لاعباً')+'<small>اضغط على مقعد</small>';
+  mid.innerHTML='';
   const T={
     mafia:{t:'اختر ضحية الليلة',d:'اتفق مع رفقاءك. الضحية اللي عليها أكثر أصوات تنقتل.',b:'أكّد الضحية'},
     silencerAdvice:{t:'اقترح ضحية',d:'اقتراحك بيظهر لمافيا الاغتيال بعلامة ؟ والقرار إلهم.',b:'اقترح'},
@@ -274,13 +259,13 @@ function drawVote(){
 }
 function describe(){
   const d=$('what');
-  if(screen!=='night'){d.innerHTML='<h2>شو بتشوف</h2>'+({start:'قبل أول ليلة بتنعلن الأدوار اللي بالمباراة (بدون ما حدا يعرف مين شو). هيك شريط الأدوار بالليل ما بيكشف شي.',day:'نفس الشريط الثابت: حالة المرحلة، الوقت، وشو المطلوب منك.',vote:'نفس لغة الليل: «دورك: صوّت» وعدّاد، والمقاعد بتصير قابلة للضغط.'}[screen]);return}
+  if(screen!=='night'){d.innerHTML='<h2>شو بتشوف</h2>'+({start:'قبل أول ليلة بتنعلن الأدوار اللي بالمباراة (بدون ما حدا يعرف مين شو). هيك نداء الدور بالليل ما بيكشف شي.',day:'بانر بنص الطاولة باسم المرحلة، والوقت، وشو المطلوب منك.',vote:'نفس لغة الليل: «دورك: صوّت» وعدّاد، والمقاعد بتصير قابلة للضغط.'}[screen]);return}
   const key=step>=0&&step<5?STEPS[step][0]:null;
   let t='<h2>شو بصير هلأ</h2>';
   if(step===-1)t+='الراوي: «الكل ينام». بعد ٤ ثواني بينادي أول دور.';
   else if(step===9)t+='انتهت النداءات: الفجر بيعلن اللي صار (الراوي + الشريط).';
-  else if(who(key,me))t+='<b>دورك.</b> بتضوي الشاشة وبينزل شريط «دورك الآن ★»، مع اهتزاز وصوت. عندك ١٥ ثانية. المقاعد قابلة للضغط. حتى لو أكّدت بدري، النافذة بتضل لآخر الوقت (ما حدا بيعرف مين خلّص).';
-  else t+='<b>مش دورك.</b> الشاشة مطفية والمقاعد نايمة، والمايك مقفول، وما بتقدر تضغط شي. بتشوف بس مين الراوي ينادي، وشو ضل من دورك.';
+  else if(who(key,me))t+='<b>دورك.</b> بنص الطاولة بانر ذهبي باسم دورك «المافيا · دورك · اختر الآن»، مع اهتزاز وصوت. عندك ١٥ ثانية. المقاعد قابلة للضغط. حتى لو أكّدت بدري، النافذة بتضل لآخر الوقت (ما حدا بيعرف مين خلّص).';
+  else t+='<b>مش دورك.</b> الشاشة مطفية والمقاعد نايمة، والمايك مقفول، وما بتقدر تضغط شي. بتشوف بانر داكن بنص الطاولة باسم الدور المنادى («الطبيب · دوره · يختار الآن»).';
   d.innerHTML=t;
 }
 function stopAuto(){if(timer){clearInterval(timer);timer=null}$('auto').textContent='▶ شغّل الليل كامل'}
