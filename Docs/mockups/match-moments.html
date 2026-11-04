@@ -6,7 +6,7 @@
 <title>لحظات المباراة: الليل، الأدوار، الطلقة، المتفرجين</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
 <style>
-:root{--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--crim:#8a1c24;--crim2:#e0585f;--teal:#4fa58b;--blue:#6fa0d6;--brass:#b99048;--gold:#f5e2a8}
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--crim:#8a1c24;--crim2:#e0585f;--teal:#4fa58b;--blue:#6fa0d6;--brass:#b99048;--gold:#f5e2a8}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;padding:14px 10px 40px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
 h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-align:center}
@@ -79,14 +79,30 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 .veil.deep{opacity:.82}
 .narr{position:absolute;left:0;right:0;top:80px;z-index:12;display:grid;justify-items:center;gap:8px;opacity:0;transform:translateY(-14px);transition:opacity .6s,transform .6s;pointer-events:none}
 .narr.show{opacity:1;transform:none}
-.lamp{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,#3b2a20,#120c08);box-shadow:0 0 0 3px #000,0 0 0 5px var(--brass),0 0 40px 10px #ffb35a44}
-.lamp svg{width:50px;height:50px;fill:#e8c27a}
-.narr .who{font-family:Lalezar;font-size:.95rem;color:var(--gold)}
-.bubble{max-width:320px;padding:12px 18px;border-radius:18px;background:var(--paper);color:var(--ink);font-family:"Aref Ruqaa",Cairo;font-weight:700;font-size:1.25rem;line-height:1.5;text-align:center;box-shadow:0 8px 24px #000a;position:relative}
-.bubble::before{content:"";position:absolute;top:-9px;left:50%;margin-left:-9px;border:9px solid transparent;border-top:0;border-bottom-color:var(--paper)}
-.bubble.red{background:#3a0d12;color:#ffd9dc;box-shadow:0 0 0 2px var(--crim2),0 8px 24px #000a}.bubble.red::before{border-bottom-color:#3a0d12}
-.bubble.teal{background:#0f2e26;color:#c9f0e2;box-shadow:0 0 0 2px var(--teal),0 8px 24px #000a}.bubble.teal::before{border-bottom-color:#0f2e26}
-.bubble.blue{background:#13243a;color:#d3e5fa;box-shadow:0 0 0 2px var(--blue),0 8px 24px #000a}.bubble.blue::before{border-bottom-color:#13243a}
+
+/* the narrator: a leather medallion with a brass ring, and his message as a telegram slip with a wax seal (the language of quick-notify.html) */
+.medal{position:relative;width:78px;height:78px;border-radius:50%;display:grid;place-items:center;background:var(--grain),linear-gradient(180deg,#3b2a20,#2b1e17 55%,#1a110d);background-blend-mode:multiply,normal;box-shadow:0 0 0 2px #000,0 0 0 5px var(--brass),0 0 0 7px #000,0 10px 24px #000c,0 0 36px 6px #ffb35a30}
+.medal::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1.5px dashed #c9a05077}
+.medal svg{width:40px;height:40px;position:relative;z-index:1;filter:drop-shadow(0 2px 3px #000a)}
+.plate{margin-top:-4px;padding:2px 14px 3px;border-radius:5px;font-family:Lalezar;font-size:.82rem;color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:0 0 0 1.5px #000,0 3px 6px #000a,inset 0 1px 0 #fff9}
+.slip{--s1:#f5e2a8;--s2:#b98a2e;--s3:#5a3a10;--ic:#2a1a08;position:relative;width:min(340px,90%);padding:12px 16px 20px 14px;display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:center;color:var(--ink);rotate:-1.2deg;
+  background:var(--grain),linear-gradient(180deg,#e3d9bd,#d3c8a6);background-blend-mode:multiply,normal;box-shadow:inset 0 0 26px #8a7a5a99;
+  filter:drop-shadow(0 8px 10px #000c)}
+.slip::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:10px;background:linear-gradient(-45deg,transparent 7px,#d3c8a6 0) 0 0/14px 10px,linear-gradient(45deg,transparent 7px,#d3c8a6 0) 0 0/14px 10px;pointer-events:none}
+.slip::before{content:"";position:absolute;inset:5px 5px 13px 5px;border:1.5px dashed #1c170f55;pointer-events:none}
+.slip>*{position:relative;z-index:1}
+.seal{position:relative;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 28%,var(--s1),var(--s2) 55%,var(--s3));box-shadow:0 0 0 2px color-mix(in srgb,var(--s2) 75%,#000),0 4px 6px #0009,inset 0 1px 0 #ffffff55}
+.seal::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1px dashed #ffffff44}
+.seal svg{width:26px;height:26px;position:relative;z-index:1;filter:drop-shadow(0 1px 0 #0006)}
+.slip .hd{display:block;font-weight:800;font-size:.58rem;letter-spacing:.06em;color:#6a5a3a;border-bottom:1px solid #1c170f33;padding-bottom:2px;margin-bottom:4px}
+.slip .tx{display:block;font-family:"Aref Ruqaa",Cairo;font-weight:700;font-size:1.28rem;line-height:1.45;color:var(--ink)}
+.slip.k-mafia{--s1:#d8404a;--s2:#8a1c24;--s3:#4a0b10;--ic:#f3e6c8}
+.slip.k-doc{--s1:#4fa884;--s2:#1d4a3c;--s3:#0c2219;--ic:#f3e6c8}
+.slip.k-sher{--s1:#6fa0d6;--s2:#24476e;--s3:#0e1f33;--ic:#f3e6c8}
+.slip.drop{animation:drop .7s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes drop{0%{opacity:0;transform:translateY(-40px) rotate(-6deg)}100%{opacity:1;transform:none}}
+.slip.drop .seal{animation:stampin .45s .3s cubic-bezier(.3,1.8,.5,1) both}
+@keyframes stampin{0%{transform:scale(2.4);opacity:0}100%{transform:none;opacity:1}}
 .cap{position:absolute;left:0;right:0;bottom:200px;z-index:12;text-align:center;font-family:Lalezar;font-size:2.4rem;line-height:1.1;text-shadow:0 4px 18px #000;opacity:0;transform:scale(.8);transition:opacity .5s,transform .5s;pointer-events:none}
 .cap small{display:block;font-family:Cairo;font-weight:800;font-size:.8rem;color:#b9a67e;margin-top:4px}
 .cap.show{opacity:1;transform:none}
@@ -132,7 +148,7 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
     <div class="stage" id="stage"><div class="felt"></div></div>
     <div class="veil" id="veil"></div>
     <div class="spec" id="spec"><b>أنت متفرج الآن</b></div>
-    <div class="narr" id="narr"><div class="lamp"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 6 5 6 8c0 2 1 3.5 2 4.5V15h8v-2.5c1-1 2-2.5 2-4.5 0-3-2-6-6-6zM9 17h6v1.5H9zM10 20h4v1.5h-4z"/></svg></div><div class="who">الراوي</div><div class="bubble" id="bub"></div></div>
+    <div class="narr" id="narr"><div class="medal"><svg viewBox="0 0 24 24" fill="#e8c27a"><path d="M9 2h6v2h-1v1.2c2.3.9 4 3.2 4 5.8v3l2 3v2H4v-2l2-3v-3c0-2.6 1.7-4.9 4-5.8V4H9zM7 19h10v2H7z"/><path d="M12 8c1.6 1.6 2.4 2.8 2.4 4a2.4 2.4 0 0 1-4.8 0c0-1.2.8-2.4 2.4-4z" fill="#fff3c4"/></svg></div><div class="plate">الراوي</div><div class="slip" id="slip"><div class="seal" id="seal"></div><div><span class="hd">برقية عاجلة · من الراوي</span><span class="tx" id="bub"></span></div></div></div>
     <div class="cap" id="cap"></div>
     <div class="roleCard" id="rc"><div class="in"><div class="f">؟</div><div class="b" id="rcb"></div></div></div>
     <div class="stamp" id="stamp"></div>
@@ -161,7 +177,9 @@ function reset(bg='day'){timers.forEach(clearTimeout);timers=[];
 }
 function zoomTo(i,k){const x=parseFloat(seats[i].style.left),y=parseFloat(seats[i].style.top);$('stage').style.transform='translate('+(k*(195-x))+'px,'+(k*(215-y)+40)+'px) scale('+k+')'}
 function mic(on,t){const m=$('mic');m.className='pill '+(on?'on':'off');$('micT').textContent=t}
-function say(t,cls=''){const b=$('bub');b.className='bubble '+cls;b.textContent=t;$('narr').classList.add('show')}
+const SEAL={'':'<svg viewBox="0 0 24 24" fill="#2a1a08"><path d="M9 2h6v2h-1v1.2c2.3.9 4 3.2 4 5.8v3l2 3v2H4v-2l2-3v-3c0-2.6 1.7-4.9 4-5.8V4H9zM7 19h10v2H7z"/></svg>',red:'<svg viewBox="0 0 24 24" fill="#f3e6c8"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6zM9 11h6v2H9z"/></svg>',teal:'<svg viewBox="0 0 24 24" fill="#f3e6c8"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z"/></svg>',blue:'<svg viewBox="0 0 24 24" fill="#f3e6c8"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.2l7.1-.6z"/></svg>'};
+const KIND={'':'',red:'k-mafia',teal:'k-doc',blue:'k-sher'};
+function say(t,cls=''){const sl=$('slip');sl.className='slip '+KIND[cls];$('bub').textContent=t;$('seal').innerHTML=SEAL[cls];$('narr').classList.add('show');void sl.offsetWidth;sl.classList.add('drop')}
 function hush(){$('narr').classList.remove('show')}
 function cap(t,small=''){const c=$('cap');c.innerHTML=t+(small?'<small>'+small+'</small>':'');c.classList.add('show')}
 function uncap(){$('cap').classList.remove('show')}
