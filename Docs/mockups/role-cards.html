@@ -83,9 +83,14 @@ section{max-width:1000px;margin:0 auto 38px}
 .mini .face{border-radius:4px;box-shadow:0 0 0 1px #000,0 2px 4px #000a}
 .mini .plate{inset:2.5px;border-radius:2px}
 .mini .plate::after{inset:2px;border-width:.5px}
-.mini .down .plate::before{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px;transform:rotate(45deg);border:1px solid var(--line);background:var(--ac2)}
 .mini .up .plate .ic{position:absolute;inset:0;display:grid;place-items:center}
 .mini .up .plate .ic svg{width:15px;height:15px;fill:var(--ac)}
+.emb{position:absolute;inset:0;z-index:3;display:grid;place-items:center;color:var(--orn);pointer-events:none}
+.emb svg{width:132px;height:132px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 3px #000a)}
+.emb svg .fl{fill:currentColor;stroke:none}
+.mini .emb svg{width:22px;height:22px;stroke-width:3.6}
+.hidden .plate::before{content:"";position:absolute;inset:0;border-radius:10px;opacity:.14;background:repeating-linear-gradient(45deg,currentColor 0 1px,transparent 1px 12px),repeating-linear-gradient(-45deg,currentColor 0 1px,transparent 1px 12px);color:var(--orn)}
+.hidden .cap{position:absolute;left:0;right:0;bottom:30px;z-index:4;text-align:center;font-family:Cinzel,serif;font-weight:700;font-size:.62rem;letter-spacing:.3em;color:var(--orn);opacity:.8}
 .mini .face::after,.mini .fx{display:none}
 .mini .flip{transition:none}
 
@@ -116,7 +121,7 @@ section{max-width:1000px;margin:0 auto 38px}
 /* ================= the store ================= */
 .shelf{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px;justify-items:center}
 .item{display:grid;justify-items:center;gap:8px;padding:14px 10px 12px;border-radius:16px;background:#120d0a;box-shadow:inset 0 0 0 1px #2c2219;width:100%;max-width:230px}
-.item .card{transform:scale(.8);margin:-30px 0}
+.item .card{zoom:.8}
 .item .nmr{font-family:Lalezar;font-size:1.05rem;color:var(--gold)}
 .item .tag{font-weight:800;font-size:.64rem;padding:2px 10px;border-radius:10px}
 .tag.rare{background:#2b2210;color:var(--gold)}.tag.epic{background:#1d1630;color:#c9b5ff}.tag.free{background:#0f2e26;color:#c9f0e2}
@@ -131,7 +136,7 @@ section{max-width:1000px;margin:0 auto 38px}
 </head>
 <body>
 <h1>كروت الأدوار</h1>
-<p class="sub">الشخصية على كل كرت ثابتة. اللي بيتغيّر وبينباع بالمتجر: الإطار، والخلفية، والحركة.</p>
+<p class="sub">الشخصية على كل كرت ثابتة. اللي بيتغيّر وبينباع بالمتجر: الإطار، والخلفية، والحركة، <b>وظهر الكرت</b> (اللي بيشوفه الكل وهو مقلوب بالمباراة).</p>
 
 <section>
   <h2>١) الكروت الأربعة (وجه + شرح)</h2>
@@ -139,6 +144,7 @@ section{max-width:1000px;margin:0 auto 38px}
   <div class="lab">الإطار</div><div class="tabs" id="tFr"></div>
   <div class="lab">الخلفية</div><div class="tabs" id="tBg"></div>
   <div class="lab">الحركة</div><div class="tabs" id="tAn"></div>
+  <div class="lab">ظهر الكرت (وهو مقلوب بالمباراة)</div><div class="tabs" id="tBk"></div>
   <div class="lab">باقات جاهزة</div><div class="tabs" id="tPk"></div>
   <div class="row" id="cards" style="margin-top:14px"></div>
 </section>
@@ -157,7 +163,7 @@ section{max-width:1000px;margin:0 auto 38px}
 
 <section>
   <h2>٣) المتجر: كروت الأدوار</h2>
-  <p class="note">ثلاث رفوف: إطارات، خلفيات، حركات. اللي بتلبسه بيظهر على كروتك عند كل اللاعبين. شكل بس، ما بيغيّر أي قدرة. «النحاسي / الجلد / بدون حركة» مجاني للكل.</p>
+  <p class="note">أربع رفوف: إطارات، خلفيات، حركات، وظهر الكرت. اللي بتلبسه بيظهر على كروتك عند كل اللاعبين. شكل بس، ما بيغيّر أي قدرة. «النحاسي / الجلد / بدون حركة» مجاني للكل.</p>
   <div class="tabs" id="shTabs"></div>
   <div class="shelf" id="shelf"></div>
 </section>
@@ -171,6 +177,14 @@ const ICONS={
  civ:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.6 3.6-7.4 8-7.4s8 2.8 8 7.4z"/></svg>'};
 /* the ornate corner (gold filigree): one drawing, used four times, mirrored */
 const ORN='<svg class="orn POS" viewBox="0 0 36 36"><path d="M3 3c0 12 4 20 14 22"/><path d="M3 3c12 0 20 4 22 14"/><path d="M8 8c0 7 3 11 9 12"/><path d="M8 8c7 0 11 3 12 9"/><path d="M17 25c4 1 7-1 7-4"/><path d="M25 17c1 4-1 7-4 7"/><circle cx="3.5" cy="3.5" r="2" fill="currentColor"/><circle cx="19" cy="19" r="1.7" fill="currentColor"/></svg>';
+/* the BACK of the card (what the others see while the role is secret): one emblem each, sold separately in the store */
+const BACKS={
+ diamond:'<svg viewBox="0 0 100 100"><path d="M50 8 92 50 50 92 8 50z"/><path d="M50 22 78 50 50 78 22 50z"/><path d="M50 36 64 50 50 64 36 50z" class="fl"/></svg>',
+ skull:'<svg viewBox="0 0 100 100"><path d="M18 36c0-10 14-14 32-14s32 4 32 14c-6-4-16-6-32-6s-26 2-32 6z" class="fl"/><path d="M10 38h80"/><path d="M28 40c-2 22 6 30 12 34v10h20V74c6-4 14-12 12-34"/><circle cx="39" cy="54" r="6" class="fl"/><circle cx="61" cy="54" r="6" class="fl"/><path d="M50 62l-3 7h6z" class="fl"/><path d="M44 80v6M50 80v6M56 80v6"/></svg>',
+ pistols:'<svg viewBox="0 0 100 100"><path d="M14 20 70 66l-6 8-14-6-6 8L10 28z"/><path d="M86 20 30 66l6 8 14-6 6 8L90 28z"/><path d="M50 14l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z" class="fl"/></svg>',
+ rose:'<svg viewBox="0 0 100 100"><path d="M50 18c-14 0-24 10-22 22 2 10 12 14 22 12 10 2 20-2 22-12 2-12-8-22-22-22z"/><path d="M50 26c-6 0-10 4-9 9 1 5 6 7 9 6 4 1 9-1 9-6 1-5-3-9-9-9z"/><path d="M50 52v36M50 66c-10-2-18 2-22 10 8 2 18 0 22-10zM50 74c10-2 18 2 22 10-8 2-18 0-22-10z"/></svg>',
+ lattice:'<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38"/><circle cx="50" cy="50" r="30"/><path d="M50 12v76M12 50h76M23 23l54 54M77 23 23 77"/><circle cx="50" cy="50" r="9" class="fl"/></svg>'};
+const BK={diamond:'ألماسة',skull:'جمجمة بقبعة',pistols:'مسدسان متقاطعان',rose:'وردة',lattice:'نجمة الحارة'};
 const ART={
  mafia:`<svg viewBox="0 0 160 160"><defs><linearGradient id="gm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a1014"/><stop offset="1" stop-color="#0c0405"/></linearGradient></defs>
   <path d="M10 160c4-34 28-48 70-48s66 14 70 48z" fill="#120708"/><path d="M62 118l18 24 18-24-8-6h-20z" fill="#e8dfc9"/><path d="M76 124l4 30 4-30-4-4z" fill="#8a1c24"/>
@@ -203,16 +217,17 @@ const ORDER=['mafia','sheikh','doctor','civ'];
 const FR={brass:'نحاسي',gold:'ذهبي',silver:'فضي',black:'أسود'};
 const BG={leather:'جلد',velvet:'قطيفة قرمزية',steel:'فولاذ',carbon:'كربون',fire:'نار',night:'ليل'};
 const AN={none:'بدون',shine:'لمعان',embers:'جمر متطاير',smoke:'دخان'};
-const PACKS={classic:['brass','leather','none','كلاسيك'],silver:['silver','steel','none','فضي'],crimson:['gold','velvet','none','قرمزي'],gold:['gold','leather','shine','ذهبي ملكي'],black:['black','carbon','smoke','أسود فاخر'],inferno:['gold','fire','embers','الجحيم']};
-let L={fr:'brass',bg:'leather',an:'none'};
+const PACKS={classic:['brass','leather','none','كلاسيك','diamond'],silver:['silver','steel','none','فضي','lattice'],crimson:['gold','velvet','none','قرمزي','rose'],gold:['gold','leather','shine','ذهبي ملكي','pistols'],black:['black','carbon','smoke','أسود فاخر','skull'],inferno:['gold','fire','embers','الجحيم','skull']};
+let L={fr:'brass',bg:'leather',an:'none',bk:'diamond'};
 
 function fx(an){ if(an=='embers'){let h='';for(let i=0;i<14;i++)h+=`<i style="--x:${8+Math.random()*84}%;--d:${2.6+Math.random()*2.4}s;--dl:${-Math.random()*4}s;--dx:${(Math.random()*50-25)|0}px"></i>`;return '<div class="fx">'+h+'</div>'}
   if(an=='smoke'){let h='';for(let i=0;i<5;i++)h+=`<b style="--x:${Math.random()*70}%;--d:${5+Math.random()*3}s;--dl:${-Math.random()*6}s;--dx:${(Math.random()*40-20)|0}px"></b>`;return '<div class="fx">'+h+'</div>'}
   return ''}
 function cls(l){return `fr-${l.fr} bg-${l.bg} an-${l.an}`}
+function hiddenHTML(l,label='دور سري'){return `<div class="card hidden ${cls(l)} role-civ"><div class="flip"><div class="face down"><div class="plate"></div>${['tl','tr','bl','br'].map(p=>ORN.replace('POS',p)).join('')}${fx(l.an)}<div class="emb">${BACKS[l.bk]}</div><div class="cap">${label}</div></div></div></div>`}
 function cardHTML(role,l,{mini=false,down=false,flipped=false}={}){
  const R=ROLES[role],ic=ICONS[role];
- if(mini)return `<div class="card mini ${cls(l)} ${R.k}"><div class="flip"><div class="face ${down?'down':'up'}"><div class="plate">${down?'':'<div class="ic">'+ic+'</div>'}</div></div></div></div>`;
+ if(mini)return `<div class="card mini ${cls(l)} ${R.k}"><div class="flip"><div class="face ${down?'down':'up'}"><div class="plate">${down?'<div class="emb">'+BACKS[l.bk]+'</div>':'<div class="ic">'+ic+'</div>'}</div></div></div></div>`;
  let bul='';for(let i=0;i<4;i++)bul+=`<i class="${i<R.bul?'':'off'}"></i>`;
  return `<div class="card ${cls(l)} ${R.k}${flipped?' flipped':''}"><div class="flip">
   <div class="face front"><div class="plate"></div>
@@ -228,13 +243,14 @@ function cardHTML(role,l,{mini=false,down=false,flipped=false}={}){
 function tabs(el,list,cur,fn){el.innerHTML='';list.forEach(([k,t])=>{const b=document.createElement('button');b.textContent=t;b.className=k==cur?'on':'';b.onclick=()=>fn(k);el.appendChild(b)})}
 function draw1(){
  tabs($('tFr'),Object.entries(FR),L.fr,k=>{L.fr=k;draw1()});tabs($('tBg'),Object.entries(BG),L.bg,k=>{L.bg=k;draw1()});tabs($('tAn'),Object.entries(AN),L.an,k=>{L.an=k;draw1()});
- tabs($('tPk'),Object.entries(PACKS).map(([k,v])=>[k,v[3]]),'',k=>{const p=PACKS[k];L={fr:p[0],bg:p[1],an:p[2]};draw1()});
- $('cards').innerHTML=ORDER.map(r=>cardHTML(r,L)).join('');
- $('cards').querySelectorAll('.card').forEach(c=>c.onclick=()=>c.classList.toggle('flipped'))}
+ tabs($('tBk'),Object.entries(BK),L.bk,k=>{L.bk=k;draw1()});
+ tabs($('tPk'),Object.entries(PACKS).map(([k,v])=>[k,v[3]]),'',k=>{const p=PACKS[k];L={fr:p[0],bg:p[1],an:p[2],bk:p[4]};draw1()});
+ $('cards').innerHTML=ORDER.map(r=>cardHTML(r,L)).join('')+hiddenHTML(L,'كرت مقلوب');
+ $('cards').querySelectorAll('.card:not(.hidden)').forEach(c=>c.onclick=()=>c.classList.toggle('flipped'))}
 draw1();
 
 /* the table */
-const PK=k=>({fr:PACKS[k][0],bg:PACKS[k][1],an:PACKS[k][2]});
+const PK=k=>({fr:PACKS[k][0],bg:PACKS[k][1],an:PACKS[k][2],bk:PACKS[k][4]});
 const PEOPLE=[{n:'أنت',l:PK('gold'),role:'doctor'},{n:'نضال',l:PK('classic'),role:'civ'},{n:'سامر',l:PK('black'),role:'mafia'},{n:'ريم',l:PK('silver'),role:'civ'},{n:'لينا',l:PK('crimson'),role:'sheikh'},{n:'خالد',l:PK('inferno'),role:'mafia'},{n:'مازن',l:PK('classic'),role:'civ',dead:true},{n:'هديل',l:PK('classic'),role:'civ'}];
 let view='doctor';
 const VIEWS=[['doctor','أنا طبيب'],['mafia','أنا مافيا'],['sheikh','أنا شيخ'],['civ','أنا مواطن']];
@@ -250,7 +266,7 @@ function draw2(){
  $('legend').textContent=view=='mafia'?'أنت مافيا: بتشوف كروت رفقاءك المافيا. اضغط أي كرت.':'كروت اللاعبين مقلوبة لحد ما يطلعوا. اضغط أي كرت.'}
 function openSheet(p,k){const sh=$('sheet');sh.classList.add('on');
  if(k){$('big').innerHTML=cardHTML(p.role,p.l);const c=$('big').firstChild;$('hn').textContent=p.n+' · اضغط الكرت ليرجع';setTimeout(()=>c.classList.add('flipped'),450);c.onclick=()=>c.classList.toggle('flipped')}
- else{$('big').innerHTML=`<div class="card ${cls(p.l)} role-civ"><div class="flip"><div class="face" style="display:grid;place-items:center"><div class="plate"></div><div style="position:relative;z-index:2;text-align:center;padding:0 24px"><div style="font-family:Lalezar;font-size:1.5rem;color:var(--gold)">دور سري</div><div style="font-weight:800;font-size:.72rem;color:#b9a67e;margin-top:6px;line-height:1.6">كرت ${p.n} بينكشف لما ينطرد أو يموت</div></div></div></div></div>`;$('hn').textContent='ظهر الكرت: تصميم '+p.n+' من المتجر'}}
+ else{$('big').innerHTML=hiddenHTML(p.l,'كرت '+p.n);$('hn').textContent='ظهر الكرت: تصميم '+p.n+' من المتجر'}}
 $('cl').onclick=()=>$('sheet').classList.remove('on');
 draw2();
 
@@ -259,15 +275,16 @@ const SHOP={
  fr:[['brass','free',null,0,'eq'],['silver','rare','coin',3500,'own'],['gold','rare','coin',6000,'buy'],['black','epic','gem',160,'buy']],
  bg:[['leather','free',null,0,'eq'],['velvet','rare','coin',4000,'buy'],['steel','rare','coin',3000,'buy'],['carbon','epic','gem',90,'buy'],['night','epic','gem',110,'buy'],['fire','epic','gem',180,'buy']],
  an:[['none','free',null,0,'eq'],['shine','rare','coin',5000,'buy'],['smoke','epic','gem',120,'buy'],['embers','epic','gem',200,'buy']]};
-const SHN={fr:['frames','إطارات',FR],bg:['backs','خلفيات',BG],an:['motion','حركات',AN]};
+SHOP.bk=[['diamond','free',null,0,'eq'],['lattice','rare','coin',3000,'buy'],['rose','rare','coin',4500,'buy'],['pistols','epic','gem',100,'buy'],['skull','epic','gem',140,'buy']];
+const SHN={fr:['frames','إطارات',FR],bg:['backs','خلفيات',BG],an:['motion','حركات',AN],bk:['cardbacks','ظهر الكرت',BK]};
 let shop='fr';
 function drawShop(){tabs($('shTabs'),Object.entries(SHN).map(([k,v])=>[k,v[1]]),shop,k=>{shop=k;drawShop()});
  $('shelf').innerHTML=SHOP[shop].map(([k,t,cur,price,state])=>{
-  const l=Object.assign({fr:'brass',bg:'leather',an:'none'},{[shop]:k});
+  const l=Object.assign({fr:'brass',bg:'leather',an:'none',bk:'diamond'},{[shop]:k});
   const tag=t=='free'?'<span class="tag free">مجاني</span>':t=='rare'?'<span class="tag rare">نادر</span>':'<span class="tag epic">أسطوري</span>';
   const btn=state=='eq'?'<button class="price eq">مرتدى</button>':state=='own'?'<button class="price own">ملكك — ارتدِ</button>':`<button class="price ${cur=='gem'?'gem':''}"><i class="${cur=='gem'?'gemi':'coin'}"></i>${price}</button>`;
-  return `<div class="item">${cardHTML('mafia',l)}<div class="nmr">${SHN[shop][2][k]}</div>${tag}${btn}</div>`}).join('');
- $('shelf').querySelectorAll('.card').forEach(c=>c.onclick=()=>c.classList.toggle('flipped'))}
+  return `<div class="item">${shop=='bk'?hiddenHTML(l,'دور سري'):cardHTML('mafia',l)}<div class="nmr">${SHN[shop][2][k]}</div>${tag}${btn}</div>`}).join('');
+ $('shelf').querySelectorAll('.card:not(.hidden)').forEach(c=>c.onclick=()=>c.classList.toggle('flipped'))}
 drawShop();
 </script>
 </body>
