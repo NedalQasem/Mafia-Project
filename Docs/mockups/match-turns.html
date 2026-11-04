@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>سيناريو المباراة: دور بدور</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--ivory:#efe3cf;--gold:#f5d070;--brass:#b9904a;--crim:#8a1c24;--crim2:#e0585f;--teal:#4fa58b;--blue:#6fa0d6;--ink:#2a1a08}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:14px 10px 40px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-align:center}
+.sub{color:#8d744a;text-align:center;font-size:.8rem;margin:0 0 14px}
+.wrap{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start;max-width:1000px;margin:0 auto}
+.side{flex:1 1 300px;max-width:440px;display:grid;gap:10px}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lbl{font-weight:800;font-size:.72rem;color:#8d744a;margin-top:4px}
+.tabs button{padding:7px 12px;border-radius:14px;font:800 .78rem Cairo;color:#b9a67e;background:#000a;border:0;box-shadow:inset 0 0 0 1px #3a2e22;cursor:pointer}
+.tabs button.on{color:var(--ink);background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30)}
+.card{background:#120d0a;border-radius:14px;padding:12px 14px;box-shadow:inset 0 0 0 1px #2c2219;font-size:.82rem;line-height:1.75;color:#cfc6b2}
+.card h2{font-family:Lalezar;font-weight:400;font-size:1.15rem;margin:0 0 4px;color:var(--gold)}
+.card ul{margin:6px 0 0;padding:0 18px 0 0}
+.card table{width:100%;border-collapse:collapse;margin-top:6px;font-size:.78rem}
+.card td,.card th{padding:4px 6px;text-align:right;border-bottom:1px dashed #3a2e22}
+.card th{color:#8d744a;font-weight:800}
+.play{padding:8px 18px;border-radius:14px;border:0;cursor:pointer;font:800 .85rem Cairo;color:#fff;background:linear-gradient(180deg,#a3242d,#5a0f15)}
+
+/* ---------- the phone ---------- */
+.phone{width:min(390px,100%);height:790px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;flex:none;box-shadow:0 0 0 2px #000,0 0 0 4px #2a2118,0 20px 50px #000;background:#0b0e1c}
+.sky{position:absolute;inset:0;z-index:0;transition:background .8s}
+.sky.day{background:linear-gradient(180deg,#2a1d12,#0b0705)}
+.sky.night{background:linear-gradient(180deg,#0b0e1c,#05060b)}
+.top{position:absolute;top:0;left:0;right:0;padding:30px 14px 6px;display:flex;align-items:center;gap:10px;z-index:8}
+.ttl{flex:1;font-family:Lalezar;font-size:1.5rem;line-height:1}
+.ttl small{display:block;font-family:Cairo;font-weight:600;font-size:.62rem;color:#8d744a}
+.clock{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-family:Lalezar;font-size:1rem;background:#000b;box-shadow:inset 0 0 0 3px #3a2e22}
+.clock:empty{visibility:hidden}
+.clock.live{box-shadow:inset 0 0 0 3px var(--brass)}
+/* the turn strip: who the narrator calls, in order */
+.strip{position:absolute;top:86px;left:10px;right:10px;z-index:8;display:flex;gap:5px;justify-content:center;flex-wrap:nowrap}
+.chip{flex:1 1 0;min-width:0;padding:5px 2px 4px;border-radius:9px;text-align:center;font-weight:800;font-size:.62rem;line-height:1.2;color:#8d744a;background:linear-gradient(180deg,#241913,#150f0b);box-shadow:inset 0 0 0 1px #3a2e22;position:relative;transition:all .3s}
+.chip b{display:block;font-family:Lalezar;font-weight:400;font-size:.82rem;letter-spacing:0;color:inherit}
+.chip.on{color:var(--ink);background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:0 2px 0 #4a3512}
+.chip.done{opacity:.45}
+.chip.done::after{content:"✓";position:absolute;top:1px;left:4px;font-size:.6rem;color:var(--teal)}
+.chip.mine::before{content:"★";position:absolute;top:0;right:4px;font-size:.62rem;color:var(--gold)}
+.chip.on.mine::before{color:var(--crim)}
+.stage{position:absolute;left:0;right:0;top:138px;height:400px;z-index:3}
+.felt{position:absolute;left:12%;right:12%;top:10%;bottom:10%;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#1f5a3d,#123a28 70%,#0b2418);box-shadow:inset 0 0 0 7px #3a2417,inset 0 0 0 9px #8a6a30,0 10px 30px #000a;transition:filter .6s}
+.felt .mid{position:absolute;inset:0;display:grid;place-content:center;text-align:center;font-family:Lalezar;font-size:1.15rem;line-height:1.2}
+.felt .mid small{display:block;font-family:Cairo;font-weight:600;font-size:.66rem;color:#a9b89f}
+.seat{position:absolute;width:64px;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;transition:filter .5s}
+.av{position:relative;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#3b2a20,#1a110d);box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 4px 8px #000a}
+.av svg{width:26px;height:26px;fill:#cfc6b2}
+.nm{max-width:66px;padding:1px 7px;border-radius:5px;font-weight:800;font-size:.58rem;line-height:1.4;white-space:nowrap;background:#000a;color:#cfc6b2}
+.seat.me .av{box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 0 0 4px var(--brass)}
+.seat.sleep{filter:brightness(.4)}
+.seat.sleep .av::after{content:"z";position:absolute;top:-8px;left:-4px;font-family:Lalezar;font-size:1rem;color:#9bb0ff;animation:zz 2s infinite}
+@keyframes zz{0%{opacity:0;transform:translateY(4px)}50%{opacity:1}100%{opacity:0;transform:translate(6px,-8px)}}
+.seat.pick .av{cursor:pointer;box-shadow:0 0 0 2px #000,0 0 0 4px #7a6a52}
+.seat.chosen .av{box-shadow:0 0 0 2px #000,0 0 0 5px var(--crim2)}
+.seat.mate .av::before{content:"م";position:absolute;top:-6px;right:-6px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font:800 .62rem Cairo;color:#fff;background:var(--crim);box-shadow:0 0 0 2px #000}
+.veil{position:absolute;inset:0;z-index:4;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,#0000,#000d 78%);opacity:0;transition:opacity .6s}
+.veil.on{opacity:1}
+/* the ribbon that says "your turn" */
+.ribbon{position:absolute;left:0;right:0;top:250px;z-index:12;transform:translateY(-60px);opacity:0;transition:transform .45s cubic-bezier(.3,1.5,.5,1),opacity .3s;display:grid;place-items:center;pointer-events:none}
+.ribbon.show{transform:none;opacity:1}
+.ribbon div{padding:8px 26px 9px;font-family:Lalezar;font-size:1.35rem;color:var(--ink);background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);border-radius:6px;box-shadow:0 4px 0 #4a3512,0 10px 20px #000a;clip-path:polygon(0 0,100% 0,96% 50%,100% 100%,0 100%,4% 50%)}
+/* the bottom: your panel, or the narrator's slip */
+.bot{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 18px;z-index:10;display:grid;gap:9px;background:linear-gradient(0deg,#090605 68%,transparent)}
+.panel{padding:12px 14px 12px;border-radius:14px;background:linear-gradient(180deg,#2f2118,#1c130d);box-shadow:inset 0 0 0 1px #4a3826,0 6px 14px #000a;position:relative}
+.panel::before{content:"";position:absolute;inset:5px;border-radius:10px;border:1px dashed #6a553a;pointer-events:none}
+.panel h3{font-family:Lalezar;font-weight:400;font-size:1.25rem;margin:0;color:var(--gold)}
+.panel p{margin:2px 0 0;font-size:.74rem;line-height:1.6;color:#cfc6b2}
+.bar{height:6px;border-radius:3px;background:#000a;margin-top:8px;overflow:hidden;box-shadow:inset 0 0 0 1px #3a2e22}
+.bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#8a6a30,#e0c070);transform-origin:right}
+.bar i.run{animation:drain linear forwards}
+@keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.go{margin-top:9px;width:100%;padding:11px;border:0;border-radius:12px;cursor:pointer;font:400 1.1rem Lalezar;color:var(--ink);background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:0 3px 0 #4a3512}
+.go.quiet{color:#cfc6b2;background:#00000099;box-shadow:inset 0 0 0 1px #4a3826}
+.go[disabled]{opacity:.45;cursor:default}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* the narrator's slip (telegram paper) */
+.slip{position:relative;padding:12px 16px;border-radius:5px;background:linear-gradient(180deg,#e9dcb8,#d9c89c);color:#2a1f10;font-weight:800;font-size:.86rem;line-height:1.6;box-shadow:0 5px 0 #8a7448,0 12px 20px #000a;transform:rotate(-.8deg);border-right:34px solid transparent}
+.slip::after{content:"";position:absolute;right:-26px;top:50%;width:22px;height:22px;margin-top:-11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#a2262f,#561016);box-shadow:0 2px 0 #3a080c}
+.slip small{display:block;font-weight:600;font-size:.7rem;color:#6a5a3a}
+.note{padding:7px 12px;border-radius:12px;background:#000b;box-shadow:inset 0 0 0 1px #3a2e22;font-weight:800;font-size:.72rem;text-align:center;color:#cfc6b2}
+.paper{padding:9px 14px;border-radius:5px;background:linear-gradient(180deg,#f0e6c8,#cdbf98);color:var(--ink);font-weight:800;font-size:.8rem;text-align:center;box-shadow:0 3px 0 #8a7448}
+.paper b{font-family:Lalezar;font-weight:400;font-size:1.1rem;color:var(--crim)}
+/* start of the match: who is in it */
+.roster{position:absolute;left:14px;right:14px;top:96px;z-index:6;display:grid;gap:10px}
+.roster h3{font-family:Lalezar;font-weight:400;font-size:1.5rem;margin:0;text-align:center}
+.roster .g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rc{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:12px;background:linear-gradient(180deg,#241913,#150f0b);box-shadow:inset 0 0 0 1px #3a2e22;font-weight:800;font-size:.78rem}
+.rc b{font-family:Lalezar;font-weight:400;font-size:1.25rem;min-width:24px;text-align:center;color:var(--gold)}
+.rc small{display:block;font-weight:600;font-size:.6rem;color:#8d744a}
+@media (max-width:760px){.phone{order:-1;margin:0 auto}h1{font-size:1.2rem}}
+.rc.night::after{content:"🌙";margin-right:auto;font-size:.8rem;filter:grayscale(1) brightness(1.4)}
+</style>
+</head>
+<body>
+<h1>سيناريو المباراة: دور بدور</h1>
+<p class="sub">الليل صار دور بدور، والكل بيعرف متى دوره ومتى لا. اختر دورك ومرحلة الليل وشوف الشاشة.</p>
+<div class="wrap">
+ <div class="side">
+  <div class="lbl">الشاشة</div>
+  <div class="tabs row" id="tScreen"></div>
+  <div class="lbl" id="lRole">أنا</div>
+  <div class="tabs row" id="tRole"></div>
+  <div class="lbl" id="lStep">الراوي ينادي</div>
+  <div class="tabs row" id="tStep"></div>
+  <div class="row"><button class="play" id="auto">▶ شغّل الليل كامل</button></div>
+  <div class="card" id="what"></div>
+  <div class="card"><h2>قواعد الليل الجديد</h2><ul>
+   <li>الراوي بينادي الأدوار <b>واحد بعد واحد</b>. اللي منادى عليه بيصحى ويختار، وكل الباقي نايمين وما بيقدروا يضغطوا شي.</li>
+   <li>كل نداء <b>١٥ ثانية ثابتة</b>، وبعده «تمام، ينام» ثانيتين. بتخلص اختياراتك بدري؟ بتستنى لآخر الوقت (ما في إنهاء بدري).</li>
+   <li>الدور الميت بيطلع نداؤه بنفس المدة: صوت الراوي ونافذة اللعب، وما حدا بيعرف إنه ميت.</li>
+   <li>الأدوار اللي مش بالمباراة بنتخطاها، والأدوار اللي مالها قدرة بالليل (المواطن والثأري) ما إلها نداء.</li>
+   <li>المافيا بتصحى مع كاتم الصوت (هو بيقترح بس)، وبعدين <b>كاتم الصوت لحاله</b> يختار مين يسكّت.</li>
+   <li>الشيخ بيعرف جواب فحصه بدوره فقط.</li>
+   <li>أدوار المباراة بتنعلن للكل بالبداية، عشان شريط الأدوار ما يفضح شي.</li></ul></div>
+  <div class="card"><h2>مدة الليل حسب اللاعبين</h2>
+   <table><tr><th>اللاعبين</th><th>النداءات</th><th>الليل كله</th></tr>
+   <tr><td>٤–٥</td><td>مافيا، طبيب، شيخ (٣)</td><td>٤ + ٣×١٧ = <b>٥٥ ث</b></td></tr>
+   <tr><td>٦</td><td>نفسها (الثأري نايم)</td><td><b>٥٥ ث</b></td></tr>
+   <tr><td>٧</td><td>+ قنّاص (٤)</td><td>٤ + ٤×١٧ = <b>٧٢ ث</b></td></tr>
+   <tr><td>٨ وفوق</td><td>+ كاتم الصوت (٥)</td><td>٤ + ٥×١٧ = <b>٨٩ ث</b></td></tr></table></div>
+ </div>
+ <div class="phone" id="phone">
+  <div class="sky night" id="sky"></div>
+  <div class="top"><div class="ttl" id="ttl">الليل<small id="ttlS">الجولة ٢</small></div><div class="clock" id="clock">١٥</div></div>
+  <div class="strip" id="strip"></div>
+  <div class="stage" id="stage"><div class="felt" id="felt"><div class="mid" id="mid"></div></div></div>
+  <div class="veil" id="veil"></div>
+  <div class="ribbon" id="ribbon"><div>دورك الآن ★</div></div>
+  <div class="roster" id="roster" hidden></div>
+  <div class="bot" id="bot"></div>
+ </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const FED='<svg viewBox="0 0 24 24"><path d="M12 4c-3.3 0-6 1.6-6 4v1.2c-1.7.5-3 1.4-3 2.3 0 1.2 2 2.2 4.6 2.7.7 1.7 2.4 2.8 4.4 2.8s3.7-1.1 4.4-2.8c2.6-.5 4.6-1.5 4.6-2.7 0-.9-1.3-1.8-3-2.3V8c0-2.4-2.7-4-6-4z"/></svg>';
+const NAMES=['أنت','سامر','ريم','لينا','خالد','مازن','هديل','نور'];
+/* the match of the demo: 8 players, everybody's role is known to the demo only */
+const ROLE={mafia:{n:'المافيا',c:'#e0585f'},silencer:{n:'كاتم الصوت',c:'#d05a7a'},doctor:{n:'الطبيب',c:'#4fa58b'},sheriff:{n:'الشيخ',c:'#6fa0d6'},sniper:{n:'القنّاص',c:'#b88a3c'},avenger:{n:'الثأري',c:'#d97a3a'},civ:{n:'مواطن',c:'#c9a050'}};
+const STEPS=[['mafia','المافيا'],['silencer','كاتم الصوت'],['doctor','الطبيب'],['sheriff','الشيخ'],['sniper','القنّاص']];
+const ROLES=[['mafia','مافيا'],['silencer','كاتم الصوت'],['doctor','طبيب'],['sheriff','شيخ'],['sniper','قنّاص'],['civ','مواطن']];
+let screen='night',me='doctor',step=1,timer=null,picked=null,decided={};
+function tabs(el,items,cur,fn){el.innerHTML='';items.forEach(([k,t])=>{const b=document.createElement('button');b.textContent=t;if(k==cur)b.className='on';b.onclick=()=>{stopAuto();fn(k)};el.appendChild(b)})}
+function who(stepKey,role){ // is this role awake in this narrator step?
+  if(stepKey==='mafia') return role==='mafia'||role==='silencer';
+  return stepKey===role;
+}
+function build(){
+  tabs($('tScreen'),[['start','بداية المباراة'],['night','الليل'],['day','النهار'],['vote','التصويت']],screen,k=>{screen=k;picked=null;build()});
+  const night=screen==='night';
+  $('tRole').hidden=$('lRole').hidden=$('tStep').hidden=$('lStep').hidden=$('auto').hidden=!night;
+  if(night){
+    tabs($('tRole'),ROLES,me,k=>{me=k;picked=null;build()});
+    tabs($('tStep'),[[-1,'الكل ينام'],...STEPS.map(([k,t],i)=>[i,'٣'.replace('٣',(i+1)+'')+'. '+t]),[9,'طلع الصبح']],step,k=>{step=+k;picked=null;build()});
+  }
+  draw();
+}
+function draw(){
+  const phone=$('phone');
+  $('roster').hidden=screen!=='start';
+  $('strip').hidden=screen!=='night';
+  $('ribbon').classList.remove('show');
+  seats();
+  if(screen==='start') return drawStart();
+  if(screen==='day') return drawDay();
+  if(screen==='vote') return drawVote();
+  drawNight();
+}
+function seats(sleep,pickable,mates){
+  const st=$('stage');st.querySelectorAll('.seat').forEach(s=>s.remove());
+  const W=390,H=400,cx=W/2,cy=H/2,rx=W*0.38,ry=H*0.4;
+  NAMES.forEach((n,i)=>{
+    const a=i*Math.PI*2/NAMES.length,x=cx-rx*Math.sin(a),y=cy+ry*Math.cos(a);
+    const s=document.createElement('div');s.className='seat'+(i==0?' me':'')+(sleep&&!(i==0&&!sleep)?'':'');
+    s.style.left=x+'px';s.style.top=y+'px';s.dataset.i=i;
+    if(sleep&&i>0)s.classList.add('sleep');
+    if(sleep&&i==0&&sleep==='all')s.classList.add('sleep');
+    if(pickable&&i>0)s.classList.add('pick');
+    if(mates&&(i==3||i==5)&&i>0)s.classList.add('mate');
+    s.innerHTML='<div class="av">'+FED+'</div><div class="nm">'+n+'</div>';
+    if(pickable&&i>0)s.onclick=()=>{picked=i;[...st.querySelectorAll('.seat')].forEach(q=>q.classList.toggle('chosen',q==s));const g=$('go');if(g){g.disabled=false}};
+    st.appendChild(s);
+  });
+}
+function strip(){
+  const el=$('strip');el.innerHTML='';
+  STEPS.forEach(([k,t],i)=>{
+    const c=document.createElement('div');c.className='chip';
+    c.innerHTML='<b>'+(i+1)+'</b>'+t;
+    if(i===step&&step>=0&&step<5)c.classList.add('on');
+    if(step===9||i<step)c.classList.add('done');
+    if(who(k,me)||(k==='mafia'&&me==='silencer'))c.classList.add('mine');
+    el.appendChild(c);
+  });
+}
+function clock(sec){
+  const c=$('clock');c.textContent=sec==null?'':sec.toString().replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);c.classList.toggle('live',sec!=null);
+}
+function drawNight(){
+  $('stage').style.visibility='visible';
+  $('sky').className='sky night';$('ttl').firstChild.nodeValue='الليل';$('ttlS').textContent='الجولة ٢';strip();
+  const bot=$('bot');const mid=$('mid');
+  if(step===9){ // dawn
+    $('sky').className='sky day';seats(null);clock(null);$('veil').classList.remove('on');$('ttl').firstChild.nodeValue='الفجر';
+    mid.innerHTML='طلع الصبح<small>الراوي بيعلن شو صار</small>';
+    bot.innerHTML='<div class="slip">طلع الصبح. الليلة… المافيا قتلت لينا.<small>بس فيه أحد أنقذه! — أو: محد مات الليلة.</small></div>';return;
+  }
+  if(step===-1){
+    seats('all');$('veil').classList.add('on');clock(null);mid.innerHTML='الكل ينام<small>أغمض عيونك</small>';
+    bot.innerHTML='<div class="slip">الكل ينام… غمّضوا عيونكم.<small>بعد قليل الراوي بينادي الأدوار واحد واحد.</small></div>'+nextLine();return;
+  }
+  const key=STEPS[step][0],mine=who(key,me);
+  const silencerSecond=(key==='silencer'&&me==='silencer');
+  $('veil').classList.toggle('on',!mine);
+  if(!mine){
+    seats('all');clock(15);mid.innerHTML='الراوي ينادي<small>'+STEPS[step][1]+'</small>';
+    const has=STEPS.some(([k])=>who(k,me));
+    let l2;
+    if(!has) l2='ما عندك دور ليلي. اسمع الصمت وبالصباح تعرف شو صار.';
+    else {const later=STEPS.slice(step+1).some(([k])=>who(k,me));const was=STEPS.slice(0,step).some(([k])=>who(k,me));
+      l2=was?'تمام، دورك خلص. رجعت تنام.':later?'دورك بعد شوي. ابقَ ساكت.':'ما عندك نداء هلأ.';}
+    bot.innerHTML='<div class="slip">الراوي ينادي: '+STEPS[step][1]+'… اسمع الصمت.<small>'+l2+'</small></div><div class="note">عيونك مغمضة · الشاشة مقفلة لحد دورك</div>';
+    return;
+  }
+  // my turn
+  clock(15);$('ribbon').classList.add('show');
+  const mateLine=(key==='mafia'&&(me==='mafia'||me==='silencer'));
+  seats(true,true,mateLine);const me0=$('stage').querySelector('.seat.me');if(me0)me0.classList.remove('sleep');
+  mid.innerHTML=(key==='mafia'?'اختر ضحية':'اختر لاعباً')+'<small>اضغط على مقعد</small>';
+  const T={
+    mafia:{t:'اختر ضحية الليلة',d:'اتفق مع رفقاءك. الضحية اللي عليها أكثر أصوات تنقتل.',b:'أكّد الضحية'},
+    silencerAdvice:{t:'اقترح ضحية',d:'اقتراحك بيظهر لمافيا الاغتيال بعلامة ؟ والقرار إلهم.',b:'اقترح'},
+    silencer:{t:'مين تسكّت بكرة؟',d:'المُسكَت ما بيحكي ولا بيكتب طول النهار، وبيصوّت بس.',b:'أسكِت'},
+    doctor:{t:'من تنقذ الليلة؟',d:'اللي تنقذه ما يموت حتى لو اختاره المافيا. نفسك مرة وحدة بس.',b:'أنقذ'},
+    sheriff:{t:'من تتحقق منه؟',d:'بتعرف إذا كان مافيا أو بريء. النتيجة لك وحدك.',b:'تحقّق'},
+    sniper:{t:'طلقة وحدة. تقنص الليلة؟',d:'لو أصبت مافيا بيطلع وإنت بتضل. لو أصبت مواطن بيطلعوا الاتنين.',b:'اقنص'}};
+  const cfg=key==='mafia'?(me==='silencer'?T.silencerAdvice:T.mafia):T[key];
+  bot.innerHTML='<div class="panel"><h3>'+cfg.t+'</h3><p>'+cfg.d+'</p><div class="bar"><i id="barI"></i></div>'+
+   (key==='sniper'?'<div class="duo"><button class="go" id="go" disabled>'+cfg.b+'</button><button class="go quiet" id="keep">مش هالليلة</button></div>':'<button class="go" id="go" disabled>'+cfg.b+'</button>')+'</div>'+
+   (key==='sheriff'?'<div id="res"></div>':'');
+  const bi=$('barI');bi.classList.add('run');bi.style.animationDuration='15s';
+  const g=$('go');g.onclick=()=>{
+    g.disabled=true;g.textContent='تم ✓ · بس ابقَ لآخر الوقت';
+    if(key==='sheriff'&&$('res'))$('res').innerHTML='<div class="paper">نتيجة الفحص: <b>'+(picked===3||picked===5?'مافيا':'بريء')+'</b></div>';
+  };
+  const k=$('keep');if(k)k.onclick=()=>{g.disabled=true;k.disabled=true;k.textContent='أجّلت ✓'};
+}
+function nextLine(){return ''}
+function drawStart(){
+  $('sky').className='sky night';$('ttl').firstChild.nodeValue='الجولة الأولى';$('ttlS').textContent='٨ لاعبين';clock(null);$('veil').classList.remove('on');
+  $('stage').style.visibility='hidden';$('mid').innerHTML='';
+  $('roster').innerHTML='<h3>الأدوار بهالمباراة</h3><div class="g">'+
+   [['٢','مافيا','منهم كاتم صوت',1],['١','طبيب','يحمي بالليل',1],['١','شيخ','يفحص بالليل',1],['١','قنّاص','طلقة وحدة',1],['١','الثأري','يطلع ومعه واحد',0],['٢','مواطنين','صوتهم سلاحهم',0]].map(r=>'<div class="rc'+(r[3]?' night':'')+'"><b>'+r[0]+'</b><div>'+r[1]+'<small>'+r[2]+'</small></div></div>').join('')+
+   '</div><div class="note">🌙 = بيصحى بالليل بدوره · ما حدا بيعرف مين الأدوار</div>';
+  $('bot').innerHTML='<div class="slip">وُزّعت الأدوار. السهرة بدت.<small>تبدأ الليلة الأولى بعد أن يجهز الجميع · ٦ من ٨</small></div>';
+}
+function drawDay(){
+  $('stage').style.visibility='visible';$('sky').className='sky day';$('ttl').firstChild.nodeValue='النهار';$('ttlS').textContent='نقاش · الجولة ٢';clock(120);
+  $('veil').classList.remove('on');seats(null);
+  $('mid').innerHTML='وقت النقاش<small>اكشفوا المافيا</small>';
+  $('bot').innerHTML='<div class="panel"><h3>الكل بيحكي</h3><p>الليل خلص. ناقشوا مين فعل شو، دافعوا عن حالكم. التصويت بيبدأ لما ينتهي الوقت أو يوافق أغلبكم على التخطي.</p><div class="bar"><i class="run" style="animation-duration:120s"></i></div><button class="go quiet">تخطي النقاش ٠/٥</button></div>';
+}
+function drawVote(){
+  $('stage').style.visibility='visible';$('sky').className='sky day';$('ttl').firstChild.nodeValue='التصويت';$('ttlS').textContent='الجولة ٢';clock(45);
+  $('veil').classList.remove('on');seats(null,true);
+  $('mid').innerHTML='صوّت الآن<small>مين بتطرده؟</small>';
+  $('bot').innerHTML='<div class="panel"><h3>دورك: صوّت</h3><p>اضغط مقعد لاعب وبعدين ثبّت صوتك. بتقدر تغيّر لحد ما ينتهي الوقت، أو تمتنع.</p><div class="bar"><i class="run" style="animation-duration:45s"></i></div><div class="duo"><button class="go" id="go" disabled>ثبّت صوتي</button><button class="go quiet">امتنع</button></div></div>';
+}
+function describe(){
+  const d=$('what');
+  if(screen!=='night'){d.innerHTML='<h2>شو بتشوف</h2>'+({start:'قبل أول ليلة بتنعلن الأدوار اللي بالمباراة (بدون ما حدا يعرف مين شو). هيك شريط الأدوار بالليل ما بيكشف شي.',day:'نفس الشريط الثابت: حالة المرحلة، الوقت، وشو المطلوب منك.',vote:'نفس لغة الليل: «دورك: صوّت» وعدّاد، والمقاعد بتصير قابلة للضغط.'}[screen]);return}
+  const key=step>=0&&step<5?STEPS[step][0]:null;
+  let t='<h2>شو بصير هلأ</h2>';
+  if(step===-1)t+='الراوي: «الكل ينام». بعد ٤ ثواني بينادي أول دور.';
+  else if(step===9)t+='انتهت النداءات: الفجر بيعلن اللي صار (الراوي + الشريط).';
+  else if(who(key,me))t+='<b>دورك.</b> بتضوي الشاشة وبينزل شريط «دورك الآن ★»، مع اهتزاز وصوت. عندك ١٥ ثانية. المقاعد قابلة للضغط. حتى لو أكّدت بدري، النافذة بتضل لآخر الوقت (ما حدا بيعرف مين خلّص).';
+  else t+='<b>مش دورك.</b> الشاشة مطفية والمقاعد نايمة، والمايك مقفول، وما بتقدر تضغط شي. بتشوف بس مين الراوي ينادي، وشو ضل من دورك.';
+  d.innerHTML=t;
+}
+function stopAuto(){if(timer){clearInterval(timer);timer=null}$('auto').textContent='▶ شغّل الليل كامل'}
+$('auto').onclick=()=>{
+  if(timer){stopAuto();return}
+  $('auto').textContent='■ إيقاف';step=-1;build();
+  timer=setInterval(()=>{step=step===-1?0:step===9?-1:step+1;if(step===5)step=9;build();$('auto').textContent='■ إيقاف'},4200);
+};
+const _build=build;build=function(){_build();describe()};
+/* a link can open a given state: #screen=night&me=doctor&step=1 */
+location.hash.slice(1).split('&').forEach(p=>{const [k,v]=p.split('=');if(k==='screen')screen=v;if(k==='me')me=v;if(k==='step')step=+v;if(k==='pick'){window.__pick=+v}});
+build();
+if(window.__pick){const s=document.querySelector('.seat[data-i="'+window.__pick+'"]');if(s)s.click()}
+</script>
+</body>
+</html>
