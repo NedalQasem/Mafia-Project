@@ -51,8 +51,8 @@ namespace MafiaNight.Services.Match
 
         /// <summary>The match was cancelled for everybody (reason in Arabic); the screens go back to the room.</summary>
         public event Action<string> Cancelled;
-        /// <summary>A member of the room wrote in the room chat (sender id as EOS reports it, text).</summary>
-        public event Action<string, string> RoomChat;
+        /// <summary>A line was written and this device may read it (sender id as EOS reports it, text, the channel it came on).</summary>
+        public event Action<string, string, ChatChannel> RoomChat;
 
         public MatchSession(IEosPlatform eos, IRoomService rooms)
         {
@@ -102,9 +102,11 @@ namespace MafiaNight.Services.Match
             if (m.Type == Msg.Chat)
             {
                 if (Client.SilencedId != null && Client.SilencedId == sender && Client.Phase != Phase.Night && Client.Phase != Phase.GameOver) return;   // silenced: even a modified client cannot write
-                RoomChat?.Invoke(sender, m.Arg(0)); return;
+                var channel = MatchChat.FromCode(m.Arg(1));
+                if (AcceptsChat(sender, channel)) RoomChat?.Invoke(sender, m.Arg(0), channel);
+                return;
             }
-            if (m.Type == Msg.BotChat) { if (sender == HostId) RoomChat?.Invoke(m.Arg(0), m.Arg(1)); return; }       // only the host speaks for a bot
+            if (m.Type == Msg.BotChat) { if (sender == HostId && AcceptsChat(m.Arg(0), ChatChannel.Room)) RoomChat?.Invoke(m.Arg(0), m.Arg(1), ChatChannel.Room); return; }       // only the host speaks for a bot
             if (m.Type == Msg.StageAct || m.Type == Msg.Stage || m.Type == Msg.Roster) { Stage.Receive(sender, m); return; }
             if (m.Type == Msg.Act) { Host?.Receive(sender, m); return; }
             if (m.Type == Msg.Snapshot)
@@ -116,11 +118,26 @@ namespace MafiaNight.Services.Match
             if (sender == HostId) Client.Apply(m);        // only the room's host may tell us how the match goes
         }
 
-        /// <summary>Sends a room chat line to every other member (peer to peer, nothing is stored on a server).</summary>
-        public void SendChat(string text)
+        /// <summary>Does this device keep a line from <paramref name="sender"/> on <paramref name="channel"/>? (<see cref="MatchChat.Accept"/>, with what this device knows of the table.)</summary>
+        private bool AcceptsChat(string sender, ChatChannel channel)
         {
-            var msg = new WireMessage(Msg.Chat, text);
-            foreach (var m in rooms.Members) if (m.Puid != myId) net.Send(m.Puid, msg);
+            var c = Client;
+            var seat = c.Seat(sender);
+            bool senderAlive = seat != null && seat.Alive && !seat.Left || (c.Phase == Phase.Avenge && sender == c.AvengerId);
+            bool receiverAlive = c.IAmAlive || c.IAmTheAvenger;
+            return MatchChat.Accept(channel, c.Phase, receiverAlive, c.IAmMafia && c.IAmAlive, senderAlive, seat != null && seat.IsMate);
+        }
+
+        /// <summary>Sends a written line to the members who may read it on its channel (peer to peer, nothing is stored on a server): the mafia's secret line only to the mafia mates.</summary>
+        public void SendChat(string text, ChatChannel channel = ChatChannel.Room)
+        {
+            var msg = new WireMessage(Msg.Chat, text, MatchChat.Code(channel));
+            foreach (var m in rooms.Members)
+            {
+                if (m.Puid == myId) continue;
+                if (channel == ChatChannel.Mafia && Client.Seat(m.Puid)?.IsMate != true) continue;
+                net.Send(m.Puid, msg);
+            }
         }
 
         private List<VirtualMember> BotsPlaying() => BotsPlay && rooms.IAmHost && Stage != null ? Stage.Virtuals.ToList() : new List<VirtualMember>();
@@ -131,7 +148,7 @@ namespace MafiaNight.Services.Match
             if (!rooms.IAmHost || bot == null || string.IsNullOrEmpty(text)) return;
             var msg = new WireMessage(Msg.BotChat, bot.Id, text);
             foreach (var m in rooms.Members) if (m.Puid != myId) net.Send(m.Puid, msg);
-            RoomChat?.Invoke(bot.Id, text);
+            RoomChat?.Invoke(bot.Id, text, ChatChannel.Room);
         }
 
         /// <summary>Host only: deals the roles and starts. False if the room does not have 4–16 players.</summary>

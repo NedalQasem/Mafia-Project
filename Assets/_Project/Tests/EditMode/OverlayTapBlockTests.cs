@@ -132,6 +132,27 @@ namespace MafiaNight.Tests
         }
 
         [Test]
+        public void TheTableDockHoldsEveryStateWithLongTexts_AndNoTapFallsThroughIt()
+        {
+            var dock = KitMatchDock.Create((RectTransform)canvas.transform);
+            var lines = new List<KitMatchDock.Line>
+            {
+                new KitMatchDock.Line { Name = "اسم لاعب طويل جداً جداً جداً", Text = new string('س', 300) },
+                new KitMatchDock.Line { Name = "أنت", Text = "قصير", Mine = true },
+                new KitMatchDock.Line { Name = "ريم", Text = "ب" },
+            };
+            foreach (var look in new[] { KitMatchDock.Mic.Open, KitMatchDock.Mic.Closed, KitMatchDock.Mic.Waiting })
+            {
+                dock.Render(new KitMatchDock.Vm { Lines = lines, Tab = "المافيا · سري", Prompt = "اكتب للمافيا فقط…", Secret = true, MicLook = look, MicReason = "مفتوح · للمافيا فقط وجملة طويلة جداً جداً", MicTappable = true });
+                dock.Render(new KitMatchDock.Vm { Lines = lines, Locked = true, Tape = true, LockedText = new string('ب', 200), MicLook = look, MicReason = "مُسكَت اليوم" });
+            }
+            dock.Flash("مهلاً، رسائلك سريعة.");
+            var fade = dock.transform.Find("Fade");
+            Assert.IsNotNull(fade, "the dock's background was not built");
+            Assert.IsTrue(fade.GetComponent<UnityEngine.UI.Image>().raycastTarget, "a tap on an empty spot of the dock would fall through to the table");
+        }
+
+        [Test]
         public void ThePickSheetListsEveryPlayerEvenWhenTheNamesAreLong()
         {
             var rows = new List<KitPickSheet.Row>();

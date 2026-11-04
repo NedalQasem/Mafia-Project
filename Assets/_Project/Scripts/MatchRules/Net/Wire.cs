@@ -43,7 +43,7 @@ namespace MafiaNight.MatchRules.Net
     public static class Msg
     {
         // any member -> every other member (room text chat, no host needed)
-        public const string Chat = "chat";          // text
+        public const string Chat = "chat";          // text, channel code (see MatchChat.Code: r room / t table / m mafia; missing = room)
         // the mic seats of the room (RoomStage): a member asks the host, the host sends the whole stage to everybody
         public const string StageAct = "sact";      // member -> host: kind (sit, stand, hand, bring, down, lock, cfg), two arguments
         public const string Stage = "stage";        // host -> members: RoomStage.Export()

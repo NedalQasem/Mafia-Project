@@ -12,6 +12,10 @@ namespace MafiaNight.UI.Kit
         private Vector2 design = new Vector2(1080f, 2400f);
         private RectTransform rt, parent;
         private Vector2 lastSize;
+        private float reserve;
+
+        /// <summary>Keeps the bottom <paramref name="units"/> of the screen free (a dock under the group): the group fits in what is left, from the top down.</summary>
+        public void SetReserve(float units) { if (Mathf.Approximately(reserve, units)) return; reserve = units; lastSize = Vector2.zero; }
 
         /// <summary>Puts <paramref name="parts"/> (children of <paramref name="root"/>) into a new fitting group on top of the other children.</summary>
         public static KitFitGroup Wrap(RectTransform root, params RectTransform[] parts) => Wrap(root, 2400f, parts);
@@ -29,18 +33,29 @@ namespace MafiaNight.UI.Kit
 
         private void Awake() { rt = (RectTransform)transform; parent = rt.parent as RectTransform; }
 
-        private void LateUpdate()
+        private void LateUpdate() { Apply(); }
+
+        /// <summary>Fits the group to its parent now (every frame at runtime through LateUpdate; the editor previews call it themselves).</summary>
+        public void Apply()
         {
+            if (rt == null) { rt = (RectTransform)transform; parent = rt.parent as RectTransform; }
             if (parent == null) return;
             var size = parent.rect.size;
             if (size == lastSize) return;
             lastSize = size;
-            if (size.y >= design.y - 1f)
+            float avail = size.y - reserve;
+            if (avail >= design.y - 1f)
             {
-                rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero; rt.localScale = Vector3.one;
+                rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = new Vector2(0, reserve); rt.offsetMax = Vector2.zero; rt.localScale = Vector3.one;
                 return;
             }
-            float k = Mathf.Clamp(Mathf.Min(size.y / design.y, size.x / design.x, 1f), 0.2f, 1f);
+            float k = Mathf.Clamp(Mathf.Min(avail / design.y, size.x / design.x, 1f), 0.2f, 1f);
+            if (reserve > 0f)
+            {   // from the top: the dock sits under the group
+                rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f); rt.pivot = new Vector2(0.5f, 1f);
+                rt.sizeDelta = design; rt.anchoredPosition = Vector2.zero; rt.localScale = Vector3.one * k;
+                return;
+            }
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f); rt.pivot = new Vector2(0.5f, 0.5f);
             rt.sizeDelta = design; rt.anchoredPosition = Vector2.zero; rt.localScale = Vector3.one * k;
         }

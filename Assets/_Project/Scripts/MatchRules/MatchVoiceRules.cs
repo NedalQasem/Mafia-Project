@@ -52,7 +52,7 @@ namespace MafiaNight.MatchRules
 
             if (night)
             {
-                if (role == Role.Mafia) plan.HearOnly = new HashSet<string>(mafiaMateIds ?? Enumerable.Empty<string>());
+                if (role.HasValue && role.Value.IsMafiaTeam()) plan.HearOnly = new HashSet<string>(mafiaMateIds ?? Enumerable.Empty<string>());
                 else { plan.MicAllowed = false; plan.HearOnly = new HashSet<string>(); }
                 return plan;
             }

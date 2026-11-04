@@ -41,6 +41,12 @@ namespace MafiaNight.App
         private int lastSeconds = -1;
         private int confirmedRound = -1;
         private RewardResult reward;
+        private KitMatchDock dock;
+        private MatchRunner runner;                       // the room's real match; null for a practice match on this device
+        private readonly List<RoomChatLine> localChat = new List<RoomChatLine>();
+        private float nextDockAt;
+        private MatchCuePlayer cues;
+        private KitNarratorSlip slip;
         // the second choices of the new roles, made in a sheet: the silencer's target, the sniper's shot
         private string silencePicked, sniperPicked;
         private bool silenceConfirmed, sniperDecided, sheetWanted, silencerSuggesting;
@@ -57,17 +63,30 @@ namespace MafiaNight.App
         public void Attach(KitMatchView matchView, ClientMatchController client, Action tickSource = null)
         {
             if (c != null) { c.Changed -= Redraw; c.PhaseChanged -= OnPhase; }
+            if (runner != null) runner.ChatChanged -= RefreshDock;
             view = matchView; c = client; tick = tickSource;
+            var live = MatchRunner.Instance;
+            runner = live != null && live.Session != null && live.Session.Client == client ? live : null;
+            if (runner != null) runner.ChatChanged += RefreshDock;
+            if (dock == null && view.transform is RectTransform root)
+            {
+                dock = KitMatchDock.Create(root);
+                dock.OnSend += SendChat; dock.OnMic += ToggleMic;
+            }
             c.Changed += Redraw; c.PhaseChanged += OnPhase;
+            if (cues == null) cues = gameObject.AddComponent<MatchCuePlayer>();
+            if (slip == null && view.transform is RectTransform slipRoot) slip = KitNarratorSlip.Create(slipRoot);
+            cues.Attach(c, slip);
             Redraw();
         }
 
-        private void OnDestroy() { if (c != null) { c.Changed -= Redraw; c.PhaseChanged -= OnPhase; } }
+        private void OnDestroy() { if (c != null) { c.Changed -= Redraw; c.PhaseChanged -= OnPhase; } if (runner != null) runner.ChatChanged -= RefreshDock; }
 
         private void Update()
         {
             if (c == null) return;
             tick?.Invoke();
+            if (dock != null && Time.unscaledTime >= nextDockAt) { nextDockAt = Time.unscaledTime + 0.5f; RefreshDock(); }      // the voice connection and the mic switch change without the match telling
             if (KitPickSheet.IsOpen) KitPickSheet.SetTimer(Clock(Mathf.CeilToInt(c.SecondsLeft)));
             if (Bars.TryGetValue(frame, out var bar))
             {
@@ -152,6 +171,58 @@ namespace MafiaNight.App
             }
             if (!sheetWanted) KitPickSheet.CloseCurrent();
             shownPhase = c.Phase; shownRound = c.Round;
+            RefreshDock();
+        }
+
+        // ---------------------------------------------------------------- the dock: written chat and the mic
+
+        private bool Alive => c.IAmAlive || c.IAmTheAvenger;
+
+        /// <summary>The chat lines and the mic button for the moment of the match (the rules are in <see cref="MatchChat"/> and <see cref="MatchMic"/>).</summary>
+        private void RefreshDock()
+        {
+            if (dock == null || c == null || view == null) return;
+            bool show = c.Phase != Phase.RoleReveal && c.Phase != Phase.GameOver && c.Phase != Phase.Lobby;
+            if (dock.gameObject.activeSelf != show) dock.gameObject.SetActive(show);
+            view.ReserveBottom(show ? dock.CurrentHeight : 0f);
+            if (!show) return;
+            var plan = runner != null ? runner.ChatPlanNow : MatchChat.For(c.Phase, c.MyRole, Alive, c.IAmSilenced);
+            var source = runner != null ? runner.ChatLines(plan.Channel) : localChat.Where(l => l.Channel == plan.Channel).ToList();
+            var vm = new KitMatchDock.Vm { Tab = plan.Tab, Prompt = plan.Prompt, Secret = plan.Secret, Locked = plan.Locked, Tape = plan.Tape, LockedText = plan.LockedText };
+            foreach (var l in source.Skip(Mathf.Max(0, source.Count - 3)))
+                vm.Lines.Add(new KitMatchDock.Line { Name = l.Mine ? "أنت" : l.Name, Text = l.Text, Mine = l.Mine, Secret = plan.Secret });
+
+            var voice = runner != null ? runner.Voice : null;
+            var mates = c.Seats.Where(x => x.IsMate && x.Alive && !x.Left).Select(x => x.Id).ToList();
+            var living = c.Seats.Where(x => x.Alive && !x.Left).Select(x => x.Id).ToList();
+            var voicePlan = MatchVoiceRules.For(c.Phase, c.MyRole, c.IAmAlive, mates, living, c.Seats.Select(x => x.Id).ToList(), c.Seats.FirstOrDefault(x => x.IsMe)?.Id ?? "", c.IAmSilenced, c.Phase == Phase.Avenge ? c.AvengerId : null);
+            bool connected = runner == null || (voice != null && voice.IsConnected);
+            var mic = MatchMic.Of(c.Phase, c.MyRole, Alive, c.IAmSilenced, c.IAmTheAvenger, voicePlan.MicAllowed, voice == null || voice.MicOn, connected);
+            vm.MicLook = mic.Look == MicLook.Open ? KitMatchDock.Mic.Open : mic.Look == MicLook.Closed ? KitMatchDock.Mic.Closed : KitMatchDock.Mic.Waiting;
+            vm.MicReason = mic.Reason; vm.MicTappable = mic.Tappable && voice != null;
+            dock.Render(vm);
+        }
+
+        private void SendChat(string text)
+        {
+            string refused;
+            if (runner != null) refused = runner.SendRoomChat(text);
+            else
+            {   // a practice match has nobody to read it: the line only shows on this device
+                var plan = MatchChat.For(c.Phase, c.MyRole, Alive, c.IAmSilenced);
+                refused = plan.Locked ? plan.LockedText : null;
+                if (refused == null) localChat.Add(new RoomChatLine { Name = "أنت", Text = text, Mine = true, Channel = plan.Channel });
+            }
+            if (!string.IsNullOrEmpty(refused)) dock.Flash(refused);
+            RefreshDock();
+        }
+
+        private void ToggleMic()
+        {
+            var voice = runner != null ? runner.Voice : null;
+            if (voice == null) return;
+            voice.SetMic(!voice.MicOn);
+            RefreshDock();
         }
 
         private void UpdateCountdownLines(int s)
@@ -160,7 +231,18 @@ namespace MafiaNight.App
             else if (frame == "p6_civ" || frame == "p6_mafia") view.SetText(frame, 57, "تبدأ تلقائياً بعد " + s + " ثوانٍ");
         }
 
-        private void Use(string name) { frame = name; view.Show(name); }
+        // The old frames carry their own mic pills and mic / chat buttons: the dock has them now (the mic button with its reason, the chat box), so they are taken off.
+        private static readonly Dictionary<string, int[]> OldMicAndChat = new Dictionary<string, int[]>
+        {
+            { "p2_mafia", new[] { 63 } }, { "p2_doc", new[] { 57 } }, { "p2_sher", new[] { 59 } }, { "p2_civ", new[] { 65 } },
+            { "p4", new[] { 77, 82 } }, { "p7", new[] { 68, 75 } },
+        };
+
+        private void Use(string name)
+        {
+            frame = name; view.Show(name);
+            if (OldMicAndChat.TryGetValue(name, out var gone)) foreach (var n in gone) view.SetActive(name, n, false);
+        }
 
         private List<SeatSpec> MakeSeats(Func<SeatView, SeatSpec, SeatSpec> shape)
         {

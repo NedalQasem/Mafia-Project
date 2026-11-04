@@ -89,6 +89,8 @@ namespace MafiaNight.MatchRules.Net
 
         public event Action Changed;
         public event Action<Phase> PhaseChanged;
+        /// <summary>The host told something that has its own narration, once its data is here: "dawn", "verdict", "avenge.open", "avenge.done", "over" (the narrator's director listens to this).</summary>
+        public event Action<string> Moment;
         /// <summary>The match is over and the winner and every role are known (raised once per match).</summary>
         public event Action Finished;
         /// <summary>The match was cancelled (the host was lost and nobody could continue it). Argument: the reason in Arabic.</summary>
@@ -154,6 +156,7 @@ namespace MafiaNight.MatchRules.Net
                     if (MyRole == Role.Sniper && snipeChoice != null) ShotUsed = true;      // the night is over: the bullet I aimed was fired
                     T("dawn: silenced " + (SilencedId ?? "-") + ", shot deaths " + DawnShotDeaths.Count);
                     RefreshRoles();
+                    Moment?.Invoke("dawn");
                     break;
                 case Msg.DoctorResult:
                     DoctorReports.Add(new KeyValuePair<string, bool>(m.Arg(0), m.Arg(1) == "1"));
@@ -178,6 +181,7 @@ namespace MafiaNight.MatchRules.Net
                     T("verdict: " + (VerdictRemovedId ?? "nobody") + " removed, votes " + VerdictVotes);
                     if (VerdictRemovedId != null && VerdictRemovedRole.HasValue) known[VerdictRemovedId] = VerdictRemovedRole.Value;
                     RefreshRoles();
+                    Moment?.Invoke("verdict");
                     break;
                 case Msg.Abort:
                     Phase = Phase.Lobby; MafiaVotes.Clear(); Tally.Clear();
@@ -190,6 +194,7 @@ namespace MafiaNight.MatchRules.Net
                     DurationSeconds = (DateTime.UtcNow - StartedUtc).TotalSeconds;
                     for (int i = 1; i + 1 < m.Args.Length; i += 2) if (Enum.TryParse(m.Args[i + 1], out Role rr)) known[m.Args[i]] = rr;   // the roles are public now
                     RefreshRoles();
+                    Moment?.Invoke("over");
                     Changed?.Invoke();
                     Finished?.Invoke();
                     break;
@@ -214,6 +219,7 @@ namespace MafiaNight.MatchRules.Net
             }
             T("avenge " + step + ": " + (Seat(AvengerId)?.Name ?? AvengerId) + " -> " + (AvengeTargetId == null ? "nobody" : Seat(AvengeTargetId)?.Name ?? AvengeTargetId));
             RefreshRoles();
+            if (step == "open" || step == "done") Moment?.Invoke("avenge." + step);
         }
 
         private void ApplyState(WireMessage m)

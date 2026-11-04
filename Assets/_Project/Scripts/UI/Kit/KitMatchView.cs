@@ -42,6 +42,10 @@ namespace MafiaNight.UI.Kit
         private GameObject seatProto;
         private readonly Dictionary<SeatTag, GameObject> tagProtos = new Dictionary<SeatTag, GameObject>();
         private bool ready;
+        private KitFitGroup fit;
+
+        /// <summary>Keeps the bottom of the screen free for the chat dock (0 gives the whole screen back to the frames).</summary>
+        public void ReserveBottom(float units) { Init(); if (fit != null) fit.SetReserve(units); }
 
         public string Current { get; private set; }
         public IReadOnlyList<string> FrameNames => names;
@@ -62,7 +66,7 @@ namespace MafiaNight.UI.Kit
             {
                 var rts = new List<RectTransform>();
                 foreach (var f in frames) if (f != null) rts.Add((RectTransform)f.transform);
-                KitFitGroup.Wrap(frameParent, 2188f, rts.ToArray());
+                fit = KitFitGroup.Wrap(frameParent, 2188f, rts.ToArray());
             }
         }
 

@@ -19,7 +19,7 @@ namespace MafiaNight.Services.Match
     /// through <see cref="Session"/>. Create it with <see cref="Ensure"/>.
     /// </summary>
     /// <summary>One line of the room's text chat.</summary>
-    public sealed class RoomChatLine { public string Puid, PlayFabId, Name, Text; public int Rank; public bool Mine; public long Ts; }
+    public sealed class RoomChatLine { public string Puid, PlayFabId, Name, Text; public int Rank; public bool Mine; public long Ts; public ChatChannel Channel; }
 
     public sealed class MatchRunner : MonoBehaviour
     {
@@ -36,23 +36,45 @@ namespace MafiaNight.Services.Match
 
         private readonly System.Collections.Generic.List<RoomChatLine> roomChat = new System.Collections.Generic.List<RoomChatLine>();
         private float lastRoomChatAt = -10f;
-        /// <summary>The room's chat lines since this player entered it.</summary>
-        public System.Collections.Generic.IReadOnlyList<RoomChatLine> RoomChatHistory => roomChat;
-        public event System.Action<RoomChatLine> RoomChatReceived;
+        /// <summary>What this player's chat box may do right now (the channel, or why it is locked): the match rules, see <see cref="MatchChat"/>.</summary>
+        public ChatPlan ChatPlanNow
+        {
+            get
+            {
+                var c = Session?.Client;
+                if (c == null) return MatchChat.For(Phase.Lobby, null, false, false);
+                return MatchChat.For(c.Phase, c.MyRole, c.IAmAlive || c.IAmTheAvenger, c.IAmSilenced);
+            }
+        }
 
-        /// <summary>Writes in the room chat. Returns an Arabic reason when it is refused, otherwise null.</summary>
+        /// <summary>The lines this player can read now, on the channel his box is on (the room's screens show these).</summary>
+        public System.Collections.Generic.IReadOnlyList<RoomChatLine> RoomChatHistory => ChatLines(ChatPlanNow.Channel);
+        /// <summary>A line on the channel this player's box is on arrived.</summary>
+        public event System.Action<RoomChatLine> RoomChatReceived;
+        /// <summary>Any line was kept (on any channel), or the match moved to another channel: the table screen redraws its chat.</summary>
+        public event System.Action ChatChanged;
+
+        public System.Collections.Generic.List<RoomChatLine> ChatLines(ChatChannel channel)
+        {
+            var list = new System.Collections.Generic.List<RoomChatLine>();
+            foreach (var l in roomChat) if (l.Channel == channel) list.Add(l);
+            return list;
+        }
+
+        /// <summary>Writes a line on the channel the match allows. Returns an Arabic reason when it is refused, otherwise null.</summary>
         public string SendRoomChat(string text)
         {
             if (Session == null || rooms == null || !rooms.InRoom) return "لست بغرفة.";
             if (rooms.CurrentRoom != null && !rooms.CurrentRoom.ChatEnabled) return "الدردشة مقفلة بهالغرفة.";
-            if (Session.Client.IAmSilenced) return "كاتم الصوت أسكتك: بتقدر تصوّت بس.";
+            var plan = ChatPlanNow;
+            if (plan.Locked) return plan.LockedText;
             text = CleanChat(text);
             if (string.IsNullOrEmpty(text)) return "";
             if (Time.unscaledTime - lastRoomChatAt < 1f) return "مهلاً، رسائلك سريعة.";
             lastRoomChatAt = Time.unscaledTime;
-            Session.SendChat(text);
+            Session.SendChat(text, plan.Channel);
             var me = System.Linq.Enumerable.FirstOrDefault(rooms.Members, m => m.IsMe);
-            AddRoomLine(new RoomChatLine { Puid = me?.Puid, PlayFabId = me?.PlayFabId, Name = me?.Name ?? "", Rank = me?.Rank ?? 0, Text = text, Mine = true, Ts = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+            AddRoomLine(new RoomChatLine { Puid = me?.Puid, PlayFabId = me?.PlayFabId, Name = me?.Name ?? "", Rank = me?.Rank ?? 0, Text = text, Mine = true, Ts = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), Channel = plan.Channel });
             return null;
         }
 
@@ -65,7 +87,7 @@ namespace MafiaNight.Services.Match
             return t.Length > 300 ? t.Substring(0, 300) : t;
         }
 
-        private void OnRoomChat(string senderPuid, string text)
+        private void OnRoomChat(string senderPuid, string text, ChatChannel channel)
         {
             if (rooms == null || !rooms.InRoom || (rooms.CurrentRoom != null && !rooms.CurrentRoom.ChatEnabled)) return;
             var from = System.Linq.Enumerable.FirstOrDefault(rooms.Members, m => m.Puid == senderPuid);
@@ -77,18 +99,27 @@ namespace MafiaNight.Services.Match
             if (from == null || from.IsMe) return;                     // only people in this room, and never an echo of ourselves
             text = CleanChat(text);
             if (string.IsNullOrEmpty(text)) return;
-            AddRoomLine(new RoomChatLine { Puid = from.Puid, PlayFabId = from.PlayFabId, Name = from.Name, Rank = from.Rank, Text = text, Ts = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+            AddRoomLine(new RoomChatLine { Puid = from.Puid, PlayFabId = from.PlayFabId, Name = from.Name, Rank = from.Rank, Text = text, Ts = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), Channel = channel });
         }
 
         private void AddRoomLine(RoomChatLine line)
         {
             roomChat.Add(line);
-            if (roomChat.Count > 100) roomChat.RemoveAt(0);
-            RoomChatReceived?.Invoke(line);
+            if (roomChat.Count > 200) roomChat.RemoveAt(0);
+            if (line.Channel == ChatPlanNow.Channel) RoomChatReceived?.Invoke(line);
+            ChatChanged?.Invoke();
         }
 
         /// <summary>Why the last match was cancelled (shown once by the room screen), or empty.</summary>
         public string TakeEndReason() { var r = endReason; endReason = ""; return r; }
+
+        /// <summary>The voice device of the room (the table's mic button reads and switches it).</summary>
+        public IVoiceService Voice => voice;
+        private bool micSaved, micBefore;
+
+        /// <summary>A match is on: everybody's own mic switch goes on (the room opens it only for those on a mic seat), and it goes back to what it was when the match is over.</summary>
+        private void MatchMicOn() { if (voice == null || micSaved) return; micSaved = true; micBefore = voice.MicOn; voice.SetMic(true); }
+        private void MatchMicRestore() { if (voice == null || !micSaved) return; micSaved = false; voice.SetMic(micBefore); }
 
         private IRoomService rooms;
         private IEosPlatform eos;
@@ -117,6 +148,7 @@ namespace MafiaNight.Services.Match
         private void OnClientChanged()
         {
             ApplyVoice();
+            ChatChanged?.Invoke();
             var now = State;
             if (now == lastState) return;
             Log.Info("Match state: " + lastState + " -> " + now, Tag);
@@ -193,6 +225,7 @@ namespace MafiaNight.Services.Match
             roomChat.Clear();
             Session.Client.Finished -= OnMatchFinished;
             Session.Dispose();
+            MatchMicRestore();
             voice?.ClearGameVoice();
             Session = null;
         }
@@ -200,6 +233,7 @@ namespace MafiaNight.Services.Match
         /// <summary>The match ended: every player's device reports it to the rewards server, which pays once most players agree.</summary>
         private void OnMatchFinished()
         {
+            MatchMicRestore();
             LastMatchStore.Clear();
             var report = Session?.Client.BuildReport();
             Reward = new RewardResult();
@@ -220,6 +254,7 @@ namespace MafiaNight.Services.Match
 
         private void OnCancelled(string reason)
         {
+            MatchMicRestore();
             LastMatchStore.Clear();
             prevPhase = Phase.Lobby;
             endReason = reason ?? "";
@@ -233,6 +268,7 @@ namespace MafiaNight.Services.Match
         {
             var before = prevPhase; prevPhase = p;
             if (p == Phase.Lobby || p == Phase.GameOver) return;
+            MatchMicOn();
             if (Session != null && Session.Client.MyRole.HasValue) LastMatchStore.Save(rooms?.CurrentRoom);     // so he can come back if the app or the network drops
             if (SceneManager.GetActiveScene().name == GameConstants.SCENE_MATCH) return;
             // the table opens by itself only when a match begins; a player who went back to the room is not dragged to it by every night and day (he opens it with the match button)
