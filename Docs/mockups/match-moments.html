@@ -69,6 +69,21 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 .impact{position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;opacity:0;pointer-events:none;z-index:6}
 .impact.go{animation:impact 1.8s ease-out forwards}
 @keyframes impact{0%{opacity:0;transform:scale(.2)}8%{opacity:1;transform:scale(1.15)}16%{transform:scale(1)}80%{opacity:1}100%{opacity:0}}
+.bullet{position:absolute;left:50%;top:50%;width:30px;height:9px;margin:-4px 0 0 -15px;border-radius:2px 5px 5px 2px;background:linear-gradient(180deg,#fff1b8,#c9992e 55%,#7a5a10);box-shadow:-34px 0 14px 2px #ffd27a77,0 0 8px #fff;opacity:0;z-index:7}
+.bullet.fly{animation:fly .32s cubic-bezier(.5,0,1,.6) forwards}
+@keyframes fly{0%{opacity:1;transform:translate(-230px,-60px) rotate(14deg)}100%{opacity:1;transform:translate(-10px,-2px) rotate(14deg)}}
+.bullet.ric{animation:ric .9s ease-out forwards}
+@keyframes ric{0%{opacity:1;transform:translate(-10px,-2px) rotate(14deg)}30%{opacity:1;transform:translate(-60px,-46px) rotate(-120deg)}100%{opacity:0;transform:translate(-110px,40px) rotate(-420deg)}}
+.av svg.dshield{width:104px;height:116px;fill:none}
+.dshield{position:absolute;left:50%;top:50%;width:104px;height:116px;margin:-60px 0 0 -52px;z-index:8;opacity:0;transform:scale(.3);filter:drop-shadow(0 0 16px #4fa58bcc)}
+.dshield.pop{animation:dsh 2.2s cubic-bezier(.2,1.3,.4,1) forwards}
+@keyframes dsh{0%{opacity:0;transform:scale(.3)}14%{opacity:1;transform:scale(1.18)}26%{transform:scale(1)}78%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.25)}}
+.ring2{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;border:3px solid #7fe0c0;opacity:0;z-index:7}
+.ring2.go{animation:rip 1s ease-out forwards}
+@keyframes rip{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(3.2)}}
+.spk{position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2px;border-radius:50%;background:#fff3b0;box-shadow:0 0 8px 2px #ffd27a;z-index:9;opacity:0}
+.spk.go{animation:spk .6s ease-out forwards}
+@keyframes spk{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
 .flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:30;pointer-events:none}
 .flash.go{animation:flash .5s ease-out}
 @keyframes flash{0%{opacity:.95}100%{opacity:0}}
@@ -228,14 +243,21 @@ const SCENES=[
   at(6000,()=>{seats[1].classList.remove('dim');seats[1].classList.add('dead')});
   at(6800,()=>{$('stage').style.transform='';$('veil').classList.remove('on');seats.forEach(s=>s.classList.remove('dim'));$('rcb').innerHTML=ICON.doc+'<b>طبيب</b><small>نضال كان…</small>';$('rc').classList.add('show');setTimeout(()=>$('rc').classList.add('flip'),150)});
   at(9200,()=>{$('rc').className='roleCard';hint('النقاش بلّش • عندكم دقيقتين');$('sm').textContent='النهار'})}},
-{k:'save',t:'الفجر: إنقاذ',d:{h:'الفجر: الطبيب أنقذه',p:'نفس مشهد الفجر لكن بدل الطلقة: تنكسر الجملة «المافيا حاولت تقتل نضال… بس الدكتور أنقذه!». درع خضراء بتنفجر حوله ونبضة قلب، وبتطلع «ما مات أحد الليلة».',l:['ما بنكشف مين هو الطبيب.','الجملة بتتغيّر لو ما حدا مات لسبب تاني.'],tech:'حلقة الدرع + نبضة قلب: ١.٥ث.'},
+{k:'save',t:'الفجر: إنقاذ',d:{h:'الفجر: الطبيب أنقذه',p:'نفس مشهد القتل لحد آخر لحظة: الراوي «المافيا حاولت تقتل نضال…»، الكاميرا بتقرّب على مقعده، وتجي الطلقة. بس لحظة ما توصل بتنفتح قدامها درع الطبيب (درع بصليب أخضر): شرارات، موجة صدمة، والطلقة بترتد وبتطير. وبعدها بيظهر «الدكتور أنقذه!» و«ما مات أحد الليلة».',l:['نفس إيقاع مشهد القتل عشان الترقّب يضل للحظة الأخيرة.','ما بنكشف مين هو الطبيب، بس الدرع بيدل إنه في طبيب.','لو الطبيب حمى حاله، نفس المشهد على مقعده.'],tech:'أطول حركة ٣ث. الجهاز الضعيف: بدون هزة ولا شرارات، الطلقة تظهر وتنصدّ بدرع ثابت.'},
  run(){reset('night');$('veil').classList.add('on');seats.forEach(s=>s.classList.add('sleep'));mic(false,'المايك مغلق — الليل');
   at(400,()=>{setSky('dawn');$('sun').classList.add('show');$('veil').className='veil';seats.forEach(s=>s.classList.remove('sleep'));$('sm').textContent='الفجر';mic(true,'المايك مفتوح — النهار')});
   at(900,()=>cap('طلع الصبح'));
-  at(2400,()=>{uncap();say('المافيا حاولت تقتل نضال… بس في مين أنقذه!','teal')});
-  at(4200,()=>{hush();seats[1].querySelector('.shield').classList.add('pop');zoomTo(1,1.7)});
-  at(5600,()=>{$('stage').style.transform='';cap('ما مات أحد الليلة','الجميع ما زال في اللعبة')});
-  at(8000,()=>{uncap();hint('النقاش بلّش • عندكم دقيقتين')})}},
+  at(2400,()=>{uncap();say('هالليلة… المافيا حاولت تقتل نضال.','red')});
+  at(4200,()=>{hush();$('veil').classList.add('on');zoomTo(1,1.9);seats.forEach((s,i)=>{if(i!=1)s.classList.add('dim')})});
+  at(5600,()=>{const av=seats[1].querySelector('.av');
+    av.insertAdjacentHTML('beforeend','<div class="bullet"></div><div class="ring2"></div><svg class="dshield" viewBox="0 0 104 116"><defs><linearGradient id="dsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ff0d4"/><stop offset="1" stop-color="#1d6a52"/></linearGradient></defs><path d="M52 4 96 20v38c0 28-18 46-44 54C26 104 8 86 8 58V20z" fill="url(#dsg)" fill-opacity=".55" stroke="#c9f7e6" stroke-width="4"/><path d="M52 14 86 26v32c0 22-14 36-34 43C32 94 18 80 18 58V26z" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2"/><path d="M45 34h14v18h18v14H59v18H45V66H27V52h18z" fill="#f3fffb"/></svg>'+[[-40,-50],[40,-48],[-52,10],[50,14],[0,-62],[-24,52],[26,50]].map(([x,y])=>'<i class="spk" style="--dx:'+x+'px;--dy:'+y+'px"></i>').join(''));
+    av.querySelector('.bullet').classList.add('fly')});
+  at(5920,()=>{const av=seats[1].querySelector('.av');$('flash').classList.add('go');$('phone').classList.add('shake');
+    av.querySelector('.dshield').classList.add('pop');av.querySelector('.ring2').classList.add('go');av.querySelectorAll('.spk').forEach(k=>k.classList.add('go'));
+    const bl=av.querySelector('.bullet');bl.classList.remove('fly');bl.classList.add('ric')});
+  at(8200,()=>{$('stage').style.transform='';$('veil').classList.remove('on');seats.forEach(s=>s.classList.remove('dim'));say('الدكتور أنقذه!','teal')});
+  at(9800,()=>{hush();cap('ما مات أحد الليلة','الجميع ما زال في اللعبة')});
+  at(12000,()=>{uncap();hint('النقاش بلّش • عندكم دقيقتين')})}},
 {k:'vote',t:'التصويت والحكم',d:{h:'التصويت والحكم',p:'بالنهار بيحكوا (المقعد اللي بيحكي بيضوي تركوازي). بالتصويت: عدّاد الأصوات بيظهر فوق، وبآخرها ختم أحمر كبير «طُرد» على اللاعب وبطاقة دوره بتنكشف «كان مافيا / كان مواطن».',l:['الحكم بيضل ٣ ثواني قبل ما نكمل لليل.'],tech:'الختم: scale+opacity ٠.٤ث.'},
  run(){reset('day');mic(true,'المايك مفتوح — النهار');
   at(300,()=>{seats[3].classList.add('talk');hint('ريم عم تحكي…')});
