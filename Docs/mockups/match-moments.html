@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لحظات المباراة: الليل، الأدوار، الطلقة، المتفرجين</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&family=Aref+Ruqaa:wght@700&display=swap">
+<style>
+:root{--ivory:#d9d0bd;--paper:#d9cfb4;--ink:#1c170f;--crim:#8a1c24;--crim2:#e0585f;--teal:#4fa58b;--blue:#6fa0d6;--brass:#b99048;--gold:#f5e2a8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:14px 10px 40px;background:#050404;color:var(--ivory);font-family:Cairo,Tahoma,sans-serif}
+h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-align:center}
+.sub{color:#8d744a;text-align:center;font-size:.8rem;margin:0 0 14px}
+.wrap{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start;max-width:980px;margin:0 auto}
+.side{flex:1 1 300px;max-width:430px;display:grid;gap:10px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{padding:7px 12px;border-radius:14px;font:800 .78rem Cairo;color:#b9a67e;background:#000a;border:0;box-shadow:inset 0 0 0 1px #3a2e22;cursor:pointer}
+.tabs button.on{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30)}
+.card{background:#120d0a;border-radius:14px;padding:12px 14px;box-shadow:inset 0 0 0 1px #2c2219;font-size:.82rem;line-height:1.75;color:#cfc6b2}
+.card h2{font-family:Lalezar;font-weight:400;font-size:1.15rem;margin:0 0 4px;color:var(--gold)}
+.card ul{margin:6px 0 0;padding:0 18px 0 0}
+.card .tech{margin-top:8px;padding-top:8px;border-top:1px dashed #3a2e22;color:#8d744a;font-size:.74rem}
+.play{align-self:flex-start;padding:8px 18px;border-radius:14px;border:0;cursor:pointer;font:800 .85rem Cairo;color:#fff;background:linear-gradient(180deg,#a3242d,#5a0f15)}
+.phone{width:min(390px,100%);height:790px;border-radius:30px;position:relative;overflow:hidden;isolation:isolate;flex:none;box-shadow:0 0 0 2px #000,0 0 0 4px #2a2118,0 20px 50px #000;background:#0b0e1c}
+.sky{position:absolute;inset:0;transition:background 1.2s,opacity 1s;z-index:0}
+.sky.day{background:radial-gradient(ellipse 90% 34% at 50% 0,#f0c06a40,transparent 70%),linear-gradient(180deg,#2a1d12,#0b0705)}
+.sky.night{background:radial-gradient(ellipse 80% 40% at 50% 8%,#2a3a7a55,transparent 70%),linear-gradient(180deg,#0b0e1c,#05060b)}
+.sky.dawn{background:radial-gradient(ellipse 100% 45% at 50% 0,#ffb35a66,transparent 72%),linear-gradient(180deg,#3a2414,#0b0705)}
+.moon{position:absolute;top:70px;left:50%;width:70px;height:70px;margin-left:-35px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff7d8,#d8d2b0 60%,#9a947a);box-shadow:0 0 40px 10px #aab6ff44;opacity:0;transform:translateY(40px);transition:opacity 1s,transform 1.2s;z-index:1}
+.moon.show{opacity:.95;transform:none}
+.sun{position:absolute;top:60px;left:50%;width:84px;height:84px;margin-left:-42px;border-radius:50%;background:radial-gradient(circle,#fff1c2,#ffb35a 60%,#d9762c);box-shadow:0 0 70px 24px #ffb35a66;opacity:0;transform:translateY(80px);transition:opacity 1s,transform 1.4s;z-index:1}
+.sun.show{opacity:1;transform:none}
+.top{position:absolute;top:0;left:0;right:0;padding:30px 14px 8px;display:flex;align-items:center;gap:10px;z-index:8}
+.ttl{flex:1;font-family:Lalezar;font-size:1.5rem;line-height:1}
+.ttl small{display:block;font-family:Cairo;font-weight:600;font-size:.62rem;color:#8d744a}
+.pill{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:14px;font-weight:800;font-size:.68rem;background:#000b;box-shadow:inset 0 0 0 1px #3a2e22;color:#b9a67e;transition:all .4s}
+.pill.on{color:#bfe8d8;box-shadow:inset 0 0 0 1px #4fa58b99}
+.pill.off{color:#e6b3b6;box-shadow:inset 0 0 0 1px #8a1c2488}
+.pill i{width:8px;height:8px;border-radius:50%;background:currentColor;display:block}
+.stage{position:absolute;left:0;right:0;top:100px;height:430px;z-index:3;transition:transform .9s cubic-bezier(.2,.7,.2,1),filter .6s}
+.felt{position:absolute;left:11%;right:11%;top:9%;bottom:9%;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#1f5a3d,#123a28 70%,#0b2418);box-shadow:inset 0 0 0 7px #3a2417,inset 0 0 0 9px #8a6a30,0 10px 30px #000a;transition:filter 1s}
+.seat{position:absolute;width:64px;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;transition:filter .5s,transform .6s}
+.av{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#3b2a20,#1a110d);box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 4px 8px #000a;transition:box-shadow .4s}
+.av svg{width:27px;height:27px;fill:#cfc6b2;transition:opacity .5s}
+.nm{max-width:66px;padding:1px 7px;border-radius:5px;font-weight:800;font-size:.6rem;line-height:1.4;white-space:nowrap;background:#000a;color:#cfc6b2}
+.seat.me .av{box-shadow:inset 0 1px 0 #ffffff1c,0 0 0 2px #000,0 0 0 4px var(--brass)}
+.seat.sleep .av svg{opacity:.35}
+.seat.sleep .av::after{content:"z";position:absolute;top:-8px;left:-4px;font-family:Lalezar;font-size:1.05rem;color:#9bb0ff;animation:zz 2s infinite}
+@keyframes zz{0%{opacity:0;transform:translateY(4px)}50%{opacity:1}100%{opacity:0;transform:translate(6px,-8px)}}
+.seat.dim{filter:brightness(.35)}
+.seat.awake-mafia .av{box-shadow:0 0 0 2px #000,0 0 0 4px var(--crim2),0 0 22px 6px #e0585faa}
+.seat.awake-doc .av{box-shadow:0 0 0 2px #000,0 0 0 4px var(--teal),0 0 22px 6px #4fa58baa}
+.seat.awake-sher .av{box-shadow:0 0 0 2px #000,0 0 0 4px var(--blue),0 0 22px 6px #6fa0d6aa}
+.seat.target .av{animation:target 1s infinite}
+@keyframes target{0%,100%{box-shadow:0 0 0 2px #000,0 0 0 4px var(--crim2),0 0 8px 2px #e0585f88}50%{box-shadow:0 0 0 2px #000,0 0 0 6px var(--crim2),0 0 26px 8px #e0585fcc}}
+.seat.dead{filter:grayscale(1) brightness(.5)}
+.seat.dead .av::after{content:"✕";position:absolute;inset:0;display:grid;place-items:center;font-size:1.7rem;font-weight:800;color:#e0585f;text-shadow:0 0 4px #000}
+.seat.talk .av{box-shadow:0 0 0 2px #000,0 0 0 4px var(--teal),0 0 16px 4px #4fa58bcc}
+.shield{position:absolute;inset:-9px;border-radius:50%;border:3px solid var(--teal);box-shadow:0 0 22px 6px #4fa58bcc,inset 0 0 14px #4fa58b88;opacity:0;transform:scale(.4)}
+.shield.pop{animation:shield 1.3s ease-out forwards}
+@keyframes shield{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.15)}60%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
+.scan{position:absolute;inset:-12px;border-radius:50%;border:2px dashed var(--blue);opacity:0}
+.scan.go{animation:scan 1.6s linear forwards}
+@keyframes scan{0%{opacity:0;transform:rotate(0) scale(1.6)}30%{opacity:1}100%{opacity:1;transform:rotate(360deg) scale(1)}}
+.cross{position:absolute;inset:-14px;opacity:0;background:
+ linear-gradient(var(--crim2),var(--crim2)) center/2px 100% no-repeat,linear-gradient(var(--crim2),var(--crim2)) center/100% 2px no-repeat;border-radius:50%;border:2px solid var(--crim2)}
+.cross.go{animation:cross .9s ease-out forwards}
+@keyframes cross{0%{opacity:0;transform:scale(2.4) rotate(45deg)}60%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:1;transform:scale(1)}}
+.impact{position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;opacity:0;pointer-events:none;z-index:6}
+.impact.go{animation:impact 1.8s ease-out forwards}
+@keyframes impact{0%{opacity:0;transform:scale(.2)}8%{opacity:1;transform:scale(1.15)}16%{transform:scale(1)}80%{opacity:1}100%{opacity:0}}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:30;pointer-events:none}
+.flash.go{animation:flash .5s ease-out}
+@keyframes flash{0%{opacity:.95}100%{opacity:0}}
+.phone.shake{animation:shake .5s}
+@keyframes shake{0%,100%{transform:none}15%{transform:translate(-6px,3px)}30%{transform:translate(5px,-4px)}45%{transform:translate(-4px,2px)}60%{transform:translate(3px,-2px)}}
+.veil{position:absolute;inset:0;background:#000;opacity:0;z-index:5;transition:opacity .8s;pointer-events:none}
+.veil.on{opacity:.6}
+.veil.deep{opacity:.82}
+.narr{position:absolute;left:0;right:0;top:80px;z-index:12;display:grid;justify-items:center;gap:8px;opacity:0;transform:translateY(-14px);transition:opacity .6s,transform .6s;pointer-events:none}
+.narr.show{opacity:1;transform:none}
+.lamp{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,#3b2a20,#120c08);box-shadow:0 0 0 3px #000,0 0 0 5px var(--brass),0 0 40px 10px #ffb35a44}
+.lamp svg{width:50px;height:50px;fill:#e8c27a}
+.narr .who{font-family:Lalezar;font-size:.95rem;color:var(--gold)}
+.bubble{max-width:320px;padding:12px 18px;border-radius:18px;background:var(--paper);color:var(--ink);font-family:"Aref Ruqaa",Cairo;font-weight:700;font-size:1.25rem;line-height:1.5;text-align:center;box-shadow:0 8px 24px #000a;position:relative}
+.bubble::before{content:"";position:absolute;top:-9px;left:50%;margin-left:-9px;border:9px solid transparent;border-top:0;border-bottom-color:var(--paper)}
+.bubble.red{background:#3a0d12;color:#ffd9dc;box-shadow:0 0 0 2px var(--crim2),0 8px 24px #000a}.bubble.red::before{border-bottom-color:#3a0d12}
+.bubble.teal{background:#0f2e26;color:#c9f0e2;box-shadow:0 0 0 2px var(--teal),0 8px 24px #000a}.bubble.teal::before{border-bottom-color:#0f2e26}
+.bubble.blue{background:#13243a;color:#d3e5fa;box-shadow:0 0 0 2px var(--blue),0 8px 24px #000a}.bubble.blue::before{border-bottom-color:#13243a}
+.cap{position:absolute;left:0;right:0;bottom:200px;z-index:12;text-align:center;font-family:Lalezar;font-size:2.4rem;line-height:1.1;text-shadow:0 4px 18px #000;opacity:0;transform:scale(.8);transition:opacity .5s,transform .5s;pointer-events:none}
+.cap small{display:block;font-family:Cairo;font-weight:800;font-size:.8rem;color:#b9a67e;margin-top:4px}
+.cap.show{opacity:1;transform:none}
+.roleCard{position:absolute;left:50%;top:230px;width:150px;margin-left:-75px;height:210px;z-index:14;perspective:700px;opacity:0;pointer-events:none}
+.roleCard.show{opacity:1}
+.roleCard .in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.3,.8,.3,1)}
+.roleCard.flip .in{transform:rotateY(180deg)}
+.roleCard .f,.roleCard .b{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:grid;place-items:center;text-align:center;box-shadow:0 0 0 3px #000,0 0 0 5px var(--brass),0 12px 30px #000c}
+.roleCard .f{background:repeating-linear-gradient(45deg,#2a1810,#2a1810 6px,#1a0f0a 6px,#1a0f0a 12px);font-family:Lalezar;font-size:3rem;color:var(--brass)}
+.roleCard .b{transform:rotateY(180deg);background:linear-gradient(180deg,#f0e6c8,#cdbf98);color:var(--ink);font-family:Lalezar}
+.roleCard .b svg{width:62px;height:62px}
+.roleCard .b b{font-size:1.7rem;font-weight:400;display:block}
+.roleCard .b small{font-family:Cairo;font-weight:800;font-size:.7rem;color:#6a5a3a;display:block}
+.stamp{position:absolute;left:50%;top:300px;z-index:14;font-family:Lalezar;font-size:2.2rem;color:var(--crim2);border:5px solid var(--crim2);border-radius:10px;padding:2px 16px;transform:translateX(-50%) rotate(-12deg) scale(2.4);opacity:0;transition:opacity .25s,transform .35s cubic-bezier(.2,1.4,.4,1);pointer-events:none;background:#000a}
+.stamp.show{opacity:1;transform:translateX(-50%) rotate(-12deg) scale(1)}
+.bot{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 18px;z-index:13;display:grid;gap:9px;background:linear-gradient(0deg,#090605 66%,transparent)}
+.hint{padding:10px 14px;border-radius:12px;background:#000b;box-shadow:inset 0 0 0 1px #3a2e22;font-weight:800;font-size:.8rem;text-align:center;color:#cfc6b2}
+.btn{padding:13px;border-radius:14px;font-family:Lalezar;font-size:1.15rem;text-align:center;color:#fff;background:linear-gradient(180deg,#a3242d,#5a0f15);box-shadow:inset 0 1px 0 #ffffff33,0 4px 0 #2a0508}
+.btn.gold{color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:inset 0 1px 0 #fff8,0 4px 0 #4a3512}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;font-weight:800;font-size:.66rem}
+.chip.tealc{background:#0f2e26;color:#c9f0e2}.chip.goldc{background:#2b2210;color:var(--gold)}
+.tally{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.tally span{padding:3px 9px;border-radius:10px;background:#000b;box-shadow:inset 0 0 0 1px #3a2e22;font-weight:800;font-size:.68rem}
+.spec{position:absolute;top:96px;left:0;right:0;z-index:9;text-align:center;opacity:0;transition:opacity .6s}
+.spec.show{opacity:1}
+.spec b{display:inline-block;padding:5px 16px;border-radius:14px;background:#1a1a2a;color:#cfd3ff;font-family:Lalezar;font-weight:400;font-size:1rem;box-shadow:inset 0 0 0 1px #4a4f8a}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<h1>لحظات المباراة</h1>
+<p class="sub">معاينة متحركة: الليل، نداء الأدوار، طلقة المافيا، الإنقاذ، الحكم، والمتفرجين. اضغط على اللحظة ثم «شغّل».</p>
+<div class="wrap">
+  <div class="side">
+    <div class="tabs" id="tabs"></div>
+    <button class="play" id="play">▶ شغّل من جديد</button>
+    <div class="card" id="desc"></div>
+  </div>
+  <div class="phone" id="phone">
+    <div class="sky day" id="sky"></div>
+    <div class="moon" id="moon"></div><div class="sun" id="sun"></div>
+    <div class="top"><div class="ttl" id="ttl">الجولة ١<small id="sm">النهار</small></div><div class="pill on" id="mic"><i></i><span id="micT">المايك مفتوح</span></div></div>
+    <div class="stage" id="stage"><div class="felt"></div></div>
+    <div class="veil" id="veil"></div>
+    <div class="spec" id="spec"><b>أنت متفرج الآن</b></div>
+    <div class="narr" id="narr"><div class="lamp"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 6 5 6 8c0 2 1 3.5 2 4.5V15h8v-2.5c1-1 2-2.5 2-4.5 0-3-2-6-6-6zM9 17h6v1.5H9zM10 20h4v1.5h-4z"/></svg></div><div class="who">الراوي</div><div class="bubble" id="bub"></div></div>
+    <div class="cap" id="cap"></div>
+    <div class="roleCard" id="rc"><div class="in"><div class="f">؟</div><div class="b" id="rcb"></div></div></div>
+    <div class="stamp" id="stamp"></div>
+    <div class="flash" id="flash"></div>
+    <div class="bot" id="bot"></div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const NAMES=['أنت','نضال','سامر','ريم','لينا','خالد','مازن','هديل'];
+const AV='<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.6 3.6-7.4 8-7.4s8 2.8 8 7.4z"/></svg>';
+const ICON={mafia:'<svg viewBox="0 0 24 24" fill="#8a1c24"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6zM9 11h6v2H9z"/></svg>',doc:'<svg viewBox="0 0 24 24" fill="#2f7a63"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z"/></svg>',sher:'<svg viewBox="0 0 24 24" fill="#2e5f94"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.2l7.1-.6z"/></svg>',civ:'<svg viewBox="0 0 24 24" fill="#5a4a2a"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.6 3.6-7.4 8-7.4s8 2.8 8 7.4z"/></svg>'};
+let timers=[],cur=0,seats=[];
+const at=(ms,fn)=>timers.push(setTimeout(fn,ms));
+function reset(bg='day'){timers.forEach(clearTimeout);timers=[];
+  $('sky').className='sky '+bg;$('moon').className='moon';$('sun').className='sun';
+  ['veil','narr','cap','rc','stamp','spec'].forEach(i=>{$(i).className=$(i).className.split(' ')[0]});
+  $('rc').className='roleCard';$('stamp').className='stamp';$('cap').className='cap';$('narr').className='narr';$('veil').className='veil';$('spec').className='spec';
+  $('stage').style.transform='';$('phone').classList.remove('shake');$('bot').innerHTML='';
+  const st=$('stage');st.querySelectorAll('.seat').forEach(s=>s.remove());seats=[];
+  const cx=195,cy=215,rx=150,ry=170;
+  NAMES.forEach((n,i)=>{const a=Math.PI/2+i*(2*Math.PI/8);const s=document.createElement('div');s.className='seat'+(i==0?' me':'');
+    s.style.left=(cx+rx*Math.cos(a))+'px';s.style.top=(cy+ry*Math.sin(a))+'px';
+    s.innerHTML='<div class="av">'+AV+'<div class="shield"></div><div class="scan"></div><div class="cross"></div></div><div class="nm">'+n+'</div>';st.appendChild(s);seats.push(s)});
+  mic(true,'المايك مفتوح — النهار');$('ttl').firstChild.textContent='الجولة ١';$('sm').textContent=bg=='night'?'الليل':'النهار';
+}
+function zoomTo(i,k){const x=parseFloat(seats[i].style.left),y=parseFloat(seats[i].style.top);$('stage').style.transform='translate('+(k*(195-x))+'px,'+(k*(215-y)+40)+'px) scale('+k+')'}
+function mic(on,t){const m=$('mic');m.className='pill '+(on?'on':'off');$('micT').textContent=t}
+function say(t,cls=''){const b=$('bub');b.className='bubble '+cls;b.textContent=t;$('narr').classList.add('show')}
+function hush(){$('narr').classList.remove('show')}
+function cap(t,small=''){const c=$('cap');c.innerHTML=t+(small?'<small>'+small+'</small>':'');c.classList.add('show')}
+function uncap(){$('cap').classList.remove('show')}
+function hint(t){$('bot').innerHTML='<div class="hint">'+t+'</div>'}
+function setSky(c){$('sky').className='sky '+c}
+
+const SCENES=[
+{k:'night',t:'الليل يبدأ',d:{h:'الليل يبدأ',p:'بعد انتهاء النهار: الشاشة بتغمق، القمر بيطلع، وبتطلع جملة كبيرة «الكل ينام». كل اللاعبين بيغمضوا عيونهم (المقاعد بتنطفي وبتطلع z)، والمايك بيتقفل على كل واحد (إلا المافيا).',l:['المدة ٣ ثواني، ما بتوقف اللعب.','المؤشر فوق يمين بيبيّن حالة مايكك دايماً: «مفتوح — النهار» أو «مغلق — الليل».'],tech:'كل الحركات opacity وtransform فقط. الجهاز الضعيف (Low): بدون قمر متحرك، بس تعتيم وجملة.'},
+ run(){reset('day');mic(true,'المايك مفتوح — النهار');hint('انتهى النهار…');
+  at(600,()=>{setSky('night');$('moon').classList.add('show');$('veil').classList.add('on');$('ttl').firstChild.textContent='الجولة ١';$('sm').textContent='الليل'});
+  at(900,()=>cap('الكل ينام','أغمض عينيك… ولا تحكي'));
+  at(1100,()=>{seats.forEach(s=>s.classList.add('sleep'));mic(false,'المايك مغلق — الليل')});
+  at(3200,()=>uncap())}},
+{k:'mafia',t:'نداء المافيا',d:{h:'نداء المافيا',p:'الراوي بيطلع بقنديله وبيحكي بجملة كبيرة، وبس المافيا بيصحوا: مقاعدهم بتضوي أحمر (والباقي معتّم ونايم). المايك بيفتح للمافيا بس، وبيسمعوا بعض. لما بيتفقوا بيظهر هدف أحمر على الضحية، وبعدين «المافيا ينامون».',l:['اللاعب العادي بيشوف: «المافيا عم تتشاور…» وبس.','المافيا بيشوفوا خيارات الأعضاء ويختاروا الضحية؛ الاختيار بيظهر لكل المافيا.'],tech:'الإضاءة (توهج المقعد) بتتبدّل بالـCSS-box-shadow؛ باللعبة بتكون صورة جاهزة (KitProc) مش رسم كل إطار.'},
+ run(){reset('night');$('veil').classList.add('on');seats.forEach(s=>s.classList.add('sleep'));mic(false,'المايك مغلق — الليل');
+  [2,5].forEach(i=>seats[i].dataset.m=1);
+  at(500,()=>say('يا مافيا… اصحوا. مين بدكم تقتلوا الليلة؟','red'));
+  at(1500,()=>{[2,5].forEach(i=>{seats[i].classList.remove('sleep');seats[i].classList.add('awake-mafia')});seats.forEach((s,i)=>{if(i!=2&&i!=5)s.classList.add('dim')});mic(true,'المايك مفتوح — مع المافيا فقط')});
+  at(2500,()=>{hint('المافيا عم تتشاور…')});
+  at(4200,()=>{seats[1].querySelector('.cross').classList.add('go');seats[1].classList.add('target');seats[1].classList.remove('dim');hint('اتفقتوا على: نضال')});
+  at(6300,()=>say('تمام. المافيا ينامون.','red'));
+  at(7000,()=>{[2,5].forEach(i=>{seats[i].classList.remove('awake-mafia');seats[i].classList.add('sleep','dim')});seats[1].classList.remove('target');mic(false,'المايك مغلق — الليل');hush()})}},
+{k:'doc',t:'نداء الطبيب',d:{h:'نداء الطبيب',p:'نفس الفكرة بلون أخضر-تركوازي: الراوي بيسأل «يا دكتور… مين بدك تحمي؟». مقعد الطبيب بيضوي أخضر، وبيختار؛ على المقعد المختار بتتكوّن درع خضراء. المايك مقفول عليه (الطبيب ما بيحكي ليلاً).',l:['بقية اللاعبين: شاشة معتّمة + «الطبيب عم يختار…».','الاختيار سري؛ الدرع بتظهر عند الطبيب بس.'],tech:'الدرع حلقة واحدة (scale+opacity) ١.٣ث.'},
+ run(){reset('night');$('veil').classList.add('on');seats.forEach(s=>s.classList.add('sleep'));mic(false,'المايك مغلق — الليل');
+  at(500,()=>say('يا دكتور… اصحى. مين بدك تحمي الليلة؟','teal'));
+  at(1500,()=>{seats[3].classList.remove('sleep');seats[3].classList.add('awake-doc');seats.forEach((s,i)=>{if(i!=3)s.classList.add('dim')})});
+  at(3500,()=>{seats[1].classList.remove('dim');seats[1].querySelector('.shield').classList.add('pop');hint('اخترت تحمي: نضال')});
+  at(5200,()=>say('تمام. الدكتور ينام.','teal'));
+  at(5900,()=>{seats[3].classList.remove('awake-doc');seats[3].classList.add('sleep','dim');hush()})}},
+{k:'sher',t:'نداء الشيخ',d:{h:'نداء الشيخ (المفتش)',p:'بلون أزرق: «يا شيخ… مين بدك تفحص؟». حلقة مسح بتلف على المقعد اللي اخترته، وبعدها جواب سري يظهر عندك بس: «مافيا» أو «مش مافيا».',l:['الجواب بيضل بشاشتك طول الجولة (ما بيطلع للباقي).','إذا بدكم الراوي يكون «الشيخ» نفسه بالاسم، قولوا ونغيّر الاسم والشكل.'],tech:'حلقة المسح دوران ١.٦ث، مرة وحدة.'},
+ run(){reset('night');$('veil').classList.add('on');seats.forEach(s=>s.classList.add('sleep'));mic(false,'المايك مغلق — الليل');
+  at(500,()=>say('يا شيخ… اصحى. مين بدك تفحص؟','blue'));
+  at(1500,()=>{seats[6].classList.remove('sleep');seats[6].classList.add('awake-sher');seats.forEach((s,i)=>{if(i!=6)s.classList.add('dim')})});
+  at(3300,()=>{seats[2].classList.remove('dim');seats[2].querySelector('.scan').classList.add('go')});
+  at(5000,()=>{hint('جواب الفحص (يظهر لك وحدك): سامر — مافيا ❗');$('bot').firstChild.style.color='#ffd9dc'});
+  at(7000,()=>{say('تمام. الشيخ ينام.','blue')});
+  at(7700,()=>{seats[6].classList.remove('awake-sher');seats[6].classList.add('sleep','dim');hush()})}},
+{k:'shot',t:'الفجر: الطلقة',d:{h:'الفجر: قامت المافيا بقتل…',p:'الشمس بتطلع، وبتطلع جملة «طلع الصبح». بعدين الراوي: «قامت المافيا بقتل نضال». الكاميرا بتقرّب على مقعده، ضوء أبيض + هزّة خفيفة + أثر طلقة وشقوق على صورته، وبعدين بيصير رمادي وعليه ✕. وبتنقلب بطاقة تكشف دوره «كان: طبيب».',l:['بدون دم ولا مشاهد مقزّزة: أثر طلقة وشقوق فقط.','بعد الحركة بتنقل اللعبة تلقائياً للنقاش (النهار).','لو اللاعب هو الميت: بتطلع شاشة «أنت متفرج» (اللقطة الأخيرة).'],tech:'أطول حركة ٢.٥ث. الجهاز الضعيف: بدون هزّة ولا وميض، بس تقريب وأثر ثابت وجملة. الهزّة تتعطل بإعدادات «تقليل الحركة».'},
+ run(){reset('night');$('veil').classList.add('on');seats.forEach(s=>s.classList.add('sleep'));mic(false,'المايك مغلق — الليل');
+  at(400,()=>{setSky('dawn');$('sun').classList.add('show');$('veil').className='veil';seats.forEach(s=>s.classList.remove('sleep'));$('sm').textContent='الفجر';mic(true,'المايك مفتوح — النهار')});
+  at(900,()=>cap('طلع الصبح','الجميع يفتح عيونه'));
+  at(2400,()=>{uncap();say('هالليلة… قامت المافيا بقتل نضال.','red')});
+  at(4200,()=>{hush();$('veil').classList.add('on');zoomTo(1,1.9);seats.forEach((s,i)=>{if(i!=1)s.classList.add('dim')})});
+  at(5600,()=>{$('flash').classList.add('go');$('phone').classList.add('shake');
+    const av=seats[1].querySelector('.av');av.insertAdjacentHTML('beforeend','<svg class="impact go" viewBox="0 0 150 150" style="position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;overflow:visible"><g stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"><path d="M75 75 L75 20 M75 75 L128 42 M75 75 L134 96 M75 75 L88 140 M75 75 L22 112 M75 75 L16 52"/></g><circle cx="75" cy="75" r="10" fill="#1a0606" stroke="#e0585f" stroke-width="3"/><circle cx="75" cy="75" r="26" fill="none" stroke="#e0585f" stroke-width="1.5" opacity=".7"/></svg>');});
+  at(6000,()=>{seats[1].classList.remove('dim');seats[1].classList.add('dead')});
+  at(6800,()=>{$('stage').style.transform='';$('veil').classList.remove('on');seats.forEach(s=>s.classList.remove('dim'));$('rcb').innerHTML=ICON.doc+'<b>طبيب</b><small>نضال كان…</small>';$('rc').classList.add('show');setTimeout(()=>$('rc').classList.add('flip'),150)});
+  at(9200,()=>{$('rc').className='roleCard';hint('النقاش بلّش • عندكم دقيقتين');$('sm').textContent='النهار'})}},
+{k:'save',t:'الفجر: إنقاذ',d:{h:'الفجر: الطبيب أنقذه',p:'نفس مشهد الفجر لكن بدل الطلقة: تنكسر الجملة «المافيا حاولت تقتل نضال… بس الدكتور أنقذه!». درع خضراء بتنفجر حوله ونبضة قلب، وبتطلع «ما مات أحد الليلة».',l:['ما بنكشف مين هو الطبيب.','الجملة بتتغيّر لو ما حدا مات لسبب تاني.'],tech:'حلقة الدرع + نبضة قلب: ١.٥ث.'},
+ run(){reset('night');$('veil').classList.add('on');seats.forEach(s=>s.classList.add('sleep'));mic(false,'المايك مغلق — الليل');
+  at(400,()=>{setSky('dawn');$('sun').classList.add('show');$('veil').className='veil';seats.forEach(s=>s.classList.remove('sleep'));$('sm').textContent='الفجر';mic(true,'المايك مفتوح — النهار')});
+  at(900,()=>cap('طلع الصبح'));
+  at(2400,()=>{uncap();say('المافيا حاولت تقتل نضال… بس في مين أنقذه!','teal')});
+  at(4200,()=>{hush();seats[1].querySelector('.shield').classList.add('pop');zoomTo(1,1.7)});
+  at(5600,()=>{$('stage').style.transform='';cap('ما مات أحد الليلة','الجميع ما زال في اللعبة')});
+  at(8000,()=>{uncap();hint('النقاش بلّش • عندكم دقيقتين')})}},
+{k:'vote',t:'التصويت والحكم',d:{h:'التصويت والحكم',p:'بالنهار بيحكوا (المقعد اللي بيحكي بيضوي تركوازي). بالتصويت: عدّاد الأصوات بيظهر فوق، وبآخرها ختم أحمر كبير «طُرد» على اللاعب وبطاقة دوره بتنكشف «كان مافيا / كان مواطن».',l:['الحكم بيضل ٣ ثواني قبل ما نكمل لليل.'],tech:'الختم: scale+opacity ٠.٤ث.'},
+ run(){reset('day');mic(true,'المايك مفتوح — النهار');
+  at(300,()=>{seats[3].classList.add('talk');hint('ريم عم تحكي…')});
+  at(2000,()=>{seats[3].classList.remove('talk');seats[5].classList.add('talk');hint('خالد عم يحكي…')});
+  at(3800,()=>{seats[5].classList.remove('talk');$('sm').textContent='التصويت';$('bot').innerHTML='<div class="tally"><span>سامر ٣</span><span>خالد ١</span><span>امتنعوا ١</span></div><div class="hint">صوّت لمين تشك فيه</div>'});
+  at(6000,()=>{$('veil').classList.add('on');seats.forEach((s,i)=>{if(i!=2)s.classList.add('dim')});$('stamp').textContent='طُرد';$('stamp').classList.add('show');zoomTo(2,1.7)});
+  at(7000,()=>{$('rcb').innerHTML=ICON.mafia+'<b>مافيا</b><small>سامر كان…</small>';$('rc').classList.add('show');setTimeout(()=>$('rc').classList.add('flip'),150);seats[2].classList.remove('dim');seats[2].classList.add('dead')});
+  at(10000,()=>{$('rc').className='roleCard';$('stamp').className='stamp';$('veil').className='veil';$('stage').style.transform='';seats.forEach(s=>s.classList.remove('dim'));hint('بعد قليل: الليل')})}},
+{k:'spec',t:'المتفرج والصوت',d:{h:'المتفرج وفصل الصوت',p:'اللاعب الميت (أو اللي دخل الغرفة والمباراة جارية) بيصير «متفرج»: بيشوف الطاولة بكل أدوارها المكشوفة، ويسمع نقاش اللاعبين نهاراً، ويحكي مع باقي المتفرجين بحرية، واللاعبين ما بيسمعوه أبداً. وبالدردشة المكتوبة للغرفة بيكتب عادي. ليلاً بيسمع المتفرجين بس (مش المافيا).',l:['زر بشاشة الغرفة: «العودة للمباراة» (لاعب حي) أو «شاهد المباراة» (متفرج).','الخروج من المباراة للغرفة ما بيخليك تنسحب: بترجع لها من الزر، وما بتنجر لها كل ليلة ونهار.'],tech:'القواعد منطق بحت ومختبر (MatchVoiceRules). كل جهاز بيطبّقها على استقباله.'},
+ run(){reset('day');mic(true,'تحكي مع المتفرجين');seats[0].classList.add('dead');$('spec').classList.add('show');
+  at(400,()=>{$('bot').innerHTML='<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><span class="chip tealc">🎧 تسمع نقاش اللاعبين</span><span class="chip goldc">🎙 تحكي مع المتفرجين</span></div><div class="hint">اللاعبين ما بيسمعوك • اكتب بدردشة الغرفة</div><div class="btn gold">العودة للغرفة</div>'});
+  at(2500,()=>{seats[3].classList.add('talk')});
+  at(4500,()=>{seats[3].classList.remove('talk');seats[5].classList.add('talk')});
+  at(6500,()=>{seats[5].classList.remove('talk')})}},
+];
+function render(){ $('tabs').innerHTML=''; SCENES.forEach((s,i)=>{const b=document.createElement('button');b.textContent=s.t;b.className=i==cur?'on':'';b.onclick=()=>{cur=i;render();SCENES[cur].run()};$('tabs').appendChild(b)});
+  const d=SCENES[cur].d;$('desc').innerHTML='<h2>'+d.h+'</h2>'+d.p+'<ul>'+d.l.map(x=>'<li>'+x+'</li>').join('')+'</ul><div class="tech">'+d.tech+'</div>'}
+$('play').onclick=()=>SCENES[cur].run();
+render();SCENES[cur].run();
+</script>
+</body>
+</html>
