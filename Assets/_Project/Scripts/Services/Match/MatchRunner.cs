@@ -94,6 +94,34 @@ namespace MafiaNight.Services.Match
         private ISceneLoader scenes;
         private IVoiceService voice;
         private string lastVoicePlan = "";
+        private Phase prevPhase = Phase.Lobby;                 // the phase before the one that just arrived: tells a new match from the next night of the same one
+        private MatchState lastState = MatchState.Idle;
+
+        /// <summary>Where this player stands against the room's match (one value for every screen; see <see cref="MatchStates"/>).</summary>
+        public MatchState State => Session == null ? MatchState.Idle : MatchStates.Of(Session.Client.Phase, Session.Client.IAmAlive);
+        /// <summary>The state changed (a match began or ended, the player died, ...).</summary>
+        public event System.Action StateChanged;
+
+        /// <summary>The table screens can be opened now: a match is running (as a player or as a spectator).</summary>
+        public bool CanOpenTable => State == MatchState.Playing || State == MatchState.Watching;
+
+        /// <summary>The player asks for the table (the room screen's match button): the screens open and stay until he leaves them.</summary>
+        public void OpenTable()
+        {
+            if (!CanOpenTable || SceneManager.GetActiveScene().name == GameConstants.SCENE_MATCH) return;
+            Log.Info("Opening the table by the player's choice (" + State + ")", Tag);
+            if (scenes != null) scenes.LoadScene(GameConstants.SCENE_MATCH); else SceneManager.LoadScene(GameConstants.SCENE_MATCH);
+        }
+
+        private void OnClientChanged()
+        {
+            ApplyVoice();
+            var now = State;
+            if (now == lastState) return;
+            Log.Info("Match state: " + lastState + " -> " + now, Tag);
+            lastState = now;
+            StateChanged?.Invoke();
+        }
         private System.Collections.Generic.HashSet<string> known = new System.Collections.Generic.HashSet<string>();
         private bool started;
 
@@ -143,7 +171,8 @@ namespace MafiaNight.Services.Match
             if (Session != null) return;
             Session = new MatchSession(eos, rooms);
             Session.Client.PhaseChanged += OnPhase;
-            Session.Client.Changed += ApplyVoice;
+            Session.Client.Changed += OnClientChanged;
+            prevPhase = Phase.Lobby; lastState = MatchState.Idle;
             Session.Cancelled += OnCancelled;
             Session.RoomChat += OnRoomChat;
             roomChat.Clear();
@@ -157,7 +186,7 @@ namespace MafiaNight.Services.Match
         {
             if (Session == null) return;
             Session.Client.PhaseChanged -= OnPhase;
-            Session.Client.Changed -= ApplyVoice;
+            Session.Client.Changed -= OnClientChanged;
             Session.Cancelled -= OnCancelled;
             Session.RoomChat -= OnRoomChat;
             roomChat.Clear();
@@ -191,6 +220,7 @@ namespace MafiaNight.Services.Match
         private void OnCancelled(string reason)
         {
             LastMatchStore.Clear();
+            prevPhase = Phase.Lobby;
             endReason = reason ?? "";
             voice?.ClearGameVoice();
             if (SceneManager.GetActiveScene().name != GameConstants.SCENE_MATCH) return;
@@ -200,9 +230,12 @@ namespace MafiaNight.Services.Match
         /// <summary>The first state message of a new match arrives: show the table.</summary>
         private void OnPhase(Phase p)
         {
+            var before = prevPhase; prevPhase = p;
             if (p == Phase.Lobby || p == Phase.GameOver) return;
             if (Session != null && Session.Client.MyRole.HasValue) LastMatchStore.Save(rooms?.CurrentRoom);     // so he can come back if the app or the network drops
             if (SceneManager.GetActiveScene().name == GameConstants.SCENE_MATCH) return;
+            // the table opens by itself only when a match begins; a player who went back to the room is not dragged to it by every night and day (he opens it with the match button)
+            if (!MatchStates.OpensTable(before, p)) { Log.Info("Match phase " + p + ": the player is in the room, the table stays closed (match button opens it)", Tag); return; }
             Log.Info("Match started: loading the table screens", Tag);
             if (scenes != null) scenes.LoadScene(GameConstants.SCENE_MATCH);
             else SceneManager.LoadScene(GameConstants.SCENE_MATCH);
@@ -214,12 +247,14 @@ namespace MafiaNight.Services.Match
             if (voice == null || Session == null) return;
             var c = Session.Client;
             var mates = c.Seats.Where(x => x.IsMate && x.Alive && !x.Left).Select(x => x.Id).ToList();
-            var plan = MatchVoiceRules.For(c.Phase, c.MyRole, c.IAmAlive, mates);
+            var living = c.Seats.Where(x => x.Alive && !x.Left).Select(x => x.Id).ToList();
+            var me = rooms.Members.FirstOrDefault(m => m.IsMe);
+            var plan = MatchVoiceRules.For(c.Phase, c.MyRole, c.IAmAlive, mates, living, rooms.Members.Select(m => m.Puid).ToList(), me != null ? me.Puid : "");
             string sig = plan.MicAllowed + "|" + (plan.HearOnly == null ? "*" : string.Join(",", plan.HearOnly.OrderBy(x => x)));
             if (sig == lastVoicePlan) return;
             lastVoicePlan = sig;
             voice.SetGameVoice(plan.MicAllowed, plan.HearOnly);
-            Log.Info("Match voice: " + sig, Tag);
+            Log.Info("Match voice (" + State + ", " + c.Phase + "): mic " + (plan.MicAllowed ? "open" : "closed") + ", hears " + (plan.HearOnly == null ? "everybody" : plan.HearOnly.Count + " people"), Tag);
         }
 
         private void OnRoomChanged()
@@ -230,6 +265,7 @@ namespace MafiaNight.Services.Match
             foreach (var id in known) if (!now.Contains(id)) Session.MemberLeft(id);
             foreach (var id in now) if (!known.Contains(id)) Session.MemberJoined(id);
             known = now;
+            ApplyVoice();            // somebody came or went: who is a player and who a spectator may have changed
         }
 
         private void Update() { Session?.Tick(Time.unscaledDeltaTime); }

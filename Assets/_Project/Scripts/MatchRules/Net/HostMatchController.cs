@@ -28,6 +28,10 @@ namespace MafiaNight.MatchRules.Net
         private float elapsedInPhase;
 
         public MafiaMatch Match => match;
+        /// <summary>The host's account of the match, one line at a time (phase, acts accepted or refused, deaths, the winner): the test journal writes it.</summary>
+        public Action<string> Trace;
+        private void T(string line) { Trace?.Invoke(line); }
+        private string N(string id) => string.IsNullOrEmpty(id) ? "-" : (match.Get(id)?.Name ?? id);
         public float SecondsLeft => timeLeft;
         public bool Running => match.Phase != Phase.Lobby && match.Phase != Phase.GameOver;
         /// <summary>The match reached its end (winner decided).</summary>
@@ -81,6 +85,7 @@ namespace MafiaNight.MatchRules.Net
             roster.Clear();
             if (playFabIds != null) foreach (var kv in playFabIds) roster[kv.Key] = kv.Value ?? "";
             ToAll(StartMessage());
+            T("begin " + matchId + ": " + match.Players.Count + " players; roles: " + string.Join(", ", match.Players.Select(p => N(p.Id) + "=" + p.Role)));
             foreach (var p in match.Players) SendRole(p);
             EnterPhase();
             return true;
@@ -96,19 +101,23 @@ namespace MafiaNight.MatchRules.Net
         private void EnterPhase()
         {
             timeLeft = match.PhaseSeconds; endIn = -1f; elapsedInPhase = 0f; ready.Clear();
+            T("phase " + match.Phase + " round " + match.Round + " (" + timeLeft.ToString("0") + " s), " + match.InPlayCount + " in play");
             Changed?.Invoke();
             ToAll(StateMessage());
             switch (match.Phase)
             {
                 case Phase.Dawn:
                     var n = match.LastNight;
+                    T("dawn: the mafia chose " + N(n.VictimId) + (n.Saved ? ", the doctor saved him" : ", died: " + N(n.DiedId) + " (" + n.DiedRole + ")"));
                     ToAll(new WireMessage(Msg.Dawn, n.VictimId ?? "", n.Saved ? "1" : "0", n.DiedId ?? "", n.DiedRole?.ToString() ?? ""));
                     break;
                 case Phase.Verdict:
                     var v = match.LastVerdict;
+                    T("verdict: " + (v.RemovedId == null ? "nobody removed" : N(v.RemovedId) + " removed (" + v.RemovedRole + ")") + ", votes " + v.Votes + ", abstained " + v.Abstained);
                     ToAll(new WireMessage(Msg.Verdict, v.RemovedId ?? "", v.RemovedRole?.ToString() ?? "", v.Votes.ToString(), v.Abstained.ToString()));
                     break;
                 case Phase.GameOver:
+                    T("over: winner " + match.Winner);
                     SendOver();
                     Finished?.Invoke();
                     break;
@@ -222,7 +231,7 @@ namespace MafiaNight.MatchRules.Net
             if (!Running) return;
             elapsedInPhase += dt;
             timeLeft -= dt;
-            if (endIn < 0f && EverybodyDone()) endIn = EarlyEndDelay;
+            if (endIn < 0f && EverybodyDone()) { endIn = EarlyEndDelay; T("everybody acted in " + match.Phase + ": it ends in " + EarlyEndDelay.ToString("0") + " s"); }
             if (endIn >= 0f) { endIn -= dt; if (endIn <= 0f) { Advance(); return; } }
             if (timeLeft <= 0f) Advance();
         }
@@ -247,6 +256,7 @@ namespace MafiaNight.MatchRules.Net
             if (known != null && !known.Left) return;                      // still sitting at the table: a repeated event
             if (known != null && TryReturn(id)) return;                    // he played before, left and is back: his seat is his again
             if (!spectators.Add(id)) return;
+            T("spectator joined: " + id);
             Send(id, StartMessage());
             Send(id, StateMessage());
             SendRevealed(id);
@@ -260,6 +270,7 @@ namespace MafiaNight.MatchRules.Net
         {
             if (forbidden.Contains(id) || !match.PlayerReturned(id)) return false;
             spectators.Remove(id);
+            T("player is back at his seat: " + N(id));
             Send(id, StartMessage());
             SendRole(match.Get(id));
             ToAll(StateMessage());                                         // everybody sees him back, and he sees the table
@@ -285,6 +296,7 @@ namespace MafiaNight.MatchRules.Net
             if (spectators.Remove(id)) return;
             if (!Running) return;
             var before = match.Phase;
+            T("player left the room: " + N(id));
             match.PlayerLeft(id);
             if (match.Phase != before) EnterPhase(); else { Changed?.Invoke(); ToAll(StateMessage()); }
         }
@@ -332,6 +344,7 @@ namespace MafiaNight.MatchRules.Net
                 default:
                     return;
             }
+            T("act " + kind + " by " + N(sender) + (string.IsNullOrEmpty(target) ? "" : " on " + N(target)) + ": " + res);
             if (res == ActionResult.Ok) Changed?.Invoke();
             Send(sender, new WireMessage(Msg.Result, kind, res.ToString()));
         }

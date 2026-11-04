@@ -13,28 +13,45 @@ namespace MafiaNight.MatchRules
     }
 
     /// <summary>
-    /// The voice rules of a match, as pure logic: night is silent except the mafia who talk to each other, the dead only listen
-    /// (and hear nothing at night). Each device applies its own plan, so a modified client could ignore it; the server-side check comes later.
+    /// The voice rules of a match, as pure logic. There are two groups in the room while a match runs: the living players and the spectators
+    /// (the dead, people who came in after the start). The players hear only the living players, so a spectator can talk as much as he likes and no player hears him;
+    /// the spectators talk among themselves and hear the players' discussion by day (not the mafia's talk at night).
+    /// Night: the town is silent and hears nothing, the mafia talk to each other.
+    /// Each device applies its own plan, so a modified client could ignore it; the server-side check comes later.
     /// </summary>
     public static class MatchVoiceRules
     {
-        public static VoicePlan For(Phase phase, Role? role, bool alive, IEnumerable<string> mafiaMateIds)
+        /// <param name="alivePlayerIds">the players still in the match (ids as the room knows them), this one included when alive</param>
+        /// <param name="memberIds">everybody in the room, this one included</param>
+        /// <param name="myId">this device's id</param>
+        public static VoicePlan For(Phase phase, Role? role, bool alive, IEnumerable<string> mafiaMateIds, IEnumerable<string> alivePlayerIds, IEnumerable<string> memberIds, string myId)
         {
             var plan = new VoicePlan();
-            if (phase == Phase.Lobby || phase == Phase.RoleReveal || phase == Phase.GameOver) return plan;
+            if (phase == Phase.Lobby || phase == Phase.RoleReveal || phase == Phase.GameOver) return plan;      // before and after the match everybody talks together
 
+            var players = new HashSet<string>(alivePlayerIds ?? Enumerable.Empty<string>());
             bool night = phase == Phase.Night;
+
             if (!alive)
             {
-                plan.MicAllowed = false;
-                if (night) plan.HearOnly = new HashSet<string>();
+                // a spectator: free to talk (to the other spectators), hears the players' discussion by day, and only the spectators at night
+                if (night)
+                {
+                    var spectators = new HashSet<string>((memberIds ?? Enumerable.Empty<string>()).Where(id => id != myId && !players.Contains(id)));
+                    plan.HearOnly = spectators;
+                }
                 return plan;
             }
+
             if (night)
             {
                 if (role == Role.Mafia) plan.HearOnly = new HashSet<string>(mafiaMateIds ?? Enumerable.Empty<string>());
                 else { plan.MicAllowed = false; plan.HearOnly = new HashSet<string>(); }
+                return plan;
             }
+
+            players.Remove(myId);
+            plan.HearOnly = players;          // by day a player hears the living players only: the spectators are a separate group
             return plan;
         }
     }

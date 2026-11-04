@@ -4,6 +4,7 @@ using System.Linq;
 using MafiaNight.Core;
 using MafiaNight.Data.Rooms;
 using MafiaNight.Data.Store;
+using MafiaNight.MatchRules;
 using MafiaNight.MatchRules.Stage;
 using MafiaNight.Services.Chat;
 using MafiaNight.Services.Match;
@@ -142,13 +143,13 @@ namespace MafiaNight.App
             Unbind();
             bound = session; boundRunner = runner;
             if (bound != null) bound.Stage.Changed += Redraw;
-            if (boundRunner != null) boundRunner.RoomChatReceived += OnChatLine;
+            if (boundRunner != null) { boundRunner.RoomChatReceived += OnChatLine; boundRunner.StateChanged += Redraw; }
         }
 
         private void Unbind()
         {
             if (bound != null) bound.Stage.Changed -= Redraw;
-            if (boundRunner != null) boundRunner.RoomChatReceived -= OnChatLine;
+            if (boundRunner != null) { boundRunner.RoomChatReceived -= OnChatLine; boundRunner.StateChanged -= Redraw; }
             bound = null; boundRunner = null;
         }
 
@@ -327,7 +328,11 @@ namespace MafiaNight.App
             if (room.Mode == RoomMode.Mafia)
             {
                 int n = bound != null ? bound.PlayerCount : People.Count();       // the bots count only when they play
-                if (!rooms.IAmHost) { v.StartLabel = "بانتظار المضيف"; v.StartEnabled = false; }
+                var matchState = boundRunner != null ? boundRunner.State : MatchState.Idle;
+                // a match is running: the button takes this player back to the table (as a player) or to watch it; nobody can start another one on top of it
+                if (matchState == MatchState.Playing) { v.StartLabel = "العودة للمباراة"; v.StartEnabled = true; }
+                else if (matchState == MatchState.Watching) { v.StartLabel = "شاهد المباراة"; v.StartEnabled = true; }
+                else if (!rooms.IAmHost) { v.StartLabel = "بانتظار المضيف"; v.StartEnabled = false; }
                 else { v.StartEnabled = n >= MatchMinPlayers; v.StartLabel = v.StartEnabled ? "ابدأ المباراة" : "تحتاج " + MatchMinPlayers + " لاعبين"; }
             }
 
@@ -618,6 +623,7 @@ namespace MafiaNight.App
 
         private void StartMatch()
         {
+            if (boundRunner != null && boundRunner.CanOpenTable) { boundRunner.OpenTable(); return; }       // a match is running: this is the way back to it
             var session = MatchRunner.Instance != null ? MatchRunner.Instance.Session : null;
             if (session == null || !rooms.IAmHost) return;
             if (!session.StartMatch()) Say("ما قدرنا نبدأ: لازم من ٤ إلى ١٦ لاعب.");

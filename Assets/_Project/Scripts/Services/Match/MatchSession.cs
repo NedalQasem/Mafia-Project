@@ -59,7 +59,7 @@ namespace MafiaNight.Services.Match
             this.rooms = rooms;
             net = new EosMatchTransport(eos, rooms);
             myId = eos.LocalUserId?.ToString() ?? "";
-            Client = new ClientMatchController(myId, SendToHost);
+            Client = new ClientMatchController(myId, SendToHost) { Trace = line => Log.Info(line, "Match") };
             Client.Aborted += reason => Cancelled?.Invoke(reason);
             botNet = new BotMatchTransport(net, new SystemRandom());
             botNet.ToHost = (id, m) => Host?.Receive(id, m);
@@ -141,7 +141,7 @@ namespace MafiaNight.Services.Match
             var match = new MafiaMatch(config, players, new SystemRandom());
             Host?.Dispose();
             botNet.Set(bots.Select(b => b.Id));
-            Host = new HostMatchController(match, botNet, myId, Client.Apply);
+            Host = new HostMatchController(match, botNet, myId, Client.Apply) { Trace = line => Log.Info(line, "MatchHost") };
             Host.Finished += OnFinished;
             Host.Changed += () => snapshotDirty = true;
             var roster = rooms.Members.ToDictionary(m => m.Puid, m => m.PlayFabId ?? "");
@@ -180,6 +180,7 @@ namespace MafiaNight.Services.Match
             if (host == null) { Log.Warning("Snapshot unreadable", Tag); return false; }
             Host?.Dispose();
             Host = host;
+            Host.Trace = line => Log.Info(line, "MatchHost");
             Host.Finished += OnFinished;
             Host.Changed += () => snapshotDirty = true;
             takeOverWaited = -1f;

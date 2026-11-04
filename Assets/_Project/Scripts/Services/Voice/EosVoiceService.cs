@@ -77,7 +77,8 @@ namespace MafiaNight.Services.Voice
             var room = rooms?.CurrentRoom;
             if (room == null) { done?.Invoke(VoiceError.NotInRoom); return; }
             if (IsConnected && lobbyId == room.Id) { done?.Invoke(VoiceError.None); return; }
-            if (joining) { done?.Invoke(VoiceError.None); return; }
+            if (joining) { Log.Info("Voice: join asked while a join is already running: ignored", Tag); done?.Invoke(VoiceError.None); return; }
+            Log.Info("Voice: joining the RTC room of lobby " + room.Id + " (connected=" + IsConnected + ", old lobby=" + (lobbyId ?? "-") + ")", Tag);
             joining = true;
 
             RequestMicPermission(granted =>
@@ -149,6 +150,7 @@ namespace MafiaNight.Services.Voice
         public void Leave()
         {
             if (!IsConnected && !joining) return;
+            Log.Info("Voice: leaving the RTC room (connected=" + IsConnected + ", joining=" + joining + ")", Tag);
             string id = lobbyId;
             bool wasConnected = IsConnected;
             Unsubscribe();
@@ -182,7 +184,7 @@ namespace MafiaNight.Services.Voice
             notifConnection = Lobby.AddNotifyRTCRoomConnectionChanged(ref co, null, (ref RTCRoomConnectionChangedCallbackInfo d) =>
             {
                 if (d.LobbyId != lobbyId || d.IsConnected) return;
-                Log.Warning("Voice disconnected: " + d.DisconnectReason, Tag);
+                Log.Warning("Voice disconnected: " + d.DisconnectReason + " (lobby " + d.LobbyId + ")", Tag);
                 Unsubscribe();
                 IsConnected = false;
                 speaking.Clear();

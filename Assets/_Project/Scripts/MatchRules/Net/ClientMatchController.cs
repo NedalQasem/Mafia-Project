@@ -68,6 +68,10 @@ namespace MafiaNight.MatchRules.Net
         public string LastResultKind { get; private set; }
         public ActionResult LastResult { get; private set; }
 
+        /// <summary>What this device sees of the match, one line at a time (for the test journal).</summary>
+        public Action<string> Trace;
+        private void T(string line) { Trace?.Invoke(line); }
+
         public event Action Changed;
         public event Action<Phase> PhaseChanged;
         /// <summary>The match is over and the winner and every role are known (raised once per match).</summary>
@@ -94,7 +98,7 @@ namespace MafiaNight.MatchRules.Net
                     for (int i = 1; i + 1 < m.Args.Length; i += 2) roster[m.Args[i]] = m.Args[i + 1];
                     break;
                 case Msg.Role:
-                    if (Enum.TryParse(m.Arg(0), out Role r)) { MyRole = r; known[myId] = r; }
+                    if (Enum.TryParse(m.Arg(0), out Role r)) { MyRole = r; known[myId] = r; T("my role: " + r + (m.Args.Length > 1 ? " (mafia mates: " + (m.Args.Length - 1) + ")" : "")); }
                     for (int i = 1; i < m.Args.Length; i++) known[m.Args[i]] = Role.Mafia;
                     RefreshRoles();
                     break;
@@ -102,6 +106,7 @@ namespace MafiaNight.MatchRules.Net
                 case Msg.Result:
                     LastResultKind = m.Arg(0);
                     Enum.TryParse(m.Arg(1), out ActionResult res); LastResult = res;
+                    T("the host answered my " + LastResultKind + ": " + res);
                     break;
                 case Msg.MafiaVotes:
                     MafiaVotes.Clear();
@@ -114,6 +119,7 @@ namespace MafiaNight.MatchRules.Net
                     break;
                 case Msg.Dawn:
                     DawnVictimId = Nullable(m.Arg(0)); DawnSaved = m.Arg(1) == "1"; DawnDiedId = Nullable(m.Arg(2));
+                    T("dawn: victim " + (DawnVictimId ?? "-") + (DawnSaved ? ", saved" : ", died " + (DawnDiedId ?? "-")));
                     DawnDiedRole = Enum.TryParse(m.Arg(3), out Role dr) ? dr : (Role?)null;
                     if (DawnDiedId != null && DawnDiedRole.HasValue) known[DawnDiedId] = DawnDiedRole.Value;
                     RefreshRoles();
@@ -131,15 +137,18 @@ namespace MafiaNight.MatchRules.Net
                     VerdictRemovedId = Nullable(m.Arg(0));
                     VerdictRemovedRole = Enum.TryParse(m.Arg(1), out Role vr) ? vr : (Role?)null;
                     VerdictVotes = m.Int(2); VerdictAbstained = m.Int(3);
+                    T("verdict: " + (VerdictRemovedId ?? "nobody") + " removed, votes " + VerdictVotes);
                     if (VerdictRemovedId != null && VerdictRemovedRole.HasValue) known[VerdictRemovedId] = VerdictRemovedRole.Value;
                     RefreshRoles();
                     break;
                 case Msg.Abort:
                     Phase = Phase.Lobby; MafiaVotes.Clear(); Tally.Clear();
+                    T("match cancelled: " + m.Arg(0));
                     Aborted?.Invoke(m.Arg(0));
                     break;
                 case Msg.Over:
                     Enum.TryParse(m.Arg(0), out Winner w); Winner = w;
+                    T("match over: " + w + " won; I was " + (MyRole.HasValue ? MyRole.Value.ToString() : "a spectator") + (IAmAlive ? " (alive)" : " (dead)"));
                     DurationSeconds = (DateTime.UtcNow - StartedUtc).TotalSeconds;
                     for (int i = 1; i + 1 < m.Args.Length; i += 2) if (Enum.TryParse(m.Args[i + 1], out Role rr)) known[m.Args[i]] = rr;   // the roles are public now
                     RefreshRoles();
@@ -166,6 +175,7 @@ namespace MafiaNight.MatchRules.Net
                 if (Phase == Phase.Night) { MafiaVotes.Clear(); }
                 if (Phase == Phase.Voting) { Tally.Clear(); }
                 if (Phase == Phase.Day) { SkipCount = 0; }
+                T("table: phase " + Phase + " round " + Round + ", I am " + (IAmAlive ? "alive" : "out") + ", " + seats.Count(x => x.Alive && !x.Left) + " alive");
                 PhaseChanged?.Invoke(Phase);
             }
         }
@@ -197,7 +207,7 @@ namespace MafiaNight.MatchRules.Net
 
         // ---------------------------------------------------------------- to the host
 
-        private void Act(string kind, string target = "") => toHost?.Invoke(new WireMessage(Msg.Act, kind, target ?? ""));
+        private void Act(string kind, string target = "") { T("I ask: " + kind + (string.IsNullOrEmpty(target) ? "" : " on " + (Seat(target)?.Name ?? target))); toHost?.Invoke(new WireMessage(Msg.Act, kind, target ?? "")); }
 
         public void MafiaPick(string id) => Act("mafia", id);
         public void DoctorSave(string id) => Act("save", id);
