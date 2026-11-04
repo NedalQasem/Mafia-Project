@@ -317,7 +317,8 @@ const NAMES=['أنت','نضال','سامر','ريم','لينا','خالد','ما
 const AV='<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.6 3.6-7.4 8-7.4s8 2.8 8 7.4z"/></svg>';
 const ICON={mafia:'<svg viewBox="0 0 24 24" fill="#8a1c24"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6zM9 11h6v2H9z"/></svg>',doc:'<svg viewBox="0 0 24 24" fill="#2f7a63"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z"/></svg>',sher:'<svg viewBox="0 0 24 24" fill="#2e5f94"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.2l7.1-.6z"/></svg>',civ:'<svg viewBox="0 0 24 24" fill="#5a4a2a"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.6 3.6-7.4 8-7.4s8 2.8 8 7.4z"/></svg>'};
 let timers=[],cur=0,seats=[];
-const at=(ms,fn)=>timers.push(setTimeout(fn,ms));
+function showErr(e){var b=document.getElementById('errbar');if(b){b.style.display='block';b.textContent='خطأ بالمشهد: '+(e&&e.message||e)}}
+const at=(ms,fn)=>timers.push(setTimeout(function(){try{fn()}catch(e){showErr(e)}},ms));
 function reset(bg='day'){timers.forEach(clearTimeout);timers=[];
   $('sky').className='sky '+bg;$('moon').className='moon';$('sun').className='sun';
   ['veil','narr','cap','rc','stamp','spec'].forEach(i=>{$(i).className=$(i).className.split(' ')[0]});
