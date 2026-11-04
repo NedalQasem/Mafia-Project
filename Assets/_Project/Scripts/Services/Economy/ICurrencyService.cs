@@ -23,7 +23,7 @@ namespace MafiaNight.Services.Economy
         /// the item joins <see cref="OwnedItemIds"/> and the balance drops. <paramref name="storeId"/> is for offers with their own price.
         /// onError gets (code, message); code is "not_in_catalog" when the title has no such item yet, "funds" when the balance is short.
         /// </summary>
-        void PurchaseCatalogItem(string itemId, int price, string storeId, Action onSuccess, Action<string, string> onError);
+        void PurchaseCatalogItem(string itemId, int price, string storeId, Action onSuccess, Action<string, string> onError, bool withGems = false);
 
         /// <param name="onComplete">Called with true on success, false on failure.</param>
         void FetchCurrencies(Action<bool> onComplete = null);

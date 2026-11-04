@@ -121,6 +121,13 @@ namespace MafiaNight.Services.Match
         private void MatchMicOn() { if (voice == null || micSaved) return; micSaved = true; micBefore = voice.MicOn; voice.SetMic(true); }
         private void MatchMicRestore() { if (voice == null || !micSaved) return; micSaved = false; voice.SetMic(micBefore); }
 
+        /// <summary>What a player wears on his role card, from his room member attributes (the free layers for a bot or somebody who is not in the room).</summary>
+        public MafiaNight.Data.Cards.CardLayers CardsOf(string puid)
+        {
+            var m = rooms != null && rooms.InRoom && !string.IsNullOrEmpty(puid) ? rooms.Members.FirstOrDefault(x => x.Puid == puid) : null;
+            return MafiaNight.Data.Cards.CardWear.Decode(m != null ? m.CardLayers : "");
+        }
+
         private IRoomService rooms;
         private IEosPlatform eos;
         private ISceneLoader scenes;

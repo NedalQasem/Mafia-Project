@@ -27,6 +27,8 @@ namespace MafiaNight.UI.Kit
 
         public event Action<int> OnCoinsChanged;
         public int Coins { get; set; } = 1250;
+        /// <summary>The player's Gems (the epic role card items are priced in them).</summary>
+        public int Gems { get; set; } = 50;
 
         /// <summary>Set by the app layer: true when the player owns the item. Without it a local demo set is used.</summary>
         public Func<StoreItem, bool> OwnedResolver;
@@ -246,9 +248,10 @@ namespace MafiaNight.UI.Kit
             sheetChip.GetComponent<TMPro.TMP_Text>().color = txt;
             bool locked = !item.owned && item.lockRank > playerRank;
             sheetMsg.Text = locked ? "يفتح عند رتبة " + KitTheme.RankNames[item.lockRank - 1] : "";
-            sheetPrice.Text = item.owned ? (!item.equippable ? (item.id.StartsWith("rk") ? "مفتوح لك" : "تم") : item.equipped ? "مفعّل" : "استخدمه") : locked ? "مقفل" : (string.IsNullOrEmpty(item.priceText) ? CoinPill.Format(item.price) : item.priceText);
+            sheetPrice.Text = item.owned ? (!item.equippable ? (item.id.StartsWith("rk") ? "مفتوح لك" : "تم") : item.equipped ? "مفعّل" : "استخدمه") : locked ? "مقفل" : (item.gems > 0 ? CoinPill.Format(item.gems) : string.IsNullOrEmpty(item.priceText) ? CoinPill.Format(item.price) : item.priceText);
             sheetBuy.interactable = !locked;
             var coinIcon = sheetBuy.transform.Find("Coin"); if (coinIcon != null) coinIcon.gameObject.SetActive(!item.owned && !locked && string.IsNullOrEmpty(item.priceText));
+            StoreArt.SetPriceIcon(coinIcon, item.gems > 0, th);
             var buyLabel = sheetPrice.GetComponent<RectTransform>(); buyLabel.offsetMax = new Vector2(coinIcon != null && coinIcon.gameObject.activeSelf ? -60f : -6f, buyLabel.offsetMax.y);
             sheetBuyImage.color = locked ? new Color(1f, 1f, 1f, 0.5f) : Color.white;
             gameObject.SetActive(true);
@@ -308,7 +311,8 @@ namespace MafiaNight.UI.Kit
                 if (PurchaseHandler != null) { sheetMsg.Text = "الشراء بالمال الحقيقي غير متاح بعد."; return; }
                 sheetPrice.Text = "تم الشراء"; CloseSheet(); return;
             }
-            if (Coins < open.price) { sheetMsg.Text = "رصيدك لا يكفي. اشحن كوينز من قسم الكوينز."; return; }
+            if (open.gems > 0 && Gems < open.gems) { sheetMsg.Text = "رصيدك من الماس لا يكفي."; return; }
+            if (open.gems <= 0 && Coins < open.price) { sheetMsg.Text = "رصيدك لا يكفي. اشحن كوينز من قسم الكوينز."; return; }
             if (PurchaseHandler != null)
             {
                 buying = true;
@@ -324,7 +328,8 @@ namespace MafiaNight.UI.Kit
                 });
                 return;
             }
-            Coins -= open.price; if (open.equippable) { open.owned = true; demoOwned.Add(open.id); }
+            if (open.gems > 0) Gems -= open.gems; else Coins -= open.price;
+            if (open.equippable) { open.owned = true; demoOwned.Add(open.id); }
             OnCoinsChanged?.Invoke(Coins);
             sheetMsg.Text = "أُضيف إلى مقتنياتك";
             Invoke(nameof(AfterBuy), 0.9f);

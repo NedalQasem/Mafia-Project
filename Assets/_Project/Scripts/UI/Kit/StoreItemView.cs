@@ -39,7 +39,8 @@ namespace MafiaNight.UI.Kit
             nameLabel.Text = it.name;
             bool locked = it.lockRank > playerRank;
             priceTag.SetActive(!it.owned && !locked);
-            priceLabel.Text = string.IsNullOrEmpty(it.priceText) ? CoinPill.Format(it.price) : it.priceText;
+            priceLabel.Text = it.gems > 0 ? CoinPill.Format(it.gems) : string.IsNullOrEmpty(it.priceText) ? CoinPill.Format(it.price) : it.priceText;
+            StoreArt.SetPriceIcon(priceTag.transform.Find("Coin"), it.gems > 0, th);
             ownedStamp.SetActive(it.owned);
             if (it.owned)
             {

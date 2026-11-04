@@ -46,7 +46,13 @@ namespace MafiaNight.Services.Store
             return inv != null && inv.OwnsStoreItem(itemId);   // local record: development fallback only (see Purchase)
         }
 
-        public string GetEquipped(string categoryId) => Resolve() ? profile.LocalProfile?.Customization?.GetEquipped(categoryId) : null;
+        public string GetEquipped(string categoryId)
+        {
+            string worn = Resolve() ? profile.LocalProfile?.Customization?.GetEquipped(categoryId) : null;
+            if (!string.IsNullOrEmpty(worn) || Catalog == null || categoryId == null || !categoryId.StartsWith("card_")) return worn;
+            foreach (var it in Catalog.ItemsIn(categoryId)) if (it.ownedByDefault) return it.id;       // the role card shelves wear their free item until the player picks another
+            return null;
+        }
 
         public bool IsEquipped(string itemId)
         {
@@ -63,7 +69,9 @@ namespace MafiaNight.Services.Store
             if (Owns(itemId)) { done(true, "تملكه مسبقاً"); return; }
             if (def.lockRank > RankLadder.FromPoints(p.RankPoints).RankIndex + 1) { done(false, "هذا الغرض مقفل لرتبتك."); return; }
             if (def.IsPack) { done(false, "الشراء بالمال الحقيقي غير متاح بعد."); return; }
-            if (!currency.HasEnoughCoins(price)) { done(false, "رصيدك لا يكفي."); return; }
+            bool gems = def.IsGem;
+            if (gems) price = def.gemPrice;                                   // an epic card item costs Gems; the caller's coin price does not apply
+            if (gems ? !currency.HasEnoughGems(price) : !currency.HasEnoughCoins(price)) { done(false, gems ? "رصيدك من الماس لا يكفي." : "رصيدك لا يكفي."); return; }
 
             currency.PurchaseCatalogItem(itemId, price, storeId, () =>
             {
@@ -75,16 +83,17 @@ namespace MafiaNight.Services.Store
                 {
                     // The title's PlayFab catalog does not have this item yet: dev builds charge the wallet and keep a local record.
                     Log.Warning($"{itemId} is not in the PlayFab catalog - local development purchase", Tag);
-                    LocalPurchase(def, price, p, done);
+                    LocalPurchase(def, price, p, done, gems);
                     return;
                 }
-                done(false, code == "funds" ? "رصيدك لا يكفي." : code == "not_in_catalog" ? "هذا الغرض غير متاح حالياً." : "تعذّر الشراء، حاول لاحقاً.");
-            });
+                done(false, code == "funds" ? (gems ? "رصيدك من الماس لا يكفي." : "رصيدك لا يكفي.") : code == "not_in_catalog" ? "هذا الغرض غير متاح حالياً." : "تعذّر الشراء، حاول لاحقاً.");
+            }, gems);
         }
 
-        private void LocalPurchase(StoreItemDef def, int price, PlayerProfile p, Action<bool, string> done)
+        private void LocalPurchase(StoreItemDef def, int price, PlayerProfile p, Action<bool, string> done, bool gems = false)
         {
-            currency.DeductCoins(price, () =>
+            Action<int, Action, Action<string>> charge = gems ? (Action<int, Action, Action<string>>)currency.DeductGems : currency.DeductCoins;
+            charge(price, () =>
             {
                 if (p.Inventory == null) p.Inventory = new PlayerInventory();
                 var cat = Catalog.GetCategory(def.categoryId);

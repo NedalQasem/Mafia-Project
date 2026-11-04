@@ -71,6 +71,8 @@ namespace MafiaNight.Data.Rooms
         public bool IsKeeper;
         /// <summary>What the player wears from the store (item ids; empty = nothing): shown on his seat and in his chat lines.</summary>
         public string FrameId = "", TitleId = "", BubbleId = "";
+        /// <summary>What he wears on his role card (CardWear.Encode: frame|background|motion|back; empty = the free ones): every player sees his card dressed this way at the table.</summary>
+        public string CardLayers = "";
     }
 
     /// <summary>The rules from Docs/05-rooms-design.md in one place.</summary>

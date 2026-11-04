@@ -62,15 +62,15 @@ namespace MafiaNight.Services.Economy
 
         #region Catalog purchase
 
-        public void PurchaseCatalogItem(string itemId, int price, string storeId, Action onSuccess, Action<string, string> onError)
+        public void PurchaseCatalogItem(string itemId, int price, string storeId, Action onSuccess, Action<string, string> onError, bool withGems = false)
         {
             if (!PlayFabMeter.Allow("PurchaseItem", true)) { onError?.Invoke("busy", "Too many requests"); return; }
-            var request = new PurchaseItemRequest { ItemId = itemId, VirtualCurrency = COINS_CODE, Price = price };
+            var request = new PurchaseItemRequest { ItemId = itemId, VirtualCurrency = withGems ? GEMS_CODE : COINS_CODE, Price = price };
             if (!string.IsNullOrEmpty(storeId)) request.StoreId = storeId;
             PlayFabClientAPI.PurchaseItem(request, result =>
             {
                 ownedItems.Add(itemId);
-                SetCoins(Mathf.Max(0, currentCoins - price));
+                if (withGems) SetGems(Mathf.Max(0, currentGems - price)); else SetCoins(Mathf.Max(0, currentCoins - price));
                 OnInventoryChanged?.Invoke();
                 Log.Info($"Purchased {itemId} for {price}", Tag);
                 onSuccess?.Invoke();

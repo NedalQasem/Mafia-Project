@@ -46,7 +46,7 @@ namespace MafiaNight.App
             {
                 if (step.Kind == CueStepKind.Subtitle || (step.Kind == CueStepKind.Animation && fx == null)) continue;
                 if (step.At > elapsed) { yield return new WaitForSecondsRealtime(step.At - elapsed); elapsed = step.At; }
-                if (step.Kind == CueStepKind.Animation) fx.Play(step.Value, play.SeatId, Mathf.Max(0.5f, play.Cue.Duration - step.At));      // the table's own animations (close-up, shot, shield, stamp)
+                if (step.Kind == CueStepKind.Animation) fx.Play(step.Value, play.SeatId, play.RoleId, Mathf.Max(0.5f, play.Cue.Duration - step.At));      // the table's own animations (close-up, shot, shield, stamp)
                 else Clip(step);
             }
         }

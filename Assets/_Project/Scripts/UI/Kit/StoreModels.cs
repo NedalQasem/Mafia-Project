@@ -18,6 +18,7 @@ namespace MafiaNight.UI.Kit
         public string categoryId;
         public string name, desc;
         public int price;
+        public int gems;                  // above 0: the price is in Gems (the epic role card items), not Coins
         public string priceText;          // real-money packs
         public Rarity rarity;
         public bool owned, isNew;
@@ -30,6 +31,8 @@ namespace MafiaNight.UI.Kit
         public string text;
         public Sprite sprite;             // replaces the built-in drawing when set
         public string storeId;            // PlayFab store holding an offer price (ads)
+        public StoreArtKind kind;         // what the item is (the role card layers draw a card)
+        public string layerId;            // role cards: the layer it puts on the card
     }
 
     /// <summary>Reads the store catalog (Resources/Config/StoreCatalog) and turns it into the models the screens draw.</summary>
@@ -61,7 +64,10 @@ namespace MafiaNight.UI.Kit
                 case StoreArtKind.ChatBubble: return "bubble";
                 case StoreArtKind.EntryStrip: return "entry";
                 case StoreArtKind.Gift: return "gift";
-                case StoreArtKind.CardBack: return "card";
+                case StoreArtKind.CardFrame:
+                case StoreArtKind.CardBackground:
+                case StoreArtKind.CardMotion:
+                case StoreArtKind.CardBack: return "rolecard";
                 case StoreArtKind.Title: return "plate";
                 default: return "pack";
             }
@@ -70,7 +76,7 @@ namespace MafiaNight.UI.Kit
         public static StoreItem From(StoreItemDef d, bool consumable = false) => new StoreItem
         {
             id = d.id, categoryId = d.categoryId, name = d.nameAr, desc = d.descAr,
-            price = d.price, priceText = d.priceText, rarity = ToRarity(d.rarity),
+            price = d.price, gems = d.gemPrice, kind = d.artKind, layerId = d.layerId, priceText = d.priceText, rarity = ToRarity(d.rarity),
             owned = d.ownedByDefault, isNew = d.isNew, lockRank = d.lockRank,
             art = ArtOf(d.artKind), idx = d.variant, c1 = d.tint, text = string.IsNullOrEmpty(d.titleText) ? d.nameAr : d.titleText,
             sprite = d.sprite, equippable = !consumable && d.artKind != StoreArtKind.Gift && d.artKind != StoreArtKind.CoinPack,
@@ -121,6 +127,36 @@ namespace MafiaNight.UI.Kit
             return i;
         }
 
+        private static Sprite gemIcon;
+
+        /// <summary>The Gem icon of a price tag: a cut stone in the Gem teal.</summary>
+        public static Sprite GemIcon => gemIcon != null ? gemIcon : (gemIcon = KitSvg.Icon("M12 3l8 6-8 12L4 9z|M4 9h16M9 9l3 12M15 9l-3 12", 1.8f, 96));
+
+        /// <summary>Puts the coin or the Gem icon on a price tag or buy button (the Gem in teal).</summary>
+        public static void SetPriceIcon(Transform icon, bool gem, KitTheme th)
+        {
+            var im = icon != null ? icon.GetComponent<Image>() : null;
+            if (im == null) return;
+            im.sprite = gem ? GemIcon : th.coin; im.color = gem ? th.teal : Color.white;
+        }
+
+        /// <summary>A role card of the mockup (a mafia card, or the card back) wearing the layer this item sells; the rest of the layers are the free ones.</summary>
+        private static void RoleCardPreview(StoreItem it, RectTransform parent)
+        {
+            var layers = new MafiaNight.Data.Cards.CardLayers();
+            switch (it.kind)
+            {
+                case StoreArtKind.CardFrame: layers.Frame = it.layerId; break;
+                case StoreArtKind.CardBackground: layers.Background = it.layerId; break;
+                case StoreArtKind.CardMotion: layers.Motion = it.layerId; break;
+                case StoreArtKind.CardBack: layers.Back = it.layerId; break;
+            }
+            const float w = 150f;
+            var card = it.kind == StoreArtKind.CardBack ? KitRoleCard.CreateHidden(parent, layers, w) : KitRoleCard.Create(parent, MafiaNight.Data.Cards.RoleCards.Find("mafia"), layers, w);
+            var rt = (RectTransform)card.transform; rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f); rt.pivot = new Vector2(0.5f, 0.5f); rt.anchoredPosition = Vector2.zero;
+            card.gameObject.AddComponent<CanvasGroup>().blocksRaycasts = false;      // the tile under it is the button
+        }
+
         public static void Create(StoreItem it, RectTransform parent, KitTheme th)
         {
             for (int i = parent.childCount - 1; i >= 0; i--) UnityEngine.Object.DestroyImmediate(parent.GetChild(i).gameObject);
@@ -145,6 +181,9 @@ namespace MafiaNight.UI.Kit
                 case "gift":
                     Sprite[] g = { th.giftWatch, th.bulletOn, th.propDallah, th.giftKey, th.giftRose, th.giftCrown };
                     Add(parent, g[Mathf.Clamp(it.idx, 0, 5)], Vector2.zero, it.idx == 1 ? new Vector2(80, 200) : new Vector2(200, 200));
+                    break;
+                case "rolecard":
+                    RoleCardPreview(it, parent);
                     break;
                 case "card":
                     Add(parent, th.cardBack, Vector2.zero, new Vector2(140, 196)).color = it.c1;

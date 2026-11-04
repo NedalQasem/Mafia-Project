@@ -11,6 +11,8 @@ namespace MafiaNight.MatchRules.Net
         public float Delay;
         /// <summary>The player the moment is about (the victim, the saved, the one voted out), or "" when it is about nobody: the table's animations aim at his seat.</summary>
         public string SeatId = "";
+        /// <summary>The card id of the role that moment reveals (the one who died, was shot, voted out, the Avenger), or "": the table turns that card over.</summary>
+        public string RoleId = "";
     }
 
     /// <summary>
@@ -40,11 +42,11 @@ namespace MafiaNight.MatchRules.Net
         private string Name(string id) => id == null ? "" : c.Seat(id)?.Name ?? "";
 
         /// <summary>Plays a cue at <paramref name="at"/> seconds; <paramref name="seatId"/> is the player the moment is about (his name goes into the line, and the table's animations aim at his seat).</summary>
-        private float Emit(string cueId, string seatId, float at)
+        private float Emit(string cueId, string seatId, float at, Role? reveals = null)
         {
             var cue = CueCatalog.Find(cueId);
             if (cue == null) return at;
-            Play?.Invoke(new CuePlay { Cue = cue, Subtitle = CueCatalog.Format(cue, Name(seatId), Language), Delay = at, SeatId = seatId ?? "" });
+            Play?.Invoke(new CuePlay { Cue = cue, Subtitle = CueCatalog.Format(cue, Name(seatId), Language), Delay = at, SeatId = seatId ?? "", RoleId = reveals.HasValue ? CueCatalog.CardIdOf(reveals.Value) : "" });
             return at + cue.Duration;
         }
 
@@ -71,17 +73,17 @@ namespace MafiaNight.MatchRules.Net
             {
                 case "dawn":
                     if (c.DawnSaved) t = Emit(CueIds.DawnSaved, c.DawnVictimId, t);
-                    else if (c.DawnDiedId != null) t = Emit(CueIds.DawnKill, c.DawnDiedId, t);
+                    else if (c.DawnDiedId != null) t = Emit(CueIds.DawnKill, c.DawnDiedId, t, c.DawnDiedRole);
                     else t = Emit(CueIds.DawnQuiet, "", t);
-                    foreach (var shot in c.DawnShotDeaths) t = Emit(CueIds.DawnShot, shot.Key, t);
+                    foreach (var shot in c.DawnShotDeaths) t = Emit(CueIds.DawnShot, shot.Key, t, shot.Value);
                     if (c.SilencedId != null) Emit(CueIds.DawnSilenced, c.SilencedId, t);
                     break;
                 case "verdict":
                     if (c.VerdictRemovedId == null) Emit(CueIds.VerdictNobody, "", 0f);
-                    else Emit(c.VerdictRemovedRole.HasValue && c.VerdictRemovedRole.Value.IsMafiaTeam() ? CueIds.VerdictMafia : CueIds.VerdictTown, c.VerdictRemovedId, 0f);
+                    else Emit(c.VerdictRemovedRole.HasValue && c.VerdictRemovedRole.Value.IsMafiaTeam() ? CueIds.VerdictMafia : CueIds.VerdictTown, c.VerdictRemovedId, 0f, c.VerdictRemovedRole);
                     break;
-                case "avenge.open": Emit(CueIds.AvengeStart, "", 0f); break;
-                case "avenge.done": if (c.AvengeTargetId != null) Emit(CueIds.AvengeDone, c.AvengeTargetId, 0f); break;
+                case "avenge.open": Emit(CueIds.AvengeStart, c.AvengerId, 0f, Role.Avenger); break;
+                case "avenge.done": if (c.AvengeTargetId != null) Emit(CueIds.AvengeDone, c.AvengeTargetId, 0f, c.AvengeTargetRole); break;
                 case "over":
                     if (c.Winner == Winner.Town) Emit(CueIds.OverTown, "", 0f);
                     else if (c.Winner == Winner.Mafia) Emit(CueIds.OverMafia, "", 0f);

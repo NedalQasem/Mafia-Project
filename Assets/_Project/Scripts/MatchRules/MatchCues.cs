@@ -72,6 +72,9 @@ namespace MafiaNight.MatchRules
     /// </summary>
     public static class CueCatalog
     {
+        /// <summary>The id of a role's card (the portrait file and the card text): the same word as the role, except the Sheriff whose card is the Elder ("sheikh").</summary>
+        public static string CardIdOf(Role r) => r == Role.Sheriff ? "sheikh" : r.ToString().ToLowerInvariant();
+
         /// <summary>How long a night call lasts for everybody, called or not.</summary>
         public const float NightCallSeconds = 20f;     // the owner's night choice time
 
@@ -118,20 +121,20 @@ namespace MafiaNight.MatchRules
                 Make(CueIds.Call(Role.Sniper), NightCallSeconds, "يا قنّاص… قوم. عندك رصاصة وحدة. تبي تقنص الليلة ولا نأجلها؟", Anim("wake_sniper", 0f)),
                 Make(CueIds.Sleep(Role.Silencer), 2f, "زين. كاتم الصوت ينام.", Anim("sleep_silencer", 0f)),
                 Make(CueIds.Sleep(Role.Sniper), 2f, "زين. القنّاص ينام.", Anim("sleep_sniper", 0f)),
-                Make(CueIds.DawnShot, 9f, "انسمعت طلقة قنّاص بالليل… طاح {name}.", Anim("zoom_seat", 0f), Sfx("gunshot", 2f), Anim("shot", 2f)),
+                Make(CueIds.DawnShot, 9f, "انسمعت طلقة قنّاص بالليل… طاح {name}.", Anim("zoom_seat", 0f), Sfx("gunshot", 2f), Anim("shot", 2f), Anim("card_flip", 4.2f)),
                 Make(CueIds.DawnSilenced, 4f, "كاتم الصوت كتم صوت {name} لهالنهار."),
-                Make(CueIds.AvengeStart, 6f, "انطرد الثأري! وعنده قرار: ياخذ معاه لاعب.", Anim("zoom_seat", 0f), Anim(CueIds.CardReveal(Role.Avenger), 1f)),
-                Make(CueIds.AvengeDone, 7f, "الثأري اختار {name}. طلعوا الثنين.", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f)),
+                Make(CueIds.AvengeStart, 6f, "انطرد الثأري! وعنده قرار: ياخذ معاه لاعب.", Anim("zoom_seat", 0f), Anim("card_flip", 1.4f)),
+                Make(CueIds.AvengeDone, 7f, "الثأري اختار {name}. طلعوا الثنين.", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f), Anim("card_flip", 2.2f)),
                 Make(CueIds.Sleep(Role.Mafia), 2f, "زين. المافيا ينامون.", Anim("sleep_mafia", 0f)),
                 Make(CueIds.Sleep(Role.Doctor), 2f, "زين. الدكتور ينام.", Anim("sleep_doctor", 0f)),
                 Make(CueIds.Sleep(Role.Sheriff), 2f, "زين. الشيخ ينام.", Anim("sleep_sheikh", 0f)),
                 Make(CueIds.DawnQuiet, 6f, "طلع الصبح. محد مات الليلة.", Anim("dawn", 0f)),
-                Make(CueIds.DawnKill, 9f, "طلع الصبح. الليلة… المافيا قتلت {name}.", Anim("dawn", 0f), Anim("zoom_seat", 3f), Sfx("gunshot", 5.4f), Anim("shot", 5.4f)),
+                Make(CueIds.DawnKill, 9f, "طلع الصبح. الليلة… المافيا قتلت {name}.", Anim("dawn", 0f), Anim("zoom_seat", 3f), Sfx("gunshot", 5.4f), Anim("shot", 5.4f), Anim("card_flip", 6.6f)),
                 Make(CueIds.DawnSaved, 9f, "طلع الصبح. المافيا حاولت تقتل {name}… بس فيه أحد أنقذه!", Anim("dawn", 0f), Anim("zoom_seat", 3f), Sfx("gunshot", 5.4f), Anim("shield", 5.6f)),
                 Make(CueIds.DayStart, 3f, "بدا النقاش.", Anim("day", 0f)),
                 Make(CueIds.VoteStart, 3f, "وقت التصويت. منو تشكون فيه؟", Anim("vote", 0f)),
-                Make(CueIds.VerdictMafia, 7f, "انطرد {name}. وكان من المافيا!", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f), Anim(CueIds.CardReveal(Role.Mafia), 2f)),
-                Make(CueIds.VerdictTown, 7f, "انطرد {name}. وكان مواطن بريء…", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f)),
+                Make(CueIds.VerdictMafia, 7f, "انطرد {name}. وكان من المافيا!", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f), Anim("card_flip", 2.2f)),
+                Make(CueIds.VerdictTown, 7f, "انطرد {name}. وكان مواطن بريء…", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f), Anim("card_flip", 2.2f)),
                 Make(CueIds.VerdictNobody, 4f, "ما اتفقوا على أحد. محد انطرد."),
                 Make(CueIds.OverTown, 8f, "خلصت السهرة. فاز أهل الفريج!", Anim("over", 0f)),
                 Make(CueIds.OverMafia, 8f, "خلصت السهرة. فازت المافيا!", Anim("over", 0f)),

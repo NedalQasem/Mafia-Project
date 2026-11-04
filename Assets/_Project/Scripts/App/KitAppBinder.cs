@@ -83,6 +83,7 @@ namespace MafiaNight.App
             profile.OnProfileLoaded += OnProfile;
             profile.OnProfileUpdated += OnProfile;
             currency.OnCoinsChanged += OnCoins;
+            currency.OnGemsChanged += OnGems;
             foreach (var nb in navBars) { nb.OnTabSelected += OnTab; nb.OnPlaceSelected += OnPlace; }
             if (navBars.Length > 0) gameObject.AddComponent<NavBadgesFlow>();
             if (storeService != null) storeService.OnChanged += OnStoreChanged;
@@ -138,7 +139,7 @@ namespace MafiaNight.App
         private void OnDestroy()
         {
             if (profile != null) { profile.OnProfileLoaded -= OnProfile; profile.OnProfileUpdated -= OnProfile; }
-            if (currency != null) currency.OnCoinsChanged -= OnCoins;
+            if (currency != null) { currency.OnCoinsChanged -= OnCoins; currency.OnGemsChanged -= OnGems; }
             foreach (var nb in navBars) if (nb != null) { nb.OnTabSelected -= OnTab; nb.OnPlaceSelected -= OnPlace; }
             if (storeService != null) storeService.OnChanged -= OnStoreChanged;
         }
@@ -146,6 +147,8 @@ namespace MafiaNight.App
         private void OnStoreChanged() => Refresh();
 
         private void OnProfile(PlayerProfile _) => Refresh();
+
+        private void OnGems(int gems) { if (store != null) store.Gems = gems; }
 
         private void OnCoins(int coins)
         {
@@ -237,7 +240,7 @@ namespace MafiaNight.App
 
         private void WireStore()
         {
-            store.Coins = currency.Coins;
+            store.Coins = currency.Coins; store.Gems = currency.Gems;
             if (storeService == null) return;   // no store service: the screen keeps its local demo behaviour
             store.OwnedResolver = item => storeService.Owns(item.id);
             store.EquippedResolver = item => storeService.IsEquipped(item.id);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MafiaNight.Core;
 using MafiaNight.Data.Cards;
 using MafiaNight.MatchRules;
 using MafiaNight.MatchRules.Net;
@@ -70,7 +71,7 @@ namespace MafiaNight.App
             var live = MatchRunner.Instance;
             runner = live != null && live.Session != null && live.Session.Client == client ? live : null;
             if (runner != null) runner.ChatChanged += RefreshDock;
-            if (fx == null && view.transform is RectTransform fxRoot) fx = KitMomentFx.Create(view, fxRoot);      // under the dock and the slip
+            if (fx == null && view.transform is RectTransform fxRoot) { fx = KitMomentFx.Create(view, fxRoot); fx.NameOf = id => c?.Seat(id)?.Name ?? ""; fx.LayersOf = id => c != null && c.Seat(id) != null && c.Seat(id).IsMe ? MyLayers() : runner != null ? runner.CardsOf(id) : null; }      // under the dock and the slip
             if (dock == null && view.transform is RectTransform root)
             {
                 dock = KitMatchDock.Create(root);
@@ -255,6 +256,7 @@ namespace MafiaNight.App
             {
                 var spec = new SeatSpec { Id = s.Id, Name = s.Name, Me = s.IsMe, Look = !s.Alive || s.Left ? SeatLook.Dead : SeatLook.Normal };
                 if (s.IsMate) spec.Tag = SeatTag.Mafia;
+                spec.Layers = s.IsMe ? MyLayers() : runner != null ? runner.CardsOf(s.Id) : null;      // everybody sees a card dressed as its owner wears it
                 spec.RoleId = s.Role.HasValue ? CardId(s.Role.Value) : null;       // only what this player may know is in SeatView.Role; the rest show their card's back
                 list.Add(shape != null ? shape(s, spec) : spec);
             }
@@ -263,8 +265,11 @@ namespace MafiaNight.App
 
         // ---------------------------------------------------------------- role reveal
 
+        /// <summary>What this player wears on his own card (the store shelves; the free layers when the store is not there).</summary>
+        private static CardLayers MyLayers() => ServiceLocator.TryGet(out MafiaNight.Services.Store.IStoreService store) ? CardWear.Of(store.GetEquipped, store.Catalog) : new CardLayers();
+
         /// <summary>The id of a role's card (RoleCards.Find): the same word as the role, except the Sheriff whose card is "sheikh" (شيخ المواطنين).</summary>
-        public static string CardId(Role r) => r == Role.Sheriff ? "sheikh" : r.ToString().ToLowerInvariant();
+        public static string CardId(Role r) => CueCatalog.CardIdOf(r);
 
         /// <summary>Every role shows its card full screen when the match starts (it turns over to what the role does), with the mates under it for the mafia.</summary>
         private void DrawReveal()
@@ -279,7 +284,7 @@ namespace MafiaNight.App
                 var mates = c.Seats.Where(s => s.IsMate).Select(s => s.Name).ToList();
                 line = mates.Count > 0 ? "رفقاؤك بالمافيا: " + string.Join("، ", mates) : "أنت المافيا الوحيد";
             }
-            KitRoleReveal.Show(view.transform, def, new CardLayers(), line, confirmed ? "بانتظار البقية" : "فهمت، ابدأ", () => { if (confirmed) return; confirmed = true; c.Ready(); KitRoleReveal.SetButton("بانتظار البقية"); });
+            KitRoleReveal.Show(view.transform, def, MyLayers(), line, confirmed ? "بانتظار البقية" : "فهمت، ابدأ", () => { if (confirmed) return; confirmed = true; c.Ready(); KitRoleReveal.SetButton("بانتظار البقية"); });
         }
 
         // ---------------------------------------------------------------- night

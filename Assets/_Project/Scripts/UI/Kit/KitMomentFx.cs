@@ -19,6 +19,11 @@ namespace MafiaNight.UI.Kit
         private RectTransform zoomed;
         private Vector2 baseSize, basePos, basePivot, shake;
         private Coroutine zoomRun;
+        private readonly System.Collections.Generic.List<CanvasGroup> dimmed = new System.Collections.Generic.List<CanvasGroup>();
+
+        /// <summary>The screen gives these: a player's name and what he wears on his card (for the card that turns over).</summary>
+        public System.Func<string, string> NameOf;
+        public System.Func<string, MafiaNight.Data.Cards.CardLayers> LayersOf;
 
         public static KitMomentFx Create(KitMatchView view, RectTransform parent)
         {
@@ -42,17 +47,17 @@ namespace MafiaNight.UI.Kit
 
         private void Run(IEnumerator r) { if (Application.isPlaying) StartCoroutine(r); }
 
-        /// <summary>Plays the named animation of a cue (zoom_seat, shot, shield, stamp_out) at a seat. <paramref name="hold"/> is how long the close-up stays (what is left of the cue).</summary>
-        public void Play(string anim, string seatId, float hold)
+        /// <summary>Plays the named animation of a cue (zoom_seat, shot, shield, stamp_out, card_flip) at a seat. <paramref name="hold"/> is how long the close-up stays (what is left of the cue).</summary>
+        public void Play(string anim, string seatId, string roleId, float hold)
         {
             if (anim == "zoom_seat" && zoomRun != null) { StopCoroutine(zoomRun); zoomRun = null; }
-            var r = Routine(anim, seatId, hold);
+            var r = Routine(anim, seatId, hold, roleId);
             if (r == null) return;
             if (anim == "zoom_seat") zoomRun = StartCoroutine(r); else StartCoroutine(r);
         }
 
         /// <summary>The animation as a routine to run (or to step by hand in the editor preview); null when the name is unknown or its seat is not on the table.</summary>
-        public IEnumerator Routine(string anim, string seatId, float hold)
+        public IEnumerator Routine(string anim, string seatId, float hold, string roleId = null)
         {
             switch (anim)
             {
@@ -65,6 +70,7 @@ namespace MafiaNight.UI.Kit
                 case "shot": return Shot(seatId);
                 case "shield": return Shield(seatId);
                 case "stamp_out": return Stamp(seatId, hold);
+                case "card_flip": return CardFlip(seatId, roleId, hold);
             }
             return null;
         }
@@ -83,6 +89,8 @@ namespace MafiaNight.UI.Kit
         private IEnumerator Zoom(RectTransform frame, RectTransform seat, float hold)
         {
             zoomed = frame; baseSize = frame.rect.size; basePos = frame.anchoredPosition; basePivot = frame.pivot;
+            var target = seat.GetComponent<KitSeatTag>();
+            foreach (var tag in seat.parent.GetComponentsInChildren<KitSeatTag>()) if (tag != target) { var cg = tag.GetComponent<CanvasGroup>() ?? tag.gameObject.AddComponent<CanvasGroup>(); dimmed.Add(cg); }      // the others fade back while the camera is on him
             // the seat becomes the pivot of the frame (the frame does not move), so it can grow around him
             Vector2 local = frame.InverseTransformPoint(seat.position);
             Vector2 newPivot = basePivot + new Vector2(local.x / baseSize.x, local.y / baseSize.y);
@@ -94,15 +102,18 @@ namespace MafiaNight.UI.Kit
             Vector3 toMiddle = frame.parent.InverseTransformVector(screen.TransformPoint(screen.rect.center + new Vector2(0, 40f)) - seat.position);
             Vector2 end = start + (Vector2)toMiddle;
             const float k = 1.9f, grow = 0.5f;
-            for (float t = 0; t < grow; t += Dt) { float e = Ease(t / grow); frame.localScale = Vector3.one * Mathf.Lerp(1f, k, e); frame.anchoredPosition = Vector2.Lerp(start, end, e) + shake; yield return null; }
+            for (float t = 0; t < grow; t += Dt) { float e = Ease(t / grow); frame.localScale = Vector3.one * Mathf.Lerp(1f, k, e); frame.anchoredPosition = Vector2.Lerp(start, end, e) + shake; SetDim(Mathf.Lerp(1f, 0.35f, e)); yield return null; }
             frame.localScale = Vector3.one * k;
             for (float t = 0; t < hold - grow - 0.4f; t += Dt) { frame.anchoredPosition = end + shake; yield return null; }
-            for (float t = 0; t < 0.4f; t += Dt) { float e = Ease(t / 0.4f); frame.localScale = Vector3.one * Mathf.Lerp(k, 1f, e); frame.anchoredPosition = Vector2.Lerp(end, start, e) + shake; yield return null; }
+            for (float t = 0; t < 0.4f; t += Dt) { float e = Ease(t / 0.4f); frame.localScale = Vector3.one * Mathf.Lerp(k, 1f, e); frame.anchoredPosition = Vector2.Lerp(end, start, e) + shake; SetDim(Mathf.Lerp(0.35f, 1f, e)); yield return null; }
             Restore();
         }
 
+        private void SetDim(float alpha) { foreach (var cg in dimmed) if (cg != null) cg.alpha = alpha; }
+
         private void Restore()
         {
+            SetDim(1f); dimmed.Clear();
             if (zoomed != null)
             {
                 zoomed.localScale = Vector3.one; zoomed.pivot = basePivot; zoomed.anchoredPosition = basePos;
@@ -215,6 +226,7 @@ namespace MafiaNight.UI.Kit
             // ...and meets the shield: flash, shake, a ring that spreads, sparks, the shield itself
             Run(Burst());
             var ring = Piece("Ripple", at, new Vector2(size * 0.5f, size * 0.5f), Disc(size * 0.5f, Color.clear, teal, 5f), Color.white);
+            var body = Piece("ShieldBody", at, new Vector2(size * 0.95f, size * 1.05f), KitSvg.Icon("M12 2.5l8 3v6c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10v-6z", 9f, 160), new Color(0.35f, 0.75f, 0.62f, 0.55f));
             var shield = Piece("Shield", at, new Vector2(size * 0.95f, size * 1.05f), KitSvg.Icon("M12 2.5l8 3v6c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10v-6z|M12 8.5v7M8.5 12h7", 1.8f, 160), new Color32(0xC9, 0xF7, 0xE6, 255));
             var sparks = new RectTransform[7]; var dirs = new[] { new Vector2(-40, -50), new Vector2(40, -48), new Vector2(-52, 10), new Vector2(50, 14), new Vector2(0, -62), new Vector2(-24, 52), new Vector2(26, 50) };
             for (int i = 0; i < sparks.Length; i++) sparks[i] = Piece("Spark", at, new Vector2(14f, 14f), Disc(14f, new Color32(0xFF, 0xF3, 0xB0, 255), Color.clear, 0f), Color.white);
@@ -224,6 +236,7 @@ namespace MafiaNight.UI.Kit
                 if (view.SeatOf(seatId) != null) at = SeatAt(seatId, at);
                 float pop = t < 0.3f ? Mathf.Lerp(0.3f, 1.18f, t / 0.3f) : t < 0.57f ? Mathf.Lerp(1.18f, 1f, (t - 0.3f) / 0.27f) : t > 1.7f ? Mathf.Lerp(1f, 1.25f, (t - 1.7f) / 0.5f) : 1f;
                 float alpha = t < 0.3f ? t / 0.3f : t > 1.7f ? 1f - (t - 1.7f) / 0.5f : 1f;
+                body.anchoredPosition = at; body.localScale = Vector3.one * pop; body.GetComponent<Image>().color = new Color(0.35f, 0.75f, 0.62f, 0.55f * Mathf.Clamp01(alpha));
                 shield.anchoredPosition = at; shield.localScale = Vector3.one * pop; shield.GetComponent<Image>().color = new Color(0.79f, 0.97f, 0.9f, Mathf.Clamp01(alpha));
                 float rp = Mathf.Clamp01(t / 1f); ring.anchoredPosition = at; ring.localScale = Vector3.one * Mathf.Lerp(0.4f, 3.2f, rp); ring.GetComponent<Image>().color = new Color(1, 1, 1, 0.9f * (1f - rp));
                 float sp = Mathf.Clamp01(t / 0.6f);
@@ -235,8 +248,39 @@ namespace MafiaNight.UI.Kit
                 bullet.GetComponent<Image>().color = new Color(0.9f, 0.75f, 0.33f, 1f - bp);
                 yield return null;
             }
-            Destroy(bullet.gameObject); Destroy(ring.gameObject); Destroy(shield.gameObject);
+            Destroy(bullet.gameObject); Destroy(ring.gameObject); Destroy(shield.gameObject); Destroy(body.gameObject);
             foreach (var sp in sparks) if (sp != null) Destroy(sp.gameObject);
+        }
+
+        // ------------------------------------------------------------------ the card that turns over
+
+        /// <summary>The role card of the one who is out turns over in the middle of the table ("Nada was…"), as the mockup shows after the shot and the verdict.</summary>
+        private IEnumerator CardFlip(string seatId, string roleId, float hold)
+        {
+            var def = MafiaNight.Data.Cards.RoleCards.Find(roleId);
+            if (def == null) yield break;
+            var th = KitTheme.Current;
+            var layers = LayersOf != null ? LayersOf(seatId) : new MafiaNight.Data.Cards.CardLayers();
+            var card = KitRoleCard.Create(layer, def, layers ?? new MafiaNight.Data.Cards.CardLayers(), 400f, KitRoleCard.Face.Hidden);
+            var rt = (RectTransform)card.transform; rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f); rt.pivot = new Vector2(0.5f, 0.5f); rt.anchoredPosition = new Vector2(0, 20f);
+            var cg = card.gameObject.AddComponent<CanvasGroup>(); cg.alpha = 0f; cg.blocksRaycasts = false;
+            var who = new GameObject("Who", typeof(RectTransform), typeof(TMPro.TextMeshProUGUI));
+            who.transform.SetParent(layer, false);
+            var wr = (RectTransform)who.transform; wr.anchorMin = wr.anchorMax = new Vector2(0.5f, 0.5f); wr.sizeDelta = new Vector2(760f, 100f); wr.anchoredPosition = new Vector2(0, 20f + 400f * KitRoleCard.RefH / KitRoleCard.RefW / 2f + 80f);
+            var wt = who.GetComponent<TMPro.TextMeshProUGUI>(); if (th != null && th.fontLalezar != null) wt.font = th.fontLalezar;
+            wt.fontSize = 60; wt.color = new Color32(0xF5, 0xD0, 0x70, 255); wt.alignment = TMPro.TextAlignmentOptions.Midline; wt.raycastTarget = false;
+            wt.enableAutoSizing = true; wt.fontSizeMax = 60; wt.fontSizeMin = 30; wt.overflowMode = TMPro.TextOverflowModes.Ellipsis;
+            string name = NameOf != null ? NameOf(seatId) : "";
+            who.AddComponent<ArabicText>().Text = (string.IsNullOrEmpty(name) ? def.Name : name + " كان…");
+            var wg = who.AddComponent<CanvasGroup>(); wg.alpha = 0f; wg.blocksRaycasts = false;
+            float turn = 0.35f;
+            for (float t = 0; t < turn; t += Dt) { float k = t / turn; cg.alpha = k; wg.alpha = k; rt.localScale = Vector3.one * Mathf.Lerp(0.8f, 1f, Ease(k)); yield return null; }
+            cg.alpha = 1f; wg.alpha = 1f; rt.localScale = Vector3.one;
+            card.SetFace(KitRoleCard.Face.Front, Application.isPlaying);      // face down, then it turns over
+            float stay = Mathf.Max(1.2f, hold - turn - 0.4f);
+            for (float t = 0; t < stay; t += Dt) yield return null;
+            for (float t = 0; t < 0.4f; t += Dt) { cg.alpha = 1f - t / 0.4f; wg.alpha = cg.alpha; yield return null; }
+            Destroy(card.gameObject); Destroy(who);
         }
 
         // ------------------------------------------------------------------ the stamp

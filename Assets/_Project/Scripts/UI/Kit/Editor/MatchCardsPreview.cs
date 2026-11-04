@@ -110,7 +110,7 @@ namespace MafiaNight.UI.Kit.Editor
                 {
                     string tag = size.x + "x" + size.y;
                     var cam = Camera.main; var rt0 = new RenderTexture(size.x, size.y, 24); cam.targetTexture = rt0; cam.Render(); Canvas.ForceUpdateCanvases(); cam.targetTexture = null; rt0.Release();
-                    foreach (var kind in new[] { "shot", "shield", "stamp_out" })
+                    foreach (var kind in new[] { "shot", "shield", "stamp_out", "card_flip" })
                     {
                         var seats = new List<SeatSpec>
                         {
@@ -128,8 +128,8 @@ namespace MafiaNight.UI.Kit.Editor
                         {
                             var zoom = fxGo.Routine("zoom_seat", "b", 9f);
                             Step(16, zoom);                                                       // the camera is close
-                            var effect = fxGo.Routine(kind, "b", 9f);
-                            Step(kind == "shot" ? 9 : kind == "shield" ? 26 : 14, zoom, effect);
+                            fxGo.NameOf = id => "ريم"; var effect = fxGo.Routine(kind, "b", 9f, "doctor");
+                            Step(kind == "shot" ? 9 : kind == "shield" ? 26 : kind == "card_flip" ? 14 : 14, zoom, effect);
                             log += Snap(System.IO.Path.Combine(folder, "moment-" + kind + "-" + tag + ".png"), size.x, size.y);
                         }
                         finally { Object.DestroyImmediate(fxGo.gameObject); }

@@ -28,6 +28,63 @@ namespace MafiaNight.Tests
             Assert.AreEqual(RoleCards.All.Length, RoleCards.All.Select(d => d.Id).Distinct().Count(), "an id is used twice");
         }
 
+        // ------------------------------------------------------------------ the store's card shelves
+
+        private static readonly (string shelf, MafiaNight.Data.Store.StoreArtKind art, string[] layers)[] Shelves =
+        {
+            (CardWear.Frames, MafiaNight.Data.Store.StoreArtKind.CardFrame, CardStyles.Frames),
+            (CardWear.Backgrounds, MafiaNight.Data.Store.StoreArtKind.CardBackground, CardStyles.Backgrounds),
+            (CardWear.Motions, MafiaNight.Data.Store.StoreArtKind.CardMotion, CardStyles.Motions),
+            (CardWear.Backs, MafiaNight.Data.Store.StoreArtKind.CardBack, CardStyles.Backs),
+        };
+
+        [Test]
+        public void EveryLayerOfACardIsSoldOnItsShelf_TheFirstIsFree_AndTheEpicOnesCostGems()
+        {
+            var catalog = MafiaNight.Data.Store.StoreCatalog.Current;
+            Assert.IsNotNull(catalog, "the store catalog asset is missing");
+            foreach (var (shelf, art, layers) in Shelves)
+            {
+                var cat = catalog.GetCategory(shelf);
+                Assert.IsNotNull(cat, shelf + ": no tab for this shelf"); Assert.IsTrue(cat.equippable, shelf + ": one worn at a time");
+                var items = catalog.ItemsIn(shelf);
+                foreach (var layer in layers) Assert.IsTrue(items.Any(i => i.layerId == layer), shelf + ": nothing sells the layer " + layer);
+                foreach (var it in items)
+                {
+                    Assert.AreEqual(art, it.artKind, it.id);
+                    Assert.Contains(it.layerId, layers, it.id + ": a layer the card does not know");
+                    Assert.IsTrue(it.price > 0 ^ it.gemPrice > 0 || it.ownedByDefault, it.id + ": priced in Coins or in Gems, not both, unless it is the free one");
+                    if (it.ownedByDefault) Assert.AreEqual(0, it.price + it.gemPrice, it.id + ": the free item has no price");
+                }
+                Assert.AreEqual(1, items.Count(i => i.ownedByDefault), shelf + ": exactly one free item, worn from the start");
+                Assert.IsTrue(items.Single(i => i.ownedByDefault).layerId == layers[0], shelf + ": the free item is the card's default layer");
+            }
+            Assert.IsNull(catalog.GetCategory("cards"), "the old table-cards shelf was replaced by the card shelves");
+        }
+
+        [Test]
+        public void WhatAPlayerWearsOnTheShelvesBecomesTheLayersOfHisCard_AndTravelsAsOneString()
+        {
+            var catalog = MafiaNight.Data.Store.StoreCatalog.Current;
+            var none = CardWear.Of(shelf => null, catalog);
+            Assert.AreEqual("brass|leather|none|diamond", CardWear.Encode(none), "wearing nothing is the free layers");
+            var worn = CardWear.Of(shelf => shelf == CardWear.Frames ? "cframe_gold" : shelf == CardWear.Backs ? "cback_skull" : shelf == CardWear.Backgrounds ? "cbg_fire" : "cmo_embers", catalog);
+            Assert.AreEqual("gold|fire|embers|skull", CardWear.Encode(worn));
+            var back = CardWear.Decode(CardWear.Encode(worn));
+            Assert.AreEqual("gold", back.Frame); Assert.AreEqual("fire", back.Background); Assert.AreEqual("embers", back.Motion); Assert.AreEqual("skull", back.Back);
+            Assert.AreEqual("brass|leather|none|diamond", CardWear.Encode(CardWear.Decode("gold|from-the-future|none|diamond|extra")), "a string this client does not understand is the free layers");
+            Assert.AreEqual("gold|leather|none|diamond", CardWear.Encode(CardWear.Decode("gold|a-new-background|none|diamond")), "an unknown layer falls back alone");
+            Assert.AreEqual("brass|leather|none|diamond", CardWear.Encode(CardWear.Decode(null)));
+        }
+
+        [Test]
+        public void ARoomMemberCarriesTheCardWear_ForTheTable()
+        {
+            var m = new MafiaNight.Data.Rooms.RoomMember { CardLayers = "silver|velvet|shine|rose" };
+            Assert.AreEqual("rose", CardWear.Decode(m.CardLayers).Back);
+            Assert.AreEqual("", new MafiaNight.Data.Rooms.RoomMember().CardLayers, "a member who wears nothing sends nothing");
+        }
+
         [Test]
         public void AnUnknownLayerFallsBackToTheFreeOne_SoAnOldClientNeverBreaksOnANewItem()
         {

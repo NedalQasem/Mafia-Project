@@ -337,7 +337,7 @@ namespace MafiaNight.UI.Kit
         /// <summary>A card was pressed (a role that player may know): the screen shows it big.</summary>
         public Action<SeatSpec> CardPressed;
 
-        private const float CardWidthUnits = 66f, AvatarX = 85.85f, AvatarY = -60.92f, AvatarHalf = 60.9f;
+        private const float CardWidthUnits = 74f, AvatarX = 85.85f, AvatarY = -60.92f, AvatarHalf = 60.9f;
 
         /// <summary>
         /// The little card beside a player (Docs/mockups/role-cards.html, section 2): his role's face when this player may know it (his own, his mafia mates', the ones who are out), otherwise

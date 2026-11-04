@@ -17,6 +17,10 @@ namespace MafiaNight.Data.Store
         CardBack,       // back of the playing cards
         Title,          // title plate under the name
         CoinPack,       // real-money coin pack
+        CardFrame,      // the frame of a role card (what the player wears; see CardLayers)
+        CardBackground, // the background of a role card
+        CardMotion,     // the motion over a role card (shine, embers, smoke)
+        // CardBack (above) is also the back of a role card now: the one everybody sees while a role is secret
     }
 
     public enum StoreCategoryKind
@@ -56,6 +60,12 @@ namespace MafiaNight.Data.Store
         [Tooltip("Title plates: the words shown under the player's name.")]
         public string titleText;
 
+        [Header("Role cards")]
+        [Tooltip("Role card layers: the id of the layer this item puts on the card (frame brass/gold/silver/black, background leather/velvet/..., motion none/shine/..., back diamond/lattice/...).")]
+        public string layerId;
+        [Tooltip("Price in Gems when it is above 0 (the rare, epic ones); the Coin price is then ignored.")]
+        public int gemPrice;
+
         [Header("Coin packs (real money)")]
         [Tooltip("Shown instead of a coin price, e.g. \"٠٫٩٩ $\".")]
         public string priceText;
@@ -64,6 +74,9 @@ namespace MafiaNight.Data.Store
         public int coinsGranted;
 
         public bool IsPack => artKind == StoreArtKind.CoinPack;
+        public bool IsGem => gemPrice > 0;
+        /// <summary>One of the four layers of a role card (the store's card shelves).</summary>
+        public bool IsCardLayer => artKind == StoreArtKind.CardFrame || artKind == StoreArtKind.CardBackground || artKind == StoreArtKind.CardMotion || artKind == StoreArtKind.CardBack;
     }
 
     [Serializable]

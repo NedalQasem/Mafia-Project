@@ -142,6 +142,8 @@ namespace MafiaNight.Tests
             Table(Phase.Dawn, "ali");
             client.Apply(new WireMessage(Msg.Dawn, "ali", "0", "ali", "Civilian", "sara", "omar", "Civilian"));
             Assert.AreEqual("ali", played[0].SeatId, "the kill is about the victim");
+            Assert.AreEqual("civilian", played[0].RoleId, "the table turns his card over");
+            Assert.AreEqual("civilian", played[1].RoleId, "and the card of the one the sniper hit");
             Assert.AreEqual("omar", played[1].SeatId, "the shot is about the one it hit");
             Assert.AreEqual("sara", played[2].SeatId, "the silence is about the silenced");
             played.Clear();
@@ -151,6 +153,9 @@ namespace MafiaNight.Tests
             Table(Phase.Verdict, "ali");
             client.Apply(new WireMessage(Msg.Verdict, "ali", "Civilian", "3", "0"));
             Assert.AreEqual("ali", played.Last().SeatId, "the stamp is about the one voted out");
+            Assert.AreEqual("civilian", played.Last().RoleId);
+            Assert.AreEqual("sheikh", CueCatalog.CardIdOf(MafiaNight.MatchRules.Role.Sheriff), "the Sheriff's card is the Elder");
+            foreach (MafiaNight.MatchRules.Role r in System.Enum.GetValues(typeof(MafiaNight.MatchRules.Role))) Assert.IsNotNull(MafiaNight.Data.Cards.RoleCards.Find(CueCatalog.CardIdOf(r)), r + ": no card");
             played.Clear();
             client.Apply(new WireMessage(Msg.Dawn, "", "0", "", "", ""));
             Assert.AreEqual("", played.Single().SeatId, "a quiet night is about nobody");

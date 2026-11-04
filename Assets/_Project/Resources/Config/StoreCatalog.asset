@@ -88,11 +88,46 @@ MonoBehaviour:
     perRow: 3
     equippable: 0
     hidden: 0
-  - id: cards
+  - id: card_frames
     kind: 0
-    tabName: "\u0623\u0648\u0631\u0627\u0642 \u0627\u0644\u0637\u0627\u0648\u0644\u0629"
-    headTitle: "\u0623\u0648\u0631\u0627\u0642 \u0627\u0644\u0637\u0627\u0648\u0644\u0629"
-    hint: "\u0634\u0643\u0644 \u0638\u0647\u0631 \u0627\u0644\u0648\u0631\u0642"
+    tabName: "\u0625\u0637\u0627\u0631\u0627\u062A \u0627\u0644\u0643\u0631\u0648\u062A"
+    headTitle: "\u0625\u0637\u0627\u0631\u0627\u062A \u0627\u0644\u0643\u0631\u0648\u062A"
+    hint: "\u062D\u0648\u0644 \u0643\u0631\u062A \u062F\u0648\u0631\u0643\u060C \u0648\u0643\u0644
+      \u0627\u0644\u0644\u0627\u0639\u0628\u064A\u0646 \u0628\u064A\u0634\u0648\u0641\u0648\u0647"
+    builtInIcon: 7
+    icon: {fileID: 0}
+    perRow: 3
+    equippable: 1
+    hidden: 0
+  - id: card_bgs
+    kind: 0
+    tabName: "\u062E\u0644\u0641\u064A\u0627\u062A \u0627\u0644\u0643\u0631\u0648\u062A"
+    headTitle: "\u062E\u0644\u0641\u064A\u0627\u062A \u0627\u0644\u0643\u0631\u0648\u062A"
+    hint: "\u062E\u0644\u0641 \u0635\u0648\u0631\u0629 \u062F\u0648\u0631\u0643 \u0639\u0644\u0649
+      \u0627\u0644\u0643\u0631\u062A"
+    builtInIcon: 7
+    icon: {fileID: 0}
+    perRow: 3
+    equippable: 1
+    hidden: 0
+  - id: card_motions
+    kind: 0
+    tabName: "\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0643\u0631\u0648\u062A"
+    headTitle: "\u062D\u0631\u0643\u0627\u062A \u0627\u0644\u0643\u0631\u0648\u062A"
+    hint: "\u062D\u0631\u0643\u0629 \u062E\u0641\u064A\u0641\u0629 \u0641\u0648\u0642
+      \u0627\u0644\u0643\u0631\u062A"
+    builtInIcon: 7
+    icon: {fileID: 0}
+    perRow: 3
+    equippable: 1
+    hidden: 0
+  - id: card_backs
+    kind: 0
+    tabName: "\u0638\u0647\u0631 \u0627\u0644\u0643\u0631\u062A"
+    headTitle: "\u0638\u0647\u0648\u0631 \u0627\u0644\u0643\u0631\u0648\u062A"
+    hint: "\u0627\u0644\u0644\u064A \u0628\u064A\u0634\u0648\u0641\u0647 \u0627\u0644\u0643\u0644
+      \u0648\u0643\u0631\u062A\u0643 \u0645\u0642\u0644\u0648\u0628 (\u062F\u0648\u0631\u0643
+      \u0633\u0631\u064A)"
     builtInIcon: 7
     icon: {fileID: 0}
     perRow: 3
@@ -136,6 +171,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -155,6 +192,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -174,6 +213,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -193,6 +234,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -212,6 +255,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -231,6 +276,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -250,6 +297,8 @@ MonoBehaviour:
     tint: {r: 0.41568628, g: 0.2901961, b: 0.21960784, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -269,6 +318,8 @@ MonoBehaviour:
     tint: {r: 0.65882355, g: 0.4392157, b: 0.22745098, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -288,6 +339,8 @@ MonoBehaviour:
     tint: {r: 0.22745098, g: 0.2901961, b: 0.47843137, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -307,6 +360,8 @@ MonoBehaviour:
     tint: {r: 0.16470589, g: 0.3529412, b: 0.47843137, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -326,6 +381,8 @@ MonoBehaviour:
     tint: {r: 0.5411765, g: 0.22745098, b: 0.16470589, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -345,6 +402,8 @@ MonoBehaviour:
     tint: {r: 0.41568628, g: 0.2901961, b: 0.21960784, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -364,6 +423,8 @@ MonoBehaviour:
     tint: {r: 0.22745098, g: 0.3137255, b: 0.40784314, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -382,6 +443,8 @@ MonoBehaviour:
     tint: {r: 0.5411765, g: 0.2901961, b: 0.22745098, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -401,6 +464,8 @@ MonoBehaviour:
     tint: {r: 0.72156864, g: 0.53333336, b: 0.22745098, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -420,6 +485,8 @@ MonoBehaviour:
     tint: {r: 0.16470589, g: 0.3529412, b: 0.47843137, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -439,6 +506,8 @@ MonoBehaviour:
     tint: {r: 0.41568628, g: 0.22745098, b: 0.41568628, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -458,6 +527,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -477,6 +548,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -496,6 +569,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -515,6 +590,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -534,6 +611,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -553,6 +632,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -572,6 +653,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -591,6 +674,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -610,6 +695,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -629,6 +716,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -648,6 +737,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -667,6 +758,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -685,6 +778,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -704,6 +799,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -722,6 +819,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -740,6 +839,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -758,81 +859,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
-    priceText: 
-    productId: 
-    coinsGranted: 0
-  - id: card_crimson
-    categoryId: cards
-    nameAr: "\u0638\u0647\u0631 \u0642\u0631\u0645\u0632\u064A"
-    descAr: "\u0648\u0631\u0642 \u0628\u0638\u0647\u0631 \u0642\u0631\u0645\u0632\u064A
-      \u0645\u0632\u062E\u0631\u0641."
-    price: 350
-    rarity: 0
-    lockRank: 0
-    isNew: 0
-    ownedByDefault: 1
-    artKind: 6
-    variant: 0
-    sprite: {fileID: 0}
-    tint: {r: 0.7529412, g: 0.19607843, b: 0.22745098, a: 1}
-    textColor: {r: 1, g: 1, b: 1, a: 1}
-    titleText: 
-    priceText: 
-    productId: 
-    coinsGranted: 0
-  - id: card_blue_night
-    categoryId: cards
-    nameAr: "\u0644\u064A\u0644 \u0623\u0632\u0631\u0642"
-    descAr: "\u062E\u0637\u0648\u0637 \u0631\u0641\u064A\u0639\u0629 \u0639\u0644\u0649
-      \u0623\u0632\u0631\u0642 \u062F\u0627\u0643\u0646."
-    price: 500
-    rarity: 1
-    lockRank: 0
-    isNew: 0
-    ownedByDefault: 0
-    artKind: 6
-    variant: 0
-    sprite: {fileID: 0}
-    tint: {r: 0.22745098, g: 0.3529412, b: 0.5411765, a: 1}
-    textColor: {r: 1, g: 1, b: 1, a: 1}
-    titleText: 
-    priceText: 
-    productId: 
-    coinsGranted: 0
-  - id: card_club_green
-    categoryId: cards
-    nameAr: "\u0623\u062E\u0636\u0631 \u0627\u0644\u0646\u0627\u062F\u064A"
-    descAr: "\u0623\u062E\u0636\u0631 \u062C\u0648\u062E \u0628\u0644\u0645\u0633\u0629
-      \u0646\u062D\u0627\u0633."
-    price: 700
-    rarity: 2
-    lockRank: 0
-    isNew: 0
-    ownedByDefault: 0
-    artKind: 6
-    variant: 0
-    sprite: {fileID: 0}
-    tint: {r: 0.18431373, g: 0.47843137, b: 0.32156864, a: 1}
-    textColor: {r: 1, g: 1, b: 1, a: 1}
-    titleText: 
-    priceText: 
-    productId: 
-    coinsGranted: 0
-  - id: card_coal
-    categoryId: cards
-    nameAr: "\u0641\u062D\u0645"
-    descAr: "\u0623\u0633\u0648\u062F \u0643\u0627\u0644\u0644\u064A\u0644."
-    price: 700
-    rarity: 2
-    lockRank: 0
-    isNew: 1
-    ownedByDefault: 0
-    artKind: 6
-    variant: 0
-    sprite: {fileID: 0}
-    tint: {r: 0.22745098, g: 0.22745098, b: 0.23529412, a: 1}
-    textColor: {r: 1, g: 1, b: 1, a: 1}
-    titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -851,6 +879,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: "\u0643\u0628\u064A\u0631 \u0627\u0644\u062D\u0627\u0631\u0629"
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -869,6 +899,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: "\u0635\u0627\u062D\u0628 \u0643\u0644\u0645\u0629"
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -887,6 +919,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: "\u0645\u0634\u0628\u0648\u0647"
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -906,6 +940,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: "\u0627\u0644\u0623\u0633\u062A\u0627\u0630"
+    layerId: 
+    gemPrice: 0
     priceText: 
     productId: 
     coinsGranted: 0
@@ -925,6 +961,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: "\u0660\u066B\u0669\u0669 $"
     productId: pack_small
     coinsGranted: 500
@@ -944,6 +982,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: "\u0661\u066B\u0669\u0669 $"
     productId: pack_bag
     coinsGranted: 1200
@@ -963,6 +1003,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: "\u0664\u066B\u0669\u0669 $"
     productId: pack_chest
     coinsGranted: 3500
@@ -983,9 +1025,397 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
     textColor: {r: 1, g: 1, b: 1, a: 1}
     titleText: 
+    layerId: 
+    gemPrice: 0
     priceText: "\u0661\u0661\u066B\u0669\u0669 $"
     productId: pack_vault
     coinsGranted: 10000
+  - id: cframe_brass
+    categoryId: card_frames
+    nameAr: "\u0646\u062D\u0627\u0633\u064A"
+    descAr: "\u0625\u0637\u0627\u0631 \u0646\u062D\u0627\u0633\u064A \u0628\u0633\u064A\u0637\u060C
+      \u0645\u062C\u0627\u0646\u064A \u0644\u0644\u0643\u0644."
+    price: 0
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 9
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: brass
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cframe_silver
+    categoryId: card_frames
+    nameAr: "\u0641\u0636\u064A"
+    descAr: "\u0625\u0637\u0627\u0631 \u0641\u0636\u064A \u0644\u0627\u0645\u0639."
+    price: 3500
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 9
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: silver
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cframe_gold
+    categoryId: card_frames
+    nameAr: "\u0630\u0647\u0628\u064A"
+    descAr: "\u0625\u0637\u0627\u0631 \u0630\u0647\u0628\u064A \u0645\u0644\u0643\u064A."
+    price: 6000
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 9
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: gold
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cframe_black
+    categoryId: card_frames
+    nameAr: "\u0623\u0633\u0648\u062F"
+    descAr: "\u0625\u0637\u0627\u0631 \u0623\u0633\u0648\u062F \u0628\u062D\u0648\u0627\u0641
+      \u0630\u0647\u0628\u064A\u0629."
+    price: 0
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 9
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: black
+    gemPrice: 160
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cbg_leather
+    categoryId: card_bgs
+    nameAr: "\u062C\u0644\u062F"
+    descAr: "\u062E\u0644\u0641\u064A\u0629 \u062C\u0644\u062F\u060C \u0645\u062C\u0627\u0646\u064A\u0629
+      \u0644\u0644\u0643\u0644."
+    price: 0
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 10
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: leather
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cbg_velvet
+    categoryId: card_bgs
+    nameAr: "\u0642\u0637\u064A\u0641\u0629 \u0642\u0631\u0645\u0632\u064A\u0629"
+    descAr: "\u0642\u0637\u064A\u0641\u0629 \u062D\u0645\u0631\u0627\u0621 \u063A\u0627\u0645\u0642\u0629."
+    price: 4000
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 10
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: velvet
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cbg_steel
+    categoryId: card_bgs
+    nameAr: "\u0641\u0648\u0644\u0627\u0630"
+    descAr: "\u0641\u0648\u0644\u0627\u0630 \u0628\u0627\u0631\u062F."
+    price: 3000
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 10
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: steel
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cbg_carbon
+    categoryId: card_bgs
+    nameAr: "\u0643\u0631\u0628\u0648\u0646"
+    descAr: "\u0623\u0633\u0648\u062F \u0643\u0631\u0628\u0648\u0646\u064A."
+    price: 0
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 10
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: carbon
+    gemPrice: 90
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cbg_night
+    categoryId: card_bgs
+    nameAr: "\u0644\u064A\u0644"
+    descAr: "\u0644\u064A\u0644 \u0623\u0632\u0631\u0642 \u0639\u0645\u064A\u0642."
+    price: 0
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 10
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: night
+    gemPrice: 110
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cbg_fire
+    categoryId: card_bgs
+    nameAr: "\u0646\u0627\u0631"
+    descAr: "\u0644\u0647\u0628 \u0645\u0646 \u062A\u062D\u062A."
+    price: 0
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 10
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: fire
+    gemPrice: 180
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cmo_none
+    categoryId: card_motions
+    nameAr: "\u0628\u062F\u0648\u0646"
+    descAr: "\u0643\u0631\u062A \u062B\u0627\u0628\u062A\u060C \u0645\u062C\u0627\u0646\u064A
+      \u0644\u0644\u0643\u0644."
+    price: 0
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 11
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: none
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cmo_shine
+    categoryId: card_motions
+    nameAr: "\u0644\u0645\u0639\u0627\u0646"
+    descAr: "\u0644\u0645\u0639\u0629 \u062A\u0639\u062F\u0651\u064A \u0639\u0644\u0649
+      \u0627\u0644\u0643\u0631\u062A."
+    price: 5000
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 11
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: shine
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cmo_smoke
+    categoryId: card_motions
+    nameAr: "\u062F\u062E\u0627\u0646"
+    descAr: "\u062F\u062E\u0627\u0646 \u062E\u0641\u064A\u0641."
+    price: 0
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 11
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: smoke
+    gemPrice: 120
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cmo_embers
+    categoryId: card_motions
+    nameAr: "\u062C\u0645\u0631 \u0645\u062A\u0637\u0627\u064A\u0631"
+    descAr: "\u062C\u0645\u0631 \u064A\u0637\u064A\u0631 \u0641\u0648\u0642 \u0627\u0644\u0643\u0631\u062A."
+    price: 0
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 11
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: embers
+    gemPrice: 200
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cback_diamond
+    categoryId: card_backs
+    nameAr: "\u0623\u0644\u0645\u0627\u0633\u0629"
+    descAr: "\u0638\u0647\u0631 \u0627\u0644\u0643\u0631\u062A \u0627\u0644\u0623\u0633\u0627\u0633\u064A\u060C
+      \u0645\u062C\u0627\u0646\u064A \u0644\u0644\u0643\u0644."
+    price: 0
+    rarity: 0
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 1
+    artKind: 6
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: diamond
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cback_lattice
+    categoryId: card_backs
+    nameAr: "\u0645\u0634\u0628\u0651\u0643"
+    descAr: "\u0646\u0642\u0634 \u0645\u0634\u0628\u0651\u0643 \u062F\u0642\u064A\u0642."
+    price: 3000
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 6
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: lattice
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cback_rose
+    categoryId: card_backs
+    nameAr: "\u0648\u0631\u062F\u0629"
+    descAr: "\u0648\u0631\u062F\u0629 \u0628\u0646\u0642\u0634 \u0630\u0647\u0628\u064A."
+    price: 4500
+    rarity: 1
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 6
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: rose
+    gemPrice: 0
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cback_pistols
+    categoryId: card_backs
+    nameAr: "\u0645\u0633\u062F\u0633\u0627\u0646 \u0645\u062A\u0642\u0627\u0637\u0639\u0627\u0646"
+    descAr: "\u0645\u0633\u062F\u0633\u0627\u0646 \u0645\u062A\u0642\u0627\u0637\u0639\u0627\u0646."
+    price: 0
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 6
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: pistols
+    gemPrice: 100
+    priceText: 
+    productId: 
+    coinsGranted: 0
+  - id: cback_skull
+    categoryId: card_backs
+    nameAr: "\u062C\u0645\u062C\u0645\u0629 \u0628\u0642\u0628\u0639\u0629"
+    descAr: "\u062C\u0645\u062C\u0645\u0629 \u0628\u0642\u0628\u0639\u0629 \u0645\u0627\u0641\u064A\u0627."
+    price: 0
+    rarity: 2
+    lockRank: 0
+    isNew: 0
+    ownedByDefault: 0
+    artKind: 6
+    variant: 0
+    sprite: {fileID: 0}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    titleText: 
+    layerId: skull
+    gemPrice: 140
+    priceText: 
+    productId: 
+    coinsGranted: 0
   ads:
   - id: ad_ember
     enabled: 1

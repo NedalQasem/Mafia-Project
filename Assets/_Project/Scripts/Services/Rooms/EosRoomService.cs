@@ -26,7 +26,7 @@ namespace MafiaNight.Services.Rooms
         private const string KOwnerName = "owner_name", KOwnerLevel = "owner_level", KOwnerRank = "owner_rank", KOwnerPf = "owner_pf";
         private const string KLocked = "locked", KInMatch = "in_match", KChat = "chat", KBackground = "bg", KCreated = "created", KMicSeats = "mic_seats", KMicMode = "mic_mode", KOfficial = "official";
         // member attributes
-        private const string MName = "name", MRank = "rank", MLevel = "level", MPf = "pf", MKeeper = "keeper", MFrame = "frame", MTitle = "title", MBubble = "bubble";
+        private const string MName = "name", MRank = "rank", MLevel = "level", MPf = "pf", MKeeper = "keeper", MFrame = "frame", MTitle = "title", MBubble = "bubble", MCards = "cards";
 
         private IEosPlatform eos;
         private IPlayerProfileService profile;
@@ -183,7 +183,7 @@ namespace MafiaNight.Services.Rooms
                     IsHost = id == hostPuid,
                     IsMe = id == mine,
                     IsKeeper = MemberInt(d, puid, MKeeper, 0) == 1,
-                    FrameId = MemberStr(d, puid, MFrame) ?? "", TitleId = MemberStr(d, puid, MTitle) ?? "", BubbleId = MemberStr(d, puid, MBubble) ?? "",
+                    FrameId = MemberStr(d, puid, MFrame) ?? "", TitleId = MemberStr(d, puid, MTitle) ?? "", BubbleId = MemberStr(d, puid, MBubble) ?? "", CardLayers = MemberStr(d, puid, MCards) ?? "",
                 });
             }
             // host first, everybody else keeps the join order (a hand-over picks the next one in line)
@@ -207,6 +207,7 @@ namespace MafiaNight.Services.Rooms
             AddMemberStr(m, MFrame, wear?.GetEquipped("frames") ?? "");
             AddMemberStr(m, MTitle, wear?.GetEquipped("titles") ?? "");
             AddMemberStr(m, MBubble, wear?.GetEquipped("bubbles") ?? "");
+            AddMemberStr(m, MCards, MafiaNight.Data.Cards.CardWear.Encode(MafiaNight.Data.Cards.CardWear.Of(wear != null ? (System.Func<string, string>)wear.GetEquipped : null, MafiaNight.Data.Store.StoreCatalog.Current)));
         }
 
         // ------------------------------------------------------------------------------------------ list / search

@@ -38,7 +38,7 @@ namespace MafiaNight.UI.Kit.Editor
             Cat(cat, "bubbles", StoreCategoryKind.Items, "فقاعات الدردشة", "فقاعات الدردشة", "شكل رسائلك", 4, 2, true);
             Cat(cat, "entry", StoreCategoryKind.Items, "فقاعات الدخول", "فقاعات الدخول", "ما يظهر للجميع عند دخولك الروم", 5, 2, true);
             Cat(cat, "gifts", StoreCategoryKind.Items, "الهدايا", "هدايا", "أرسلها للاعبين بالغرفة", 6, 3, false);
-            Cat(cat, "cards", StoreCategoryKind.Items, "أوراق الطاولة", "أوراق الطاولة", "شكل ظهر الورق", 7, 3, true);
+            AddCardCategories(cat);
             Cat(cat, "titles", StoreCategoryKind.Items, "الألقاب", "الألقاب", "تظهر تحت اسمك", 8, 3, true);
             Cat(cat, "coins", StoreCategoryKind.Items, "الكوينز", "شحن الكوينز", "للهدايا والزينة فقط", 9, 2, false);
 
@@ -88,11 +88,8 @@ namespace MafiaNight.UI.Kit.Editor
             Item(cat, "gifts", "gift_rose", "وردة حمراء", StoreArtKind.Gift, 4, 800, ItemRarity.Epic, "بلا كلام.");
             Item(cat, "gifts", "gift_crown", "التاج", StoreArtKind.Gift, 5, 5000, ItemRarity.Legendary, "هدية الكبار فقط.", lockRank: 7);
 
-            // ---- card backs
-            Item(cat, "cards", "card_crimson", "ظهر قرمزي", StoreArtKind.CardBack, 0, 350, ItemRarity.Common, "ورق بظهر قرمزي مزخرف.", own: true, tint: 0xc0323a);
-            Item(cat, "cards", "card_blue_night", "ليل أزرق", StoreArtKind.CardBack, 0, 500, ItemRarity.Rare, "خطوط رفيعة على أزرق داكن.", tint: 0x3a5a8a);
-            Item(cat, "cards", "card_club_green", "أخضر النادي", StoreArtKind.CardBack, 0, 700, ItemRarity.Epic, "أخضر جوخ بلمسة نحاس.", tint: 0x2f7a52);
-            Item(cat, "cards", "card_coal", "فحم", StoreArtKind.CardBack, 0, 700, ItemRarity.Epic, "أسود كالليل.", isNew: true, tint: 0x3a3a3c);
+            // ---- role cards: frame, background, motion and back (Docs/mockups/role-cards.html, section 3)
+            AddCardItems(cat);
 
             // ---- titles
             Item(cat, "titles", "title_boss", "كبير الحارة", StoreArtKind.Title, 0, 900, ItemRarity.Legendary, "لقب بلوحة نحاس.", lockRank: 4, title: "كبير الحارة");
@@ -119,6 +116,66 @@ namespace MafiaNight.UI.Kit.Editor
             EditorUtility.SetDirty(cat);
             AssetDatabase.SaveAssets();
             Debug.Log($"StoreCatalog written: {cat.categories.Count} tabs, {cat.items.Count} items, {cat.ads.Count} ads, {cat.rankSets.Count} rank sets");
+        }
+
+        // ------------------------------------------------------------------------------------------------------------ role cards
+
+        /// <summary>The four shelves of the role cards (the mockup's tabs): frames, backgrounds, motions, backs. Every one equips one item at a time.</summary>
+        private static void AddCardCategories(StoreCatalog cat)
+        {
+            Cat(cat, "card_frames", StoreCategoryKind.Items, "إطارات الكروت", "إطارات الكروت", "حول كرت دورك، وكل اللاعبين بيشوفوه", 7, 3, true);
+            Cat(cat, "card_bgs", StoreCategoryKind.Items, "خلفيات الكروت", "خلفيات الكروت", "خلف صورة دورك على الكرت", 7, 3, true);
+            Cat(cat, "card_motions", StoreCategoryKind.Items, "حركات الكروت", "حركات الكروت", "حركة خفيفة فوق الكرت", 7, 3, true);
+            Cat(cat, "card_backs", StoreCategoryKind.Items, "ظهر الكرت", "ظهور الكروت", "اللي بيشوفه الكل وكرتك مقلوب (دورك سري)", 7, 3, true);
+        }
+
+        /// <summary>The items of the card shelves with the prices and rarities of the approved mockup (Coins for the rare ones, Gems for the epic ones; the first of each is free and worn from the start).</summary>
+        private static void AddCardItems(StoreCatalog cat)
+        {
+            // id, shelf, name, art, layer, coins, gems, rarity, description
+            Layer(cat, "card_frames", "cframe_brass", "نحاسي", StoreArtKind.CardFrame, "brass", 0, 0, ItemRarity.Common, "إطار نحاسي بسيط، مجاني للكل.", own: true);
+            Layer(cat, "card_frames", "cframe_silver", "فضي", StoreArtKind.CardFrame, "silver", 3500, 0, ItemRarity.Rare, "إطار فضي لامع.");
+            Layer(cat, "card_frames", "cframe_gold", "ذهبي", StoreArtKind.CardFrame, "gold", 6000, 0, ItemRarity.Rare, "إطار ذهبي ملكي.");
+            Layer(cat, "card_frames", "cframe_black", "أسود", StoreArtKind.CardFrame, "black", 0, 160, ItemRarity.Epic, "إطار أسود بحواف ذهبية.");
+
+            Layer(cat, "card_bgs", "cbg_leather", "جلد", StoreArtKind.CardBackground, "leather", 0, 0, ItemRarity.Common, "خلفية جلد، مجانية للكل.", own: true);
+            Layer(cat, "card_bgs", "cbg_velvet", "قطيفة قرمزية", StoreArtKind.CardBackground, "velvet", 4000, 0, ItemRarity.Rare, "قطيفة حمراء غامقة.");
+            Layer(cat, "card_bgs", "cbg_steel", "فولاذ", StoreArtKind.CardBackground, "steel", 3000, 0, ItemRarity.Rare, "فولاذ بارد.");
+            Layer(cat, "card_bgs", "cbg_carbon", "كربون", StoreArtKind.CardBackground, "carbon", 0, 90, ItemRarity.Epic, "أسود كربوني.");
+            Layer(cat, "card_bgs", "cbg_night", "ليل", StoreArtKind.CardBackground, "night", 0, 110, ItemRarity.Epic, "ليل أزرق عميق.");
+            Layer(cat, "card_bgs", "cbg_fire", "نار", StoreArtKind.CardBackground, "fire", 0, 180, ItemRarity.Epic, "لهب من تحت.");
+
+            Layer(cat, "card_motions", "cmo_none", "بدون", StoreArtKind.CardMotion, "none", 0, 0, ItemRarity.Common, "كرت ثابت، مجاني للكل.", own: true);
+            Layer(cat, "card_motions", "cmo_shine", "لمعان", StoreArtKind.CardMotion, "shine", 5000, 0, ItemRarity.Rare, "لمعة تعدّي على الكرت.");
+            Layer(cat, "card_motions", "cmo_smoke", "دخان", StoreArtKind.CardMotion, "smoke", 0, 120, ItemRarity.Epic, "دخان خفيف.");
+            Layer(cat, "card_motions", "cmo_embers", "جمر متطاير", StoreArtKind.CardMotion, "embers", 0, 200, ItemRarity.Epic, "جمر يطير فوق الكرت.");
+
+            Layer(cat, "card_backs", "cback_diamond", "ألماسة", StoreArtKind.CardBack, "diamond", 0, 0, ItemRarity.Common, "ظهر الكرت الأساسي، مجاني للكل.", own: true);
+            Layer(cat, "card_backs", "cback_lattice", "مشبّك", StoreArtKind.CardBack, "lattice", 3000, 0, ItemRarity.Rare, "نقش مشبّك دقيق.");
+            Layer(cat, "card_backs", "cback_rose", "وردة", StoreArtKind.CardBack, "rose", 4500, 0, ItemRarity.Rare, "وردة بنقش ذهبي.");
+            Layer(cat, "card_backs", "cback_pistols", "مسدسان متقاطعان", StoreArtKind.CardBack, "pistols", 0, 100, ItemRarity.Epic, "مسدسان متقاطعان.");
+            Layer(cat, "card_backs", "cback_skull", "جمجمة بقبعة", StoreArtKind.CardBack, "skull", 0, 140, ItemRarity.Epic, "جمجمة بقبعة مافيا.");
+        }
+
+        private static void Layer(StoreCatalog c, string shelf, string id, string name, StoreArtKind art, string layer, int coins, int gems, ItemRarity r, string desc, bool own = false)
+            => c.items.Add(new StoreItemDef { id = id, categoryId = shelf, nameAr = name, descAr = desc, artKind = art, layerId = layer, price = coins, gemPrice = gems, rarity = r, ownedByDefault = own });
+
+        /// <summary>Puts the four card shelves into the existing catalog asset without touching anything else (and drops the old "table cards" shelf they replace).</summary>
+        [MenuItem("Mafia/Store/Add Role Card Shelves")]
+        public static void AddCardShelves()
+        {
+            var cat = AssetDatabase.LoadAssetAtPath<StoreCatalog>(AssetPath);
+            if (cat == null) { Debug.LogError("No StoreCatalog asset yet."); return; }
+            cat.categories.RemoveAll(c => c.id == "cards" || c.id.StartsWith("card_"));
+            cat.items.RemoveAll(i => i.categoryId == "cards" || i.categoryId.StartsWith("card_"));
+            int at = cat.categories.FindIndex(c => c.id == "gifts");
+            var tmp = ScriptableObject.CreateInstance<StoreCatalog>();
+            AddCardCategories(tmp); AddCardItems(tmp);
+            cat.categories.InsertRange(at >= 0 ? at + 1 : cat.categories.Count, tmp.categories);
+            cat.items.AddRange(tmp.items);
+            Object.DestroyImmediate(tmp);
+            EditorUtility.SetDirty(cat); AssetDatabase.SaveAssets();
+            Debug.Log($"Role card shelves added: {cat.categories.Count} tabs, {cat.items.Count} items");
         }
 
         private static Color Hex(int hex) => new Color(((hex >> 16) & 255) / 255f, ((hex >> 8) & 255) / 255f, (hex & 255) / 255f, 1f);
@@ -165,7 +222,7 @@ namespace MafiaNight.UI.Kit.Editor
                 sb.Append("\n    {");
                 sb.Append($"\"ItemId\": {Q(it.id)}, \"ItemClass\": {Q(it.categoryId)}, \"CatalogVersion\": \"Main\", ");
                 sb.Append($"\"DisplayName\": {Q(it.nameAr)}, \"Description\": {Q(it.descAr)}, ");
-                sb.Append($"\"VirtualCurrencyPrices\": {{\"CO\": {it.price}}}, \"RealCurrencyPrices\": {{}}, ");
+                sb.Append(it.IsGem ? $"\"VirtualCurrencyPrices\": {{\"GM\": {it.gemPrice}}}, \"RealCurrencyPrices\": {{}}, " : $"\"VirtualCurrencyPrices\": {{\"CO\": {it.price}}}, \"RealCurrencyPrices\": {{}}, ");
                 sb.Append($"\"Tags\": [{Q(it.categoryId)}, {Q(it.rarity.ToString().ToLowerInvariant())}], \"CustomData\": {Q("{\"lockRank\":" + it.lockRank + "}")}, ");
                 sb.Append(consumable ? "\"IsStackable\": true, \"Consumable\": {\"UsageCount\": 1}, " : "\"IsStackable\": false, ");
                 sb.Append("\"IsTradable\": false, \"IsLimitedEdition\": false, \"InitialLimitedEditionCount\": 0, \"CanBecomeCharacter\": false}");

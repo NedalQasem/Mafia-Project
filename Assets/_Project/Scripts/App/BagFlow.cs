@@ -16,11 +16,11 @@ namespace MafiaNight.App
     public sealed class BagFlow : MonoBehaviour
     {
         // the kinds in the bag and the line under each title (what the item changes)
-        private static readonly string[] Order = { "frames", "titles", "room_bg", "chat_bg", "bubbles", "entry", "cards" };
+        private static readonly string[] Order = { "frames", "titles", "room_bg", "chat_bg", "bubbles", "entry", "card_frames", "card_bgs", "card_motions", "card_backs" };
         private static readonly Dictionary<string, string> Hints = new Dictionary<string, string>
         {
             { "frames", "حول صورتك بكل غرفة" }, { "titles", "تحت اسمك" }, { "room_bg", "لما تفتح غرفة" }, { "chat_bg", "وراء رسايلك" },
-            { "bubbles", "شكل رسايلك" }, { "entry", "لما تدخل غرفة" }, { "cards", "ظهر الورق بالمباراة" },
+            { "bubbles", "شكل رسايلك" }, { "entry", "لما تدخل غرفة" }, { "card_frames", "حول كرت دورك" }, { "card_bgs", "خلف صورة الدور" }, { "card_motions", "فوق كرت دورك" }, { "card_backs", "لما يكون دورك سري" },
         };
 
         private KitBagScreen screen;
