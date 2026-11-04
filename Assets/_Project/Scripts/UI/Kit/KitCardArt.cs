@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace MafiaNight.UI.Kit
 {
-    /// <summary>The small drawings of a role card (Docs/mockups/role-cards.html): the corner ornament, the emblem of each role, the emblem of each card back and the hexagon gem.</summary>
+    /// <summary>The small drawings of a role card (Docs/mockups/role-cards.html): the corner ornament, the emblem of each role and the hexagon gem (the card backs are painted by KitEmblem).</summary>
     public static class KitCardArt
     {
         /// <summary>The gold filigree of a corner, in the 24-unit space of <see cref="KitSvg"/> (the mockup draws it in 36 units).</summary>
@@ -16,18 +16,6 @@ namespace MafiaNight.UI.Kit
                 case "doctor": return "M12 5v14M5 12h14";
                 case "sheikh": return "M12 3l2.6 5.6 6 .7-4.5 4 1.3 6-5.4-3.2-5.4 3.2 1.3-6-4.5-4 6-.7z";
                 default: return "O12 8 4|M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5";
-            }
-        }
-
-        public static string BackEmblem(string backId)
-        {
-            switch (backId)
-            {
-                case "lattice": return "O12 12 9.1|O12 12 7.2|M12 2.9v18.2M2.9 12h18.2M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5|O12 12 2.2";
-                case "rose": return "M12 4.3c-3.4 0-5.8 2.4-5.3 5.3.5 2.4 2.9 3.4 5.3 2.9 2.4.5 4.8-.5 5.3-2.9.5-2.9-1.9-5.3-5.3-5.3z|M12 6.2c-1.4 0-2.4 1-2.2 2.2.2 1.2 1.4 1.7 2.2 1.4 1 .2 2.2-.2 2.2-1.4.2-1.2-.8-2.2-2.2-2.2z|M12 12.5v8.6M12 15.8c-2.4-.5-4.3.5-5.3 2.4 1.9.5 4.3 0 5.3-2.4zM12 17.8c2.4-.5 4.3.5 5.3 2.4-1.9.5-4.3 0-5.3-2.4z";
-                case "pistols": return "M3.4 4.8 16.8 15.8l-1.4 1.9-3.4-1.4-1.4 1.9L2.4 6.7z|M20.6 4.8 7.2 15.8l1.4 1.9 3.4-1.4 1.4 1.9 9.6-11.5z|M12 3.4l1 2.2 2.4.2-1.9 1.4.7 2.4-2.2-1.4-2.2 1.4.7-2.4-1.9-1.4 2.4-.2z";
-                case "skull": return "M5 9c0-2.5 3.4-3.6 7-3.6s7 1.1 7 3.6|M2.5 9.4h19|M7 9.6c-.4 5.2 1.4 7.2 3 8.2V20h4v-2.2c1.6-1 3.4-3 3-8.2|O9.3 13 1.4|O14.7 13 1.4|M12 14.8l-.7 1.6h1.4z|M10.6 19v1.4M12 19v1.4M13.4 19v1.4";
-                default: return "M12 2 22 12 12 22 2 12z|M12 6 18 12 12 18 6 12z|M12 9.5 14.5 12 12 14.5 9.5 12z";
             }
         }
 

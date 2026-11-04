@@ -63,6 +63,38 @@ namespace MafiaNight.Tests
         }
 
         [Test]
+        public void EveryCardBackEmblemPaintsOnceIntoACachedSprite_InTheMetalOfTheFrame()
+        {
+            foreach (var id in KitEmblem.Ids)
+            {
+                var a = KitEmblem.Paint(id, new Color32(0xE8, 0xC8, 0x6A, 255));
+                Assert.IsNotNull(a, id);
+                Assert.AreEqual(288, a.texture.width, id);
+                Assert.AreSame(a, KitEmblem.Paint(id, new Color32(0xE8, 0xC8, 0x6A, 255)), id + " is painted again for the same colour");
+                Assert.AreNotSame(a, KitEmblem.Paint(id, new Color32(0xE8, 0xEC, 0xF2, 255)), id + " should take the colour of a silver frame");
+            }
+            foreach (var b in CardStyles.Backs) CollectionAssert.Contains(KitEmblem.Ids, b, "a card back of the store has no emblem painter");
+        }
+
+        [Test]
+        public void TheVerticalTierTextStaysInsideTheEdge_WhateverItsLength()
+        {
+            var canvas = new GameObject("cardTestCanvas3", typeof(RectTransform), typeof(Canvas));
+            try
+            {
+                var longDef = new RoleCardDef { Id = "mafia", Name = "x", English = "X", Ttl = "يقتل بالليل ويخدع الجميع في النهار ويغطي على رفقائه كل مرة", Win = "w", Danger = 4, Lines = new[] { "a", "b" } };
+                var c = KitRoleCard.Create(canvas.transform, longDef, new CardLayers(), 300f);
+                var tier = c.transform.Find("Front/Tier");
+                Assert.IsNotNull(tier, "the tier text is written down the edge");
+                Assert.AreEqual(-90f, Mathf.DeltaAngle(0f, tier.localEulerAngles.z) , 0.01f);
+                var tmp = tier.Find("TierText").GetComponent<TMPro.TMP_Text>();
+                tmp.ForceMeshUpdate();
+                Assert.LessOrEqual(tmp.textBounds.size.x, ((RectTransform)tier).rect.width + 0.5f, "a long tier must shrink, not run off the portrait");
+            }
+            finally { Object.DestroyImmediate(canvas); }
+        }
+
+        [Test]
         public void ACardCanBeFlippedOnlyWhenItHasABack_AndAHiddenOneHasNone()
         {
             var canvas = new GameObject("cardTestCanvas2", typeof(RectTransform), typeof(Canvas));

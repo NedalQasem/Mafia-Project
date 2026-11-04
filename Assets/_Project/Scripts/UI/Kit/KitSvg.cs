@@ -32,13 +32,7 @@ namespace MafiaNight.UI.Kit
         {
             string key = spec + "|" + stroke + "|" + px;
             if (cache.TryGetValue(key, out var hit) && hit != null) return hit;
-            var lines = new List<List<Vector2>>();
-            foreach (var part in spec.Split('|'))
-            {
-                if (part.Length > 0 && part[0] == 'R') { var n = Nums(part.Substring(1)); lines.Add(RoundRect(n[0], n[1], n[2], n[3], n[4])); }
-                else if (part.Length > 0 && part[0] == 'O') { var n = Nums(part.Substring(1)); lines.Add(Circle(n[0], n[1], n[2])); }
-                else lines.AddRange(Path(part));
-            }
+            var lines = Shapes(spec);
             var tex = new Texture2D(px, px, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             var pix = new Color32[px * px];
             float scale = px / 24f, half = stroke * 0.5f;
@@ -60,6 +54,20 @@ namespace MafiaNight.UI.Kit
             var sp = Sprite.Create(tex, new Rect(0, 0, px, px), new Vector2(0.5f, 0.5f), px / 24f);
             cache[key] = sp;
             return sp;
+        }
+
+        /// <summary>The outlines of a spec: parts separated by '|', each a path, <c>R x y w h r</c> (rounded rectangle), <c>O cx cy r</c> (circle) or <c>E cx cy rx ry</c> (ellipse).</summary>
+        public static List<List<Vector2>> Shapes(string spec)
+        {
+            var lines = new List<List<Vector2>>();
+            foreach (var part in spec.Split('|'))
+            {
+                if (part.Length > 0 && part[0] == 'R') { var n = Nums(part.Substring(1)); lines.Add(RoundRect(n[0], n[1], n[2], n[3], n[4])); }
+                else if (part.Length > 0 && part[0] == 'O') { var n = Nums(part.Substring(1)); lines.Add(Circle(n[0], n[1], n[2])); }
+                else if (part.Length > 0 && part[0] == 'E') { var n = Nums(part.Substring(1)); var l = Circle(0, 0, 1); for (int i = 0; i < l.Count; i++) l[i] = new Vector2(n[0] + l[i].x * n[2], n[1] + l[i].y * n[3]); lines.Add(l); }
+                else lines.AddRange(Path(part));
+            }
+            return lines;
         }
 
         private static float SegDist(Vector2 p, Vector2 a, Vector2 b)

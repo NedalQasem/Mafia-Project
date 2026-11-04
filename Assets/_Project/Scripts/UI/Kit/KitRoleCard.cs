@@ -133,6 +133,8 @@ namespace MafiaNight.UI.Kit
             }), Color.white);
             Anchor(shade.rectTransform, Vector2.zero, Vector2.one);
 
+            Tier(root);
+
             // the corner gems (the role's emblem) and the bullets of the danger
             Gem(root, true); Gem(root, false);
             Bullets(root);
@@ -201,8 +203,8 @@ namespace MafiaNight.UI.Kit
             var bg = CardStyles.Background(layers.Background);
             FrameAndPlate(root, fs, bg, false);
             Ornaments(root, fs);
-            float s = 132 * K;
-            var emb = Img(root, "Emblem", KitSvg.Icon(KitCardArt.BackEmblem(layers.Back), 1.4f, 256), fs.Orn);
+            float s = 158 * K;
+            var emb = Img(root, "Emblem", KitEmblem.Paint(layers.Back, (Color)fs.Orn), Color.white);
             emb.rectTransform.anchorMin = emb.rectTransform.anchorMax = new Vector2(0.5f, 0.5f); emb.rectTransform.anchoredPosition = new Vector2(0, 6 * K); emb.rectTransform.sizeDelta = new Vector2(s, s);
             var cap = Txt(root, "Caption", def != null ? "" : "دور سري", th != null ? th.fontLalezar : null, 15 * K, new Color(fs.Orn.r / 255f, fs.Orn.g / 255f, fs.Orn.b / 255f, 0.85f), TextAlignmentOptions.Center);
             PlaceBL(cap.Rt(), 30 * K, 30 * K, (RefW - 60) * K, 22 * K);
@@ -270,6 +272,27 @@ namespace MafiaNight.UI.Kit
             var ic = Img(gem.transform, "Emblem", KitSvg.Icon(KitCardArt.RoleEmblem(def.Id), def.Id == "doctor" ? 4.2f : 2.4f, 64), new Color32(0xFF, 0xF3, 0xD8, 255));
             ic.rectTransform.anchorMin = ic.rectTransform.anchorMax = new Vector2(0.5f, 0.5f); ic.rectTransform.sizeDelta = new Vector2(16 * K, 16 * K); ic.rectTransform.anchoredPosition = new Vector2(0, 2 * K);
             if (!topRight) ic.rectTransform.localRotation = Quaternion.Euler(0, 0, 180);       // the gem is turned, its emblem stays upright
+        }
+
+        /// <summary>What the role does at night, written down the left edge of the portrait (the mockup's vertical text): turned a quarter round, with a shadow under it.</summary>
+        private void Tier(RectTransform root)
+        {
+            if (string.IsNullOrEmpty(def.Ttl)) return;
+            float len = 120 * K, hgt = 13 * K, x = 22 * K, y = 30 * K;
+            var holder = new GameObject("Tier", typeof(RectTransform));
+            var hr = (RectTransform)holder.transform; hr.SetParent(root, false);
+            hr.anchorMin = hr.anchorMax = new Vector2(0, 1); hr.pivot = new Vector2(0, 1);
+            hr.sizeDelta = new Vector2(len, hgt); hr.anchoredPosition = new Vector2(x + hgt, -y); hr.localRotation = Quaternion.Euler(0, 0, -90);
+            for (int i = 0; i < 2; i++)
+            {
+                bool shadow = i == 0;
+                var t = Txt(hr, shadow ? "TierShadow" : "TierText", def.Ttl, th != null ? th.fontBody : null, 9.6f * K, shadow ? new Color(0, 0, 0, 0.85f) : new Color(1, 1, 1, 0.92f), TextAlignmentOptions.MidlineLeft);
+                var tm = t.GetComponent<TMP_Text>();
+                tm.fontStyle = FontStyles.Bold;
+                tm.enableAutoSizing = true; tm.fontSizeMax = 9.6f * K; tm.fontSizeMin = 6f * K; tm.overflowMode = TextOverflowModes.Ellipsis;      // a long line shrinks, then is cut with "…"
+                Anchor(t.Rt(), Vector2.zero, Vector2.one);
+                if (shadow) { t.Rt().offsetMin = new Vector2(1.2f * K, -1.4f * K); t.Rt().offsetMax = new Vector2(1.2f * K, -1.4f * K); }
+            }
         }
 
         private void Bullets(RectTransform root)
