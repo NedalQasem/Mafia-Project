@@ -173,6 +173,91 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 #rp{font-weight:800}
 .dispbox{display:grid;gap:5px;margin-top:2px}.dispbox h3{margin:6px 0 0;font-family:Lalezar;font-weight:400;font-size:.95rem;color:var(--gold)}
 .dispbox p{margin:0}
+
+.seat.lit .av{box-shadow:0 0 0 3px #bfe0ff,0 0 44px 16px #6fa0d6aa!important;transition:box-shadow .6s}
+.scanbox{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;z-index:4}
+.beam{position:absolute;left:-6px;right:-6px;top:-4px;height:3px;background:linear-gradient(90deg,transparent,#bfe0ff,transparent);box-shadow:0 0 10px 3px #6fa0d6;animation:beam 1.1s ease-in-out infinite alternate}
+@keyframes beam{from{top:-4px}to{top:46px}}
+.fp{position:absolute;inset:6px;opacity:.55;background:repeating-radial-gradient(ellipse at 50% 55%,transparent 0 3px,#bfe0ff 3px 4px);border-radius:50%;mix-blend-mode:screen}
+.lensw{position:absolute;left:50%;top:23px;width:92px;height:92px;margin:-46px 0 0 -46px;z-index:9;opacity:0;pointer-events:none;filter:drop-shadow(0 6px 8px #000a)}
+.lensw.go{animation:lensmove 3.2s ease-in-out forwards}
+@keyframes lensmove{0%{opacity:0;transform:translate(-120px,-60px) rotate(-30deg) scale(.7)}18%{opacity:1;transform:translate(-8px,-6px) rotate(-8deg) scale(1)}34%{transform:translate(9px,5px) rotate(4deg)}50%{transform:translate(-6px,8px) rotate(-3deg)}66%{transform:translate(5px,-5px) rotate(3deg)}80%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(0,-10px) scale(1.1)}}
+.dossier{position:absolute;left:50%;top:190px;width:272px;margin-left:-136px;z-index:16;opacity:0;transform:translateY(160px) rotate(5deg);transition:opacity .5s,transform .8s cubic-bezier(.25,1.3,.45,1);pointer-events:none}
+.dossier.show{opacity:1;transform:rotate(-2deg)}
+.dossier.away{opacity:0;transform:translateY(-60px) rotate(-6deg);transition:all .5s ease-in}
+.fold{position:relative;padding:14px 12px 12px;border-radius:12px;background:var(--grain),linear-gradient(180deg,#4a3526,#2b1e17);background-blend-mode:multiply,normal;box-shadow:0 0 0 2px #000,0 0 0 4px #8a6a30,0 16px 34px #000d}
+.fold::before{content:"ملف سري";position:absolute;top:-21px;right:18px;padding:3px 16px;border-radius:8px 8px 0 0;background:#4a3526;font-family:Lalezar;font-size:.85rem;color:var(--gold);box-shadow:0 0 0 2px #000,0 0 0 3.5px #8a6a30}
+.fold::after{content:"";position:absolute;inset:5px;border:1.5px dashed #c9a05066;border-radius:8px;pointer-events:none}
+.sheet2{position:relative;display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;padding:14px 12px;background:var(--grain),linear-gradient(180deg,#e3d9bd,#d0c4a0);background-blend-mode:multiply,normal;color:var(--ink);box-shadow:inset 0 0 22px #8a7a5a88;min-height:128px}
+.polaroid{position:relative;width:96px;padding:6px 6px 16px;background:#f3ecd8;box-shadow:0 5px 10px #0009;rotate:-5deg}
+.polaroid .ph{height:80px;background:linear-gradient(180deg,#5a4a3a,#241a12);display:grid;place-items:center;overflow:hidden}
+.polaroid .ph svg{width:66px;height:66px;fill:#cfc6b2;margin-top:12px}
+.polaroid::before{content:"";position:absolute;top:-6px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8a90,#8a1c24);box-shadow:0 2px 3px #0008}
+.polaroid .pn{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-family:"Aref Ruqaa",serif;font-size:.8rem;color:#2a2114;font-weight:700}
+.dl{display:grid;gap:6px;font-weight:800;font-size:.68rem;color:#3a2e1e}
+.dl div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted #1c170f55;padding-bottom:2px;opacity:0;transform:translateX(10px);transition:all .4s}
+.dl div.in{opacity:1;transform:none}
+.dl i{font-style:normal;color:#6a5a3a}
+.stamp2{position:absolute;left:50%;top:52%;z-index:3;transform:translate(-50%,-50%) rotate(-14deg) scale(3);opacity:0;font-family:Lalezar;font-size:2.3rem;line-height:1.1;padding:0 16px;border:5px solid;border-radius:8px;letter-spacing:.03em;pointer-events:none}
+.stamp2.red{color:#b3202c;border-color:#b3202c;text-shadow:0 0 1px #b3202c}.stamp2.green{color:#1d7a55;border-color:#1d7a55}
+.stamp2.slam{animation:slam .5s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-14deg) scale(3)}55%{opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(.9)}100%{opacity:.93;transform:translate(-50%,-50%) rotate(-14deg) scale(1)}}
+.dust{position:absolute;left:50%;top:52%;width:140px;height:140px;margin:-70px 0 0 -70px;border-radius:50%;border:3px solid #ffffff88;opacity:0;z-index:2}
+.dust.go{animation:dust .7s ease-out}
+@keyframes dust{0%{opacity:.9;transform:scale(.3)}100%{opacity:0;transform:scale(1.7)}}
+
+/* ===== matte mafia: leather, brass, paper, ink. No glowing rings, no glass pills ===== */
+.seat.awake-mafia .av{box-shadow:0 0 0 2px #000,0 0 0 4px #b3202c,0 4px 6px #000a}
+.seat.awake-doc .av{box-shadow:0 0 0 2px #000,0 0 0 4px #2f7a63,0 4px 6px #000a}
+.seat.awake-sher .av{box-shadow:0 0 0 2px #000,0 0 0 4px #3a6ea5,0 4px 6px #000a}
+.seat.target .av{animation:none;box-shadow:0 0 0 2px #000,0 0 0 4px #b3202c,0 4px 6px #000a}
+.seat.talk .av{box-shadow:0 0 0 2px #000,0 0 0 4px #4fa58b,0 4px 6px #000a}
+.shield{box-shadow:none!important;border-color:#2f7a63;background:#2f7a6333}
+.moon{box-shadow:0 0 14px 2px #aab6ff22}.sun{box-shadow:0 0 22px 6px #ffb35a44}
+.seat.interrog::before{content:"";position:absolute;left:50%;top:23px;width:170px;height:170px;margin:-85px 0 0 -85px;border-radius:50%;background:radial-gradient(circle,#ffe7a8cc 0,#ffe7a855 42%,transparent 68%);z-index:-1}
+.pill{border-radius:6px;background:#17110d;box-shadow:inset 0 0 0 1px #3a2e22,0 2px 0 #000}
+#rp{border-radius:6px}
+/* the leather dock at the bottom */
+.bot{padding:26px 12px 12px;gap:7px}
+.tk{position:relative;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:6px 12px;background:var(--grain),linear-gradient(180deg,#e3d9bd,#d0c4a0);background-blend-mode:multiply,normal;color:var(--ink);box-shadow:0 3px 6px #000b;rotate:-.6deg}
+.tk::after{content:"";position:absolute;inset:3px;border:1px dashed #1c170f55;pointer-events:none}
+.tk b{font-family:Lalezar;font-weight:400;font-size:1rem;line-height:1.2;position:relative}
+.tk span{font-family:"Aref Ruqaa",serif;font-weight:700;font-size:.82rem;color:#4a3a22;position:relative}
+.stamps{display:flex;gap:10px;flex-wrap:wrap;padding:0 4px}
+.stp{font-family:Lalezar;font-size:.82rem;letter-spacing:.02em;padding:0 8px;border:2px double;border-radius:3px;rotate:-2deg;opacity:.92}
+.stp:nth-child(2n){rotate:1.5deg}
+.stp.red{color:#d8404a}.stp.teal{color:#4fa884}.stp.blue{color:#6a9ad0}.stp.gold{color:var(--gold)}.stp.plain{color:#b9a67e}
+.go2{position:relative;padding:11px;border-radius:10px;font-family:Lalezar;font-size:1.05rem;color:#f3e6c8;background:var(--grain),linear-gradient(180deg,#a3242d,#7a1820 60%,#5a0f15);background-blend-mode:multiply,normal;box-shadow:0 0 0 2px #000,0 4px 0 #2a0508;text-shadow:0 2px 0 #0008}
+.go2::after{content:"";position:absolute;inset:4px;border:1.5px dashed #f3e6c855;border-radius:7px;pointer-events:none}
+.go2.teal{background:var(--grain),linear-gradient(180deg,#2f7a63,#1d4a3c 60%,#123428);background-blend-mode:multiply,normal;box-shadow:0 0 0 2px #000,0 4px 0 #06150f}
+.go2.blue{background:var(--grain),linear-gradient(180deg,#3a6ea5,#24476e 60%,#162c45);background-blend-mode:multiply,normal;box-shadow:0 0 0 2px #000,0 4px 0 #08121f}
+.go2.neutral{background:var(--grain),linear-gradient(180deg,#4a3526,#2b1e17);background-blend-mode:multiply,normal}
+.go2.done{background:var(--grain),linear-gradient(180deg,#24402f,#16281e);background-blend-mode:multiply,normal;color:#c9f0e2}
+.tbar{height:5px;background:#120c08;border-radius:3px;box-shadow:0 0 0 1px #000;overflow:hidden;margin-top:-2px}
+.tbar i{display:block;height:100%;background:linear-gradient(90deg,#c9a050,#8a6a30);animation:tb var(--dur) linear forwards}
+@keyframes tb{from{width:100%}to{width:0}}
+/* the chat inside the match: the same leather box as the room's chat */
+.chat2{border-radius:12px;background:var(--grain),#17110d;background-blend-mode:multiply,normal;box-shadow:0 0 0 2px #000,inset 0 0 0 1px #2a2018;padding:7px 8px 8px;display:grid;gap:5px}
+.chhd{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.chtab{padding:1px 12px;border-radius:5px 5px 0 0;font-family:Lalezar;font-size:.78rem;color:#2a1a08;background:linear-gradient(180deg,#f5e2a8,#c9a050 60%,#8a6a30);box-shadow:0 0 0 1.5px #000}
+.chtab.pr{color:#f3e6c8;background:linear-gradient(180deg,#a3242d,#5a0f15)}
+.chn{font-weight:800;font-size:.56rem;color:#8d744a}
+.msgs{display:flex;flex-direction:column;justify-content:flex-end;gap:4px;max-height:58px;overflow:hidden;transition:max-height .4s}
+.chat2.open .msgs{max-height:200px}
+.m2{padding:3px 9px 4px;border-radius:9px 9px 9px 3px;background:#241b15;box-shadow:inset 0 0 0 1px #ffffff10;align-self:flex-start;max-width:90%}
+.m2 b{font-weight:800;font-size:.58rem;color:#b9904a;margin-inline-end:6px}.m2 p{display:inline;margin:0;font-size:.74rem;font-weight:600;color:#e4dbc7}
+.m2.me{align-self:flex-end;border-radius:9px 9px 3px 9px;background:#4a1319;box-shadow:inset 0 0 0 1px #8a1c2488}
+.inp{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-radius:8px;background:#0e0a07;box-shadow:inset 0 0 0 1px #2a2018;font-weight:600;font-size:.72rem;color:#6f685c}
+.inp i{width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#a3242d,#5a0f15);box-shadow:0 0 0 1.5px #000}
+.chat2.locked{padding:9px 10px}
+.lk{display:flex;align-items:center;gap:8px;justify-content:center;font-weight:800;font-size:.74rem;color:#8d744a}
+.lk svg{width:16px;height:16px;fill:#b9904a}
+#stage.shrunk{transform:scale(.8) translateY(-34px)}
+/* the inspection: a lamp and a case file, no gadgets */
+.dl div i{font-family:Lalezar;font-style:normal}
+.fpr{position:absolute;right:12px;bottom:10px;width:46px;height:56px;opacity:0;transition:opacity .6s}
+.fpr.in{opacity:.55}
+.dl div:last-child span{font-family:Lalezar}
 </style>
 </head>
 <body>
@@ -180,8 +265,8 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 <p class="sub">اختر دور اللاعب (مافيا، طبيب، شيخ، مواطن، متفرج) وشوف شو بيطلعله، شو بيسأله الراوي، وشو بيعمل، وشو بيشوف الباقي.</p>
 <div class="wrap">
   <div class="side">
-    <div class="lab">أنا…</div><div class="tabs" id="roleTabs"></div><div class="lab">المرحلة</div><div class="tabs" id="tabs"></div>
-    <button class="play" id="play">▶ شغّل من جديد</button>
+    <div class="lab">أنا…</div><div class="tabs" id="roleTabs"></div><div class="lab">نتيجة فحص الشيخ (للتجربة)</div><div class="tabs" id="resTabs"></div><div class="lab">المرحلة</div><div class="tabs" id="tabs"></div>
+    <button class="play" id="chatBtn" style="background:linear-gradient(180deg,#4a3526,#2b1e17);margin-inline-start:8px">افتح الدردشة (شوف الحالة الموسّعة)</button><button class="play" id="play">▶ شغّل من جديد</button>
     <div class="card" id="desc"></div>
   </div>
   <div class="phone" id="phone">
@@ -196,6 +281,7 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
     <div class="roleCard" id="rc"><div class="in"><div class="f">؟</div><div class="b" id="rcb"></div></div></div>
     <div class="stamp" id="stamp"></div>
     <div class="flash" id="flash"></div>
+    <div class="dossier" id="dos"></div>
     <div class="bot" id="bot"></div>
   </div>
 </div>
@@ -233,9 +319,10 @@ function setSky(c){$('sky').className='sky '+c}
 /* ---------- what each player sees: the same night, five points of view ---------- */
 const ROLES={mafia:{n:'مافيا',k:'red',c:'#e0585f'},doctor:{n:'طبيب',k:'teal',c:'#4fa58b'},sheikh:{n:'شيخ المواطنين',k:'blue',c:'#6fa0d6'},civ:{n:'مواطن',k:'',c:'#c9a050'},spec:{n:'متفرج',k:'',c:'#b8bff0'}};
 const STEPS=[['night','الليل يبدأ'],['call','ندائي'],['dawn','الفجر'],['day','النقاش'],['vote','التصويت']];
-let role='mafia',step=0;
+let role='mafia',step=0,fres='mafia';
 const CALLED={mafia:'يا مافيا… اصحوا. مين بدكم تقتلوا الليلة؟',doctor:'يا دكتور… اصحى. مين بدك تحمي الليلة؟',sheikh:'يا شيخ… اصحى. مين بدك تفحص الليلة؟'};
-function rolePill(){const r=ROLES[role];const p=$('rp');p.textContent='دورك: '+r.n;p.style.color=r.c;p.style.boxShadow='inset 0 0 0 1px '+r.c+'88'}
+function clearDossier(){const d=$('dos');if(d){d.className='dossier';d.innerHTML=''}}
+function rolePill(){clearDossier();const r=ROLES[role];const p=$('rp');p.textContent='دورك: '+r.n;p.style.color=r.c;p.style.boxShadow='inset 0 0 0 1px '+r.c+'88'}
 function sleepAll(){seats.forEach(x=>x.classList.add('sleep'))}
 function wake(i,k){seats[i].classList.remove('sleep','dim');seats[i].classList.add('awake-'+k)}
 function dimOthers(keep){seats.forEach((x,i)=>{if(!keep.includes(i))x.classList.add('dim')})}
@@ -248,9 +335,33 @@ function pickSeat(i,k){seats[i].classList.remove('dim');
 function panel(k,title,sub,chips,btn,secs){$('bot').innerHTML='<div class="pick"><div class="pt"><b>'+title+'</b>'+(secs?'<div class="tm" style="--dur:'+secs+'s"><span>'+secs+'</span></div>':'')+'</div>'+(sub?'<div class="sub2">'+sub+'</div>':'')+(chips&&chips.length?'<div class="chips">'+chips.map(c=>'<span class="chip2 '+c[0]+'">'+c[1]+'</span>').join('')+'</div>':'')+(btn?'<div class="go2 '+k+(btn[1]?' '+btn[1]:'')+'" id="go2">'+btn[0]+'</div>':'')+'</div>'}
 function confirmBtn(t){const g=$('go2');if(g){g.className='go2 done';g.textContent=t}}
 function enableBtn(){const g=$('go2');if(g)g.classList.remove('off')}
+function dossier(name,isMafia){
+ const d=$('dos');d.className='dossier';
+ d.innerHTML='<div class="fold"><div class="sheet2"><div class="polaroid"><div class="ph">'+AV+'</div><div class="pn">'+name+'</div></div><div class="dl"><div><i>الاسم</i><span>'+name+'</span></div><div><i>البصمة</i><span>تم الفحص</span></div><div><i>السلوك</i><span>تحت المراقبة</span></div><div><i>الحكم</i><span>…</span></div></div><svg class="fpr" viewBox="0 0 46 56" fill="none" stroke="#2a2114" stroke-width="1.6" stroke-linecap="round"><path d="M23 6c-9 0-15 7-15 16v12"/><path d="M23 12c-6 0-10 5-10 11v14"/><path d="M23 18c-3 0-5 2-5 5v18"/><path d="M23 6c9 0 15 7 15 16v14"/><path d="M23 12c6 0 10 5 10 11v16"/><path d="M23 18c3 0 5 2 5 5v20"/><path d="M23 24v26"/></svg><div class="stamp2 '+(isMafia?'red':'green')+'">'+(isMafia?'مافيا':'مواطن')+'</div><div class="dust"></div></div></div>';
+ void d.offsetWidth;d.classList.add('show');
+ const rows=d.querySelectorAll('.dl div');rows.forEach((r,i)=>setTimeout(()=>r.classList.add('in'),700+i*450));setTimeout(()=>{const f=d.querySelector('.fpr');if(f)f.classList.add('in')},1400);
+ setTimeout(()=>{rows[3].querySelector('span').textContent=isMafia?'خطر':'بريء';d.querySelector('.stamp2').classList.add('slam');d.querySelector('.dust').classList.add('go');$('phone').classList.remove('shake');void $('phone').offsetWidth;$('phone').classList.add('shake')},2900)}
+function dossierAway(){const d=$('dos');d.classList.add('away');setTimeout(()=>{d.className='dossier';d.innerHTML=''},600)}
 function night(bg){reset(bg||'night');rolePill();$('veil').classList.add('on');$('sm').textContent='الليل';mic(role=='spec','المايك مغلق — الليل');if(role=='spec')mic(true,'تحكي مع المتفرجين');}
 const IMPACT='<svg class="impact go" viewBox="0 0 150 150" style="position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;overflow:visible"><g stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"><path d="M75 75 L75 20 M75 75 L128 42 M75 75 L134 96 M75 75 L88 140 M75 75 L22 112 M75 75 L16 52"/></g><circle cx="75" cy="75" r="10" fill="#1a0606" stroke="#e0585f" stroke-width="3"/></svg>';
 
+let chatOpen=false;
+const CH={table:{n:'الطاولة',lines:[['ريم','أنا شاكّة بسامر'],['لينا','ليش؟ شو شفتي؟']]},mafia:{n:'المافيا · سري',pr:1,lines:[['سامر','نضال؟'],['أنت','تمام، نضال',1]]},room:{n:'الغرفة',lines:[['نضال','مين المافيا برأيكم؟'],['مازن','سامر مشبوه من البداية']]}};
+const LOCK='<svg viewBox="0 0 24 24"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V8a3 3 0 0 0-6 0z"/></svg>';
+function chatKind(){const st=STEPS[step][0];if(role=='spec')return{k:'room'};if(st=='night'||st=='call'){if(role=='mafia'&&st=='call')return{k:'mafia'};return{locked:1}}return{k:'table'}}
+function chatHTML(){const c=chatKind();const o=chatOpen?' open':'';
+ if(c.locked)return '<div class="chat2 locked'+o+'"><div class="lk">'+LOCK+'الدردشة مقفلة بالليل</div></div>';
+ const ch=CH[c.k];let ls=ch.lines;if(chatOpen)ls=ls.concat([['هديل','أنا بصوّت معكم'],['خالد','لحظة، خلونا نسمع الكل'],['ريم','تمام']]);
+ return '<div class="chat2'+o+'"><div class="chhd"><span class="chtab'+(ch.pr?' pr':'')+'">'+ch.n+'</span><span class="chn">'+(role=='spec'?'تكتب للمتفرجين فقط':c.k=='mafia'?'ما حدا غيركم بيشوفها':'اللاعبين الأحياء')+'</span></div><div class="msgs">'+ls.map(l=>'<div class="m2'+(l[2]?' me':'')+'"><b>'+l[0]+'</b><p>'+l[1]+'</p></div>').join('')+'</div><div class="inp"><span>اكتب رسالة…</span><i></i></div></div>'}
+function dock(inner){$('bot').innerHTML=inner+chatHTML();$('stage').classList.toggle('shrunk',chatOpen)}
+function hint(t){dock('<div class="tk"><span>'+t+'</span></div>')}
+function panel(k,title,sub,chips,btn,secs){
+ let h='<div class="tk"><b>'+title+'</b>'+(sub&&!btn?'<span>'+sub+'</span>':'')+'</div>';
+ if(chips&&chips.length)h+='<div class="stamps">'+chips.map(c=>'<span class="stp '+(c[0]||'plain')+'">'+c[1]+'</span>').join('')+'</div>';
+ if(btn)h+='<div class="go2 '+k+(btn[1]?' '+btn[1]:'')+'" id="go2">'+btn[0]+'</div>'+(secs?'<div class="tbar"><i style="--dur:'+secs+'s"></i></div>':'');
+ else if(secs)h+='<div class="tbar"><i style="--dur:'+secs+'s"></i></div>';
+ dock(h)}
+function toggleChat(){chatOpen=!chatOpen;const c=document.querySelector('#bot .chat2');if(c)c.outerHTML=chatHTML();$('stage').classList.toggle('shrunk',chatOpen);$('chatBtn').textContent=chatOpen?'اقفل الدردشة':'افتح الدردشة (شوف الحالة الموسّعة)'}
 const SC={
  night(){reset('day');rolePill();mic(role=='spec','المايك مفتوح — النهار');$('sm').textContent='النهار';hint('انتهى النهار…');
   at(600,()=>{setSky('night');$('moon').classList.add('show');$('veil').classList.add('on');$('sm').textContent='الليل'});
@@ -265,7 +376,7 @@ const SC={
    at(5200,()=>{seats.forEach(x=>x.classList.remove('pickable'));pickSeat(1,'red');enableBtn();panel('red','اختر ضحية الليلة','اختيارك: نضال  ·  اختيار رفيقك: نضال',[['red','متفقين ✔']],['ثبّت الاختيار'],20)});
    at(6800,()=>confirmBtn('تم التثبيت: نضال'));
    at(8000,()=>{say('تمام. المافيا ينامون.','red')});
-   at(8800,()=>{seats.forEach(x=>{x.classList.remove('awake-mafia','target','pickable');x.classList.add('sleep','dim')});mic(false,'المايك مغلق — الليل');hush();$('bot').innerHTML='<div class="hint">انتهى دورك. بانتظار باقي الأدوار…</div>'})}
+   at(8800,()=>{seats.forEach(x=>{x.classList.remove('awake-mafia','target','pickable');x.classList.add('sleep','dim')});mic(false,'المايك مغلق — الليل');hush();hint('انتهى دورك. بانتظار باقي الأدوار…')})}
   else if(role=='doctor'){
    at(400,()=>say('الليل… المافيا بيشتغلوا. (ما بتسمع ولا بتشوف شي)',''));
    at(2600,()=>{say(CALLED.doctor,'teal');wake(0,'doc');dimOthers([0]);panel('teal','مين بدك تحمي؟','بتقدر تحمي حالك مرة وحدة بس بالمباراة.',[['teal','حماية نفسك: ١ متبقي']],['ثبّت الاختيار','off'],20)});
@@ -273,21 +384,23 @@ const SC={
    at(5600,()=>{seats.forEach(x=>x.classList.remove('pickable'));pickSeat(3,'teal');enableBtn();panel('teal','مين بدك تحمي؟','اختيارك: ريم',[['teal','حماية نفسك: ١ متبقي']],['ثبّت الاختيار'],20)});
    at(7000,()=>confirmBtn('تم: بتحمي ريم'));
    at(8200,()=>{say('تمام. الدكتور ينام.','teal')});
-   at(9000,()=>{seats.forEach(x=>{x.classList.remove('awake-doc','pickable');x.classList.add('sleep','dim')});hush();$('bot').innerHTML='<div class="hint">انتهى دورك. إنت ما بتعرف إذا حدا هاجمها.</div>'})}
+   at(9000,()=>{seats.forEach(x=>{x.classList.remove('awake-doc','pickable');x.classList.add('sleep','dim')});hush();hint('انتهى دورك. إنت ما بتعرف إذا حدا هاجمها.')})}
   else if(role=='sheikh'){
    at(400,()=>say('الليل… المافيا والدكتور بيشتغلوا. (ما بتسمع ولا بتشوف شي)',''));
    at(2600,()=>{say(CALLED.sheikh,'blue');wake(0,'sher');dimOthers([0]);panel('blue','مين بدك تفحص؟','الجواب بيجيك إنت وحدك.',[['blue','دفتر الفحص: فاضي']],['ثبّت الاختيار','off'],20)});
    at(4200,()=>{seats.forEach((x,i)=>{if(i){x.classList.remove('dim','sleep');if(i!=6)x.classList.add('pickable')}})});
-   at(5600,()=>{seats.forEach(x=>x.classList.remove('pickable'));pickSeat(2,'blue');enableBtn();panel('blue','مين بدك تفحص؟','اختيارك: سامر',[['blue','دفتر الفحص: فاضي']],['ثبّت الاختيار'],20)});
-   at(7000,()=>confirmBtn('جاري الفحص…'));
-   at(8800,()=>{say('سامر… مافيا ❗  (الجواب إلك وحدك)','red');panel('blue','نتيجة الفحص','انحفظت بدفتر الفحص. لا تكشف حالك بسهولة.',[['red','سامر: مافيا ❗']])});
-   at(11200,()=>{say('تمام. الشيخ ينام.','blue')});
-   at(12000,()=>{seats.forEach(x=>{x.classList.remove('awake-sher','pickable');x.classList.add('sleep','dim')});hush();$('bot').innerHTML='<div class="hint">انتهى دورك.</div>'})}
+   at(5600,()=>{seats.forEach(x=>x.classList.remove('pickable'));hush();enableBtn();panel('blue','مين بدك تفحص؟','اختيارك: سامر',[['blue','دفتر الفحص: فاضي']],['ثبّت الاختيار'],20)});
+   at(6800,()=>{confirmBtn('جاري الفحص…');seats.forEach((x,i)=>{if(i!=2&&i!=0)x.classList.add('dim')});seats[2].classList.remove('dim');seats[2].classList.add('interrog');zoomTo(2,1.5);$('veil').classList.add('deep')});
+   at(10000,()=>{seats[2].classList.remove('interrog');$('stage').style.transform='';undim();dossier('سامر',fres=='mafia')});
+   at(14200,()=>{panel('blue','نتيجة الفحص','انحفظت بدفتر الفحص. لا تكشف حالك بسهولة.',[[fres=='mafia'?'red':'teal','سامر: '+(fres=='mafia'?'مافيا ❗':'مواطن ✔')]])});
+   at(16200,()=>{dossierAway();$('veil').classList.remove('deep')});
+   at(16800,()=>{say('تمام. الشيخ ينام.','blue')});
+   at(17600,()=>{seats.forEach(x=>{x.classList.remove('awake-sher','pickable');x.classList.add('sleep','dim')});hush();hint('انتهى دورك.')})}
   else if(role=='civ'){
    at(400,()=>say('الليل عم يمشي… الكل نايم.',''));
    at(1200,()=>panel('neutral','إنت نايم','ما في شي تعمله الليلة. اسمع الراوي ولا تحكي.',[['','المايك مغلق'],['gold','مدة الليل ثابتة']],null,20));
    at(4200,()=>say('…',''));at(6200,()=>say('الراوي بينادي غيرك…',''));at(9000,()=>say('اهدأ. لا تفتح عيونك.',''));
-   at(12000,()=>{hush();$('bot').innerHTML='<div class="hint">ما حدا بيعرف مين صحي: مدة النداءات ثابتة حتى لو الدور صاحبه ميت.</div>'})}
+   at(12000,()=>{hush();hint('ما حدا بيعرف مين صحي: مدة النداءات ثابتة حتى لو الدور صاحبه ميت.')})}
   else{ // spectator
    at(400,()=>{seats[0].classList.add('dead');seats.forEach((x,i)=>{if(i)x.classList.add('sleep')});say('الليل عم يمشي…','')});
    at(1500,()=>panel('neutral','أنت متفرج','بتشوف الطاولة بس. أفعال الليل سرية عن الكل، حتى المتفرجين.',[['gold','تحكي مع المتفرجين'],['','تسمع المتفرجين فقط ليلاً']],null,20))}},
@@ -300,7 +413,7 @@ const SC={
   at(6000,()=>{seats[1].classList.remove('dim');seats[1].classList.add('dead')});
   at(6800,()=>{$('stage').style.transform='';$('veil').classList.remove('on');undim();
    const n={mafia:['red','خطتكم نجحت: نضال خرج من اللعبة'],doctor:['teal','إنت حميت ريم الليلة، ونضال ما كان هدفك. (ما بتعرف النتيجة غير من إعلان الراوي)'],sheikh:['blue','نتيجة فحصك محفوظة: سامر مافيا ❗'],civ:null,spec:['gold','نضال صار متفرج وانضم لغرفتكم']}[role];
-   if(n)panel('neutral','إشعار خاص',n[1],[[n[0],'إلك وحدك']]);else $('bot').innerHTML='<div class="hint">النقاش بلّش • عندكم دقيقتين</div>'});
+   if(n)panel('neutral','إشعار خاص',n[1],[[n[0],'إلك وحدك']]);else hint('النقاش بلّش • عندكم دقيقتين')});
   at(9800,()=>{$('sm').textContent='النهار'})},
  day(){reset('day');rolePill();mic(true,role=='spec'?'تحكي مع المتفرجين':'المايك مفتوح — النهار');$('sm').textContent='النهار';seats[1].classList.add('dead');if(role=='spec')seats[0].classList.add('dead');
   const info={mafia:[['red','رفيقك: سامر'],['gold','لا تكشف حالك']],doctor:[['teal','حماية نفسك: ١ متبقي'],['gold','لا تكشف حالك']],sheikh:[['blue','دفتر الفحص: سامر مافيا ❗'],['gold','لا تكشف حالك']],civ:[['gold','صوتك سلاحك: ناقش وصوّت']],spec:[['gold','تسمع نقاش اللاعبين'],['','اللاعبين ما بيسمعوك']]}[role];
@@ -327,16 +440,18 @@ const SC={
 const DESC={
  mafia:{h:'مافيا — شو بيشوف',p:'بالليل أول واحد بيصحى. الراوي بينادي «يا مافيا… اصحوا» وبتطلع لوحة جلد تحت الشاشة: «اختر ضحية الليلة» مع عدّاد ٢٠ ثانية. رفيقك المافيا بيضوي أحمر وبيطلع فوقه اسمه واختياره («سامر ← نضال»). بتضغط لاعب وبتثبّت. المايك بيفتح مع المافيا بس. بعدها «المافيا ينامون».',l:['الباقي بيشوفوا شاشة نايمة بس، ما بيعرفوا مين صحي.','بالنهار بتشوف كرت رفيقك وبتحس بتحذير «لا تكشف حالك».']},
  doctor:{h:'طبيب — شو بيشوف',p:'الراوي بيناديه بعد المافيا: «يا دكتور… اصحى». لوحة خضراء «مين بدك تحمي؟» مع عدّاد، وسطر «حماية نفسك: ١ متبقي». بيختار ويثبّت وبتطلع درع على اللاعب. بعدها ينام.',l:['ما بيعرف إذا حدا هاجم اللي حماه، بيعرف من إعلان الراوي بالفجر بس.','بالفجر بيجيه إشعار خاص: «حميت فلان».']},
- sheikh:{h:'شيخ المواطنين — شو بيشوف',p:'بعد الدكتور: «يا شيخ… اصحى». لوحة زرقاء «مين بدك تفحص؟». بيختار ويثبّت، وحلقة مسح بتلف، وبعدها برقية سرية: «سامر… مافيا ❗» إله وحده. بتنحفظ بدفتر الفحص وبتظهر نهاراً.',l:['الجواب ما بيطلع لأي حدا غيره.','التحذير الدائم: «لا تكشف حالك» لأن المافيا بتصطاده.']},
+ sheikh:{h:'شيخ المواطنين — شو بيشوف',p:'بعد الدكتور: «يا شيخ… اصحى». لوحة زرقاء «مين بدك تفحص؟». بيختار ويثبّت، فالكاميرا بتقرّب على اللاعب وبيضوي عليه ضوء مصباح (جو تحقيق)، وبعدها بيطلع ملف سري (جلد) فيه صورة اللاعب وسطور بتنكتب وحدة وحدة، وبآخرها ختم أحمر «مافيا» (أو أخضر «مواطن») بينضرب بقوة مع هزّة. الجواب إله وحده، وبينحفظ بدفتر الفحص ونهاراً بيظهر.',l:['الجواب ما بيطلع لأي حدا غيره.','التحذير الدائم: «لا تكشف حالك» لأن المافيا بتصطاده.']},
  civ:{h:'مواطن — شو بيشوف',p:'بالليل شاشة نايمة بنفس إيقاع الباقي: الراوي بيحكي جمل جوّ («الليل عم يمشي… اهدأ»)، ولوحة «إنت نايم» مع عدّاد. ما عنده قدرة.',l:['مدة النداءات ثابتة حتى لو الدور صاحبه ميت، عشان ما حدا يعرف مين صحي من طول الصمت (قاعدة منع التسريب).','المايك مغلق طول الليل.']},
  spec:{h:'متفرج (ميت أو داخل متأخر) — شو بيشوف',p:'بيشوف الطاولة بس، وأفعال الليل سرية عنه كمان. لوحة «أنت متفرج»، وبيحكي مع باقي المتفرجين ويسمع نقاش اللاعبين نهاراً (واللاعبين ما بيسمعوه).',l:['بالفجر والتصويت بيشوف نفس المشاهد العامة.','قرار مفتوح: هل المتفرج بيشوف أدوار اللاعبين الأحياء؟ (حالياً لأ).']}};
 function renderTabs(){
  tabs2($('roleTabs'),Object.entries(ROLES).map(([k,v])=>[k,v.n]),role,k=>{role=k;renderTabs();play()});
+ tabs2($('resTabs'),[['mafia','مافيا ❗'],['civ','مواطن ✔']],fres,k=>{fres=k;renderTabs();role='sheikh';step=1;renderTabs();play()});
  tabs2($('tabs'),STEPS.map((x,i)=>[i,x[1]]),step,k=>{step=+k;renderTabs();play()});
  const d=DESC[role];$('desc').innerHTML='<h2>'+d.h+'</h2>'+d.p+'<ul>'+d.l.map(x=>'<li>'+x+'</li>').join('')+'</ul><div class="tech">المرحلة المعروضة: '+STEPS[step][1]+'</div>'}
 function tabs2(el,list,cur,fn){el.innerHTML='';list.forEach(([k,t])=>{const b=document.createElement('button');b.textContent=t;b.className=String(k)==String(cur)?'on':'';b.onclick=()=>fn(k);el.appendChild(b)})}
 function play(){SC[STEPS[step][0]]()}
 $('play').onclick=play;
+$('chatBtn').onclick=toggleChat;
 renderTabs();play();
 </script>
 </body>
