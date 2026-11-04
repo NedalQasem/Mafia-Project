@@ -50,7 +50,7 @@ namespace MafiaNight.MatchRules.Net
         public const string Roster = "roster";      // host -> members: the made-up players of the room (bots), 4 fields each: id, name, rank, level
         public const string BotChat = "bchat";      // host -> members: a bot wrote in the room chat: bot id, text
         // player -> host
-        public const string Act = "act";            // kind, target   (kinds: mafia, save, check, skip, vote, ready)
+        public const string Act = "act";            // kind, target   (kinds: mafia, silence, save, check, snipe [empty target = not tonight], avenge [empty target = take the pick back], skip, vote, ready)
         // host -> players
         public const string Start = "start";        // the match begins
         public const string Role = "role";          // role, mate ids...  (private: only to that player)
@@ -58,7 +58,9 @@ namespace MafiaNight.MatchRules.Net
         public const string Result = "result";      // kind, ActionResult  (answer to an Act)
         public const string MafiaVotes = "mvotes";  // (mafia id, victim id)... (private: only to the mafia)
         public const string Sheriff = "sheriff";    // target id, isMafia (private: only to the sheriff)
-        public const string Dawn = "dawn";          // victim id, saved, died id, died role
+        public const string Dawn = "dawn";          // victim id, saved, died id, died role, silenced id, then (id, role) per death by the sniper's shot (who shot is never named)
+        public const string DoctorResult = "doc";   // target id, saved (private: only to the doctor)
+        public const string Avenge = "avenge";      // avenger id, target id, target role, step: open (his moment starts), pick (he chose or changed), done (it is final)
         public const string Skip = "skip";          // count, needed
         public const string Tally = "tally";        // (target id, count)... live vote count
         public const string Verdict = "verdict";    // removed id, removed role, votes, abstained

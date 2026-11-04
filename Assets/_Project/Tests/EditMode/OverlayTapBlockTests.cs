@@ -119,6 +119,26 @@ namespace MafiaNight.Tests
             var members = canvas.transform.Find("MembersSheet");
             Assert.IsNotNull(members, "the members sheet was not built");
             Assert.IsNull(WhyItLetsTapsThrough(members.gameObject), "the members sheet lets taps through");
+
+            KitPickSheet.Show(canvas.transform, new KitPickSheet.Spec { Title = "t", Rows = new List<KitPickSheet.Row> { new KitPickSheet.Row { Id = "1", Name = "x" } } });
+            var pick = canvas.transform.Find("PickSheet");
+            Assert.IsNotNull(pick, "the pick sheet was not built");
+            Assert.IsNull(WhyItLetsTapsThrough(pick.gameObject), "the pick sheet lets taps through");
+
+            KitRoleReveal.Show(canvas.transform, MafiaNight.Data.Cards.RoleCards.Find("mafia"), new MafiaNight.Data.Cards.CardLayers(), "line", "ok", () => { });
+            var reveal = canvas.transform.Find("RoleReveal");
+            Assert.IsNotNull(reveal, "the role reveal was not built");
+            Assert.IsNull(WhyItLetsTapsThrough(reveal.gameObject), "the role reveal lets taps through");
+        }
+
+        [Test]
+        public void ThePickSheetListsEveryPlayerEvenWhenTheNamesAreLong()
+        {
+            var rows = new List<KitPickSheet.Row>();
+            for (int i = 0; i < 15; i++) rows.Add(new KitPickSheet.Row { Id = "p" + i, Name = i == 3 ? "اسم طويل جداً جداً جداً جداً جداً جداً جداً" : "لاعب " + i });
+            KitPickSheet.Show(canvas.transform, new KitPickSheet.Spec { Title = "عنوان طويل جداً جداً جداً جداً جداً جداً جداً جداً", Body = new string('ب', 400), Rows = rows, Selected = "p3" });
+            var pick = canvas.transform.Find("PickSheet");
+            Assert.AreEqual(15, pick.GetComponentsInChildren<UnityEngine.UI.LayoutElement>(true).Count(l => l.name == "Row"), "all the players are in the list (it scrolls)");
         }
     }
 }

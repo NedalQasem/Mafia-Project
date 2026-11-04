@@ -24,12 +24,19 @@ namespace MafiaNight.MatchRules
         /// <param name="alivePlayerIds">the players still in the match (ids as the room knows them), this one included when alive</param>
         /// <param name="memberIds">everybody in the room, this one included</param>
         /// <param name="myId">this device's id</param>
-        public static VoicePlan For(Phase phase, Role? role, bool alive, IEnumerable<string> mafiaMateIds, IEnumerable<string> alivePlayerIds, IEnumerable<string> memberIds, string myId)
+        /// <param name="silenced">the silencer silenced this player for the day: he hears everything but his mic stays shut (he can still vote)</param>
+        /// <param name="avengerId">in the Avenge phase, the Avenger who is deciding: he is out of the game, but he talks with the players and they hear him</param>
+        public static VoicePlan For(Phase phase, Role? role, bool alive, IEnumerable<string> mafiaMateIds, IEnumerable<string> alivePlayerIds, IEnumerable<string> memberIds, string myId, bool silenced = false, string avengerId = null)
         {
             var plan = new VoicePlan();
             if (phase == Phase.Lobby || phase == Phase.RoleReveal || phase == Phase.GameOver) return plan;      // before and after the match everybody talks together
 
             var players = new HashSet<string>(alivePlayerIds ?? Enumerable.Empty<string>());
+            if (phase == Phase.Avenge && !string.IsNullOrEmpty(avengerId))
+            {
+                players.Add(avengerId);                  // the players hear him, and he is one of them for this talk
+                if (myId == avengerId) alive = true;
+            }
             bool night = phase == Phase.Night;
 
             if (!alive)
@@ -52,6 +59,7 @@ namespace MafiaNight.MatchRules
 
             players.Remove(myId);
             plan.HearOnly = players;          // by day a player hears the living players only: the spectators are a separate group
+            if (silenced) plan.MicAllowed = false;
             return plan;
         }
     }

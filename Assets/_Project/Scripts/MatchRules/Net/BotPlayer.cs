@@ -42,13 +42,14 @@ namespace MafiaNight.MatchRules.Net
                 actIn = c.Phase == Phase.RoleReveal ? Delay(1f, 4f)
                       : c.Phase == Phase.Night ? Delay(3f, 14f)
                       : c.Phase == Phase.Day ? Delay(10f, 40f)
-                      : c.Phase == Phase.Voting ? Delay(4f, 20f) : -1f;
+                      : c.Phase == Phase.Voting ? Delay(4f, 20f)
+                      : c.Phase == Phase.Avenge ? Delay(3f, 15f) : -1f;       // the Avenger bot thinks aloud for a while, like a person
             }
             if (actIn < 0f) return;
             actIn -= dt;
             if (actIn > 0f) return;
             actIn = -1f;
-            if (!c.IAmAlive && c.Phase != Phase.RoleReveal) return;
+            if (!c.IAmAlive && c.Phase != Phase.RoleReveal && !c.IAmTheAvenger) return;
 
             var alive = c.Seats.Where(s => s.Alive && !s.Left && !s.IsMe).ToList();
             if (alive.Count == 0 && c.Phase != Phase.RoleReveal) return;
@@ -56,9 +57,21 @@ namespace MafiaNight.MatchRules.Net
             {
                 case Phase.RoleReveal: c.Ready(); break;
                 case Phase.Night:
-                    if (c.MyRole == Role.Mafia) { var t = alive.Where(s => !s.IsMate).ToList(); if (t.Count > 0) c.MafiaPick(t[random.Next(t.Count)].Id); }
+                    if (c.IAmMafia)
+                    {
+                        var t = alive.Where(s => !s.IsMate).ToList();
+                        if (t.Count > 0) c.MafiaPick(t[random.Next(t.Count)].Id);
+                        if (c.MyRole == Role.Silencer && t.Count > 0) c.Silence(t[random.Next(t.Count)].Id);
+                    }
+                    else if (c.MyRole == Role.Sniper)
+                    {   // he keeps his bullet most nights and fires it at somebody once in a while
+                        if (!c.ShotUsed && random.Next(4) == 0) c.Snipe(alive[random.Next(alive.Count)].Id); else c.Snipe(null);
+                    }
                     else if (c.MyRole == Role.Doctor) { var all = c.Seats.Where(s => s.Alive && !s.Left).ToList(); c.DoctorSave(all[random.Next(all.Count)].Id); }
                     else if (c.MyRole == Role.Sheriff) c.SheriffCheck(alive[random.Next(alive.Count)].Id);
+                    break;
+                case Phase.Avenge:
+                    if (c.IAmTheAvenger) c.AvengerPick(alive[random.Next(alive.Count)].Id);
                     break;
                 case Phase.Day: c.SkipDiscussion(); break;
                 case Phase.Voting:

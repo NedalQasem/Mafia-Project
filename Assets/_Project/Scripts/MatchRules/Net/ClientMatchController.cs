@@ -51,6 +51,21 @@ namespace MafiaNight.MatchRules.Net
         public string DawnDiedId { get; private set; }
         public Role? DawnDiedRole { get; private set; }
         public bool DawnSaved { get; private set; }
+        /// <summary>Deaths of the sniper's shot (the target, and the shooter when a citizen was hit): who shot is not told.</summary>
+        public List<KeyValuePair<string, Role?>> DawnShotDeaths { get; } = new List<KeyValuePair<string, Role?>>();
+        /// <summary>The player the silencer silenced for the day (everybody knows), null if nobody.</summary>
+        public string SilencedId { get; private set; }
+        public bool IAmSilenced => SilencedId != null && SilencedId == myId && Phase != Phase.Night;
+        /// <summary>The doctor's answers, newest last (target id, did the protection stop the mafia).</summary>
+        public List<KeyValuePair<string, bool>> DoctorReports { get; } = new List<KeyValuePair<string, bool>>();
+        /// <summary>The Avenger's moment: who he is, who he picked so far, and whether the pick is final.</summary>
+        public string AvengerId { get; private set; }
+        public string AvengeTargetId { get; private set; }
+        public Role? AvengeTargetRole { get; private set; }
+        public bool AvengeDone { get; private set; }
+        public bool IAmTheAvenger => AvengerId != null && AvengerId == myId && Phase == Phase.Avenge;
+        /// <summary>The sniper already fired his bullet (this device knows from the host's answer).</summary>
+        public bool ShotUsed { get; private set; }
 
         public string VerdictRemovedId { get; private set; }
         public Role? VerdictRemovedRole { get; private set; }
@@ -82,7 +97,7 @@ namespace MafiaNight.MatchRules.Net
         public ClientMatchController(string myId, Action<WireMessage> toHost) { this.myId = myId; this.toHost = toHost; }
 
         public bool IAmAlive => seats.FirstOrDefault(s => s.IsMe)?.Alive == true;
-        public bool IAmMafia => MyRole == Role.Mafia;
+        public bool IAmMafia => MyRole.HasValue && MyRole.Value.IsMafiaTeam();
         public SeatView Seat(string id) => seats.FirstOrDefault(s => s.Id == id);
 
         // ---------------------------------------------------------------- from the host
@@ -94,12 +109,18 @@ namespace MafiaNight.MatchRules.Net
             {
                 case Msg.Start:
                     known.Clear(); SheriffReports.Clear(); Winner = Winner.None; MyRole = null;
+                    DoctorReports.Clear(); DawnShotDeaths.Clear(); SilencedId = null; ShotUsed = false; snipeChoice = null;
+                    AvengerId = null; AvengeTargetId = null; AvengeTargetRole = null; AvengeDone = false;
                     MatchId = m.Arg(0); roster.Clear(); StartedUtc = DateTime.UtcNow; DurationSeconds = 0;
                     for (int i = 1; i + 1 < m.Args.Length; i += 2) roster[m.Args[i]] = m.Args[i + 1];
                     break;
                 case Msg.Role:
                     if (Enum.TryParse(m.Arg(0), out Role r)) { MyRole = r; known[myId] = r; T("my role: " + r + (m.Args.Length > 1 ? " (mafia mates: " + (m.Args.Length - 1) + ")" : "")); }
-                    for (int i = 1; i < m.Args.Length; i++) known[m.Args[i]] = Role.Mafia;
+                    for (int i = 1; i < m.Args.Length; i++)
+                    {
+                        var mate = m.Args[i].Split('|');                                  // "id" = mafia, "id|Silencer" = the silencer
+                        known[mate[0]] = mate.Length > 1 && Enum.TryParse(mate[1], out Role mr) ? mr : Role.Mafia;
+                    }
                     RefreshRoles();
                     break;
                 case Msg.State: ApplyState(m); break;
@@ -122,7 +143,24 @@ namespace MafiaNight.MatchRules.Net
                     T("dawn: victim " + (DawnVictimId ?? "-") + (DawnSaved ? ", saved" : ", died " + (DawnDiedId ?? "-")));
                     DawnDiedRole = Enum.TryParse(m.Arg(3), out Role dr) ? dr : (Role?)null;
                     if (DawnDiedId != null && DawnDiedRole.HasValue) known[DawnDiedId] = DawnDiedRole.Value;
+                    SilencedId = Nullable(m.Arg(4));
+                    DawnShotDeaths.Clear();
+                    for (int i = 5; i + 1 < m.Args.Length; i += 2)
+                    {
+                        Role? sr = Enum.TryParse(m.Args[i + 1], out Role shotRole) ? shotRole : (Role?)null;
+                        DawnShotDeaths.Add(new KeyValuePair<string, Role?>(m.Args[i], sr));
+                        if (sr.HasValue) known[m.Args[i]] = sr.Value;
+                    }
+                    if (MyRole == Role.Sniper && snipeChoice != null) ShotUsed = true;      // the night is over: the bullet I aimed was fired
+                    T("dawn: silenced " + (SilencedId ?? "-") + ", shot deaths " + DawnShotDeaths.Count);
                     RefreshRoles();
+                    break;
+                case Msg.DoctorResult:
+                    DoctorReports.Add(new KeyValuePair<string, bool>(m.Arg(0), m.Arg(1) == "1"));
+                    T("doctor: my protection of " + m.Arg(0) + (m.Arg(1) == "1" ? " saved him" : " was not needed"));
+                    break;
+                case Msg.Avenge:
+                    ApplyAvenge(m);
                     break;
                 case Msg.Reveal:
                     for (int i = 0; i + 1 < m.Args.Length; i += 2) if (Enum.TryParse(m.Args[i + 1], out Role rv)) known[m.Args[i]] = rv;
@@ -161,6 +199,23 @@ namespace MafiaNight.MatchRules.Net
 
         private static string Nullable(string s) => string.IsNullOrEmpty(s) ? null : s;
 
+        private void ApplyAvenge(WireMessage m)
+        {
+            string step = m.Arg(3);
+            AvengerId = Nullable(m.Arg(0));
+            AvengeTargetId = Nullable(m.Arg(1));
+            if (AvengerId != null) known[AvengerId] = Role.Avenger;                 // his card is turned over for everybody
+            if (step == "open") { AvengeDone = false; AvengeTargetRole = null; }
+            if (step == "done")
+            {
+                AvengeDone = true;
+                AvengeTargetRole = Enum.TryParse(m.Arg(2), out Role tr) ? tr : (Role?)null;
+                if (AvengeTargetId != null && AvengeTargetRole.HasValue) known[AvengeTargetId] = AvengeTargetRole.Value;
+            }
+            T("avenge " + step + ": " + (Seat(AvengerId)?.Name ?? AvengerId) + " -> " + (AvengeTargetId == null ? "nobody" : Seat(AvengeTargetId)?.Name ?? AvengeTargetId));
+            RefreshRoles();
+        }
+
         private void ApplyState(WireMessage m)
         {
             var oldPhase = Phase;
@@ -172,7 +227,7 @@ namespace MafiaNight.MatchRules.Net
             RefreshRoles();
             if (Phase != oldPhase)
             {
-                if (Phase == Phase.Night) { MafiaVotes.Clear(); }
+                if (Phase == Phase.Night) { MafiaVotes.Clear(); SilencedId = null; snipeChoice = null; }
                 if (Phase == Phase.Voting) { Tally.Clear(); }
                 if (Phase == Phase.Day) { SkipCount = 0; }
                 T("table: phase " + Phase + " round " + Round + ", I am " + (IAmAlive ? "alive" : "out") + ", " + seats.Count(x => x.Alive && !x.Left) + " alive");
@@ -185,7 +240,7 @@ namespace MafiaNight.MatchRules.Net
             foreach (var s in seats)
             {
                 s.Role = known.TryGetValue(s.Id, out var r) ? r : (Role?)null;
-                s.IsMate = IAmMafia && s.Role == Role.Mafia && !s.IsMe;
+                s.IsMate = IAmMafia && s.Role.HasValue && s.Role.Value.IsMafiaTeam() && !s.IsMe;
             }
         }
 
@@ -211,9 +266,17 @@ namespace MafiaNight.MatchRules.Net
 
         // ---------------------------------------------------------------- to the host
 
+        private string snipeChoice;       // the target I aimed at tonight (null: none yet, or "not tonight")
+
         private void Act(string kind, string target = "") { T("I ask: " + kind + (string.IsNullOrEmpty(target) ? "" : " on " + (Seat(target)?.Name ?? target))); toHost?.Invoke(new WireMessage(Msg.Act, kind, target ?? "")); }
 
         public void MafiaPick(string id) => Act("mafia", id);
+        /// <summary>The silencer: who may not speak or write tomorrow.</summary>
+        public void Silence(string id) => Act("silence", id);
+        /// <summary>The sniper: fire his only bullet at <paramref name="id"/>, or pass null to keep it tonight.</summary>
+        public void Snipe(string idOrNullToKeepTheBullet) { snipeChoice = string.IsNullOrEmpty(idOrNullToKeepTheBullet) ? null : idOrNullToKeepTheBullet; Act("snipe", idOrNullToKeepTheBullet); }
+        /// <summary>The Avenger: who leaves with him; null takes the pick back (it is final a few seconds after the last pick).</summary>
+        public void AvengerPick(string idOrNullToTakeItBack) => Act("avenge", idOrNullToTakeItBack);
         public void DoctorSave(string id) => Act("save", id);
         public void SheriffCheck(string id) => Act("check", id);
         public void SkipDiscussion() => Act("skip");

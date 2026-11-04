@@ -99,7 +99,11 @@ namespace MafiaNight.Services.Match
 
         private void OnReceived(string sender, WireMessage m)
         {
-            if (m.Type == Msg.Chat) { RoomChat?.Invoke(sender, m.Arg(0)); return; }
+            if (m.Type == Msg.Chat)
+            {
+                if (Client.SilencedId != null && Client.SilencedId == sender && Client.Phase != Phase.Night && Client.Phase != Phase.GameOver) return;   // silenced: even a modified client cannot write
+                RoomChat?.Invoke(sender, m.Arg(0)); return;
+            }
             if (m.Type == Msg.BotChat) { if (sender == HostId) RoomChat?.Invoke(m.Arg(0), m.Arg(1)); return; }       // only the host speaks for a bot
             if (m.Type == Msg.StageAct || m.Type == Msg.Stage || m.Type == Msg.Roster) { Stage.Receive(sender, m); return; }
             if (m.Type == Msg.Act) { Host?.Receive(sender, m); return; }
@@ -136,7 +140,7 @@ namespace MafiaNight.Services.Match
             if (!rooms.IAmHost || Host != null && Host.Running) return false;
             var bots = BotsPlaying();
             var players = rooms.Members.Select(m => new KeyValuePair<string, string>(m.Puid, m.Name ?? "")).Concat(bots.Select(b => new KeyValuePair<string, string>(b.Id, b.Name ?? ""))).ToList();
-            config = config ?? new MatchConfig();
+            config = config ?? MatchConfig.WithAllRoles();
             if (!MafiaMatch.CanStart(players.Count, config)) return false;
             var match = new MafiaMatch(config, players, new SystemRandom());
             Host?.Dispose();
@@ -176,7 +180,7 @@ namespace MafiaNight.Services.Match
 
         private bool TakeOverWith(List<string> data)
         {
-            var host = HostMatchController.Resume(data, new MatchConfig(), new SystemRandom(), net, myId, Client.Apply);
+            var host = HostMatchController.Resume(data, MatchConfig.WithAllRoles(), new SystemRandom(), net, myId, Client.Apply);
             if (host == null) { Log.Warning("Snapshot unreadable", Tag); return false; }
             Host?.Dispose();
             Host = host;

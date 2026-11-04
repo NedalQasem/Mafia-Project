@@ -53,6 +53,10 @@ namespace MafiaNight.MatchRules
         public const string VerdictNobody = "verdict.nobody";
         public const string OverTown = "over.town";
         public const string OverMafia = "over.mafia";
+        public const string DawnShot = "dawn.shot";
+        public const string DawnSilenced = "dawn.silenced";
+        public const string AvengeStart = "avenge.start";
+        public const string AvengeDone = "avenge.done";
 
         public static string Call(Role role) => "call." + role.ToString().ToLowerInvariant();
         public static string Sleep(Role role) => "sleep." + role.ToString().ToLowerInvariant();
@@ -67,7 +71,7 @@ namespace MafiaNight.MatchRules
     public static class CueCatalog
     {
         /// <summary>How long a night call lasts for everybody, called or not.</summary>
-        public const float NightCallSeconds = 12f;
+        public const float NightCallSeconds = 20f;     // the owner's night choice time
 
         public static readonly string[] Languages = { "ar", "en" };
 
@@ -97,6 +101,14 @@ namespace MafiaNight.MatchRules
                 Make(CueIds.Call(Role.Mafia), NightCallSeconds, "يا مافيا… اصحوا. مين بدكم تقتلوا الليلة؟", Anim("wake_mafia", 0f)),
                 Make(CueIds.Call(Role.Doctor), NightCallSeconds, "يا دكتور… اصحى. مين بدك تحمي الليلة؟", Anim("wake_doctor", 0f)),
                 Make(CueIds.Call(Role.Sheriff), NightCallSeconds, "يا شيخ… اصحى. مين بدك تفحص الليلة؟", Anim("wake_sheikh", 0f)),
+                Make(CueIds.Call(Role.Silencer), NightCallSeconds, "يا كاتم الصوت… اصحى. مين بدك تسكّت بكرة؟ ما بيحكي النهار كله.", Anim("wake_silencer", 0f)),
+                Make(CueIds.Call(Role.Sniper), NightCallSeconds, "يا قنّاص… اصحى. معك طلقة وحدة. بدك تطلقها الليلة؟", Anim("wake_sniper", 0f)),
+                Make(CueIds.Sleep(Role.Silencer), 2f, "تمام. كاتم الصوت ينام.", Anim("sleep_silencer", 0f)),
+                Make(CueIds.Sleep(Role.Sniper), 2f, "تمام. القنّاص ينام.", Anim("sleep_sniper", 0f)),
+                Make(CueIds.DawnShot, 9f, "وسُمعت طلقة قنّاص بالليل… سقط {name}.", Anim("zoom_seat", 0f), Sfx("gunshot", 2f), Anim("shot", 2f)),
+                Make(CueIds.DawnSilenced, 4f, "وأسكت كاتم الصوت {name} لهالنهار."),
+                Make(CueIds.AvengeStart, 6f, "تم إخراج الثأري! وعنده قرار: بياخد معه لاعب.", Anim("zoom_seat", 0f), Anim(CueIds.CardReveal(Role.Avenger), 1f)),
+                Make(CueIds.AvengeDone, 7f, "الثأري اختار {name}. خرجوا الاتنين.", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f)),
                 Make(CueIds.Sleep(Role.Mafia), 2f, "تمام. المافيا ينامون.", Anim("sleep_mafia", 0f)),
                 Make(CueIds.Sleep(Role.Doctor), 2f, "تمام. الدكتور ينام.", Anim("sleep_doctor", 0f)),
                 Make(CueIds.Sleep(Role.Sheriff), 2f, "تمام. الشيخ ينام.", Anim("sleep_sheikh", 0f)),
@@ -111,7 +123,7 @@ namespace MafiaNight.MatchRules
                 Make(CueIds.OverTown, 8f, "انتهت السهرة. فاز أهل الحارة!", Anim("over", 0f)),
                 Make(CueIds.OverMafia, 8f, "انتهت السهرة. فازت المافيا!", Anim("over", 0f)),
             };
-            foreach (Role r in new[] { Role.Civilian, Role.Mafia, Role.Doctor, Role.Sheriff })
+            foreach (Role r in System.Enum.GetValues(typeof(Role)))
                 list.Add(Make(CueIds.CardReveal(r), 3f, "", Anim("card_flip", 0f)));
             return list.ToDictionary(c => c.Id);
         }

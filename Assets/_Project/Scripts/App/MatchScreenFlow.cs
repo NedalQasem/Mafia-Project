@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MafiaNight.Data.Cards;
 using MafiaNight.MatchRules;
 using MafiaNight.MatchRules.Net;
 using MafiaNight.Services.Match;
@@ -26,7 +27,8 @@ namespace MafiaNight.App
         };
 
         private static readonly Color CivChip = new Color32(0xB9, 0xA6, 0x7E, 255), MafiaChip = new Color32(0xE0, 0x58, 0x5F, 255),
-                                      DocChip = new Color32(0x4F, 0xA5, 0x8B, 255), SherChip = new Color32(0x6F, 0xA0, 0xD6, 255);
+                                      DocChip = new Color32(0x4F, 0xA5, 0x8B, 255), SherChip = new Color32(0x6F, 0xA0, 0xD6, 255),
+                                      SniperChip = new Color32(0xB8, 0x8A, 0x3C, 255), AvengerChip = new Color32(0xD9, 0x7A, 0x3A, 255);
 
         private KitMatchView view;
         private ClientMatchController c;
@@ -39,6 +41,9 @@ namespace MafiaNight.App
         private int lastSeconds = -1;
         private int confirmedRound = -1;
         private RewardResult reward;
+        // the second choices of the new roles, made in a sheet: the silencer's target, the sniper's shot
+        private string silencePicked, sniperPicked;
+        private bool silenceConfirmed, sniperDecided, sheetWanted;
 
         /// <summary>What the rewards server paid; the end screen shows it once it arrives (until then the block stays hidden).</summary>
         public void SetReward(RewardResult r) { reward = r; if (c != null && c.Phase == Phase.GameOver) Redraw(); }
@@ -63,6 +68,7 @@ namespace MafiaNight.App
         {
             if (c == null) return;
             tick?.Invoke();
+            if (KitPickSheet.IsOpen) KitPickSheet.SetTimer(Clock(Mathf.CeilToInt(c.SecondsLeft)));
             if (Bars.TryGetValue(frame, out var bar))
             {
                 int s = Mathf.CeilToInt(c.SecondsLeft);
@@ -83,17 +89,17 @@ namespace MafiaNight.App
 
         private static string RoleKey(Role r)
         {
-            switch (r) { case Role.Mafia: return "mafia"; case Role.Doctor: return "doc"; case Role.Sheriff: return "sher"; default: return "civ"; }
+            switch (r) { case Role.Mafia: case Role.Silencer: return "mafia"; case Role.Doctor: return "doc"; case Role.Sheriff: return "sher"; default: return "civ"; }   // the frames of the four first roles; the other three share them and put their own card and sheet over
         }
 
         private static string RoleName(Role r)
         {
-            switch (r) { case Role.Mafia: return "مافيا"; case Role.Doctor: return "طبيب"; case Role.Sheriff: return "شرطي"; default: return "مواطن"; }
+            switch (r) { case Role.Mafia: return "مافيا"; case Role.Silencer: return "كاتم الصوت"; case Role.Doctor: return "طبيب"; case Role.Sheriff: return "شرطي"; case Role.Sniper: return "قنّاص"; case Role.Avenger: return "الثأري"; default: return "مواطن"; }
         }
 
         private static Color RoleColor(Role? r)
         {
-            switch (r) { case Role.Mafia: return MafiaChip; case Role.Doctor: return DocChip; case Role.Sheriff: return SherChip; default: return CivChip; }
+            switch (r) { case Role.Mafia: case Role.Silencer: return MafiaChip; case Role.Doctor: return DocChip; case Role.Sheriff: return SherChip; case Role.Sniper: return SniperChip; case Role.Avenger: return AvengerChip; default: return CivChip; }
         }
 
         private static string Digits(int n) => n.ToString();
@@ -117,6 +123,7 @@ namespace MafiaNight.App
                 case ActionResult.SelfSaveUsed: return "أنقذت نفسك من قبل، اختر غيرك.";
                 case ActionResult.MafiaTeammate: return "ما بتقدر تختار واحد من المافيا.";
                 case ActionResult.AlreadyDone: return "فعلتها هالليلة.";
+                case ActionResult.AbilityUsed: return "أطلقت طلقتك الوحيدة.";
                 case ActionResult.InvalidTarget: return "اختيار غير صالح.";
                 case ActionResult.WrongPhase: return "فات الوقت.";
                 default: return "";
@@ -128,11 +135,14 @@ namespace MafiaNight.App
         private void Redraw()
         {
             if (c == null || view == null) return;
-            if (c.Round != confirmedRound && c.Phase == Phase.Night) { confirmedRound = c.Round; confirmed = false; picked = null; }
+            if (c.Round != confirmedRound && c.Phase == Phase.Night) { confirmedRound = c.Round; confirmed = false; picked = null; silencePicked = sniperPicked = null; silenceConfirmed = sniperDecided = false; }
             lastSeconds = -1;
+            sheetWanted = false;
+            if (c.Phase != Phase.RoleReveal) KitRoleReveal.CloseCurrent();
             switch (c.Phase)
             {
                 case Phase.RoleReveal: DrawReveal(); break;
+                case Phase.Avenge: DrawAvenge(); break;
                 case Phase.Night: if (c.IAmAlive) DrawNight(); else DrawSpectator(); break;
                 case Phase.Dawn: if (c.IAmAlive) DrawDawn(); else DrawSpectator(); break;
                 case Phase.Day: if (c.IAmAlive) DrawDay(); else DrawSpectator(); break;
@@ -140,6 +150,7 @@ namespace MafiaNight.App
                 case Phase.Verdict: if (c.IAmAlive) DrawVerdict(); else DrawSpectator(); break;
                 case Phase.GameOver: DrawOver(); break;
             }
+            if (!sheetWanted) KitPickSheet.CloseCurrent();
             shownPhase = c.Phase; shownRound = c.Round;
         }
 
@@ -165,9 +176,27 @@ namespace MafiaNight.App
 
         // ---------------------------------------------------------------- role reveal
 
+        private static bool HasOwnCard(Role r) => r == Role.Silencer || r == Role.Sniper || r == Role.Avenger;
+
+        /// <summary>The roles that came after the four first screens show their card full screen (it turns over to what the role does).</summary>
+        private void DrawRevealCard(Role role)
+        {
+            Use("p1_civ");
+            if (KitRoleReveal.IsOpen) { KitRoleReveal.SetButton(confirmed ? "بانتظار البقية" : "فهمت، ابدأ"); return; }      // already on screen: do not turn the card back over
+            var def = RoleCards.Find(role.ToString().ToLowerInvariant());
+            string line = def != null ? def.Sub : "";
+            if (role == Role.Silencer)
+            {
+                var mates = c.Seats.Where(s => s.IsMate).Select(s => s.Name).ToList();
+                line = mates.Count > 0 ? "رفقاؤك بالمافيا: " + string.Join("، ", mates) : "أنت المافيا الوحيد";
+            }
+            KitRoleReveal.Show(view.transform, def, new CardLayers(), line, confirmed ? "بانتظار البقية" : "فهمت، ابدأ", () => { if (confirmed) return; confirmed = true; c.Ready(); KitRoleReveal.SetButton("بانتظار البقية"); });
+        }
+
         private void DrawReveal()
         {
             var role = c.MyRole ?? Role.Civilian;
+            if (HasOwnCard(role)) { DrawRevealCard(role); return; }
             string f = "p1_" + RoleKey(role);
             Use(f);
             view.SetText(f, 4, "الجولة الأولى · " + c.Seats.Count + " لاعبين");
@@ -203,14 +232,15 @@ namespace MafiaNight.App
             var bar = Bars[f];
             string sub = "الجولة " + c.Round;
 
-            if (role == Role.Civilian)
+            if (role == Role.Civilian || role == Role.Avenger || role == Role.Sniper)
             {
                 view.SetText(f, bar.Sub, sub);
                 view.SetSeats(f, MakeSeats((s, spec) => { if (s.Alive && !s.Left) { spec.Look = SeatLook.Sleep; spec.Dim = !s.IsMe; } return spec; }), null);
+                if (role == Role.Sniper && !c.ShotUsed && !sniperDecided) ShowSniperSheet();
                 return;
             }
 
-            bool mafia = role == Role.Mafia, doc = role == Role.Doctor;
+            bool mafia = c.IAmMafia, doc = role == Role.Doctor;
             view.SetText(f, bar.Sub, sub + (confirmed ? " · تم" : " · دورك الآن"));
             var votes = new Dictionary<string, int>();
             if (mafia) foreach (var v in c.MafiaVotes.Values) { votes.TryGetValue(v, out var n); votes[v] = n + 1; }
@@ -257,13 +287,14 @@ namespace MafiaNight.App
             if (doc) view.SetText(f, 66, "اللي تنقذه ما يموت هالليلة حتى لو اختاره المافيا. تقدر تنقذ نفسك مرة وحدة بالمباراة.");
 
             view.SetTap(f, goBtn, () => ConfirmNight(role));
+            if (role == Role.Silencer && confirmed && !silenceConfirmed) ShowSilenceSheet();
         }
 
         private void OnNightSeatTapped(string id)
         {
             var s = c.Seat(id);
             if (s == null || !s.Alive || s.Left) return;
-            if (c.MyRole == Role.Mafia && (s.IsMate || s.IsMe)) return;
+            if (c.IAmMafia && (s.IsMate || s.IsMe)) return;
             picked = id;
             Redraw();
         }
@@ -273,12 +304,88 @@ namespace MafiaNight.App
             if (picked == null) return;
             switch (role)
             {
-                case Role.Mafia: c.MafiaPick(picked); break;
+                case Role.Mafia: case Role.Silencer: c.MafiaPick(picked); break;
                 case Role.Doctor: c.DoctorSave(picked); break;
                 case Role.Sheriff: c.SheriffCheck(picked); break;
             }
             confirmed = true;
             Redraw();
+        }
+
+        // ---------------------------------------------------------------- sheets of the new roles
+
+        private List<KitPickSheet.Row> LivingOthers(bool withoutMates)
+        {
+            var rows = new List<KitPickSheet.Row>();
+            foreach (var s in c.Seats) if (s.Alive && !s.Left && !s.IsMe && !(withoutMates && s.IsMate)) rows.Add(new KitPickSheet.Row { Id = s.Id, Name = s.Name });
+            return rows;
+        }
+
+        private void OpenSheet(KitPickSheet.Spec spec) { sheetWanted = true; spec.Timer = Clock(Mathf.CeilToInt(c.SecondsLeft)); KitPickSheet.Show(view.transform, spec); }
+
+        /// <summary>The silencer's second choice, after the kill: who may not speak or write tomorrow.</summary>
+        private void ShowSilenceSheet()
+        {
+            OpenSheet(new KitPickSheet.Spec
+            {
+                Title = "كاتم الصوت · مين تسكّت؟",
+                Body = "المُسكَت ما بيحكي ولا بيكتب طول النهار، وبيقدر يصوّت بس. الكل بيعرف إنه انسكت، بس ما حدا بيعرف مين سكّته.",
+                Rows = LivingOthers(true), Selected = silencePicked,
+                Picked = id => { silencePicked = id; Redraw(); },
+                Buttons = new List<KitPickSheet.Button2> { new KitPickSheet.Button2 { Label = silencePicked == null ? "اختر لاعباً" : "أسكِت " + Name(silencePicked), Disabled = silencePicked == null, Run = () => { c.Silence(silencePicked); silenceConfirmed = true; Redraw(); } } },
+            });
+        }
+
+        /// <summary>The sniper's night: fire the only bullet at somebody, or keep it.</summary>
+        private void ShowSniperSheet()
+        {
+            OpenSheet(new KitPickSheet.Spec
+            {
+                Title = "القنّاص · معك طلقة وحدة",
+                Body = "إذا أصبت مافيا بيطلع وإنت بتضل. إذا أصبت مواطن بيطلعوا الاتنين. الطبيب ما بيقدر يوقفها وما حدا بيعرف مين قنص.",
+                Rows = LivingOthers(false), Selected = sniperPicked,
+                Picked = id => { sniperPicked = id; Redraw(); },
+                Buttons = new List<KitPickSheet.Button2>
+                {
+                    new KitPickSheet.Button2 { Label = sniperPicked == null ? "اختر هدفاً" : "أطلق على " + Name(sniperPicked), Disabled = sniperPicked == null, Run = () => { c.Snipe(sniperPicked); sniperDecided = true; Redraw(); } },
+                    new KitPickSheet.Button2 { Label = "مش هالليلة", Quiet = true, Run = () => { c.Snipe(null); sniperDecided = true; Redraw(); } },
+                },
+            });
+        }
+
+        // ---------------------------------------------------------------- the Avenger's moment
+
+        private void DrawAvenge()
+        {
+            string f = "p4";
+            Use(f);
+            string avenger = Name(c.AvengerId);
+            view.SetText(f, 6, "قرار الثأري");
+            view.SetText(f, 8, avenger);
+            view.SetText(f, 60, "الثأري · الجولة " + c.Round);
+            view.SetText(f, 63, "المايك مفتوح");
+            view.SetTap(f, 61, () => { });
+            view.SetText(f, 68, "النقاش");
+            var tally = view.Node(f, 71);
+            if (tally != null && tally.parent != null && tally.parent.parent != null) tally.parent.parent.gameObject.SetActive(false);
+            string pick = c.AvengeTargetId != null ? Name(c.AvengeTargetId) : null;
+            view.SetText(f, 75, c.IAmTheAvenger
+                ? "كرتك انكشف والكل بيسمعك. اختر مين بيطلع معك."
+                : "تم إخراج الثأري! وعنده قرار: بياخد معه لاعب. ناقشوه بالصوت وأقنعوه." + (pick != null ? " اختار " + pick + "." : ""));
+            view.SetActive(f, 79, false);
+            view.SetActive(f, 82, false);
+            view.SetSeats(f, MakeSeats((s, spec) => { if (s.Id == c.AvengeTargetId && s.Alive && !s.Left) spec.Look = SeatLook.Pick; return spec; }), null);
+            if (c.IAmTheAvenger)
+            {
+                OpenSheet(new KitPickSheet.Spec
+                {
+                    Title = "قرارك يا ثأري",
+                    Body = "اختر مين بيطلع معك، علناً. بعد اختيارك معك ٣ ثواني تغيّر رأيك، وبعدها يتثبّت.",
+                    Rows = LivingOthers(false), Selected = c.AvengeTargetId,
+                    Picked = id => c.AvengerPick(id),
+                    Buttons = new List<KitPickSheet.Button2> { new KitPickSheet.Button2 { Label = "تراجع عن اختياري", Quiet = true, Disabled = c.AvengeTargetId == null, Run = () => c.AvengerPick(null) } },
+                });
+            }
         }
 
         // ---------------------------------------------------------------- dawn
@@ -290,21 +397,46 @@ namespace MafiaNight.App
             Use(f);
             view.SetText(f, 51, "الجولة " + c.Round);
             view.SetText(f, 67, "الجولة " + c.Round);
+            string extra = DawnExtras();
             if (died)
             {
                 string who = Name(c.DawnDiedId);
                 var role = c.DawnDiedRole ?? Role.Civilian;
                 view.ReplaceTextImage(f, 69, "وُجد " + who + " مقتولاً", 24f);
-                view.SetText(f, 71, "سقط بيد المافيا في ليلة أمس، وكان " + (role == Role.Civilian ? "من أهل المدينة." : role == Role.Doctor ? "الطبيب." : role == Role.Sheriff ? "الشرطي." : "من المافيا."));
+                view.SetText(f, 71, "سقط بيد المافيا في ليلة أمس، وكان " + (role == Role.Civilian ? "من أهل المدينة." : role == Role.Mafia ? "من المافيا." : RoleName(role) + ".") + extra);
                 view.ReplaceTextImage(f, 73, RoleName(role), 18f);
                 view.SetText(f, 75, "ما بقي من اللاعبين: " + Digits(AliveCount));
             }
             else
             {
-                view.SetText(f, 71, c.DawnSaved ? "حاولت المافيا القتل لكن الطبيب كان أسرع. ما مات أحد الليلة!" : "مرّت الليلة بهدوء. ما مات أحد.");
-                view.SetText(f, 75, "كلكم لسا هون: " + Digits(AliveCount) + " لاعبين");
+                view.SetText(f, 71, (c.DawnSaved ? "حاولت المافيا القتل لكن الطبيب كان أسرع." : "مرّت الليلة بدون ضحية للمافيا.") + extra);
+                view.SetText(f, 75, c.DawnShotDeaths.Count > 0 ? "ما بقي من اللاعبين: " + Digits(AliveCount) : "كلكم لسا هون: " + Digits(AliveCount) + " لاعبين");
             }
             view.SetSeats(f, MakeSeats(null), null);
+        }
+
+        /// <summary>The rest of the morning report: a shot in the night (who shot is never said) and who was silenced for the day.</summary>
+        private string DawnExtras()
+        {
+            var sb = new System.Text.StringBuilder();
+            if (c.DawnShotDeaths.Count > 0)
+            {
+                sb.Append("\nوسُمعت طلقة قنّاص بالليل: ");
+                for (int i = 0; i < c.DawnShotDeaths.Count; i++)
+                {
+                    var d = c.DawnShotDeaths[i];
+                    if (i > 0) sb.Append("، ");
+                    sb.Append(Name(d.Key)); if (d.Value.HasValue) sb.Append(" (").Append(RoleName(d.Value.Value)).Append(")");
+                }
+                sb.Append(".");
+            }
+            if (c.SilencedId != null) sb.Append("\nوأسكت كاتم الصوت ").Append(Name(c.SilencedId)).Append(" لهالنهار.");
+            if (c.MyRole == Role.Doctor && c.DoctorReports.Count > 0)
+            {
+                var r = c.DoctorReports[c.DoctorReports.Count - 1];
+                sb.Append(r.Value ? "\nحمايتك لـ" + Name(r.Key) + " نجحت." : "\nما احتاج " + Name(r.Key) + " حمايتك هالليلة.");
+            }
+            return sb.ToString();
         }
 
         // ---------------------------------------------------------------- day
@@ -322,7 +454,15 @@ namespace MafiaNight.App
             view.SetText(f, 68, "النقاش");
             var tally = view.Node(f, 71);
             if (tally != null && tally.parent != null && tally.parent.parent != null) tally.parent.parent.gameObject.SetActive(false);
-            view.SetText(f, 75, "تكلّموا واكشفوا المافيا. التصويت يبدأ لما ينتهي الوقت أو يوافق أغلبكم على التخطي.");
+            string help = "تكلّموا واكشفوا المافيا. التصويت يبدأ لما ينتهي الوقت أو يوافق أغلبكم على التخطي.";
+            if (c.IAmSilenced) help = "كاتم الصوت أسكتك لهالنهار: بتسمع وبتصوّت، بس ما بتحكي ولا بتكتب.";
+            else if (c.SilencedId != null) help += "\nالمُسكَت اليوم: " + Name(c.SilencedId) + ".";
+            if (c.MyRole == Role.Doctor && c.DoctorReports.Count > 0)
+            {
+                var r = c.DoctorReports[c.DoctorReports.Count - 1];
+                help += r.Value ? "\nحمايتك لـ" + Name(r.Key) + " نجحت." : "\nما احتاج " + Name(r.Key) + " حمايتك هالليلة.";
+            }
+            view.SetText(f, 75, help);
             view.SetActive(f, 79, false);
             view.SetActive(f, 82, false);
             view.SetSeats(f, MakeSeats(null), null);
@@ -371,7 +511,7 @@ namespace MafiaNight.App
         {
             bool removed = c.VerdictRemovedId != null;
             var role = c.VerdictRemovedRole ?? Role.Civilian;
-            string f = removed && role == Role.Mafia ? "p6_mafia" : "p6_civ";
+            string f = removed && role.IsMafiaTeam() ? "p6_mafia" : "p6_civ";
             Use(f);
             view.SetText(f, 51, "الجولة " + c.Round);
             if (removed)
@@ -379,7 +519,7 @@ namespace MafiaNight.App
                 view.SetText(f, 62, "قرار المدينة بأغلبية " + c.VerdictVotes + " أصوات");
                 view.ReplaceTextImage(f, 64, "طُرد " + Name(c.VerdictRemovedId) + " من اللعبة", 24f);
                 view.ReplaceTextImage(f, 66, RoleName(role), 18f);
-                view.SetText(f, 68, role == Role.Mafia ? "أحسنتم! أسقطتم واحداً من المافيا." : "طُرد بريء... المافيا لسا بينكم.");
+                view.SetText(f, 68, role.IsMafiaTeam() ? "أحسنتم! أسقطتم واحداً من المافيا." : "طُرد بريء... المافيا لسا بينكم.");
             }
             else
             {
@@ -400,7 +540,7 @@ namespace MafiaNight.App
             string f = "p7";
             Use(f);
             string phase;
-            switch (c.Phase) { case Phase.Night: phase = "الليل"; break; case Phase.Dawn: phase = "الفجر"; break; case Phase.Voting: phase = "التصويت"; break; case Phase.Verdict: phase = "القرار"; break; default: phase = "النهار"; break; }
+            switch (c.Phase) { case Phase.Night: phase = "الليل"; break; case Phase.Dawn: phase = "الفجر"; break; case Phase.Voting: phase = "التصويت"; break; case Phase.Verdict: phase = "القرار"; break; case Phase.Avenge: phase = "قرار الثأري"; break; default: phase = "النهار"; break; }
             view.SetText(f, 56, phase + " · الجولة " + c.Round);
             view.SetText(f, 74, "");
             view.SetActive(f, 75, false);

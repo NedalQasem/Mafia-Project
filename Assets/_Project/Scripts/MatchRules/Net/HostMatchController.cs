@@ -94,8 +94,25 @@ namespace MafiaNight.MatchRules.Net
         private void SendRole(MatchPlayer p)
         {
             var args = new List<string> { p.Role.ToString() };
-            if (p.IsMafia) args.AddRange(match.MafiaTeam.Where(m => m.Id != p.Id).Select(m => m.Id));   // the mafia know each other
+            // the mafia know each other, and which of them is the silencer ("id|Silencer"; a plain id is a mafia member)
+            if (p.IsMafia) args.AddRange(match.MafiaTeam.Where(m => m.Id != p.Id).Select(m => m.Role == Role.Mafia ? m.Id : m.Id + "|" + m.Role));
             Send(p.Id, new WireMessage(Msg.Role, args.ToArray()));
+        }
+
+        private WireMessage DawnMessage()
+        {
+            var n = match.LastNight;
+            var a = new List<string> { n.VictimId ?? "", n.Saved ? "1" : "0", n.DiedId ?? "", n.DiedRole?.ToString() ?? "", n.SilencedId ?? "" };
+            foreach (var d in n.ShotDeaths) { a.Add(d.Id); a.Add(d.Role?.ToString() ?? ""); }
+            return new WireMessage(Msg.Dawn, a.ToArray());
+        }
+
+        private WireMessage AvengeMessage(string step)
+        {
+            var done = match.LastAvenge;
+            string id = match.AvengerId ?? done?.AvengerId ?? "";
+            string target = step == "done" ? done?.TargetId ?? "" : match.AvengePick ?? "";
+            return new WireMessage(Msg.Avenge, id, target, step == "done" ? done?.TargetRole?.ToString() ?? "" : "", step);
         }
 
         private void EnterPhase()
@@ -108,8 +125,14 @@ namespace MafiaNight.MatchRules.Net
             {
                 case Phase.Dawn:
                     var n = match.LastNight;
-                    T("dawn: the mafia chose " + N(n.VictimId) + (n.Saved ? ", the doctor saved him" : ", died: " + N(n.DiedId) + " (" + n.DiedRole + ")"));
-                    ToAll(new WireMessage(Msg.Dawn, n.VictimId ?? "", n.Saved ? "1" : "0", n.DiedId ?? "", n.DiedRole?.ToString() ?? ""));
+                    T("dawn: the mafia chose " + N(n.VictimId) + (n.Saved ? ", the doctor saved him" : ", died: " + N(n.DiedId) + " (" + n.DiedRole + ")")
+                      + (n.SilencedId != null ? "; silenced: " + N(n.SilencedId) : "") + (n.ShotDeaths.Count > 0 ? "; shot: " + string.Join(", ", n.ShotDeaths.Select(d => N(d.Id) + " (" + d.Role + ")")) : ""));
+                    ToAll(DawnMessage());
+                    SendDoctorResult(null);
+                    break;
+                case Phase.Avenge:
+                    T("avenge: " + N(match.AvengerId) + " decides who leaves with him (" + timeLeft.ToString("0") + " s)");
+                    ToAll(AvengeMessage("open"));
                     break;
                 case Phase.Verdict:
                     var v = match.LastVerdict;
@@ -133,8 +156,22 @@ namespace MafiaNight.MatchRules.Net
 
         private void Advance()
         {
+            var before = match.Phase;
             match.Advance();
+            if (before == Phase.Avenge && match.LastAvenge != null)
+            {
+                T("avenge done: " + N(match.LastAvenge.AvengerId) + " took " + N(match.LastAvenge.TargetId) + (match.LastAvenge.TargetRole.HasValue ? " (" + match.LastAvenge.TargetRole + ")" : ""));
+                ToAll(AvengeMessage("done"));
+            }
             EnterPhase();
+        }
+
+        /// <summary>What the doctor learns about his protection: to him only. peer == null: to the doctor if he is in the match.</summary>
+        private void SendDoctorResult(string peer)
+        {
+            var d = match.LastDoctor;
+            if (d == null || (peer != null && peer != d.DoctorId) || match.Get(d.DoctorId)?.Left == true) return;
+            Send(d.DoctorId, new WireMessage(Msg.DoctorResult, d.TargetId, d.Saved ? "1" : "0"));
         }
 
         // ---------------------------------------------------------------- hand-over to another device
@@ -195,8 +232,13 @@ namespace MafiaNight.MatchRules.Net
         private void SendPhaseExtras(string peer)
         {
             void To(WireMessage m) { if (peer == null) ToAll(m); else Send(peer, m); }
+            if (peer != null && (match.Phase == Phase.Day || match.Phase == Phase.Voting || match.Phase == Phase.Avenge)) SendDoctorResult(peer);
             switch (match.Phase)
             {
+                case Phase.Avenge:
+                    To(AvengeMessage("open"));
+                    if (match.AvengePick != null) To(AvengeMessage("pick"));
+                    break;
                 case Phase.Day: To(new WireMessage(Msg.Skip, match.SkipCount.ToString(), (match.InPlayCount / 2 + 1).ToString())); break;
                 case Phase.Voting:
                     var a = new List<string>();
@@ -231,10 +273,15 @@ namespace MafiaNight.MatchRules.Net
             if (!Running) return;
             elapsedInPhase += dt;
             timeLeft -= dt;
-            if (endIn < 0f && EverybodyDone()) { endIn = EarlyEndDelay; T("everybody acted in " + match.Phase + ": it ends in " + EarlyEndDelay.ToString("0") + " s"); }
+            if (match.AvengerGone) { T("the Avenger left the match: his moment is over"); Advance(); return; }
+            if (endIn < 0f && EverybodyDone()) { endIn = EarlyEndFor(match.Phase); T("everybody acted in " + match.Phase + ": it ends in " + endIn.ToString("0") + " s"); }
+            if (endIn >= 0f && match.Phase == Phase.Avenge && !EverybodyDone()) { endIn = -1f; T("the Avenger took his pick back"); }   // only his pick can be taken back
             if (endIn >= 0f) { endIn -= dt; if (endIn <= 0f) { Advance(); return; } }
             if (timeLeft <= 0f) Advance();
         }
+
+        /// <summary>How long a finished phase is shown before it ends. The Avenger's pick gets the confirmation time, so a wrong tap can still be undone.</summary>
+        private float EarlyEndFor(Phase phase) { return phase == Phase.Avenge ? match.Config.AvengeConfirmSeconds : EarlyEndDelay; }
 
         private bool EverybodyDone()
         {
@@ -244,6 +291,7 @@ namespace MafiaNight.MatchRules.Net
                 case Phase.Night: return match.NightActionsComplete();
                 case Phase.Day: return match.SkipReached;
                 case Phase.Voting: return match.AllVoted();
+                case Phase.Avenge: return match.AvengePick != null;
                 default: return false;
             }
         }
@@ -277,8 +325,8 @@ namespace MafiaNight.MatchRules.Net
             SendRevealed(id);
             if (match.Phase == Phase.Dawn && match.LastNight != null)
             {
-                var n = match.LastNight;
-                Send(id, new WireMessage(Msg.Dawn, n.VictimId ?? "", n.Saved ? "1" : "0", n.DiedId ?? "", n.DiedRole?.ToString() ?? ""));
+                Send(id, DawnMessage());
+                SendDoctorResult(id);
             }
             else if (match.Phase == Phase.Verdict && match.LastVerdict != null)
             {
@@ -321,6 +369,16 @@ namespace MafiaNight.MatchRules.Net
                     }
                     break;
                 case "save": res = match.DoctorSave(sender, target); break;
+                case "silence": res = match.Silence(sender, target); break;
+                case "snipe": res = match.Snipe(sender, target); break;
+                case "avenge":
+                    res = match.AvengerPick(sender, target);
+                    if (res == ActionResult.Ok)
+                    {
+                        endIn = -1f;     // a changed pick starts the confirmation time again
+                        ToAll(AvengeMessage("pick"));
+                    }
+                    break;
                 case "check":
                     res = match.SheriffCheck(sender, target, out var rep);
                     if (res == ActionResult.Ok) Send(sender, new WireMessage(Msg.Sheriff, rep.TargetId, rep.IsMafia ? "1" : "0"));

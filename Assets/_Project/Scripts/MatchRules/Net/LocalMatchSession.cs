@@ -29,7 +29,7 @@ namespace MafiaNight.MatchRules.Net
             var list = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>(MeId, myName) };
             string[] names = { "أم سعيد", "البيك", "لينا", "سارة", "الحج حسن", "أبو فارس", "مازن", "ريم", "عادل", "نور", "سامر", "هديل", "خالد", "رنا", "يزن" };
             for (int i = 0; i < players - 1; i++) list.Add(new KeyValuePair<string, string>("bot" + i, names[i % names.Length]));
-            Match = new MafiaMatch(config ?? new MatchConfig(), list, this.random);
+            Match = new MafiaMatch(config ?? MatchConfig.WithAllRoles(), list, this.random);
             Me = new ClientMatchController(MeId, m => Host.Receive(MeId, WireMessage.FromBytes(m.ToBytes())));
             foreach (var p in list.Skip(1))
             {

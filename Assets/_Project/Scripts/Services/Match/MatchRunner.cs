@@ -45,6 +45,7 @@ namespace MafiaNight.Services.Match
         {
             if (Session == null || rooms == null || !rooms.InRoom) return "لست بغرفة.";
             if (rooms.CurrentRoom != null && !rooms.CurrentRoom.ChatEnabled) return "الدردشة مقفلة بهالغرفة.";
+            if (Session.Client.IAmSilenced) return "كاتم الصوت أسكتك: بتقدر تصوّت بس.";
             text = CleanChat(text);
             if (string.IsNullOrEmpty(text)) return "";
             if (Time.unscaledTime - lastRoomChatAt < 1f) return "مهلاً، رسائلك سريعة.";
@@ -249,7 +250,7 @@ namespace MafiaNight.Services.Match
             var mates = c.Seats.Where(x => x.IsMate && x.Alive && !x.Left).Select(x => x.Id).ToList();
             var living = c.Seats.Where(x => x.Alive && !x.Left).Select(x => x.Id).ToList();
             var me = rooms.Members.FirstOrDefault(m => m.IsMe);
-            var plan = MatchVoiceRules.For(c.Phase, c.MyRole, c.IAmAlive, mates, living, rooms.Members.Select(m => m.Puid).ToList(), me != null ? me.Puid : "");
+            var plan = MatchVoiceRules.For(c.Phase, c.MyRole, c.IAmAlive, mates, living, rooms.Members.Select(m => m.Puid).ToList(), me != null ? me.Puid : "", c.IAmSilenced, c.Phase == Phase.Avenge ? c.AvengerId : null);
             string sig = plan.MicAllowed + "|" + (plan.HearOnly == null ? "*" : string.Join(",", plan.HearOnly.OrderBy(x => x)));
             if (sig == lastVoicePlan) return;
             lastVoicePlan = sig;
