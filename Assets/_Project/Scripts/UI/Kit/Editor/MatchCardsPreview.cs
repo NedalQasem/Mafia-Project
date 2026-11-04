@@ -88,6 +88,41 @@ namespace MafiaNight.UI.Kit.Editor
             return log;
         }
 
+        /// <summary>The big card flying out of the little one: three moments of the flight (stepped by hand).</summary>
+        public static string RenderViewerFlight(string folder)
+        {
+            var v = Object.FindFirstObjectByType<KitMatchView>();
+            if (v == null) return "open the match scene first";
+            string log = "";
+            KitCardViewer.StepOverride = 1f / 30f;
+            try
+            {
+                var size = new Vector2Int(540, 1200);
+                var cam = Camera.main; var rt0 = new RenderTexture(size.x, size.y, 24); cam.targetTexture = rt0; cam.Render(); Canvas.ForceUpdateCanvases(); cam.targetTexture = null; rt0.Release();
+                var seats = new List<SeatSpec> { new SeatSpec { Id = "me", Name = "أنت", Me = true, RoleId = "sheikh" }, new SeatSpec { Id = "a", Name = "سامر" }, new SeatSpec { Id = "b", Name = "ريم" }, new SeatSpec { Id = "c", Name = "لينا" } };
+                v.Show("p4");
+                var stage = v.Frame("p4").Find("f_stage");
+                for (int i = stage.childCount - 1; i >= 0; i--) { var c = stage.GetChild(i); if (c.name.StartsWith("f_seat") || c.name == "Seat") Object.DestroyImmediate(c.gameObject); }
+                v.SetSeats("p4", seats, null);
+                foreach (var g in v.GetComponentsInChildren<KitFitGroup>(true)) g.Apply();
+                Canvas.ForceUpdateCanvases();
+                var little = v.SeatOf("me").Find("RoleCard") as RectTransform;
+                KitCardViewer.Show(v.transform, MafiaNight.Data.Cards.RoleCards.Find("sheikh"), new MafiaNight.Data.Cards.CardLayers(), "أنت", little);
+                var viewer = Object.FindFirstObjectByType<KitCardViewer>();
+                var fly = viewer.Fly(true);
+                fly.MoveNext();                                                       // the canvas settles
+                int[] shots = { 3, 6, 15 }; int done = 0;
+                for (int k = 0; k < shots.Length; k++)
+                {
+                    for (; done < shots[k]; done++) { fly.MoveNext(); Canvas.ForceUpdateCanvases(); }
+                    log += Snap(System.IO.Path.Combine(folder, "fly-" + shots[k] + ".png"), size.x, size.y);
+                }
+                Object.DestroyImmediate(viewer.gameObject);
+            }
+            finally { KitCardViewer.StepOverride = 0f; }
+            return log;
+        }
+
         private static void Step(int n, params System.Collections.IEnumerator[] routines)
         {
             for (int i = 0; i < n; i++)

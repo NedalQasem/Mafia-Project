@@ -67,7 +67,7 @@ namespace MafiaNight.App
             if (c != null) { c.Changed -= Redraw; c.PhaseChanged -= OnPhase; }
             if (runner != null) runner.ChatChanged -= RefreshDock;
             view = matchView; c = client; tick = tickSource;
-            view.CardPressed = spec => KitCardViewer.Show(view.transform, RoleCards.Find(spec.RoleId), spec.Layers ?? new CardLayers(), spec.Me ? "أنت" : spec.Name);
+            view.CardPressed = (spec, little) => KitCardViewer.Show(view.transform, RoleCards.Find(spec.RoleId), spec.Layers ?? new CardLayers(), spec.Me ? "أنت" : spec.Name, little);
             var live = MatchRunner.Instance;
             runner = live != null && live.Session != null && live.Session.Client == client ? live : null;
             if (runner != null) runner.ChatChanged += RefreshDock;

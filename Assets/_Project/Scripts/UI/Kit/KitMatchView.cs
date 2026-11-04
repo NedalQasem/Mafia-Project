@@ -334,8 +334,8 @@ namespace MafiaNight.UI.Kit
             return null;
         }
 
-        /// <summary>A card was pressed (a role that player may know): the screen shows it big.</summary>
-        public Action<SeatSpec> CardPressed;
+        /// <summary>A card was pressed (a role that player may know), with the little card itself: the screen shows it big, flying out of it.</summary>
+        public Action<SeatSpec, RectTransform> CardPressed;
 
         private const float CardWidthUnits = 74f, AvatarX = 85.85f, AvatarY = -60.92f, AvatarHalf = 60.9f;
 
@@ -353,7 +353,7 @@ namespace MafiaNight.UI.Kit
             rt.anchorMin = rt.anchorMax = new Vector2(0, 1); rt.pivot = new Vector2(0.5f, 0.5f);
             float dx = AvatarHalf + 8f + CardWidthUnits / 2f;
             rt.anchoredPosition = new Vector2(AvatarX + (onRight ? dx : -dx), AvatarY);
-            if (def != null) card.Pressed += _ => CardPressed?.Invoke(spec);
+            if (def != null) card.Pressed += _ => CardPressed?.Invoke(spec, rt);      // the little card is where the big one flies out of
         }
 
         private void Fill(Transform seat, SeatSpec spec)
