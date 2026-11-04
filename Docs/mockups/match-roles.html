@@ -281,6 +281,9 @@ h1{font-family:Lalezar;font-weight:400;font-size:1.6rem;margin:6px 0 2px;text-al
 .lk.tapeLock::before{content:"";position:absolute;left:-6px;right:-6px;top:50%;height:12px;margin-top:-6px;background:repeating-linear-gradient(45deg,#cdbd9066 0 5px,#a8985f66 5px 10px);rotate:-1.5deg}
 .lk.tapeLock span{position:relative;background:#120c08;padding:1px 10px;border-radius:3px}
 .new{font-size:.6rem;color:#2a1a08;background:#f5e2a8;border-radius:4px;padding:0 4px;margin-inline-start:4px}
+
+/* on a phone the table comes first and the tabs sit right under it */
+@media (max-width:760px){.wrap{display:flex;flex-direction:column;align-items:center;gap:10px}.phone{order:-1;zoom:.6;margin:0 auto}.side{width:100%;max-width:none}h1{font-size:1.2rem}.sub{font-size:.7rem}}
 </style>
 </head>
 <body>
