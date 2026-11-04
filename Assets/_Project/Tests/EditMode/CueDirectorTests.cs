@@ -134,5 +134,27 @@ namespace MafiaNight.Tests
             }
             CollectionAssert.AreEqual(new[] { "m", "f" }, CueCatalog.Voices);
         }
+
+        [Test]
+        public void EveryNarratedCueHasAnEnglishLine_ItIsInTheRecordingList_AndTheSlipFollowsTheLanguage()
+        {
+            string list = System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "../Docs/narrator-lines.md"));
+            string english = list.Substring(list.IndexOf("## الإنجليزي"));
+            foreach (var cue in CueCatalog.All)
+            {
+                if (string.IsNullOrEmpty(cue.Subtitle)) continue;
+                string en = CueCatalog.Text(cue, "en");
+                Assert.AreNotEqual(cue.Subtitle, en, cue.Id + ": no English line (it would be told in Arabic)");
+                Assert.IsFalse(en.Any(ch => ch >= '؀' && ch <= 'ۿ'), cue.Id + ": the English line has Arabic letters");
+                StringAssert.DoesNotContain("{name}", CueCatalog.VoiceText(cue, "en"), cue.Id);
+                StringAssert.Contains("| `" + CueCatalog.FileName(cue.Id) + "` | " + CueCatalog.VoiceText(cue, "en") + " |", english, cue.Id + ": the English list in Docs/narrator-lines.md is out of date");
+            }
+            Assert.AreEqual("Someone is out. They were Mafia!", CueCatalog.VoiceText(CueCatalog.Find(CueIds.VerdictMafia), "en"), "a line that starts with the name starts with a capital");
+            Assert.AreEqual("Nada is out. They were Mafia!", CueCatalog.Format(CueCatalog.Find(CueIds.VerdictMafia), "Nada", "en"));
+            Assert.AreEqual(CueCatalog.Find(CueIds.DayStart).Subtitle, CueCatalog.Text(CueCatalog.Find(CueIds.DayStart), "ar"));
+            director.Language = "en";
+            Role(MafiaNight.MatchRules.Role.Civilian); Table(Phase.Day);
+            Assert.AreEqual("The discussion begins.", played.Last().Subtitle);
+        }
     }
 }

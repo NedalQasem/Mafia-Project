@@ -28,7 +28,7 @@ namespace MafiaNight.App
             if (director != null) director.Dispose();
             slip = slipView;
             if (voice == null) { voice = gameObject.AddComponent<AudioSource>(); voice.playOnAwake = false; voice.spatialBlend = 0f; }
-            director = new CueDirector(client);
+            director = new CueDirector(client) { Language = Language() };      // the slip tells the line in the language the player chose
             director.Play += OnPlay;
         }
 

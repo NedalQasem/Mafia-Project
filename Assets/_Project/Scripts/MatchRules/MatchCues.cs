@@ -154,7 +154,58 @@ namespace MafiaNight.MatchRules
         public static Cue NightCallFor(Role called, Role? mine, bool iAmAlive) =>
             iAmAlive && mine == called ? Find(CueIds.Call(called)) : Find(CueIds.NightIdle);
 
+        /// <summary>Said instead of a player's name in the recorded English voice.</summary>
+        public const string SomeoneInVoiceEn = "someone";
+
+        /// <summary>The narrator's English lines (the Arabic ones are the cues' own subtitles). A cue with no entry here is told in Arabic. Gender-neutral about players ("they"), since a name never says it.</summary>
+        private static readonly Dictionary<string, string> english = new Dictionary<string, string>
+        {
+            { CueIds.MatchStart, "The roles are dealt. The evening begins." },
+            { CueIds.NightFalls, "Everyone, go to sleep… close your eyes." },
+            { CueIds.NightIdle, "The night moves on… stay quiet." },
+            { CueIds.Call(Role.Mafia), "Mafia… wake up. Who do you take out tonight?" },
+            { CueIds.Call(Role.Doctor), "Doctor… wake up. Who do you protect tonight?" },
+            { CueIds.Call(Role.Sheriff), "Sheriff… wake up. Who do you investigate tonight?" },
+            { CueIds.Call(Role.Silencer), "Silencer… wake up. Who do you silence for tomorrow? They won't say a word all day." },
+            { CueIds.Call(Role.Sniper), "Sniper… wake up. You have one bullet. Do you take the shot tonight, or wait?" },
+            { CueIds.Sleep(Role.Silencer), "Good. The Silencer goes back to sleep." },
+            { CueIds.Sleep(Role.Sniper), "Good. The Sniper goes back to sleep." },
+            { CueIds.DawnShot, "A sniper's shot rang out in the night… {name} has fallen." },
+            { CueIds.DawnSilenced, "The Silencer has taken {name}'s voice for the day." },
+            { CueIds.AvengeStart, "The Avenger is out! And they have one last decision: they take someone with them." },
+            { CueIds.AvengeDone, "The Avenger chose {name}. Both are out." },
+            { CueIds.Sleep(Role.Mafia), "Good. The Mafia goes back to sleep." },
+            { CueIds.Sleep(Role.Doctor), "Good. The Doctor goes back to sleep." },
+            { CueIds.Sleep(Role.Sheriff), "Good. The Sheriff goes back to sleep." },
+            { CueIds.DawnQuiet, "Morning has come. Nobody died tonight." },
+            { CueIds.DawnKill, "Morning has come. Last night… the Mafia killed {name}." },
+            { CueIds.DawnSaved, "Morning has come. The Mafia tried to kill {name}… but someone saved them!" },
+            { CueIds.DayStart, "The discussion begins." },
+            { CueIds.VoteStart, "Time to vote. Who do you suspect?" },
+            { CueIds.VerdictMafia, "{name} is out. They were Mafia!" },
+            { CueIds.VerdictTown, "{name} is out. They were an innocent citizen…" },
+            { CueIds.VerdictNobody, "No one could agree. Nobody is out." },
+            { CueIds.OverTown, "The night is over. The neighborhood wins!" },
+            { CueIds.OverMafia, "The night is over. The Mafia wins!" },
+        };
+
+        /// <summary>The line of a cue in a language ("ar" or "en"), with <c>{name}</c> left in; the Arabic line when the language has none.</summary>
+        public static string Text(Cue cue, string lang)
+        {
+            if (cue == null) return "";
+            return lang == "en" && english.TryGetValue(cue.Id, out var t) ? t : cue.Subtitle;
+        }
+
+        /// <summary>What the voice-over says in a language: the line with no player name (a name cannot be recorded).</summary>
+        public static string VoiceText(Cue cue, string lang)
+        {
+            string line = Text(cue, lang);
+            bool en = lang == "en" && english.ContainsKey(cue?.Id ?? "");
+            string said = line.Replace("{name}", en ? SomeoneInVoiceEn : SomeoneInVoice);
+            return en && line.StartsWith("{name}") ? char.ToUpperInvariant(said[0]) + said.Substring(1) : said;       // "Someone is out." starts a sentence
+        }
+
         /// <summary>Puts a player's name into the line ({name}).</summary>
-        public static string Format(Cue cue, string name) => (cue?.Subtitle ?? "").Replace("{name}", name ?? "");
+        public static string Format(Cue cue, string name, string lang = "ar") => Text(cue, lang).Replace("{name}", name ?? "");
     }
 }

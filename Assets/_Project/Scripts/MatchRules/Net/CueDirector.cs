@@ -23,6 +23,9 @@ namespace MafiaNight.MatchRules.Net
         /// <summary>Raised with the cues of a moment, in order (each has its own delay).</summary>
         public event Action<CuePlay> Play;
 
+        /// <summary>The language of the lines on the slip ("ar" by default, or "en"); the screen sets it from the player's choice.</summary>
+        public string Language = "ar";
+
         public CueDirector(ClientMatchController client)
         {
             c = client;
@@ -38,7 +41,7 @@ namespace MafiaNight.MatchRules.Net
         {
             var cue = CueCatalog.Find(cueId);
             if (cue == null) return at;
-            Play?.Invoke(new CuePlay { Cue = cue, Subtitle = CueCatalog.Format(cue, name), Delay = at });
+            Play?.Invoke(new CuePlay { Cue = cue, Subtitle = CueCatalog.Format(cue, name, Language), Delay = at });
             return at + cue.Duration;
         }
 
