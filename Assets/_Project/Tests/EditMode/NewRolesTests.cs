@@ -60,7 +60,9 @@ namespace MafiaNight.Tests
             var c4 = MafiaMatch.RoleCounts(4, MatchConfig.WithAllRoles());
             Assert.AreEqual(0, c4[Role.Silencer], "one mafia member is never the silencer"); Assert.AreEqual(0, c4[Role.Sniper]); Assert.AreEqual(0, c4[Role.Avenger]);
             var c6 = MafiaMatch.RoleCounts(6, MatchConfig.WithAllRoles());
-            Assert.AreEqual(1, c6[Role.Sniper]); Assert.AreEqual(0, c6[Role.Avenger], "the town keeps at least two plain citizens");
+            Assert.AreEqual(1, c6[Role.Avenger], "the owner's order: sheriff, doctor, Avenger, then sniper"); Assert.AreEqual(0, c6[Role.Sniper], "the town keeps at least two plain citizens");
+            var c7 = MafiaMatch.RoleCounts(7, MatchConfig.WithAllRoles());
+            Assert.AreEqual(1, c7[Role.Avenger]); Assert.AreEqual(1, c7[Role.Sniper]);
             for (int n = 4; n <= 16; n++) Assert.AreEqual(n, MafiaMatch.RoleCounts(n, MatchConfig.WithAllRoles()).Values.Sum(), n + " players");
             var classic = MafiaMatch.RoleCounts(8, new MatchConfig());
             Assert.AreEqual(0, classic[Role.Silencer] + classic[Role.Sniper] + classic[Role.Avenger]);
@@ -278,7 +280,7 @@ namespace MafiaNight.Tests
         }
 
         [Test]
-        public void TheAvengerCanTakeHisPickBack_AndPicksNobodyIfHeNeverPicks()
+        public void TheAvengerCanTakeHisPickBack_ButMayNotSkip_ChanceChoosesWhenTheTimeEnds()
         {
             var m = AvengerKilledAtNight();
             var av = m.AvengerId;
@@ -288,8 +290,9 @@ namespace MafiaNight.Tests
             int alive = m.InPlayCount;
             m.Advance();
             Assert.AreEqual(Phase.Day, m.Phase);
-            Assert.AreEqual(alive, m.InPlayCount, "no pick: nobody leaves with him");
-            Assert.IsNull(m.LastAvenge.TargetId);
+            Assert.AreEqual(alive - 1, m.InPlayCount, "he must choose: with no pick one living player goes with him");
+            Assert.IsNotNull(m.LastAvenge.TargetId);
+            Assert.AreNotEqual(av, m.LastAvenge.TargetId, "never himself");
         }
 
         [Test]

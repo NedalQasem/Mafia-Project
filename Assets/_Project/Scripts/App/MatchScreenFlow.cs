@@ -392,7 +392,7 @@ namespace MafiaNight.App
                 OpenSheet(new KitPickSheet.Spec
                 {
                     Title = "قرارك يا ثأري",
-                    Body = "اختر مين بيطلع معك، علناً. بعد اختيارك معك ٣ ثواني تغيّر رأيك، وبعدها يتثبّت.",
+                    Body = "لازم تختار مين بيطلع معك، علناً. بعد اختيارك معك ٣ ثواني تغيّر رأيك، وبعدها يتثبّت. لو خلص الوقت وما اخترت، الحظ بيختار عنك.",
                     Rows = LivingOthers(false), Selected = c.AvengeTargetId,
                     Picked = id => c.AvengerPick(id),
                     Buttons = new List<KitPickSheet.Button2> { new KitPickSheet.Button2 { Label = "تراجع عن اختياري", Quiet = true, Disabled = c.AvengeTargetId == null, Run = () => c.AvengerPick(null) } },
@@ -442,7 +442,7 @@ namespace MafiaNight.App
                 }
                 sb.Append(".");
             }
-            if (c.SilencedId != null) sb.Append("\nوأسكت كاتم الصوت ").Append(Name(c.SilencedId)).Append(" لهالنهار.");
+            if (c.SilencedId != null) sb.Append("\nكاتم الصوت كتم صوت ").Append(Name(c.SilencedId)).Append(" لهالنهار.");
             if (c.MyRole == Role.Doctor && c.DoctorReports.Count > 0)
             {
                 var r = c.DoctorReports[c.DoctorReports.Count - 1];

@@ -106,7 +106,7 @@ namespace MafiaNight.MatchRules
                 Make(CueIds.Sleep(Role.Silencer), 2f, "تمام. كاتم الصوت ينام.", Anim("sleep_silencer", 0f)),
                 Make(CueIds.Sleep(Role.Sniper), 2f, "تمام. القنّاص ينام.", Anim("sleep_sniper", 0f)),
                 Make(CueIds.DawnShot, 9f, "وسُمعت طلقة قنّاص بالليل… سقط {name}.", Anim("zoom_seat", 0f), Sfx("gunshot", 2f), Anim("shot", 2f)),
-                Make(CueIds.DawnSilenced, 4f, "وأسكت كاتم الصوت {name} لهالنهار."),
+                Make(CueIds.DawnSilenced, 4f, "كاتم الصوت كتم صوت {name} لهالنهار."),
                 Make(CueIds.AvengeStart, 6f, "تم إخراج الثأري! وعنده قرار: بياخد معه لاعب.", Anim("zoom_seat", 0f), Anim(CueIds.CardReveal(Role.Avenger), 1f)),
                 Make(CueIds.AvengeDone, 7f, "الثأري اختار {name}. خرجوا الاتنين.", Anim("zoom_seat", 0f), Sfx("stamp", 1f), Anim("stamp_out", 1f)),
                 Make(CueIds.Sleep(Role.Mafia), 2f, "تمام. المافيا ينامون.", Anim("sleep_mafia", 0f)),

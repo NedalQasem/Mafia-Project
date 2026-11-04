@@ -77,10 +77,11 @@ namespace MafiaNight.MatchRules
             int mafia = Math.Max(1, playerCount / Math.Max(1, config.PlayersPerMafia));
             int left = playerCount - mafia;
             int silencer = config.HasSilencer && mafia >= 2 ? 1 : 0; mafia -= silencer;      // the silencer is one of the mafia, never the only one
-            int doctor = config.HasDoctor && left > 1 ? 1 : 0; left -= doctor;
+            // The owner's order of appearance as the table grows: the mafia and all their roles, then the sheriff, the doctor, the Avenger, the sniper.
             int sheriff = config.HasSheriff && left > 1 ? 1 : 0; left -= sheriff;
-            int sniper = config.HasSniper && left >= 3 ? 1 : 0; left -= sniper;             // a special citizen only while the town keeps at least two plain ones
-            int avenger = config.HasAvenger && left >= 3 ? 1 : 0; left -= avenger;
+            int doctor = config.HasDoctor && left > 1 ? 1 : 0; left -= doctor;
+            int avenger = config.HasAvenger && left >= 3 ? 1 : 0; left -= avenger;           // a special citizen only while the town keeps at least two plain ones
+            int sniper = config.HasSniper && left >= 3 ? 1 : 0; left -= sniper;
             return new Dictionary<Role, int>
             {
                 { Role.Mafia, mafia }, { Role.Silencer, silencer }, { Role.Doctor, doctor }, { Role.Sheriff, sheriff },
@@ -95,7 +96,7 @@ namespace MafiaNight.MatchRules
             var order = Shuffled(players);
             var counts = RoleCounts(players.Count, Config);
             int i = 0;
-            foreach (var role in new[] { Role.Mafia, Role.Silencer, Role.Doctor, Role.Sheriff, Role.Sniper, Role.Avenger, Role.Civilian })
+            foreach (var role in new[] { Role.Mafia, Role.Silencer, Role.Sheriff, Role.Doctor, Role.Avenger, Role.Sniper, Role.Civilian })
                 for (int k = 0; k < counts[role]; k++) order[i++].Role = role;
             Phase = Phase.RoleReveal;
             return true;
@@ -180,7 +181,7 @@ namespace MafiaNight.MatchRules
 
         /// <summary>
         /// The Avenger (already out of the game) picks the player who leaves with him, in the open. A null target takes the pick back. The host lets the pick stand
-        /// once it has not changed for <see cref="MatchConfig.AvengeConfirmSeconds"/>; with no pick when the time ends, nobody goes with him.
+        /// once it has not changed for <see cref="MatchConfig.AvengeConfirmSeconds"/>. He may not skip: with no pick when the time ends, a random living player goes with him.
         /// </summary>
         public ActionResult AvengerPick(string actorId, string targetId)
         {
@@ -378,6 +379,11 @@ namespace MafiaNight.MatchRules
         {
             var res = new AvengeResult { AvengerId = avengerId };
             var t = avengeTarget == null ? null : Get(avengeTarget);
+            if ((t == null || !t.InPlay) && Get(avengerId)?.Left == false)      // the owner's rule: he must choose; the time ran out, so chance chooses
+            {
+                var living = InPlay.ToList();
+                t = living.Count > 0 ? living[rng.Next(living.Count)] : null;
+            }
             if (t != null && t.InPlay)
             {
                 t.Alive = false;
