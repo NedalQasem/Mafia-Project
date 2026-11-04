@@ -231,7 +231,7 @@ namespace MafiaNight.MatchRules
         public static string Text(Cue cue, string lang)
         {
             if (cue == null) return "";
-            return lang == "en" && english.TryGetValue(cue.Id, out var t) ? t : cue.Subtitle;
+            return lang == "en" && english.TryGetValue(cue.Id, out var t) ? t : StripDiacritics(cue.Subtitle);      // the slip is read, not sung: a shadda inside the kit's font landed on the wrong letter on the phone
         }
 
         /// <summary>What the voice-over says in a language: the line with no player name (a name cannot be recorded).</summary>

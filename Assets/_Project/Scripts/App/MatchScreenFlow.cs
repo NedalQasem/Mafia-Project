@@ -65,6 +65,7 @@ namespace MafiaNight.App
             if (c != null) { c.Changed -= Redraw; c.PhaseChanged -= OnPhase; }
             if (runner != null) runner.ChatChanged -= RefreshDock;
             view = matchView; c = client; tick = tickSource;
+            view.CardPressed = spec => KitCardViewer.Show(view.transform, RoleCards.Find(spec.RoleId), spec.Layers ?? new CardLayers(), spec.Me ? "أنت" : spec.Name);
             var live = MatchRunner.Instance;
             runner = live != null && live.Session != null && live.Session.Client == client ? live : null;
             if (runner != null) runner.ChatChanged += RefreshDock;
@@ -185,6 +186,7 @@ namespace MafiaNight.App
             bool show = c.Phase != Phase.RoleReveal && c.Phase != Phase.GameOver && c.Phase != Phase.Lobby;
             if (dock.gameObject.activeSelf != show) dock.gameObject.SetActive(show);
             view.ReserveBottom(show ? dock.CurrentHeight : 0f);
+            if (slip != null) slip.SetBottom((show ? dock.CurrentHeight : 0f) + 24f);      // the narrator's slip rides just above the dock, over no seat
             if (!show) return;
             var plan = runner != null ? runner.ChatPlanNow : MatchChat.For(c.Phase, c.MyRole, Alive, c.IAmSilenced);
             var source = runner != null ? runner.ChatLines(plan.Channel) : localChat.Where(l => l.Channel == plan.Channel).ToList();
@@ -251,6 +253,7 @@ namespace MafiaNight.App
             {
                 var spec = new SeatSpec { Id = s.Id, Name = s.Name, Me = s.IsMe, Look = !s.Alive || s.Left ? SeatLook.Dead : SeatLook.Normal };
                 if (s.IsMate) spec.Tag = SeatTag.Mafia;
+                spec.RoleId = s.Role.HasValue ? CardId(s.Role.Value) : null;       // only what this player may know is in SeatView.Role; the rest show their card's back
                 list.Add(shape != null ? shape(s, spec) : spec);
             }
             return list;
@@ -258,50 +261,23 @@ namespace MafiaNight.App
 
         // ---------------------------------------------------------------- role reveal
 
-        private static bool HasOwnCard(Role r) => r == Role.Silencer || r == Role.Sniper || r == Role.Avenger;
+        /// <summary>The id of a role's card (RoleCards.Find): the same word as the role, except the Sheriff whose card is "sheikh" (شيخ المواطنين).</summary>
+        public static string CardId(Role r) => r == Role.Sheriff ? "sheikh" : r.ToString().ToLowerInvariant();
 
-        /// <summary>The roles that came after the four first screens show their card full screen (it turns over to what the role does).</summary>
-        private void DrawRevealCard(Role role)
+        /// <summary>Every role shows its card full screen when the match starts (it turns over to what the role does), with the mates under it for the mafia.</summary>
+        private void DrawReveal()
         {
+            var role = c.MyRole ?? Role.Civilian;
             Use("p1_civ");
             if (KitRoleReveal.IsOpen) { KitRoleReveal.SetButton(confirmed ? "بانتظار البقية" : "فهمت، ابدأ"); return; }      // already on screen: do not turn the card back over
-            var def = RoleCards.Find(role.ToString().ToLowerInvariant());
-            string line = def != null ? def.Sub : "";
-            if (role == Role.Silencer)
+            var def = RoleCards.Find(CardId(role));
+            string line = (def != null ? def.Sub : "") + " · الجولة الأولى · " + c.Seats.Count + " لاعبين";
+            if (role.IsMafiaTeam())
             {
                 var mates = c.Seats.Where(s => s.IsMate).Select(s => s.Name).ToList();
                 line = mates.Count > 0 ? "رفقاؤك بالمافيا: " + string.Join("، ", mates) : "أنت المافيا الوحيد";
             }
             KitRoleReveal.Show(view.transform, def, new CardLayers(), line, confirmed ? "بانتظار البقية" : "فهمت، ابدأ", () => { if (confirmed) return; confirmed = true; c.Ready(); KitRoleReveal.SetButton("بانتظار البقية"); });
-        }
-
-        private void DrawReveal()
-        {
-            var role = c.MyRole ?? Role.Civilian;
-            if (HasOwnCard(role)) { DrawRevealCard(role); return; }
-            string f = "p1_" + RoleKey(role);
-            Use(f);
-            view.SetText(f, 4, "الجولة الأولى · " + c.Seats.Count + " لاعبين");
-            int readyBtn = role == Role.Mafia ? 30 : 19, readyText = role == Role.Mafia ? 32 : 21, readySmall = role == Role.Mafia ? 34 : 23;
-            if (role == Role.Mafia)
-            {
-                var mates = c.Seats.Where(s => s.IsMate).Select(s => s.Name).ToList();
-                view.SetText(f, 14, mates.Count > 0 ? "شركاؤك في المافيا" : "أنت المافيا الوحيد");
-                SetMate(f, 18, mates.Count > 0 ? mates[0] : null);
-                SetMate(f, 21, mates.Count > 1 ? string.Join("، ", mates.Skip(1)) : null);
-            }
-            view.SetText(f, readyText, confirmed ? "بانتظار البقية" : "فهمت، ابدأ");
-            view.SetText(f, readySmall, "تبدأ الليلة الأولى بعد أن يجهز الجميع");
-            view.SetTap(f, readyBtn, () => { if (confirmed) return; confirmed = true; c.Ready(); view.SetText(f, readyText, "بانتظار البقية"); });
-        }
-
-        private void SetMate(string f, int textNode, string name)
-        {
-            var t = view.Node(f, textNode);
-            if (t == null) return;
-            var chip = t.parent;     // the little name plate around the text
-            if (chip != null) chip.gameObject.SetActive(!string.IsNullOrEmpty(name));
-            if (!string.IsNullOrEmpty(name)) view.SetText(f, textNode, name);
         }
 
         // ---------------------------------------------------------------- night

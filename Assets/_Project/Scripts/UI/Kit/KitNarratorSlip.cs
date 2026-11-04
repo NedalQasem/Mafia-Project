@@ -11,7 +11,10 @@ namespace MafiaNight.UI.Kit
     /// </summary>
     public sealed class KitNarratorSlip : MonoBehaviour
     {
-        private static readonly Vector2 Home = new Vector2(0, -250);
+        private Vector2 Home = new Vector2(0, 520);
+
+        /// <summary>Lifts the slip above the chat dock (it sits in the free band under the table, never over a seat).</summary>
+        public void SetBottom(float aboveDock) { Home = new Vector2(0, aboveDock); if (run == null) rt.anchoredPosition = Home; }
 
         private CanvasGroup group;
         private ArabicText text;
@@ -23,8 +26,9 @@ namespace MafiaNight.UI.Kit
             var th = KitTheme.Current;
             var go = new GameObject("NarratorSlip", typeof(RectTransform), typeof(CanvasGroup));
             var r = (RectTransform)go.transform; r.SetParent(parent, false);
-            r.anchorMin = r.anchorMax = new Vector2(0.5f, 1f); r.pivot = new Vector2(0.5f, 1f); r.sizeDelta = new Vector2(940, 170); r.anchoredPosition = Home;
+            r.anchorMin = r.anchorMax = new Vector2(0.5f, 0f); r.pivot = new Vector2(0.5f, 0f); r.sizeDelta = new Vector2(940, 170);
             var slip = go.AddComponent<KitNarratorSlip>();
+            r.anchoredPosition = slip.Home;
             slip.rt = r; slip.group = go.GetComponent<CanvasGroup>(); slip.group.alpha = 0f; slip.group.blocksRaycasts = false; slip.group.interactable = false;
 
             var paper = new GameObject("Paper", typeof(RectTransform), typeof(Image));

@@ -132,6 +132,23 @@ namespace MafiaNight.Tests
         }
 
         [Test]
+        public void TheBigCardOfAPlayerStopsEveryTap_AndHoldsAnyName()
+        {
+            foreach (var id in new[] { "mafia", "sheikh", "doctor", "civilian", "silencer", "sniper", "avenger" })
+                foreach (var owner in new[] { "ب", "أنت", new string('س', 120) })
+                {
+                    var previous = canvas.transform.Find("CardViewer");
+                    if (previous != null) Object.DestroyImmediate(previous.gameObject);      // Destroy waits for a frame, which edit mode never gives
+                    KitCardViewer.Show(canvas.transform, MafiaNight.Data.Cards.RoleCards.Find(id), new MafiaNight.Data.Cards.CardLayers(), owner);
+                    var viewer = canvas.transform.Find("CardViewer");
+                    Assert.IsNotNull(viewer, id + ": the card viewer was not built");
+                    Assert.IsNull(WhyItLetsTapsThrough(viewer.gameObject), id + ": the card viewer lets taps through");
+                }
+            var last = canvas.transform.Find("CardViewer");
+            if (last != null) Object.DestroyImmediate(last.gameObject);
+        }
+
+        [Test]
         public void TheTableDockHoldsEveryStateWithLongTexts_AndNoTapFallsThroughIt()
         {
             var dock = KitMatchDock.Create((RectTransform)canvas.transform);

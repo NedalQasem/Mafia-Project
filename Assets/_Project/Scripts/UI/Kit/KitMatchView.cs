@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MafiaNight.Data.Cards;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,10 @@ namespace MafiaNight.UI.Kit
         public SeatTag Tag;
         public string TagText;      // for Count / Check
         public bool Dim;            // nametag faded (asleep)
+        /// <summary>The card id of his role (<c>RoleCards.Find</c>) when this player may know it, or null: then the card beside his seat shows its back.</summary>
+        public string RoleId;
+        /// <summary>What he wears on his card (frame, background, motion, back); null is the free default.</summary>
+        public CardLayers Layers;
     }
 
     /// <summary>
@@ -295,11 +300,34 @@ namespace MafiaNight.UI.Kit
                 float a = k * Mathf.PI * 2f / n;
                 rt.anchoredPosition = new Vector2(CenterX - RadiusX * Mathf.Sin(a), CenterY - RadiusY * Mathf.Cos(a));
                 Fill(seat.transform, spec);
+                AddCard(seat.transform, spec, Mathf.Sin(a) > -0.2f);       // beside the avatar, on the side of the table's middle: the right seats keep it inside the screen
                 string id = spec.Id;
                 if (tapped != null) KitTap.On(seat.transform, () => tapped(id)); else KitTap.On(seat.transform, null);
             }
             // the table's own picture stays behind the seats
             var felt = stage.Find("f_felt"); if (felt != null) felt.SetAsFirstSibling();
+        }
+
+        /// <summary>A card was pressed (a role that player may know): the screen shows it big.</summary>
+        public Action<SeatSpec> CardPressed;
+
+        private const float CardWidthUnits = 66f, AvatarX = 85.85f, AvatarY = -60.92f, AvatarHalf = 60.9f;
+
+        /// <summary>
+        /// The little card beside a player (Docs/mockups/role-cards.html, section 2): his role's face when this player may know it (his own, his mafia mates', the ones who are out), otherwise
+        /// the back of his card. Pressing a face opens it big.
+        /// </summary>
+        private void AddCard(Transform seat, SeatSpec spec, bool onRight)
+        {
+            var def = spec.RoleId != null ? RoleCards.Find(spec.RoleId) : null;
+            var layers = spec.Layers ?? new CardLayers();
+            var card = def != null ? KitRoleCard.Create(seat, def, layers, CardWidthUnits) : KitRoleCard.CreateHidden(seat, layers, CardWidthUnits);
+            card.name = "RoleCard";
+            var rt = (RectTransform)card.transform;
+            rt.anchorMin = rt.anchorMax = new Vector2(0, 1); rt.pivot = new Vector2(0.5f, 0.5f);
+            float dx = AvatarHalf + 8f + CardWidthUnits / 2f;
+            rt.anchoredPosition = new Vector2(AvatarX + (onRight ? dx : -dx), AvatarY);
+            if (def != null) card.Pressed += _ => CardPressed?.Invoke(spec);
         }
 
         private void Fill(Transform seat, SeatSpec spec)
