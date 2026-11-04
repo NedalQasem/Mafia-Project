@@ -43,7 +43,7 @@ namespace MafiaNight.App
         private RewardResult reward;
         // the second choices of the new roles, made in a sheet: the silencer's target, the sniper's shot
         private string silencePicked, sniperPicked;
-        private bool silenceConfirmed, sniperDecided, sheetWanted;
+        private bool silenceConfirmed, sniperDecided, sheetWanted, silencerSuggesting;
 
         /// <summary>What the rewards server paid; the end screen shows it once it arrives (until then the block stays hidden).</summary>
         public void SetReward(RewardResult r) { reward = r; if (c != null && c.Phase == Phase.GameOver) Redraw(); }
@@ -135,7 +135,7 @@ namespace MafiaNight.App
         private void Redraw()
         {
             if (c == null || view == null) return;
-            if (c.Round != confirmedRound && c.Phase == Phase.Night) { confirmedRound = c.Round; confirmed = false; picked = null; silencePicked = sniperPicked = null; silenceConfirmed = sniperDecided = false; }
+            if (c.Round != confirmedRound && c.Phase == Phase.Night) { confirmedRound = c.Round; confirmed = false; picked = null; silencePicked = sniperPicked = null; silenceConfirmed = sniperDecided = silencerSuggesting = false; }
             lastSeconds = -1;
             sheetWanted = false;
             if (c.Phase != Phase.RoleReveal) KitRoleReveal.CloseCurrent();
@@ -243,13 +243,21 @@ namespace MafiaNight.App
             bool mafia = c.IAmMafia, doc = role == Role.Doctor;
             view.SetText(f, bar.Sub, sub + (confirmed ? " · تم" : " · دورك الآن"));
             var votes = new Dictionary<string, int>();
-            if (mafia) foreach (var v in c.MafiaVotes.Values) { votes.TryGetValue(v, out var n); votes[v] = n + 1; }
+            var advice = new HashSet<string>();           // targets only the silencer suggested: he advises, the assassins decide, so they show as "?"
+            bool assassinsLeft = c.MyRole == Role.Mafia || c.Seats.Any(s => s.Alive && !s.Left && s.Role == Role.Mafia);
+            if (mafia) foreach (var kv in c.MafiaVotes)
+            {
+                var voterRole = kv.Key == c.Seats.FirstOrDefault(s => s.IsMe)?.Id ? c.MyRole : c.Seat(kv.Key)?.Role;
+                if (voterRole == Role.Silencer && assassinsLeft) { advice.Add(kv.Value); continue; }
+                votes.TryGetValue(kv.Value, out var n); votes[kv.Value] = n + 1;
+            }
 
             view.SetSeats(f, MakeSeats((s, spec) =>
             {
                 if (!s.Alive || s.Left) return spec;
                 if (s.Id == picked) spec.Look = mafia ? SeatLook.Pick : doc ? SeatLook.PickDoc : SeatLook.PickSher;
                 if (mafia && votes.TryGetValue(s.Id, out var n) && n > 0) { spec.Tag = SeatTag.Count; spec.TagText = n.ToString(); }
+                else if (mafia && advice.Contains(s.Id)) { spec.Tag = SeatTag.Count; spec.TagText = "؟"; }
                 if (!mafia && !doc)
                 {   // the sheriff sees the answers he got
                     foreach (var rep in c.SheriffReports) if (rep.Key == s.Id) { spec.Tag = rep.Value ? SeatTag.Mafia : SeatTag.Check; spec.TagText = "✓"; }
@@ -266,7 +274,7 @@ namespace MafiaNight.App
             view.SetText(f, goSmall, pickedName != null ? "المختار: " + pickedName : "اضغط على لاعب أولاً");
             string reason = Reason(c.LastResult);
             if (c.LastResult != ActionResult.Ok && !string.IsNullOrEmpty(reason) && c.LastResultKind != "ready") view.SetText(f, hint, reason);
-            else view.SetText(f, hint, "اضغط على لاعب");
+            else view.SetText(f, hint, role == Role.Silencer ? "اقترح على مافيا الاغتيال: القرار إلهم" : "اضغط على لاعب");
 
             if (!mafia && !doc)
             {   // last answer of the sheriff
@@ -287,7 +295,7 @@ namespace MafiaNight.App
             if (doc) view.SetText(f, 66, "اللي تنقذه ما يموت هالليلة حتى لو اختاره المافيا. تقدر تنقذ نفسك مرة وحدة بالمباراة.");
 
             view.SetTap(f, goBtn, () => ConfirmNight(role));
-            if (role == Role.Silencer && confirmed && !silenceConfirmed) ShowSilenceSheet();
+            if (role == Role.Silencer && !silenceConfirmed && !silencerSuggesting) ShowSilenceSheet();
         }
 
         private void OnNightSeatTapped(string id)
@@ -308,7 +316,7 @@ namespace MafiaNight.App
                 case Role.Doctor: c.DoctorSave(picked); break;
                 case Role.Sheriff: c.SheriffCheck(picked); break;
             }
-            confirmed = true;
+            confirmed = true; silencerSuggesting = false;
             Redraw();
         }
 
@@ -332,7 +340,11 @@ namespace MafiaNight.App
                 Body = "المُسكَت ما بيحكي ولا بيكتب طول النهار، وبيقدر يصوّت بس. الكل بيعرف إنه انسكت، بس ما حدا بيعرف مين سكّته.",
                 Rows = LivingOthers(true), Selected = silencePicked,
                 Picked = id => { silencePicked = id; Redraw(); },
-                Buttons = new List<KitPickSheet.Button2> { new KitPickSheet.Button2 { Label = silencePicked == null ? "اختر لاعباً" : "أسكِت " + Name(silencePicked), Disabled = silencePicked == null, Run = () => { c.Silence(silencePicked); silenceConfirmed = true; Redraw(); } } },
+                Buttons = new List<KitPickSheet.Button2>
+                {
+                    new KitPickSheet.Button2 { Label = silencePicked == null ? "اختر لاعباً" : "أسكِت " + Name(silencePicked), Disabled = silencePicked == null, Run = () => { c.Silence(silencePicked); silenceConfirmed = true; Redraw(); } },
+                    new KitPickSheet.Button2 { Label = "اقترح على المافيا", Quiet = true, Run = () => { silencerSuggesting = true; Redraw(); } },
+                },
             });
         }
 
@@ -341,14 +353,14 @@ namespace MafiaNight.App
         {
             OpenSheet(new KitPickSheet.Spec
             {
-                Title = "القنّاص · معك طلقة وحدة",
+                Title = "القنّاص · بدك تقنص الليلة؟",
                 Body = "إذا أصبت مافيا بيطلع وإنت بتضل. إذا أصبت مواطن بيطلعوا الاتنين. الطبيب ما بيقدر يوقفها وما حدا بيعرف مين قنص.",
                 Rows = LivingOthers(false), Selected = sniperPicked,
                 Picked = id => { sniperPicked = id; Redraw(); },
                 Buttons = new List<KitPickSheet.Button2>
                 {
                     new KitPickSheet.Button2 { Label = sniperPicked == null ? "اختر هدفاً" : "أطلق على " + Name(sniperPicked), Disabled = sniperPicked == null, Run = () => { c.Snipe(sniperPicked); sniperDecided = true; Redraw(); } },
-                    new KitPickSheet.Button2 { Label = "مش هالليلة", Quiet = true, Run = () => { c.Snipe(null); sniperDecided = true; Redraw(); } },
+                    new KitPickSheet.Button2 { Label = "أجّلها لليلة ثانية", Quiet = true, Run = () => { c.Snipe(null); sniperDecided = true; Redraw(); } },
                 },
             });
         }

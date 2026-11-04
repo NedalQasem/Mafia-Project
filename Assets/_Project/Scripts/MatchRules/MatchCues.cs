@@ -102,7 +102,7 @@ namespace MafiaNight.MatchRules
                 Make(CueIds.Call(Role.Doctor), NightCallSeconds, "يا دكتور… اصحى. مين بدك تحمي الليلة؟", Anim("wake_doctor", 0f)),
                 Make(CueIds.Call(Role.Sheriff), NightCallSeconds, "يا شيخ… اصحى. مين بدك تفحص الليلة؟", Anim("wake_sheikh", 0f)),
                 Make(CueIds.Call(Role.Silencer), NightCallSeconds, "يا كاتم الصوت… اصحى. مين بدك تسكّت بكرة؟ ما بيحكي النهار كله.", Anim("wake_silencer", 0f)),
-                Make(CueIds.Call(Role.Sniper), NightCallSeconds, "يا قنّاص… اصحى. معك طلقة وحدة. بدك تطلقها الليلة؟", Anim("wake_sniper", 0f)),
+                Make(CueIds.Call(Role.Sniper), NightCallSeconds, "يا قنّاص… اصحى. معك طلقة وحدة. بدك تقنص الليلة ولا نأجلها؟", Anim("wake_sniper", 0f)),
                 Make(CueIds.Sleep(Role.Silencer), 2f, "تمام. كاتم الصوت ينام.", Anim("sleep_silencer", 0f)),
                 Make(CueIds.Sleep(Role.Sniper), 2f, "تمام. القنّاص ينام.", Anim("sleep_sniper", 0f)),
                 Make(CueIds.DawnShot, 9f, "وسُمعت طلقة قنّاص بالليل… سقط {name}.", Anim("zoom_seat", 0f), Sfx("gunshot", 2f), Anim("shot", 2f)),

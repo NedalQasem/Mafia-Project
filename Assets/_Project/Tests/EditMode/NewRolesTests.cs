@@ -108,6 +108,42 @@ namespace MafiaNight.Tests
             Assert.AreEqual(ActionResult.Ok, m.MafiaVote(s.Id, Civ(m).Id), "the silencer takes part in the kill like the other mafia");
         }
 
+
+        [Test]
+        public void TheSilencerOnlyAdvisesTheKill_TheAssassinsDecide()
+        {
+            var m = Night();
+            var mafia = P(m, Role.Mafia); var silencer = P(m, Role.Silencer);
+            var chosen = m.Players.Where(p => !p.IsMafia).OrderByDescending(p => p.Id, StringComparer.Ordinal).First();
+            var advised = m.Players.Where(p => !p.IsMafia).OrderBy(p => p.Id, StringComparer.Ordinal).First();   // would win a tie broken by id
+            Assert.AreEqual(ActionResult.Ok, m.MafiaVote(silencer.Id, advised.Id), "his advice is accepted and shown to his mates");
+            Assert.IsFalse(m.NightActionsComplete(), "the night waits for the assassin, not for the silencer's advice");
+            m.MafiaVote(mafia.Id, chosen.Id);
+            m.Silence(silencer.Id, Civ(m, 1).Id);
+            m.DoctorSave(P(m, Role.Doctor).Id, P(m, Role.Doctor).Id);
+            m.SheriffCheck(P(m, Role.Sheriff).Id, Civ(m).Id, out _);
+            m.Snipe(P(m, Role.Sniper).Id, null);
+            Assert.IsTrue(m.NightActionsComplete());
+            m.Advance();
+            Assert.AreEqual(chosen.Id, m.LastNight.VictimId, "the assassin's pick stands whatever the silencer advised");
+        }
+
+        [Test]
+        public void IfNoAssassinIsLeftTheSilencersPickCounts()
+        {
+            var m = Night();
+            var mafia = P(m, Role.Mafia); var silencer = P(m, Role.Silencer);
+            mafia.Alive = false;
+            var victim = Civ(m);
+            m.MafiaVote(silencer.Id, victim.Id);
+            m.Silence(silencer.Id, Civ(m, 1).Id);
+            m.DoctorSave(P(m, Role.Doctor).Id, P(m, Role.Doctor).Id);
+            m.SheriffCheck(P(m, Role.Sheriff).Id, Civ(m).Id, out _);
+            m.Snipe(P(m, Role.Sniper).Id, null);
+            Assert.IsTrue(m.NightActionsComplete());
+            m.Advance();
+            Assert.AreEqual(victim.Id, m.LastNight.DiedId);
+        }
         [Test]
         public void ASilencedPlayerWhoDiesThatNightIsNotSilenced()
         {

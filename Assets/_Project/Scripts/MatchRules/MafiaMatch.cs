@@ -141,6 +141,17 @@ namespace MafiaNight.MatchRules
             return ActionResult.Ok;
         }
 
+        /// <summary>
+        /// Who decides the night's victim: the assassin mafia (owner's rule). The silencer only advises (his pick is shown to his mates but not counted), unless
+        /// no assassin is left in the game: then the kill would never happen, so his pick counts.
+        /// </summary>
+        public bool IsKillDecider(MatchPlayer p)
+        {
+            if (p == null || !p.InPlay) return false;
+            if (p.Role == Role.Mafia) return true;
+            return p.Role == Role.Silencer && !players.Any(x => x.InPlay && x.Role == Role.Mafia);
+        }
+
         /// <summary>The silencer picks who may not speak or write tomorrow (he can still vote). Not one of his own.</summary>
         public ActionResult Silence(string silencerId, string targetId)
         {
@@ -211,7 +222,7 @@ namespace MafiaNight.MatchRules
         public bool NightActionsComplete()
         {
             if (Phase != Phase.Night) return false;
-            foreach (var m in players.Where(p => p.InPlay && p.IsMafia)) if (!mafiaVotes.ContainsKey(m.Id)) return false;
+            foreach (var m in players.Where(p => p.InPlay && IsKillDecider(p))) if (!mafiaVotes.ContainsKey(m.Id)) return false;     // the silencer only advises: the assassins decide
             if (players.Any(p => p.InPlay && p.Role == Role.Doctor) && doctorTarget == null) return false;
             if (players.Any(p => p.InPlay && p.Role == Role.Sheriff) && !sheriffDone) return false;
             if (players.Any(p => p.InPlay && p.Role == Role.Silencer) && silenceTarget == null) return false;
@@ -228,7 +239,7 @@ namespace MafiaNight.MatchRules
             var shooter = players.FirstOrDefault(p => p.InPlay && p.Role == Role.Sniper && p.ShotsUsed < RoleDefs.Of(Role.Sniper).Uses);   // he fires even if the mafia kill him this same night
             string shotAt = shooter != null && snipeDecided ? snipeTarget : null;
             // most votes wins, a tie is broken at random
-            var tally = mafiaVotes.Values.Where(v => Get(v)?.InPlay == true).GroupBy(v => v).ToDictionary(g => g.Key, g => g.Count());
+            var tally = mafiaVotes.Where(kv => IsKillDecider(Get(kv.Key)) && Get(kv.Value)?.InPlay == true).GroupBy(kv => kv.Value).ToDictionary(g => g.Key, g => g.Count());
             if (tally.Count > 0)
             {
                 int top = tally.Values.Max();
