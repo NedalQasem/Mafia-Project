@@ -25,9 +25,15 @@ namespace MafiaNight.Tests
         /// <summary>Plays RoleReveal into Night.</summary>
         private static void ToNight(MafiaMatch m) { Assert.AreEqual(Phase.RoleReveal, m.Phase); m.Advance(); Assert.AreEqual(Phase.Night, m.Phase); }
 
+        /// <summary>The mafia call: every killer picks the victim.</summary>
+        private static void Votes(MafiaMatch m, string victimId)
+        {
+            foreach (var mafia in All(m, Role.Mafia)) Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Mafia).MafiaVote(mafia.Id, victimId));
+        }
+
         private static void KillAtNight(MafiaMatch m, string victimId)
         {
-            foreach (var mafia in All(m, Role.Mafia)) Assert.AreEqual(ActionResult.Ok, m.MafiaVote(mafia.Id, victimId));
+            Votes(m, victimId);
             m.Advance();   // night -> dawn
         }
 
@@ -97,10 +103,10 @@ namespace MafiaNight.Tests
         {
             var m = NewMatch(8); ToNight(m);
             var civ = One(m, Role.Civilian);
-            Assert.AreEqual(ActionResult.WrongRole, m.MafiaVote(civ.Id, One(m, Role.Doctor).Id));
-            Assert.AreEqual(ActionResult.WrongRole, m.DoctorSave(civ.Id, civ.Id));
-            Assert.AreEqual(ActionResult.WrongRole, m.SheriffCheck(civ.Id, One(m, Role.Mafia).Id, out _));
-            Assert.AreEqual(ActionResult.NotAPlayer, m.MafiaVote("nobody", civ.Id));
+            Assert.AreEqual(ActionResult.WrongRole, m.At(NightStep.Mafia).MafiaVote(civ.Id, One(m, Role.Doctor).Id));
+            Assert.AreEqual(ActionResult.NotAPlayer, m.At(NightStep.Mafia).MafiaVote("nobody", civ.Id));
+            Assert.AreEqual(ActionResult.WrongRole, m.At(NightStep.Doctor).DoctorSave(civ.Id, civ.Id));
+            Assert.AreEqual(ActionResult.WrongRole, m.At(NightStep.Sheriff).SheriffCheck(civ.Id, One(m, Role.Mafia).Id, out _));
         }
 
         [Test]
@@ -108,9 +114,9 @@ namespace MafiaNight.Tests
         {
             var m = NewMatch(8); ToNight(m);
             var mafia = All(m, Role.Mafia);
-            Assert.AreEqual(ActionResult.MafiaTeammate, m.MafiaVote(mafia[0].Id, mafia[1].Id));
-            Assert.AreEqual(ActionResult.InvalidTarget, m.MafiaVote(mafia[0].Id, mafia[0].Id));
-            Assert.AreEqual(ActionResult.InvalidTarget, m.MafiaVote(mafia[0].Id, "ghost"));
+            Assert.AreEqual(ActionResult.MafiaTeammate, m.At(NightStep.Mafia).MafiaVote(mafia[0].Id, mafia[1].Id));
+            Assert.AreEqual(ActionResult.InvalidTarget, m.At(NightStep.Mafia).MafiaVote(mafia[0].Id, mafia[0].Id));
+            Assert.AreEqual(ActionResult.InvalidTarget, m.At(NightStep.Mafia).MafiaVote(mafia[0].Id, "ghost"));
         }
 
         [Test]
@@ -139,8 +145,9 @@ namespace MafiaNight.Tests
         {
             var m = NewMatch(8); ToNight(m);
             var victim = One(m, Role.Civilian);
-            Assert.AreEqual(ActionResult.Ok, m.DoctorSave(One(m, Role.Doctor).Id, victim.Id));
-            KillAtNight(m, victim.Id);
+            Votes(m, victim.Id);
+            Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Doctor).DoctorSave(One(m, Role.Doctor).Id, victim.Id));
+            m.Advance();
             Assert.IsTrue(m.LastNight.Saved);
             Assert.IsTrue(m.LastNight.NobodyDied);
             Assert.IsTrue(victim.Alive);
@@ -151,8 +158,9 @@ namespace MafiaNight.Tests
         {
             var m = NewMatch(8); ToNight(m);
             var civs = All(m, Role.Civilian);
-            m.DoctorSave(One(m, Role.Doctor).Id, civs[1].Id);
-            KillAtNight(m, civs[0].Id);
+            Votes(m, civs[0].Id);
+            m.At(NightStep.Doctor).DoctorSave(One(m, Role.Doctor).Id, civs[1].Id);
+            m.Advance();
             Assert.AreEqual(civs[0].Id, m.LastNight.DiedId);
             Assert.IsFalse(m.LastNight.Saved);
         }
@@ -162,12 +170,13 @@ namespace MafiaNight.Tests
         {
             var m = NewMatch(10); ToNight(m);
             var doc = One(m, Role.Doctor);
-            Assert.AreEqual(ActionResult.Ok, m.DoctorSave(doc.Id, doc.Id));
-            KillAtNight(m, One(m, Role.Civilian).Id);
+            Votes(m, One(m, Role.Civilian).Id);
+            Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Doctor).DoctorSave(doc.Id, doc.Id));
+            m.Advance();
             m.Advance(); m.Advance(); m.Advance(); m.Advance();   // dawn, day, voting, verdict
             Assert.AreEqual(Phase.Night, m.Phase);
-            Assert.AreEqual(ActionResult.SelfSaveUsed, m.DoctorSave(doc.Id, doc.Id));
-            Assert.AreEqual(ActionResult.Ok, m.DoctorSave(doc.Id, One(m, Role.Sheriff).Id));
+            Assert.AreEqual(ActionResult.SelfSaveUsed, m.At(NightStep.Doctor).DoctorSave(doc.Id, doc.Id));
+            Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Doctor).DoctorSave(doc.Id, One(m, Role.Sheriff).Id));
         }
 
         [Test]
@@ -175,8 +184,8 @@ namespace MafiaNight.Tests
         {
             var m = NewMatch(10); ToNight(m);
             var doc = One(m, Role.Doctor);
-            m.DoctorSave(doc.Id, doc.Id);
-            m.DoctorSave(doc.Id, One(m, Role.Sheriff).Id);
+            m.At(NightStep.Doctor).DoctorSave(doc.Id, doc.Id);
+            m.At(NightStep.Doctor).DoctorSave(doc.Id, One(m, Role.Sheriff).Id);
             m.Advance();
             Assert.AreEqual(0, doc.SelfSavesUsed);
         }
@@ -186,10 +195,10 @@ namespace MafiaNight.Tests
         {
             var m = NewMatch(8); ToNight(m);
             var sheriff = One(m, Role.Sheriff);
-            Assert.AreEqual(ActionResult.InvalidTarget, m.SheriffCheck(sheriff.Id, sheriff.Id, out _));
-            Assert.AreEqual(ActionResult.Ok, m.SheriffCheck(sheriff.Id, One(m, Role.Mafia).Id, out var r1));
+            Assert.AreEqual(ActionResult.InvalidTarget, m.At(NightStep.Sheriff).SheriffCheck(sheriff.Id, sheriff.Id, out _));
+            Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Sheriff).SheriffCheck(sheriff.Id, One(m, Role.Mafia).Id, out var r1));
             Assert.IsTrue(r1.IsMafia);
-            Assert.AreEqual(ActionResult.AlreadyDone, m.SheriffCheck(sheriff.Id, One(m, Role.Civilian).Id, out _));
+            Assert.AreEqual(ActionResult.AlreadyDone, m.At(NightStep.Sheriff).SheriffCheck(sheriff.Id, One(m, Role.Civilian).Id, out _));
         }
 
         [Test]
@@ -197,11 +206,12 @@ namespace MafiaNight.Tests
         {
             var m = NewMatch(10); ToNight(m);
             var sheriff = One(m, Role.Sheriff);
-            m.SheriffCheck(sheriff.Id, One(m, Role.Civilian).Id, out var r1);
+            Votes(m, All(m, Role.Civilian)[1].Id);
+            m.At(NightStep.Sheriff).SheriffCheck(sheriff.Id, One(m, Role.Civilian).Id, out var r1);
             Assert.IsFalse(r1.IsMafia);
-            KillAtNight(m, All(m, Role.Civilian)[1].Id);
+            m.Advance();
             m.Advance(); m.Advance(); m.Advance(); m.Advance();
-            Assert.AreEqual(ActionResult.Ok, m.SheriffCheck(sheriff.Id, One(m, Role.Mafia).Id, out var r2));
+            Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Sheriff).SheriffCheck(sheriff.Id, One(m, Role.Mafia).Id, out var r2));
             Assert.IsTrue(r2.IsMafia);
         }
 
@@ -210,7 +220,7 @@ namespace MafiaNight.Tests
         {
             var m = NewMatch(12); ToNight(m);
             var mafia = All(m, Role.Mafia); var civs = All(m, Role.Civilian);
-            m.MafiaVote(mafia[0].Id, civs[0].Id); m.MafiaVote(mafia[1].Id, civs[1].Id); m.MafiaVote(mafia[2].Id, civs[1].Id);
+            m.At(NightStep.Mafia).MafiaVote(mafia[0].Id, civs[0].Id); m.At(NightStep.Mafia).MafiaVote(mafia[1].Id, civs[1].Id); m.At(NightStep.Mafia).MafiaVote(mafia[2].Id, civs[1].Id);
             m.Advance();
             Assert.AreEqual(civs[1].Id, m.LastNight.DiedId);
         }
@@ -220,7 +230,7 @@ namespace MafiaNight.Tests
         {
             var m = NewMatch(8); ToNight(m);
             var mafia = All(m, Role.Mafia); var civs = All(m, Role.Civilian);
-            m.MafiaVote(mafia[0].Id, civs[0].Id); m.MafiaVote(mafia[1].Id, civs[1].Id);
+            m.At(NightStep.Mafia).MafiaVote(mafia[0].Id, civs[0].Id); m.At(NightStep.Mafia).MafiaVote(mafia[1].Id, civs[1].Id);
             m.Advance();
             var expected = new[] { civs[0].Id, civs[1].Id }.OrderBy(x => x, System.StringComparer.Ordinal).First();   // First random picks index 0 of the ordered leaders
             Assert.AreEqual(expected, m.LastNight.DiedId);
@@ -233,19 +243,6 @@ namespace MafiaNight.Tests
             m.Advance();
             Assert.IsTrue(m.LastNight.NobodyDied);
             Assert.IsNull(m.LastNight.VictimId);
-        }
-
-        [Test]
-        public void The_night_can_end_early_only_when_every_night_role_acted()
-        {
-            var m = NewMatch(8); ToNight(m);
-            Assert.IsFalse(m.NightActionsComplete());
-            foreach (var mafia in All(m, Role.Mafia)) m.MafiaVote(mafia.Id, One(m, Role.Civilian).Id);
-            Assert.IsFalse(m.NightActionsComplete());
-            m.DoctorSave(One(m, Role.Doctor).Id, One(m, Role.Doctor).Id);
-            Assert.IsFalse(m.NightActionsComplete());
-            m.SheriffCheck(One(m, Role.Sheriff).Id, One(m, Role.Mafia).Id, out _);
-            Assert.IsTrue(m.NightActionsComplete());
         }
 
         // ------------------------------------------------------------------ day and voting
@@ -387,7 +384,7 @@ namespace MafiaNight.Tests
         [Test]
         public void Phase_durations_come_from_the_config()
         {
-            var m = NewMatch(6, new MatchConfig { NightSeconds = 30f });
+            var m = NewMatch(6, new MatchConfig { NightOpenSeconds = 30f });
             ToNight(m);
             Assert.AreEqual(30f, m.PhaseSeconds);
         }
@@ -422,7 +419,7 @@ namespace MafiaNight.Tests
             var m = NewMatch(8); ToNight(m);
             var civ = One(m, Role.Civilian);
             m.PlayerLeft(civ.Id);
-            Assert.AreEqual(ActionResult.InvalidTarget, m.MafiaVote(One(m, Role.Mafia).Id, civ.Id));
+            Assert.AreEqual(ActionResult.InvalidTarget, m.At(NightStep.Mafia).MafiaVote(One(m, Role.Mafia).Id, civ.Id));
         }
 
         [Test]

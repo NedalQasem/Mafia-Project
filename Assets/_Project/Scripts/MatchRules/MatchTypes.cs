@@ -21,6 +21,12 @@ namespace MafiaNight.MatchRules
         GameOver
     }
 
+    /// <summary>
+    /// The night is called one role at a time (owner's rule, 2026-11-05): while a step is open only its roles are awake and may act, everybody else sleeps.
+    /// The mafia step wakes the killers and the silencer (he only advises); the silencer then has a step of his own to silence somebody.
+    /// </summary>
+    public enum NightStep { Mafia, Silencer, Doctor, Sheriff, Sniper }
+
     public enum Winner { None, Town, Mafia }
 
     public enum ActionResult
@@ -34,7 +40,8 @@ namespace MafiaNight.MatchRules
         MafiaTeammate,     // the mafia cannot target one of their own
         SelfSaveUsed,      // the doctor already saved himself once
         AlreadyDone,
-        AbilityUsed        // the sniper already fired his only shot
+        AbilityUsed,       // the sniper already fired his only shot
+        WrongStep          // the night is called one role at a time and it is not this role's turn
     }
 
     /// <summary>Everything a rule depends on, so numbers can come from data (Title Data / a ScriptableObject) instead of code.</summary>
@@ -54,7 +61,13 @@ namespace MafiaNight.MatchRules
         /// <summary>The new roles are off unless a match asks for them (<see cref="WithAllRoles"/>): each needs enough players, see <see cref="MafiaMatch.RoleCounts"/>.</summary>
         public bool HasSilencer, HasSniper, HasAvenger;
 
-        public float RoleRevealSeconds = 8f, NightSeconds = 45f, DawnSeconds = 8f, DaySeconds = 120f, VotingSeconds = 45f, VerdictSeconds = 6f;
+        public float RoleRevealSeconds = 8f, DawnSeconds = 8f, DaySeconds = 120f, VotingSeconds = 45f, VerdictSeconds = 6f;
+        /// <summary>The night's opening ("everybody sleeps") before the first role is called.</summary>
+        public float NightOpenSeconds = 4f;
+        /// <summary>How long each called role is awake. Fixed: a player who finished early waits for the end, so nobody can tell who acted.</summary>
+        public float NightStepSeconds = 15f;
+        /// <summary>The "good, back to sleep" pause after each called role.</summary>
+        public float NightSleepSeconds = 2f;
         /// <summary>The Avenger's thinking time while everybody talks to him (owner's rule, 30 s).</summary>
         public float AvengeSeconds = 30f;
         /// <summary>After he picks, the pick stays changeable this long (a wrong tap can be undone) and then it is final.</summary>
@@ -63,12 +76,15 @@ namespace MafiaNight.MatchRules
         /// <summary>The rules of the game as it ships: every role in play.</summary>
         public static MatchConfig WithAllRoles() { return new MatchConfig { HasSilencer = true, HasSniper = true, HasAvenger = true }; }
 
+        /// <summary>The whole night when <paramref name="calls"/> roles are called.</summary>
+        public float NightTotalSeconds(int calls) { return NightOpenSeconds + calls * (NightStepSeconds + NightSleepSeconds); }
+
         public float Duration(Phase p)
         {
             switch (p)
             {
                 case Phase.RoleReveal: return RoleRevealSeconds;
-                case Phase.Night: return NightSeconds;
+                case Phase.Night: return NightOpenSeconds;
                 case Phase.Dawn: return DawnSeconds;
                 case Phase.Day: return DaySeconds;
                 case Phase.Voting: return VotingSeconds;

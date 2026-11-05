@@ -127,6 +127,7 @@ namespace MafiaNight.Tests
             host2.Tick(host2.Match.Config.RoleRevealSeconds + 0.1f);   // role reveal ends -> night
             Assert.AreEqual(Phase.Night, host2.Match.Phase);
             string sheriff = IdOf(host2.Match, Role.Sheriff), mafia = IdOf(host2.Match, Role.Mafia);
+            HostNightKit.ToStep(host2, NightStep.Sheriff);
             hub2.Clients[sheriff].SheriffCheck(mafia);
             Assert.AreEqual(1, hub2.Clients[sheriff].SheriffReports.Count);
             Assert.IsTrue(hub2.Clients[sheriff].SheriffReports[0].Value);
@@ -141,6 +142,7 @@ namespace MafiaNight.Tests
             host.Begin(); host.Tick(host.Match.Config.RoleRevealSeconds + 0.1f);
             var mafia = host.Match.Players.Where(p => p.IsMafia).ToList();
             string victim = IdOf(host.Match, Role.Civilian);
+            HostNightKit.ToStep(host, NightStep.Mafia);
             hub.Clients[mafia[0].Id].MafiaPick(victim);
             foreach (var m in mafia) Assert.AreEqual(victim, hub.Clients[m.Id].MafiaVotes[mafia[0].Id]);
             foreach (var p in host.Match.Players.Where(p => !p.IsMafia)) Assert.IsFalse(hub.Inbox[p.Id].Any(x => x.Type == Msg.MafiaVotes), p.Id);
@@ -170,28 +172,66 @@ namespace MafiaNight.Tests
             host.Tick(host.Match.Config.RoleRevealSeconds + 0.1f);
             Assert.AreEqual(Phase.Night, hub.Clients["p3"].Phase);
             Assert.AreEqual(1, hub.Clients["p3"].Round);
-            host.Tick(host.Match.Config.NightSeconds + 0.1f);
+            HostNightKit.FinishNight(host);
             Assert.AreEqual(Phase.Dawn, hub.Clients["p3"].Phase);
             Assert.IsNull(hub.Clients["p3"].DawnDiedId);   // nobody voted for a victim
         }
 
         [Test]
-        public void When_everybody_acted_the_night_ends_early()
+        public void Each_role_acts_in_its_own_call_and_the_night_never_ends_early()
         {
             var (hub, host) = Setup(8);
             host.Begin(); host.Tick(host.Match.Config.RoleRevealSeconds + 0.1f);
             var match = host.Match;
             string victim = IdOf(match, Role.Civilian);
+            string doctor = IdOf(match, Role.Doctor), sheriff = IdOf(match, Role.Sheriff);
+            hub.Clients[doctor].DoctorSave(doctor);                               // the doctor is asleep: refused
+            Assert.AreEqual(ActionResult.WrongStep, hub.Clients[doctor].LastResult);
+            HostNightKit.ToStep(host, NightStep.Mafia);
             foreach (var m in match.Players.Where(p => p.IsMafia)) hub.Clients[m.Id].MafiaPick(victim);
-            hub.Clients[IdOf(match, Role.Doctor)].DoctorSave(IdOf(match, Role.Doctor));
-            hub.Clients[IdOf(match, Role.Sheriff)].SheriffCheck(IdOf(match, Role.Mafia));
-            host.Tick(1f);
-            Assert.AreEqual(Phase.Night, match.Phase);    // still showing it for a moment
-            host.Tick(1.5f);
+            HostNightKit.ToStep(host, NightStep.Doctor);
+            hub.Clients[doctor].DoctorSave(doctor);
+            Assert.AreEqual(ActionResult.Ok, hub.Clients[doctor].LastResult);
+            HostNightKit.ToStep(host, NightStep.Sheriff);
+            hub.Clients[sheriff].SheriffCheck(IdOf(match, Role.Mafia));
+            host.Tick(1f); host.Tick(1.5f);
+            Assert.AreEqual(Phase.Night, match.Phase, "everybody who could act has acted, and still the night goes on to the end of the calls");
+            HostNightKit.FinishNight(host);
             Assert.AreEqual(Phase.Dawn, match.Phase);
             Assert.AreEqual(victim, hub.Clients["p5"].DawnDiedId);
             Assert.AreEqual(Role.Civilian, hub.Clients["p5"].DawnDiedRole);
             Assert.AreEqual(Role.Civilian, hub.Clients["p5"].Seat(victim).Role);   // the role became public
+        }
+
+        [Test]
+        public void Everybody_sees_which_role_is_called_and_when_everybody_sleeps()
+        {
+            var (hub, host) = Setup(8);
+            host.Begin(); host.Tick(host.Match.Config.RoleRevealSeconds + 0.1f);
+            var cl = hub.Clients["p2"];
+            Assert.IsNull(cl.ActiveStep, "the night opens: nobody is called yet");
+            HostNightKit.ToStep(host, NightStep.Doctor);
+            foreach (var c in hub.Clients.Values) Assert.AreEqual(NightStep.Doctor, c.ActiveStep, "the banner is public");
+            CollectionAssert.AreEqual(host.Match.NightSteps, cl.NightSteps);
+            for (int i = 0; i < 40 && cl.ActiveStep == NightStep.Doctor; i++) host.Tick(0.5f);
+            Assert.IsNull(cl.ActiveStep, "after the call everybody sleeps for a moment");
+            Assert.IsFalse(cl.MyTurn);
+            string doctor = IdOf(host.Match, Role.Doctor);
+            HostNightKit.ToStep(host, NightStep.Sheriff);
+            Assert.IsFalse(hub.Clients[doctor].MyTurn, "his call is over");
+            Assert.IsTrue(hub.Clients[IdOf(host.Match, Role.Sheriff)].MyTurn);
+        }
+
+        [Test]
+        public void The_roles_of_the_match_are_told_to_everybody_at_the_start()
+        {
+            var (hub, host) = Setup(8);
+            host.Begin();
+            foreach (var c in hub.Clients.Values)
+            {
+                Assert.AreEqual(8, c.RoleCounts.Sum(r => r.Value), "the counts cover the whole table");
+                Assert.IsTrue(c.RoleCounts.Any(r => r.Key == Role.Doctor && r.Value == 1));
+            }
         }
 
         [Test]
@@ -200,7 +240,7 @@ namespace MafiaNight.Tests
             var (hub, host) = Setup(8);
             host.Begin();
             var match = host.Match;
-            for (int i = 0; i < 3; i++) host.Tick(match.PhaseSeconds + 0.1f);   // reveal -> night -> dawn -> day
+            HostNightKit.ToDay(host);
             Assert.AreEqual(Phase.Day, match.Phase);
             host.Tick(match.PhaseSeconds + 0.1f);
             Assert.AreEqual(Phase.Voting, match.Phase);
@@ -219,7 +259,7 @@ namespace MafiaNight.Tests
             var (hub, host) = Setup(8);
             host.Begin();
             var match = host.Match;
-            for (int i = 0; i < 3; i++) host.Tick(match.PhaseSeconds + 0.1f);
+            HostNightKit.ToDay(host);
             Assert.AreEqual(Phase.Day, match.Phase);
             for (int i = 0; i < 5; i++) hub.Clients["p" + i].SkipDiscussion();
             Assert.AreEqual(5, hub.Clients["p7"].SkipCount);
@@ -288,9 +328,10 @@ namespace MafiaNight.Tests
             host.Tick(host.Match.Config.RoleRevealSeconds + 0.1f);   // night
             var w = AddWatcher(hub, host, "late");
             string victim = host.Match.Players.First(p => !p.IsMafia).Id;
+            HostNightKit.ToStep(host, NightStep.Mafia);
             w.MafiaPick(victim); w.DoctorSave(victim); w.Vote(victim); w.SkipDiscussion();
             Assert.IsFalse(host.Match.MafiaVotes.Any(), "a watcher's act must be ignored");
-            host.Tick(host.Match.Config.NightSeconds + 0.1f);        // dawn
+            HostNightKit.FinishNight(host);                              // dawn
             Assert.AreEqual(Phase.Dawn, w.Phase);
             Assert.AreEqual(1, w.Round);
         }
@@ -352,6 +393,7 @@ namespace MafiaNight.Tests
             var mafia = host.Match.Players.Where(p => p.IsMafia).Select(p => p.Id).ToList();
             string victim = host.Match.Players.First(p => !p.IsMafia).Id;
             string id = mafia.Last(x => x != "p0");
+            HostNightKit.ToStep(host, NightStep.Mafia);
             hub.Clients[mafia.First()].MafiaPick(victim);
             host.PlayerLeft(id);
             var back = FreshClient(hub, host, id);

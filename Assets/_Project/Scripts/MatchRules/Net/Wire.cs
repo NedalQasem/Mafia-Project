@@ -56,6 +56,8 @@ namespace MafiaNight.MatchRules.Net
         public const string Role = "role";          // role, mate ids...  (private: only to that player)
         public const string State = "state";        // phase, round, secondsLeft, then (id, name, alive, left) per player
         public const string Result = "result";      // kind, ActionResult  (answer to an Act)
+        public const string Step = "step";          // which role is awake now ("" = none: the opening or the pause), the calls of the night (comma separated), the index of the current call (private to nobody: the banner shows it to everyone)
+        public const string Roles = "roles";        // (role, count)... the roles of this match and how many of each: public from the start, so a night call gives nobody away
         public const string MafiaVotes = "mvotes";  // (mafia id, victim id)... (private: only to the mafia)
         public const string Sheriff = "sheriff";    // target id, isMafia (private: only to the sheriff)
         public const string Dawn = "dawn";          // victim id, saved, died id, died role, silenced id, then (id, role) per death by the sniper's shot (who shot is never named)

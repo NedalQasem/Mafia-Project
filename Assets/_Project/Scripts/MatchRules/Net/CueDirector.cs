@@ -35,9 +35,19 @@ namespace MafiaNight.MatchRules.Net
             c = client;
             c.PhaseChanged += OnPhase;
             c.Moment += OnMoment;
+            c.StepChanged += OnStep;
         }
 
-        public void Dispose() { c.PhaseChanged -= OnPhase; c.Moment -= OnMoment; }
+        public void Dispose() { c.PhaseChanged -= OnPhase; c.Moment -= OnMoment; c.StepChanged -= OnStep; }
+
+        private NightStep? lastCalled;
+
+        /// <summary>The narrator calls the night's roles one at a time, and everybody hears every call (and every "back to sleep"): the call is public, only the choice is secret.</summary>
+        private void OnStep(NightStep? step)
+        {
+            if (step.HasValue) { lastCalled = step; Emit(CueIds.Call(CueCatalog.RoleOfStep(step.Value)), "", 0f); }
+            else if (lastCalled.HasValue) { Emit(CueIds.Sleep(CueCatalog.RoleOfStep(lastCalled.Value)), "", 0f); lastCalled = null; }
+        }
 
         private string Name(string id) => id == null ? "" : c.Seat(id)?.Name ?? "";
 
@@ -55,12 +65,7 @@ namespace MafiaNight.MatchRules.Net
             switch (p)
             {
                 case Phase.RoleReveal: Emit(CueIds.MatchStart, "", 0f); break;
-                case Phase.Night:
-                    float t = Emit(CueIds.NightFalls, "", 0f);
-                    var mine = c.MyRole ?? Role.Civilian;
-                    var call = CueCatalog.Has(CueIds.Call(mine)) ? CueCatalog.NightCallFor(mine, mine, c.IAmAlive) : CueCatalog.Find(CueIds.NightIdle);
-                    if (call != null) Emit(call.Id, "", t);
-                    break;
+                case Phase.Night: lastCalled = null; Emit(CueIds.NightFalls, "", 0f); break;
                 case Phase.Day: Emit(CueIds.DayStart, "", 0f); break;
                 case Phase.Voting: Emit(CueIds.VoteStart, "", 0f); break;
             }

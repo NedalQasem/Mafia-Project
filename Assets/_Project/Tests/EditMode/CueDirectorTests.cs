@@ -37,29 +37,36 @@ namespace MafiaNight.Tests
 
         private void Role(Role r) => client.Apply(new WireMessage(Msg.Role, r.ToString()));
 
-        [Test]
-        public void TheNightFallsThenEveryoneHearsTheirOwnCallOrTheIdleLineOfTheSameLength()
-        {
-            Role(MafiaNight.MatchRules.Role.Doctor);
-            Table(Phase.Night);
-            Assert.AreEqual(CueIds.NightFalls, played[0].Cue.Id);
-            Assert.AreEqual(CueIds.Call(MafiaNight.MatchRules.Role.Doctor), played[1].Cue.Id);
-            Assert.AreEqual(played[0].Cue.Duration, played[1].Delay, "the call starts when the fall of night ends");
+        private void Step(string awake, params NightStep[] all) =>
+            client.Apply(new WireMessage(Msg.Step, awake, string.Join(",", all.Select(x => x.ToString())), "0"));
 
-            played.Clear();
-            director.Dispose(); client = new ClientMatchController("me", m => { }); director = new CueDirector(client); director.Play += p => played.Add(p);
-            client.Apply(new WireMessage(Msg.Start, "m2")); Role(MafiaNight.MatchRules.Role.Civilian);
-            Table(Phase.Night);
-            Assert.AreEqual(CueIds.NightIdle, played[1].Cue.Id);
-            Assert.AreEqual(CueCatalog.Find(CueIds.Call(MafiaNight.MatchRules.Role.Doctor)).Duration, played[1].Cue.Duration, "the idle line is as long as a call: nothing tells who woke up");
+        [Test]
+        public void TheNightFallsAndThenEveryoneHearsEveryCall_TheSameForAllRoles()
+        {
+            foreach (var mine in new[] { MafiaNight.MatchRules.Role.Doctor, MafiaNight.MatchRules.Role.Civilian })
+            {
+                played.Clear();
+                director.Dispose(); client = new ClientMatchController("me", m => { }); director = new CueDirector(client); director.Play += p => played.Add(p);
+                client.Apply(new WireMessage(Msg.Start, "m2")); Role(mine);
+                Table(Phase.Night);
+                Assert.AreEqual(CueIds.NightFalls, played[0].Cue.Id);
+                Step("Mafia", NightStep.Mafia, NightStep.Doctor);
+                Assert.AreEqual(CueIds.Call(MafiaNight.MatchRules.Role.Mafia), played[1].Cue.Id, mine + ": the call is public");
+                Step("", NightStep.Mafia, NightStep.Doctor);
+                Assert.AreEqual(CueIds.Sleep(MafiaNight.MatchRules.Role.Mafia), played[2].Cue.Id, mine + ": and so is the going back to sleep");
+                Step("Doctor", NightStep.Mafia, NightStep.Doctor);
+                Assert.AreEqual(CueIds.Call(MafiaNight.MatchRules.Role.Doctor), played[3].Cue.Id);
+                Assert.AreEqual(played[1].Cue.Duration, played[3].Cue.Duration, "every call lasts the same");
+            }
         }
 
         [Test]
-        public void TheDeadHearTheIdleLineLikeTheCitizens_SoTheSilenceTellsNothing()
+        public void TheDeadHearTheCallsToo_SoTheSilenceTellsNothing()
         {
             Role(MafiaNight.MatchRules.Role.Sheriff);
             Table(Phase.Night, "me");
-            Assert.AreEqual(CueIds.NightIdle, played[1].Cue.Id);
+            Step("Sheriff", NightStep.Mafia, NightStep.Sheriff);
+            Assert.AreEqual(CueIds.Call(MafiaNight.MatchRules.Role.Sheriff), played[1].Cue.Id);
         }
 
         [Test]
@@ -114,7 +121,7 @@ namespace MafiaNight.Tests
         [Test]
         public void EveryCueTheDirectorCanChooseExistsInTheCatalog()
         {
-            foreach (var id in new[] { CueIds.MatchStart, CueIds.NightFalls, CueIds.NightIdle, CueIds.DawnQuiet, CueIds.DawnKill, CueIds.DawnSaved, CueIds.DawnShot, CueIds.DawnSilenced, CueIds.DayStart, CueIds.VoteStart,
+            foreach (var id in new[] { CueIds.MatchStart, CueIds.NightFalls, CueIds.DawnQuiet, CueIds.DawnKill, CueIds.DawnSaved, CueIds.DawnShot, CueIds.DawnSilenced, CueIds.DayStart, CueIds.VoteStart,
                 CueIds.VerdictMafia, CueIds.VerdictTown, CueIds.VerdictNobody, CueIds.AvengeStart, CueIds.AvengeDone, CueIds.OverTown, CueIds.OverMafia })
                 Assert.IsTrue(CueCatalog.Has(id), id);
             foreach (var cue in CueCatalog.All)

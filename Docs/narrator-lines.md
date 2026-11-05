@@ -19,11 +19,11 @@
 |---|---|---|
 | `avenge_done` | الثَّأْرِي اِخْتَارَ أَحَدَ اللَّاعِبِين. طَلَعُوا الثِّنْيَن. | 7 |
 | `avenge_start` | اِنْطَرَدَ الثَّأْرِي! وَعِنْدَهُ قَرَار: يَاخُذُ مَعَاهُ لَاعِب. | 6 |
-| `call_doctor` | يَا دُكْتُور… قُوم. مِنُو تَبِي تَحْمِي اللَّيْلَة؟ | 20 |
-| `call_mafia` | يَا مَافِيَا… قُومُوا. مِنُو تَبُّونَ تَقْتُلُونَ اللَّيْلَة؟ | 20 |
-| `call_sheriff` | يَا شَيْخ… قُوم. مِنُو تَبِي تَفْحَصُ اللَّيْلَة؟ | 20 |
-| `call_silencer` | يَا كَاتِمَ الصَّوْت… قُوم. مِنُو تَبِي تَسْكِتُه بَاجِر؟ مَا رَاح يِتْكَلَّمُ النَّهَارَ كُلَّه. | 20 |
-| `call_sniper` | يَا قَنَّاص… قُوم. عِنْدَكَ رَصَاصَةٌ وَحْدَة. تَبِي تَقْنِصُ اللَّيْلَة وَلَّا نَأَجِّلْهَا؟ | 20 |
+| `call_doctor` | يَا دُكْتُور… قُوم. مِنُو تَبِي تَحْمِي اللَّيْلَة؟ | 15 |
+| `call_mafia` | يَا مَافِيَا… قُومُوا. مِنُو تَبُّونَ تَقْتُلُونَ اللَّيْلَة؟ | 15 |
+| `call_sheriff` | يَا شَيْخ… قُوم. مِنُو تَبِي تَفْحَصُ اللَّيْلَة؟ | 15 |
+| `call_silencer` | يَا كَاتِمَ الصَّوْت… قُوم. مِنُو تَبِي تَسْكِتُه بَاجِر؟ مَا رَاح يِتْكَلَّمُ النَّهَارَ كُلَّه. | 15 |
+| `call_sniper` | يَا قَنَّاص… قُوم. عِنْدَكَ رَصَاصَةٌ وَحْدَة. تَبِي تَقْنِصُ اللَّيْلَة وَلَّا نَأَجِّلْهَا؟ | 15 |
 | `dawn_kill` | طَلَعَ الصُّبْح. اللَّيْلَة… المَافِيَا قَتَلَتْ أَحَدَ اللَّاعِبِين. | 9 |
 | `dawn_quiet` | طَلَعَ الصُّبْح. مَحَدْ مَاتَ اللَّيْلَة. | 6 |
 | `dawn_saved` | طَلَعَ الصُّبْح. المَافِيَا حَاوَلَتْ تَقْتُلُ أَحَدَ اللَّاعِبِين… بَسْ فِيهِ أَحَدٌ أَنْقَذَه! | 9 |
@@ -32,7 +32,6 @@
 | `day_start` | بَدَا النِّقَاش. | 3 |
 | `match_start` | وُزِّعَتِ الأَدْوَار. السَّهْرَةُ بَدَت. | 4 |
 | `night_falls` | الكُلّ يِنَام… غَمِّضُوا عُيُونَكُم. | 4 |
-| `night_idle` | اللَّيْلُ يِمْشِي… اهْدَا. | 20 |
 | `over_mafia` | خَلَصَتِ السَّهْرَة. فَازَتِ المَافِيَا! | 8 |
 | `over_town` | خَلَصَتِ السَّهْرَة. فَازَ أَهْلُ الفَرِيج! | 8 |
 | `sleep_doctor` | زِين. الدُّكْتُورُ يِنَام. | 2 |
@@ -51,11 +50,11 @@
 |---|---|---|
 | `avenge_done` | The Avenger chose someone. Both are out. | 7 |
 | `avenge_start` | The Avenger is out! And they have one last decision: they take someone with them. | 6 |
-| `call_doctor` | Doctor… wake up. Who do you protect tonight? | 20 |
-| `call_mafia` | Mafia… wake up. Who do you take out tonight? | 20 |
-| `call_sheriff` | Sheriff… wake up. Who do you investigate tonight? | 20 |
-| `call_silencer` | Silencer… wake up. Who do you silence for tomorrow? They won't say a word all day. | 20 |
-| `call_sniper` | Sniper… wake up. You have one bullet. Do you take the shot tonight, or wait? | 20 |
+| `call_doctor` | Doctor… wake up. Who do you protect tonight? | 15 |
+| `call_mafia` | Mafia… wake up. Who do you take out tonight? | 15 |
+| `call_sheriff` | Sheriff… wake up. Who do you investigate tonight? | 15 |
+| `call_silencer` | Silencer… wake up. Who do you silence for tomorrow? They won't say a word all day. | 15 |
+| `call_sniper` | Sniper… wake up. You have one bullet. Do you take the shot tonight, or wait? | 15 |
 | `dawn_kill` | Morning has come. Last night… the Mafia killed someone. | 9 |
 | `dawn_quiet` | Morning has come. Nobody died tonight. | 6 |
 | `dawn_saved` | Morning has come. The Mafia tried to kill someone… but someone saved them! | 9 |
@@ -64,7 +63,6 @@
 | `day_start` | The discussion begins. | 3 |
 | `match_start` | The roles are dealt. The evening begins. | 4 |
 | `night_falls` | Everyone, go to sleep… close your eyes. | 4 |
-| `night_idle` | The night moves on… stay quiet. | 20 |
 | `over_mafia` | The night is over. The Mafia wins! | 8 |
 | `over_town` | The night is over. The neighborhood wins! | 8 |
 | `sleep_doctor` | Good. The Doctor goes back to sleep. | 2 |

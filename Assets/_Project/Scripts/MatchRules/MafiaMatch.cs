@@ -21,6 +21,10 @@ namespace MafiaNight.MatchRules
         private string silenceTarget;
         private string snipeTarget;
         private bool snipeDecided;                 // the sniper chose a target or chose to keep his bullet tonight
+        // the night is called one role at a time: the roles that exist in this match, in the order they are called
+        private List<NightStep> nightSteps = new List<NightStep>();
+        private int stepIndex = -1;                // -1: the night's opening, nobody is called yet
+        private bool stepOpen;                     // the called role is awake (false between calls: everybody sleeps)
         // the Avenger's moment (after a dawn that killed him, or a verdict that removed him)
         private string avengerId;
         private string avengeTarget;
@@ -49,6 +53,51 @@ namespace MafiaNight.MatchRules
         public string AvengePick => Phase == Phase.Avenge ? avengeTarget : null;
 
         public float PhaseSeconds => Config.Duration(Phase);
+
+        // ---------------------------------------------------------------- the night's calls
+
+        /// <summary>The roles called tonight, in order. A role is called when somebody holds it in this match, dead or alive, so the calls (and their length) never tell who died.</summary>
+        public IReadOnlyList<NightStep> NightSteps => nightSteps;
+        /// <summary>Which role is awake right now (null: the opening, or the pause between two calls, or not a night).</summary>
+        public NightStep? ActiveStep => Phase == Phase.Night && stepOpen && stepIndex >= 0 && stepIndex < nightSteps.Count ? nightSteps[stepIndex] : (NightStep?)null;
+        /// <summary>Position of the current call in <see cref="NightSteps"/> (-1: the opening).</summary>
+        public int NightStepIndex => stepIndex;
+
+        private List<NightStep> CallsOfThisMatch()
+        {
+            var list = new List<NightStep> { NightStep.Mafia };
+            if (players.Any(p => p.Role == Role.Silencer)) list.Add(NightStep.Silencer);
+            if (players.Any(p => p.Role == Role.Doctor)) list.Add(NightStep.Doctor);
+            if (players.Any(p => p.Role == Role.Sheriff)) list.Add(NightStep.Sheriff);
+            if (players.Any(p => p.Role == Role.Sniper)) list.Add(NightStep.Sniper);
+            return list;
+        }
+
+        /// <summary>Whether a role is awake while <paramref name="step"/> is open: the mafia step wakes the killers and the silencer (he only advises), every other step wakes its own role.</summary>
+        public static bool IsAwake(NightStep step, Role role)
+        {
+            switch (step)
+            {
+                case NightStep.Mafia: return role == Role.Mafia || role == Role.Silencer;
+                case NightStep.Silencer: return role == Role.Silencer;
+                case NightStep.Doctor: return role == Role.Doctor;
+                case NightStep.Sheriff: return role == Role.Sheriff;
+                default: return role == Role.Sniper;
+            }
+        }
+
+        /// <summary>The next role is called and wakes up. False when every call has been made: the night is over and the host moves on to the dawn.</summary>
+        public bool BeginNextStep()
+        {
+            if (Phase != Phase.Night || stepIndex + 1 >= nightSteps.Count) return false;
+            stepIndex++; stepOpen = true;
+            return true;
+        }
+
+        /// <summary>The called role goes back to sleep (its time is up).</summary>
+        public void EndStep() { stepOpen = false; }
+
+        private ActionResult InStep(NightStep step) { return ActiveStep == step ? ActionResult.Ok : ActionResult.WrongStep; }
 
         /// <summary>The current night's mafia votes (mafia id -> victim id), for showing the mafia what their team picked.</summary>
         public IReadOnlyDictionary<string, string> MafiaVotes => mafiaVotes;
@@ -135,6 +184,7 @@ namespace MafiaNight.MatchRules
         {
             var a = Actor(mafiaId, Phase.Night, null, out var err); if (a == null) return err;
             if (!a.IsMafia) return ActionResult.WrongRole;           // the mafia team: the killers and the silencer
+            var step = InStep(NightStep.Mafia); if (step != ActionResult.Ok) return step;
             var t = Get(targetId);
             if (t == null || !t.InPlay || t.Id == a.Id) return ActionResult.InvalidTarget;
             if (t.IsMafia) return ActionResult.MafiaTeammate;
@@ -157,6 +207,7 @@ namespace MafiaNight.MatchRules
         public ActionResult Silence(string silencerId, string targetId)
         {
             var a = Actor(silencerId, Phase.Night, Role.Silencer, out var err); if (a == null) return err;
+            var step = InStep(NightStep.Silencer); if (step != ActionResult.Ok) return step;
             var t = Get(targetId);
             if (t == null || !t.InPlay || t.Id == a.Id) return ActionResult.InvalidTarget;
             if (t.IsMafia) return ActionResult.MafiaTeammate;
@@ -171,6 +222,7 @@ namespace MafiaNight.MatchRules
         public ActionResult Snipe(string sniperId, string targetId)
         {
             var a = Actor(sniperId, Phase.Night, Role.Sniper, out var err); if (a == null) return err;
+            var step = InStep(NightStep.Sniper); if (step != ActionResult.Ok) return step;
             if (a.ShotsUsed >= RoleDefs.Of(Role.Sniper).Uses) return ActionResult.AbilityUsed;
             if (string.IsNullOrEmpty(targetId)) { snipeTarget = null; snipeDecided = true; return ActionResult.Ok; }
             var t = Get(targetId);
@@ -199,6 +251,7 @@ namespace MafiaNight.MatchRules
         public ActionResult DoctorSave(string doctorId, string targetId)
         {
             var a = Actor(doctorId, Phase.Night, Role.Doctor, out var err); if (a == null) return err;
+            var step = InStep(NightStep.Doctor); if (step != ActionResult.Ok) return step;
             var t = Get(targetId);
             if (t == null || !t.InPlay) return ActionResult.InvalidTarget;
             if (t.Id == a.Id && a.SelfSavesUsed >= Config.DoctorSelfSaves) return ActionResult.SelfSaveUsed;
@@ -211,24 +264,13 @@ namespace MafiaNight.MatchRules
         {
             report = null;
             var a = Actor(sheriffId, Phase.Night, Role.Sheriff, out var err); if (a == null) return err;
+            var step = InStep(NightStep.Sheriff); if (step != ActionResult.Ok) return step;
             if (sheriffDone) return ActionResult.AlreadyDone;
             var t = Get(targetId);
             if (t == null || !t.InPlay || t.Id == a.Id) return ActionResult.InvalidTarget;
             sheriffDone = true;
             report = LastSheriff = new SheriffReport { SheriffId = a.Id, TargetId = t.Id, IsMafia = t.IsMafia };
             return ActionResult.Ok;
-        }
-
-        /// <summary>Everybody who acts at night has acted, so the host may end the night early.</summary>
-        public bool NightActionsComplete()
-        {
-            if (Phase != Phase.Night) return false;
-            foreach (var m in players.Where(p => p.InPlay && IsKillDecider(p))) if (!mafiaVotes.ContainsKey(m.Id)) return false;     // the silencer only advises: the assassins decide
-            if (players.Any(p => p.InPlay && p.Role == Role.Doctor) && doctorTarget == null) return false;
-            if (players.Any(p => p.InPlay && p.Role == Role.Sheriff) && !sheriffDone) return false;
-            if (players.Any(p => p.InPlay && p.Role == Role.Silencer) && silenceTarget == null) return false;
-            if (players.Any(p => p.InPlay && p.Role == Role.Sniper && p.ShotsUsed < RoleDefs.Of(Role.Sniper).Uses) && !snipeDecided) return false;   // shoot, or say "not tonight"
-            return true;
         }
 
         private DeathInfo Death(MatchPlayer p) { return new DeathInfo { Id = p.Id, Role = Config.RevealRoleOnDeath ? p.Role : (Role?)null }; }
@@ -401,6 +443,7 @@ namespace MafiaNight.MatchRules
             Round++;
             mafiaVotes.Clear(); doctorTarget = null; sheriffDone = false;
             silenceTarget = null; snipeTarget = null; snipeDecided = false; SilencedId = null;
+            nightSteps = CallsOfThisMatch(); stepIndex = -1; stepOpen = false;
             LastNight = null; LastSheriff = null; LastDoctor = null;
             Phase = Phase.Night;
         }
@@ -443,7 +486,7 @@ namespace MafiaNight.MatchRules
 
         // ---------------------------------------------------------------- snapshot (so another device can take over as host)
 
-        private const string SnapshotVersion = "m3";
+        private const string SnapshotVersion = "m4";
 
         /// <summary>Everything the match knows, as plain text pieces. <see cref="Restore"/> builds an identical match from it.</summary>
         public List<string> Export()
@@ -451,6 +494,7 @@ namespace MafiaNight.MatchRules
             var o = new List<string> { SnapshotVersion, Phase.ToString(), Round.ToString(), Winner.ToString(), doctorTarget ?? "", sheriffDone ? "1" : "0" };
             o.Add(silenceTarget ?? ""); o.Add(snipeTarget ?? ""); o.Add(snipeDecided ? "1" : "0"); o.Add(SilencedId ?? "");
             o.Add(avengerId ?? ""); o.Add(avengeTarget ?? ""); o.Add(avengeReturn.ToString());
+            o.Add(stepIndex.ToString()); o.Add(stepOpen ? "1" : "0");
             o.Add(players.Count.ToString());
             foreach (var p in players) { o.Add(p.Id); o.Add(p.Name ?? ""); o.Add(p.Role.ToString()); o.Add(p.Alive ? "1" : "0"); o.Add(p.Left ? "1" : "0"); o.Add(p.AliveWhenLeft ? "1" : "0"); o.Add(p.SelfSavesUsed.ToString()); o.Add(p.ShotsUsed.ToString()); }
             o.Add(mafiaVotes.Count.ToString());
@@ -503,9 +547,11 @@ namespace MafiaNight.MatchRules
                 m.sheriffDone = NextBool();
                 m.silenceTarget = NullIfEmpty(Next()); m.snipeTarget = NullIfEmpty(Next()); m.snipeDecided = NextBool(); m.SilencedId = NullIfEmpty(Next());
                 m.avengerId = NullIfEmpty(Next()); m.avengeTarget = NullIfEmpty(Next()); m.avengeReturn = (Phase)Enum.Parse(typeof(Phase), Next());
+                m.stepIndex = NextInt(); m.stepOpen = NextBool();
                 int n = NextInt();
                 for (int k = 0; k < n; k++)
                     m.players.Add(new MatchPlayer { Id = Next(), Name = Next(), Role = (Role)Enum.Parse(typeof(Role), Next()), Alive = NextBool(), Left = NextBool(), AliveWhenLeft = NextBool(), SelfSavesUsed = NextInt(), ShotsUsed = NextInt() });
+                m.nightSteps = m.CallsOfThisMatch();
                 n = NextInt(); for (int k = 0; k < n; k++) { string a = Next(), b = Next(); m.mafiaVotes[a] = b; }
                 n = NextInt(); for (int k = 0; k < n; k++) m.skipVotes.Add(Next());
                 n = NextInt(); for (int k = 0; k < n; k++) { string a = Next(), b = Next(); m.votes[a] = NullIfEmpty(b); }

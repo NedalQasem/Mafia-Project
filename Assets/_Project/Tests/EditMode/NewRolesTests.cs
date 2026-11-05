@@ -28,15 +28,15 @@ namespace MafiaNight.Tests
         /// <summary>Everybody who has to act does, harmlessly: the mafia (and the silencer) kill <paramref name="victim"/>, the silencer silences <paramref name="silenced"/>, the sniper keeps his bullet.</summary>
         private static void Acts(MafiaMatch m, string victim, string silenced = null, string shot = null, string saved = null)
         {
-            foreach (var p in m.Players.Where(x => x.IsMafia)) Assert.AreEqual(ActionResult.Ok, m.MafiaVote(p.Id, victim), "mafia vote");
+            foreach (var p in m.Players.Where(x => x.IsMafia)) Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Mafia).MafiaVote(p.Id, victim), "mafia vote");
             var silencer = m.Players.FirstOrDefault(x => x.Role == Role.Silencer && x.InPlay);
-            if (silencer != null) Assert.AreEqual(ActionResult.Ok, m.Silence(silencer.Id, silenced ?? Civ(m, 1).Id));
+            if (silencer != null) Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Silencer).Silence(silencer.Id, silenced ?? Civ(m, 1).Id));
             var doctor = m.Players.FirstOrDefault(x => x.Role == Role.Doctor && x.InPlay);
-            if (doctor != null) m.DoctorSave(doctor.Id, saved ?? doctor.Id);
+            if (doctor != null) m.At(NightStep.Doctor).DoctorSave(doctor.Id, saved ?? doctor.Id);
             var sheriff = m.Players.FirstOrDefault(x => x.Role == Role.Sheriff && x.InPlay);
-            if (sheriff != null) m.SheriffCheck(sheriff.Id, Civ(m).Id, out _);
+            if (sheriff != null) m.At(NightStep.Sheriff).SheriffCheck(sheriff.Id, Civ(m).Id, out _);
             var sniper = m.Players.FirstOrDefault(x => x.Role == Role.Sniper && x.InPlay && x.ShotsUsed == 0);
-            if (sniper != null) Assert.AreEqual(ActionResult.Ok, m.Snipe(sniper.Id, shot));
+            if (sniper != null) Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Sniper).Snipe(sniper.Id, shot));
         }
 
         // ------------------------------------------------------------------ the role table
@@ -103,11 +103,11 @@ namespace MafiaNight.Tests
         {
             var m = Night();
             var s = P(m, Role.Silencer);
-            Assert.AreEqual(ActionResult.MafiaTeammate, m.Silence(s.Id, P(m, Role.Mafia).Id));
-            Assert.AreEqual(ActionResult.InvalidTarget, m.Silence(s.Id, s.Id));
-            Assert.AreEqual(ActionResult.WrongRole, m.Silence(P(m, Role.Mafia).Id, Civ(m).Id));
-            Assert.AreEqual(ActionResult.WrongRole, m.MafiaVote(Civ(m).Id, Civ(m, 1).Id));
-            Assert.AreEqual(ActionResult.Ok, m.MafiaVote(s.Id, Civ(m).Id), "the silencer takes part in the kill like the other mafia");
+            Assert.AreEqual(ActionResult.WrongRole, m.At(NightStep.Mafia).MafiaVote(Civ(m).Id, Civ(m, 1).Id));
+            Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Mafia).MafiaVote(s.Id, Civ(m).Id), "the silencer takes part in the kill like the other mafia");
+            Assert.AreEqual(ActionResult.MafiaTeammate, m.At(NightStep.Silencer).Silence(s.Id, P(m, Role.Mafia).Id));
+            Assert.AreEqual(ActionResult.InvalidTarget, m.At(NightStep.Silencer).Silence(s.Id, s.Id));
+            Assert.AreEqual(ActionResult.WrongRole, m.At(NightStep.Silencer).Silence(P(m, Role.Mafia).Id, Civ(m).Id));
         }
 
 
@@ -118,14 +118,12 @@ namespace MafiaNight.Tests
             var mafia = P(m, Role.Mafia); var silencer = P(m, Role.Silencer);
             var chosen = m.Players.Where(p => !p.IsMafia).OrderByDescending(p => p.Id, StringComparer.Ordinal).First();
             var advised = m.Players.Where(p => !p.IsMafia).OrderBy(p => p.Id, StringComparer.Ordinal).First();   // would win a tie broken by id
-            Assert.AreEqual(ActionResult.Ok, m.MafiaVote(silencer.Id, advised.Id), "his advice is accepted and shown to his mates");
-            Assert.IsFalse(m.NightActionsComplete(), "the night waits for the assassin, not for the silencer's advice");
-            m.MafiaVote(mafia.Id, chosen.Id);
-            m.Silence(silencer.Id, Civ(m, 1).Id);
-            m.DoctorSave(P(m, Role.Doctor).Id, P(m, Role.Doctor).Id);
-            m.SheriffCheck(P(m, Role.Sheriff).Id, Civ(m).Id, out _);
-            m.Snipe(P(m, Role.Sniper).Id, null);
-            Assert.IsTrue(m.NightActionsComplete());
+            Assert.AreEqual(ActionResult.Ok, m.At(NightStep.Mafia).MafiaVote(silencer.Id, advised.Id), "his advice is accepted and shown to his mates");
+            m.At(NightStep.Mafia).MafiaVote(mafia.Id, chosen.Id);
+            m.At(NightStep.Silencer).Silence(silencer.Id, Civ(m, 1).Id);
+            m.At(NightStep.Doctor).DoctorSave(P(m, Role.Doctor).Id, P(m, Role.Doctor).Id);
+            m.At(NightStep.Sheriff).SheriffCheck(P(m, Role.Sheriff).Id, Civ(m).Id, out _);
+            m.At(NightStep.Sniper).Snipe(P(m, Role.Sniper).Id, null);
             m.Advance();
             Assert.AreEqual(chosen.Id, m.LastNight.VictimId, "the assassin's pick stands whatever the silencer advised");
         }
@@ -137,12 +135,11 @@ namespace MafiaNight.Tests
             var mafia = P(m, Role.Mafia); var silencer = P(m, Role.Silencer);
             mafia.Alive = false;
             var victim = Civ(m);
-            m.MafiaVote(silencer.Id, victim.Id);
-            m.Silence(silencer.Id, Civ(m, 1).Id);
-            m.DoctorSave(P(m, Role.Doctor).Id, P(m, Role.Doctor).Id);
-            m.SheriffCheck(P(m, Role.Sheriff).Id, Civ(m).Id, out _);
-            m.Snipe(P(m, Role.Sniper).Id, null);
-            Assert.IsTrue(m.NightActionsComplete());
+            m.At(NightStep.Mafia).MafiaVote(silencer.Id, victim.Id);
+            m.At(NightStep.Silencer).Silence(silencer.Id, Civ(m, 1).Id);
+            m.At(NightStep.Doctor).DoctorSave(P(m, Role.Doctor).Id, P(m, Role.Doctor).Id);
+            m.At(NightStep.Sheriff).SheriffCheck(P(m, Role.Sheriff).Id, Civ(m).Id, out _);
+            m.At(NightStep.Sniper).Snipe(P(m, Role.Sniper).Id, null);
             m.Advance();
             Assert.AreEqual(victim.Id, m.LastNight.DiedId);
         }
@@ -154,20 +151,6 @@ namespace MafiaNight.Tests
             Acts(m, target.Id, silenced: target.Id);
             m.Advance();
             Assert.IsNull(m.LastNight.SilencedId);
-        }
-
-        [Test]
-        public void TheNightWaitsForTheSilencerAndTheSnipersDecision()
-        {
-            var m = Night();
-            foreach (var p in m.Players.Where(x => x.IsMafia)) m.MafiaVote(p.Id, Civ(m).Id);
-            m.DoctorSave(P(m, Role.Doctor).Id, Civ(m).Id);
-            m.SheriffCheck(P(m, Role.Sheriff).Id, Civ(m).Id, out _);
-            Assert.IsFalse(m.NightActionsComplete(), "the silencer and the sniper have not decided");
-            m.Silence(P(m, Role.Silencer).Id, Civ(m, 1).Id);
-            Assert.IsFalse(m.NightActionsComplete(), "the sniper has not decided");
-            m.Snipe(P(m, Role.Sniper).Id, null);
-            Assert.IsTrue(m.NightActionsComplete(), "keeping the bullet is a decision");
         }
 
         // ------------------------------------------------------------------ the sniper
@@ -215,7 +198,7 @@ namespace MafiaNight.Tests
             Assert.AreEqual(1, sniper.ShotsUsed);
             m.Advance(); m.Advance(); m.Advance(); m.Advance();               // day, voting, verdict, night
             Assert.AreEqual(Phase.Night, m.Phase);
-            Assert.AreEqual(ActionResult.AbilityUsed, m.Snipe(sniper.Id, Civ(m).Id));
+            Assert.AreEqual(ActionResult.AbilityUsed, m.At(NightStep.Sniper).Snipe(sniper.Id, Civ(m).Id));
         }
 
         [Test]
@@ -342,11 +325,11 @@ namespace MafiaNight.Tests
         private static void Acts2(MafiaMatch m, string victimToKill)
         {
             var doctor = m.Players.FirstOrDefault(x => x.Role == Role.Doctor && x.InPlay);
-            if (doctor != null) m.DoctorSave(doctor.Id, doctor.Id);
+            if (doctor != null) m.At(NightStep.Doctor).DoctorSave(doctor.Id, doctor.Id);
             var sheriff = m.Players.FirstOrDefault(x => x.Role == Role.Sheriff && x.InPlay);
-            if (sheriff != null) m.SheriffCheck(sheriff.Id, Civ(m).Id, out _);
+            if (sheriff != null) m.At(NightStep.Sheriff).SheriffCheck(sheriff.Id, Civ(m).Id, out _);
             var sniper = m.Players.FirstOrDefault(x => x.Role == Role.Sniper && x.InPlay);
-            if (sniper != null) m.Snipe(sniper.Id, victimToKill);                           // the sniper hits the Avenger: a citizen, so the sniper goes with him
+            if (sniper != null) m.At(NightStep.Sniper).Snipe(sniper.Id, victimToKill);                           // the sniper hits the Avenger: a citizen, so the sniper goes with him
         }
 
         [Test]
@@ -468,8 +451,9 @@ namespace MafiaNight.Tests
             Assert.IsTrue(host.Begin("m1"));
             host.Tick(100f);                                                    // the role reveal ends: night
             var av = match.Players.First(p => p.Role == Role.Avenger).Id;
+            HostNightKit.ToStep(host, NightStep.Mafia);
             foreach (var mafia in match.Players.Where(p => p.IsMafia)) host.Receive(mafia.Id, Act("mafia", av));
-            host.Tick(100f);                                                    // night -> dawn
+            HostNightKit.FinishNight(host);                                     // night -> dawn
             Assert.AreEqual(Phase.Dawn, match.Phase);
             host.Tick(100f);                                                    // dawn -> the Avenger's moment
             Assert.AreEqual(Phase.Avenge, match.Phase);

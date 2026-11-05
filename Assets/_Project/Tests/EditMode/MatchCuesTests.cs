@@ -23,27 +23,18 @@ namespace MafiaNight.Tests
         }
 
         [Test]
-        public void ARoleCallAndTheIdleLineLastTheSame_SoNobodyCanTellWhoIsAwake()
+        public void EveryCallLastsTheSameAsTheConfigsStep_SoNobodyCanTellWhoIsAwakeOrDead()
         {
-            var idle = CueCatalog.Find(CueIds.NightIdle);
-            foreach (var role in new[] { Role.Mafia, Role.Doctor, Role.Sheriff })
+            foreach (var role in new[] { Role.Mafia, Role.Silencer, Role.Doctor, Role.Sheriff, Role.Sniper })
             {
                 var call = CueCatalog.Find(CueIds.Call(role));
                 Assert.IsNotNull(call, role + " has no call");
-                Assert.AreEqual(idle.Duration, call.Duration, role + ": the length of the call would tell who is awake");
-                Assert.IsNotNull(CueCatalog.Find(CueIds.Sleep(role)), role + " has no 'goes to sleep' line");
+                Assert.AreEqual(new MatchConfig().NightStepSeconds, call.Duration, role + ": the call must fill exactly its step");
+                var sleep = CueCatalog.Find(CueIds.Sleep(role));
+                Assert.IsNotNull(sleep, role + " has no 'goes to sleep' line");
+                Assert.AreEqual(new MatchConfig().NightSleepSeconds, sleep.Duration, role + ": the sleep line must fill the pause");
             }
-        }
-
-        [Test]
-        public void TheCallGoesOnForADeadRolesTownToo_ButOnlyTheLivingOwnerHearsIt()
-        {
-            var mine = CueCatalog.NightCallFor(Role.Doctor, Role.Doctor, true);
-            Assert.AreEqual(CueIds.Call(Role.Doctor), mine.Id);
-            Assert.AreEqual(CueIds.NightIdle, CueCatalog.NightCallFor(Role.Doctor, Role.Doctor, false).Id, "a dead doctor hears the idle line, as everybody else");
-            Assert.AreEqual(CueIds.NightIdle, CueCatalog.NightCallFor(Role.Doctor, Role.Civilian, true).Id);
-            Assert.AreEqual(CueIds.NightIdle, CueCatalog.NightCallFor(Role.Doctor, null, false).Id, "a spectator");
-            Assert.AreEqual(CueCatalog.NightCallFor(Role.Doctor, Role.Doctor, true).Duration, CueCatalog.NightCallFor(Role.Doctor, null, false).Duration);
+            foreach (NightStep s in System.Enum.GetValues(typeof(NightStep))) Assert.IsTrue(CueCatalog.Has(CueIds.Call(CueCatalog.RoleOfStep(s))), s.ToString());
         }
 
         [Test]

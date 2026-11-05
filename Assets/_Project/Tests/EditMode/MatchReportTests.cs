@@ -42,7 +42,7 @@ namespace MafiaNight.Tests
         private static void FinishWithTownWin(HostMatchController host, MafiaMatch match, Wire wire, Dictionary<string, ClientMatchController> clients)
         {
             foreach (var p in match.Players.Where(p => p.IsMafia)) host.PlayerLeft(p.Id);     // all mafia gone: the town wins
-            for (int i = 0; i < 6 && host.Running; i++) { host.Tick(200f); Deliver(wire, clients); }
+            for (int i = 0; i < 120 && host.Running; i++) { host.Tick(200f); Deliver(wire, clients); }      // the night is called one role at a time: one step per tick
             Deliver(wire, clients);
         }
 

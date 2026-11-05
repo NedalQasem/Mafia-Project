@@ -18,6 +18,7 @@ namespace MafiaNight.MatchRules.Net
         private float actIn = -1f;
         private Phase lastPhase = Phase.Lobby;
         private int lastRound = -1;
+        private NightStep? lastStep;
 
         /// <param name="toHost">what the bot sends to the host (the host reads it as coming from <paramref name="id"/>)</param>
         public BotPlayer(string id, Action<WireMessage> toHost, IRandom random, Random jitter)
@@ -40,10 +41,15 @@ namespace MafiaNight.MatchRules.Net
             {
                 lastPhase = c.Phase; lastRound = c.Round;
                 actIn = c.Phase == Phase.RoleReveal ? Delay(1f, 4f)
-                      : c.Phase == Phase.Night ? Delay(3f, 14f)
+                      : c.Phase == Phase.Night ? -1f                      // at night he waits for his own call (below)
                       : c.Phase == Phase.Day ? Delay(10f, 40f)
                       : c.Phase == Phase.Voting ? Delay(4f, 20f)
                       : c.Phase == Phase.Avenge ? Delay(3f, 15f) : -1f;       // the Avenger bot thinks aloud for a while, like a person
+            }
+            if (c.Phase == Phase.Night && c.ActiveStep != lastStep)
+            {   // the narrator called a role: if it is his, he thinks for a moment inside the 15 seconds and chooses
+                lastStep = c.ActiveStep;
+                actIn = c.MyTurn ? Delay(1.5f, 9f) : -1f;
             }
             if (actIn < 0f) return;
             actIn -= dt;
@@ -57,11 +63,12 @@ namespace MafiaNight.MatchRules.Net
             {
                 case Phase.RoleReveal: c.Ready(); break;
                 case Phase.Night:
+                    if (!c.MyTurn) break;
                     if (c.IAmMafia)
                     {
                         var t = alive.Where(s => !s.IsMate).ToList();
-                        if (t.Count > 0) c.MafiaPick(t[random.Next(t.Count)].Id);
-                        if (c.MyRole == Role.Silencer && t.Count > 0) c.Silence(t[random.Next(t.Count)].Id);
+                        if (t.Count == 0) break;
+                        if (c.ActiveStep == NightStep.Silencer) c.Silence(t[random.Next(t.Count)].Id); else c.MafiaPick(t[random.Next(t.Count)].Id);
                     }
                     else if (c.MyRole == Role.Sniper)
                     {   // he keeps his bullet most nights and fires it at somebody once in a while

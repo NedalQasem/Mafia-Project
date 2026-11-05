@@ -47,6 +47,18 @@ namespace MafiaNight.MatchRules.Net
         public double DurationSeconds { get; private set; }
         private readonly Dictionary<string, string> roster = new Dictionary<string, string>();
 
+        /// <summary>Which role is awake right now (null: the night opens, or the pause between two calls). Everybody sees it on the banner in the middle of the table.</summary>
+        public NightStep? ActiveStep { get; private set; }
+        /// <summary>The calls of this night in order, and the position of the current one (-1: the opening).</summary>
+        public List<NightStep> NightSteps { get; } = new List<NightStep>();
+        public int NightStepIndex { get; private set; } = -1;
+        /// <summary>It is my role's turn: I am alive, my role is the one called, so I may choose. For everybody else the screen is locked.</summary>
+        public bool MyTurn => Phase == Phase.Night && IAmAlive && MyRole.HasValue && ActiveStep.HasValue && MafiaMatch.IsAwake(ActiveStep.Value, MyRole.Value);
+        /// <summary>The roles of this match and how many of each (public at the start, so a call never gives anybody away).</summary>
+        public List<KeyValuePair<Role, int>> RoleCounts { get; } = new List<KeyValuePair<Role, int>>();
+        /// <summary>The call of a night step changed (the role that was called, or null when the pause between two calls began). The narrator's director listens to this.</summary>
+        public event Action<NightStep?> StepChanged;
+
         public string DawnVictimId { get; private set; }
         public string DawnDiedId { get; private set; }
         public Role? DawnDiedRole { get; private set; }
@@ -126,6 +138,11 @@ namespace MafiaNight.MatchRules.Net
                     RefreshRoles();
                     break;
                 case Msg.State: ApplyState(m); break;
+                case Msg.Step: ApplyStep(m); return;
+                case Msg.Roles:
+                    RoleCounts.Clear();
+                    for (int i = 0; i + 1 < m.Args.Length; i += 2) if (Enum.TryParse(m.Args[i], out Role rc)) RoleCounts.Add(new KeyValuePair<Role, int>(rc, m.Int(i + 1)));
+                    break;
                 case Msg.Result:
                     LastResultKind = m.Arg(0);
                     Enum.TryParse(m.Arg(1), out ActionResult res); LastResult = res;
@@ -222,6 +239,19 @@ namespace MafiaNight.MatchRules.Net
             if (step == "open" || step == "done") Moment?.Invoke("avenge." + step);
         }
 
+        private void ApplyStep(WireMessage m)
+        {
+            NightStep? now = Enum.TryParse(m.Arg(0), out NightStep st) ? st : (NightStep?)null;
+            NightSteps.Clear();
+            foreach (var part in m.Arg(1).Split(',')) if (Enum.TryParse(part, out NightStep ns)) NightSteps.Add(ns);
+            NightStepIndex = m.Int(2, -1);
+            bool changed = now != ActiveStep;
+            ActiveStep = now;
+            T("night: " + (now.HasValue ? now.Value + " is awake" : NightStepIndex < 0 ? "the night opens" : "everybody sleeps") + (MyTurn ? " (my turn)" : ""));
+            Changed?.Invoke();
+            if (changed) StepChanged?.Invoke(now);
+        }
+
         private void ApplyState(WireMessage m)
         {
             var oldPhase = Phase;
@@ -233,7 +263,7 @@ namespace MafiaNight.MatchRules.Net
             RefreshRoles();
             if (Phase != oldPhase)
             {
-                if (Phase == Phase.Night) { MafiaVotes.Clear(); SilencedId = null; snipeChoice = null; }
+                if (Phase == Phase.Night) { MafiaVotes.Clear(); SilencedId = null; snipeChoice = null; ActiveStep = null; NightSteps.Clear(); NightStepIndex = -1; }
                 if (Phase == Phase.Voting) { Tally.Clear(); }
                 if (Phase == Phase.Day) { SkipCount = 0; }
                 T("table: phase " + Phase + " round " + Round + ", I am " + (IAmAlive ? "alive" : "out") + ", " + seats.Count(x => x.Alive && !x.Left) + " alive");

@@ -68,6 +68,19 @@ namespace MafiaNight.MatchRules.Net
             return new WireMessage(Msg.Start, a.ToArray());
         }
 
+        /// <summary>Which role is awake now (empty: the opening or the pause between two calls), the whole list of calls tonight and the position of the current one.</summary>
+        private WireMessage StepMessage()
+        {
+            return new WireMessage(Msg.Step, match.ActiveStep?.ToString() ?? "", string.Join(",", match.NightSteps.Select(s => s.ToString())), match.NightStepIndex.ToString());
+        }
+
+        private WireMessage RolesMessage()
+        {
+            var a = new List<string>();
+            foreach (var g in match.Players.GroupBy(p => p.Role).OrderBy(g => g.Key)) { a.Add(g.Key.ToString()); a.Add(g.Count().ToString()); }
+            return new WireMessage(Msg.Roles, a.ToArray());
+        }
+
         private WireMessage StateMessage()
         {
             var a = new List<string> { match.Phase.ToString(), match.Round.ToString(), WireMessage.F(timeLeft) };
@@ -85,6 +98,7 @@ namespace MafiaNight.MatchRules.Net
             roster.Clear();
             if (playFabIds != null) foreach (var kv in playFabIds) roster[kv.Key] = kv.Value ?? "";
             ToAll(StartMessage());
+            ToAll(RolesMessage());
             T("begin " + matchId + ": " + match.Players.Count + " players; roles: " + string.Join(", ", match.Players.Select(p => N(p.Id) + "=" + p.Role)));
             foreach (var p in match.Players) SendRole(p);
             EnterPhase();
@@ -123,6 +137,9 @@ namespace MafiaNight.MatchRules.Net
             ToAll(StateMessage());
             switch (match.Phase)
             {
+                case Phase.Night:
+                    ToAll(StepMessage());
+                    break;
                 case Phase.Dawn:
                     var n = match.LastNight;
                     T("dawn: the mafia chose " + N(n.VictimId) + (n.Saved ? ", the doctor saved him" : ", died: " + N(n.DiedId) + " (" + n.DiedRole + ")")
@@ -246,6 +263,7 @@ namespace MafiaNight.MatchRules.Net
                     To(new WireMessage(Msg.Tally, a.ToArray()));
                     break;
                 case Phase.Night:
+                    To(StepMessage());
                     if (match.MafiaVotes.Count > 0)
                     {
                         var mv = new List<string>();
@@ -277,7 +295,26 @@ namespace MafiaNight.MatchRules.Net
             if (endIn < 0f && EverybodyDone()) { endIn = EarlyEndFor(match.Phase); T("everybody acted in " + match.Phase + ": it ends in " + endIn.ToString("0") + " s"); }
             if (endIn >= 0f && match.Phase == Phase.Avenge && !EverybodyDone()) { endIn = -1f; T("the Avenger took his pick back"); }   // only his pick can be taken back
             if (endIn >= 0f) { endIn -= dt; if (endIn <= 0f) { Advance(); return; } }
-            if (timeLeft <= 0f) Advance();
+            if (timeLeft <= 0f) { if (match.Phase == Phase.Night) NightClockEnded(); else Advance(); }
+        }
+
+        /// <summary>The night is called one role at a time: the opening, then (15 s awake, 2 s asleep) per role, then the dawn. Nobody can end a call early, so nobody learns who acted.</summary>
+        private void NightClockEnded()
+        {
+            if (match.ActiveStep != null)
+            {
+                T("night: " + match.ActiveStep + " goes back to sleep");
+                match.EndStep(); timeLeft = match.Config.NightSleepSeconds;
+            }
+            else if (match.BeginNextStep())
+            {
+                T("night: " + match.ActiveStep + " is called (" + match.Config.NightStepSeconds.ToString("0") + " s)");
+                timeLeft = match.Config.NightStepSeconds;
+            }
+            else { Advance(); return; }
+            ToAll(StepMessage());
+            ToAll(StateMessage());
+            Changed?.Invoke();
         }
 
         /// <summary>How long a finished phase is shown before it ends. The Avenger's pick gets the confirmation time, so a wrong tap can still be undone.</summary>
@@ -288,7 +325,6 @@ namespace MafiaNight.MatchRules.Net
             switch (match.Phase)
             {
                 case Phase.RoleReveal: return elapsedInPhase >= RoleRevealMin && match.InPlay.All(p => ready.Contains(p.Id));
-                case Phase.Night: return match.NightActionsComplete();
                 case Phase.Day: return match.SkipReached;
                 case Phase.Voting: return match.AllVoted();
                 case Phase.Avenge: return match.AvengePick != null;
@@ -306,6 +342,7 @@ namespace MafiaNight.MatchRules.Net
             if (!spectators.Add(id)) return;
             T("spectator joined: " + id);
             Send(id, StartMessage());
+            Send(id, RolesMessage());
             Send(id, StateMessage());
             SendRevealed(id);
         }
@@ -320,6 +357,7 @@ namespace MafiaNight.MatchRules.Net
             spectators.Remove(id);
             T("player is back at his seat: " + N(id));
             Send(id, StartMessage());
+            Send(id, RolesMessage());
             SendRole(match.Get(id));
             ToAll(StateMessage());                                         // everybody sees him back, and he sees the table
             SendRevealed(id);

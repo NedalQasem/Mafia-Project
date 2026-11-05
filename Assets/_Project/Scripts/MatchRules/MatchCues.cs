@@ -43,8 +43,6 @@ namespace MafiaNight.MatchRules
     {
         public const string MatchStart = "match.start";
         public const string NightFalls = "night.falls";
-        /// <summary>What the people who are NOT called hear while a role is called (same length as the call).</summary>
-        public const string NightIdle = "night.idle";
         public const string DawnQuiet = "dawn.quiet";
         public const string DawnKill = "dawn.kill";
         public const string DawnSaved = "dawn.saved";
@@ -75,8 +73,21 @@ namespace MafiaNight.MatchRules
         /// <summary>The id of a role's card (the portrait file and the card text): the same word as the role, except the Sheriff whose card is the Elder ("sheikh").</summary>
         public static string CardIdOf(Role r) => r == Role.Sheriff ? "sheikh" : r.ToString().ToLowerInvariant();
 
-        /// <summary>How long a night call lasts for everybody, called or not.</summary>
-        public const float NightCallSeconds = 20f;     // the owner's night choice time
+        /// <summary>How long a night call lasts, the same for every role and every listener (the match config's <c>NightStepSeconds</c>; a test keeps the two together).</summary>
+        public const float NightCallSeconds = 15f;
+
+        /// <summary>The role a night step calls (the mafia step calls the mafia; the silencer, who also wakes in it, has his own call after it).</summary>
+        public static Role RoleOfStep(NightStep step)
+        {
+            switch (step)
+            {
+                case NightStep.Mafia: return Role.Mafia;
+                case NightStep.Silencer: return Role.Silencer;
+                case NightStep.Doctor: return Role.Doctor;
+                case NightStep.Sheriff: return Role.Sheriff;
+                default: return Role.Sniper;
+            }
+        }
 
         public static readonly string[] Languages = { "ar", "en" };
 
@@ -113,7 +124,6 @@ namespace MafiaNight.MatchRules
             {
                 Make(CueIds.MatchStart, 4f, "وُزّعت الأدوار. السهرة بدت.", Anim("role_reveal", 0f)),
                 Make(CueIds.NightFalls, 4f, "الكل ينام… غمّضوا عيونكم.", Anim("night_falls", 0f)),
-                Make(CueIds.NightIdle, NightCallSeconds, "الليل يمشي… اهدا."),
                 Make(CueIds.Call(Role.Mafia), NightCallSeconds, "يا مافيا… قوموا. منو تبون تقتلون الليلة؟", Anim("wake_mafia", 0f)),
                 Make(CueIds.Call(Role.Doctor), NightCallSeconds, "يا دكتور… قوم. منو تبي تحمي الليلة؟", Anim("wake_doctor", 0f)),
                 Make(CueIds.Call(Role.Sheriff), NightCallSeconds, "يا شيخ… قوم. منو تبي تفحص الليلة؟", Anim("wake_sheikh", 0f)),
@@ -150,13 +160,6 @@ namespace MafiaNight.MatchRules
         /// <summary>The cue, or null when there is none for this id (a state that has no narration yet simply goes on silently).</summary>
         public static Cue Find(string id) => id != null && all.TryGetValue(id, out var c) ? c : null;
 
-        /// <summary>
-        /// What this player hears during the night call of <paramref name="called"/>: the call itself when he is that role (and alive), the idle line otherwise.
-        /// Both last <see cref="NightCallSeconds"/>, so the length of the call tells nobody who is awake or whether the role's owner is dead.
-        /// </summary>
-        public static Cue NightCallFor(Role called, Role? mine, bool iAmAlive) =>
-            iAmAlive && mine == called ? Find(CueIds.Call(called)) : Find(CueIds.NightIdle);
-
         /// <summary>Said instead of a player's name in the recorded English voice.</summary>
         public const string SomeoneInVoiceEn = "someone";
 
@@ -165,7 +168,6 @@ namespace MafiaNight.MatchRules
         {
             { CueIds.MatchStart, "The roles are dealt. The evening begins." },
             { CueIds.NightFalls, "Everyone, go to sleep… close your eyes." },
-            { CueIds.NightIdle, "The night moves on… stay quiet." },
             { CueIds.Call(Role.Mafia), "Mafia… wake up. Who do you take out tonight?" },
             { CueIds.Call(Role.Doctor), "Doctor… wake up. Who do you protect tonight?" },
             { CueIds.Call(Role.Sheriff), "Sheriff… wake up. Who do you investigate tonight?" },
@@ -200,7 +202,6 @@ namespace MafiaNight.MatchRules
         {
             { CueIds.MatchStart, "وُزِّعَتِ الأَدْوَار. السَّهْرَةُ بَدَت." },
             { CueIds.NightFalls, "الكُلّ يِنَام… غَمِّضُوا عُيُونَكُم." },
-            { CueIds.NightIdle, "اللَّيْلُ يِمْشِي… اهْدَا." },
             { CueIds.Call(Role.Mafia), "يَا مَافِيَا… قُومُوا. مِنُو تَبُّونَ تَقْتُلُونَ اللَّيْلَة؟" },
             { CueIds.Call(Role.Doctor), "يَا دُكْتُور… قُوم. مِنُو تَبِي تَحْمِي اللَّيْلَة؟" },
             { CueIds.Call(Role.Sheriff), "يَا شَيْخ… قُوم. مِنُو تَبِي تَفْحَصُ اللَّيْلَة؟" },

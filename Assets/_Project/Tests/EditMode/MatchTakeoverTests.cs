@@ -43,7 +43,7 @@ namespace MafiaNight.Tests
             {
                 switch (m.Phase)
                 {
-                    case Phase.Night: m.MafiaVote(mafia, civ); m.DoctorSave(doctor, doctor); m.SheriffCheck(sheriff, mafia, out _); break;
+                    case Phase.Night: m.At(NightStep.Mafia).MafiaVote(mafia, civ); m.At(NightStep.Doctor).DoctorSave(doctor, doctor); m.At(NightStep.Sheriff).SheriffCheck(sheriff, mafia, out _); break;
                     case Phase.Day: foreach (var p in m.InPlay) m.RequestSkip(p.Id); break;
                     case Phase.Voting: foreach (var p in m.InPlay.Where(x => x.Id != mafia)) m.Vote(p.Id, mafia); break;
                 }
@@ -62,7 +62,7 @@ namespace MafiaNight.Tests
         {
             var m = Played(8, out var mafia, out var civ);
             m.Advance();                                    // night
-            m.MafiaVote(mafia, civ);
+            m.At(NightStep.Mafia).MafiaVote(mafia, civ);
             var copy = MafiaMatch.Restore(new MatchConfig(), m.Export(), new First());
             m.Advance(); copy.Advance();                    // dawn
             Assert.AreEqual(m.LastNight.DiedId, copy.LastNight.DiedId);
@@ -83,14 +83,14 @@ namespace MafiaNight.Tests
             var m = Played(8, out var mafia, out var civ);
             var doctor = m.Players.First(p => p.Role == Role.Doctor).Id;
             m.Advance();
-            m.DoctorSave(doctor, doctor);
-            m.MafiaVote(mafia, civ);
+            m.At(NightStep.Mafia).MafiaVote(mafia, civ);
+            m.At(NightStep.Doctor).DoctorSave(doctor, doctor);
             m.Advance();                                    // night resolved: the doctor used his self-save
             var copy = MafiaMatch.Restore(new MatchConfig(), m.Export(), new First());
             Assert.AreEqual(1, copy.Get(doctor).SelfSavesUsed);
             m.Advance(); m.Advance(); m.Advance(); m.Advance();   // day, voting, verdict, next night
             copy.Advance(); copy.Advance(); copy.Advance(); copy.Advance();
-            if (copy.Phase == Phase.Night) Assert.AreEqual(ActionResult.SelfSaveUsed, copy.DoctorSave(doctor, doctor));
+            if (copy.Phase == Phase.Night) Assert.AreEqual(ActionResult.SelfSaveUsed, copy.At(NightStep.Doctor).DoctorSave(doctor, doctor));
         }
 
         [Test]
@@ -113,6 +113,7 @@ namespace MafiaNight.Tests
             var old = new HostMatchController(m, wire, "p0", _ => { });
             old.Begin();
             old.Tick(m.Config.RoleRevealSeconds + 0.1f);               // night
+            HostNightKit.ToStep(old, NightStep.Mafia);
             old.Receive(mafia, new WireMessage(Msg.Act, "mafia", civ));
             old.Tick(10f);
             var data = old.ExportState();
@@ -141,7 +142,8 @@ namespace MafiaNight.Tests
             var other = m.Players.First(p => p.Role == Role.Doctor).Id;
             resumed.Receive(other, new WireMessage(Msg.Act, "save", other));
             Assert.AreEqual(other, resumed.Match.Players.Count(p => p.Id == other) == 1 ? other : null);
-            resumed.Tick(m.Config.NightSeconds);                       // the clock keeps running
+            Assert.AreEqual(NightStep.Mafia, resumed.Match.ActiveStep, "the call that was open is still open on the new host");
+            HostNightKit.FinishNight(resumed);                              // the clock keeps running
             Assert.AreEqual(Phase.Dawn, resumed.Match.Phase);
         }
 
