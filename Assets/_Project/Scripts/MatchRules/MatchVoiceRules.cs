@@ -25,8 +25,9 @@ namespace MafiaNight.MatchRules
         /// <param name="memberIds">everybody in the room, this one included</param>
         /// <param name="myId">this device's id</param>
         /// <param name="silenced">the silencer silenced this player for the day: he hears everything but his mic stays shut (he can still vote)</param>
+        /// <param name="myTurn">at night: this player's own role is the one called right now; the mic is open only then (everybody else sleeps in silence)</param>
         /// <param name="avengerId">in the Avenge phase, the Avenger who is deciding: he is out of the game, but he talks with the players and they hear him</param>
-        public static VoicePlan For(Phase phase, Role? role, bool alive, IEnumerable<string> mafiaMateIds, IEnumerable<string> alivePlayerIds, IEnumerable<string> memberIds, string myId, bool silenced = false, string avengerId = null)
+        public static VoicePlan For(Phase phase, Role? role, bool alive, IEnumerable<string> mafiaMateIds, IEnumerable<string> alivePlayerIds, IEnumerable<string> memberIds, string myId, bool silenced = false, string avengerId = null, bool myTurn = true)
         {
             var plan = new VoicePlan();
             if (phase == Phase.Lobby || phase == Phase.RoleReveal || phase == Phase.GameOver) return plan;      // before and after the match everybody talks together
@@ -52,7 +53,7 @@ namespace MafiaNight.MatchRules
 
             if (night)
             {
-                if (role.HasValue && role.Value.IsMafiaTeam()) plan.HearOnly = new HashSet<string>(mafiaMateIds ?? Enumerable.Empty<string>());
+                if (role.HasValue && role.Value.IsMafiaTeam()) { plan.HearOnly = new HashSet<string>(mafiaMateIds ?? Enumerable.Empty<string>()); plan.MicAllowed = myTurn; }      // the mafia talk in their own call only
                 else { plan.MicAllowed = false; plan.HearOnly = new HashSet<string>(); }
                 return plan;
             }

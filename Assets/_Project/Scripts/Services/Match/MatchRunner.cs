@@ -293,7 +293,7 @@ namespace MafiaNight.Services.Match
             var mates = c.Seats.Where(x => x.IsMate && x.Alive && !x.Left).Select(x => x.Id).ToList();
             var living = c.Seats.Where(x => x.Alive && !x.Left).Select(x => x.Id).ToList();
             var me = rooms.Members.FirstOrDefault(m => m.IsMe);
-            var plan = MatchVoiceRules.For(c.Phase, c.MyRole, c.IAmAlive, mates, living, rooms.Members.Select(m => m.Puid).ToList(), me != null ? me.Puid : "", c.IAmSilenced, c.Phase == Phase.Avenge ? c.AvengerId : null);
+            var plan = MatchVoiceRules.For(c.Phase, c.MyRole, c.IAmAlive, mates, living, rooms.Members.Select(m => m.Puid).ToList(), me != null ? me.Puid : "", c.IAmSilenced, c.Phase == Phase.Avenge ? c.AvengerId : null, c.MyTurn);
             string sig = plan.MicAllowed + "|" + (plan.HearOnly == null ? "*" : string.Join(",", plan.HearOnly.OrderBy(x => x)));
             if (sig == lastVoicePlan) return;
             lastVoicePlan = sig;

@@ -44,6 +44,17 @@ namespace MafiaNight.Tests
         }
 
         [Test]
+        public void At_night_a_mafia_member_talks_only_in_his_own_call()
+        {
+            var asleep = MatchVoiceRules.For(Phase.Night, Role.Mafia, true, Mates, Alive, Members, "me", false, null, false);
+            Assert.IsFalse(asleep.MicAllowed, "the mafia call is not open: everybody sleeps in silence");
+            CollectionAssert.AreEquivalent(Mates, asleep.HearOnly.ToArray());
+            var awake = MatchVoiceRules.For(Phase.Night, Role.Mafia, true, Mates, Alive, Members, "me", false, null, true);
+            Assert.IsTrue(awake.MicAllowed);
+            Assert.IsTrue(MatchVoiceRules.For(Phase.Day, Role.Mafia, true, Mates, Alive, Members, "me", false, null, false).MicAllowed, "by day the turn does not matter");
+        }
+
+        [Test]
         public void A_mafia_without_mates_hears_nobody_at_night()
         {
             var p = MatchVoiceRules.For(Phase.Night, Role.Mafia, true, null, Alive, Members, "me");

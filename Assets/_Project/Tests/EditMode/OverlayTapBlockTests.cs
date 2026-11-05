@@ -139,6 +139,18 @@ namespace MafiaNight.Tests
         }
 
         [Test]
+        public void TheTurnBannerInTheMiddleOfTheTableTakesNoTap_AndHoldsAnyRoleNameOrLine()
+        {
+            var banner = KitTurnBanner.Create((RectTransform)canvas.transform);
+            foreach (var look in new[] { KitTurnBanner.Look.Mine, KitTurnBanner.Look.Other, KitTurnBanner.Look.Sleepy })
+                foreach (var line in new[] { "ب", "المافيا", new string('س', 90) })
+                    banner.Show(look, line, line == "ب" ? "" : new string('ش', 120));
+            foreach (var g in banner.GetComponentsInChildren<UnityEngine.UI.Graphic>(true)) Assert.IsFalse(g.raycastTarget, g.name + ": the banner must never take a tap away from the table");
+            Assert.IsFalse(banner.GetComponent<CanvasGroup>().blocksRaycasts);
+            Assert.LessOrEqual(((RectTransform)banner.transform).sizeDelta.x, 960.5f, "a long line must not make the banner wider than the screen allows");
+        }
+
+        [Test]
         public void TheBigCardOfAPlayerStopsEveryTap_AndHoldsAnyName()
         {
             foreach (var id in new[] { "mafia", "sheikh", "doctor", "civilian", "silencer", "sniper", "avenger" })

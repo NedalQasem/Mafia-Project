@@ -49,9 +49,11 @@ namespace MafiaNight.App
         private MatchCuePlayer cues;
         private KitNarratorSlip slip;
         private KitMomentFx fx;
+        private KitTurnBanner banner;                      // the banner in the middle of the table at night: whose turn it is, for everybody
+        private NightStep? shownStep;                      // the call this screen was last drawn for (a new call starts with nothing picked)
         // the second choices of the new roles, made in a sheet: the silencer's target, the sniper's shot
         private string silencePicked, sniperPicked;
-        private bool silenceConfirmed, sniperDecided, sheetWanted, silencerSuggesting;
+        private bool silenceConfirmed, sniperDecided, sheetWanted;
 
         /// <summary>What the rewards server paid; the end screen shows it once it arrives (until then the block stays hidden).</summary>
         public void SetReward(RewardResult r) { reward = r; if (c != null && c.Phase == Phase.GameOver) Redraw(); }
@@ -72,6 +74,7 @@ namespace MafiaNight.App
             runner = live != null && live.Session != null && live.Session.Client == client ? live : null;
             if (runner != null) runner.ChatChanged += RefreshDock;
             if (fx == null && view.transform is RectTransform fxRoot) { fx = KitMomentFx.Create(view, fxRoot); fx.NameOf = id => c?.Seat(id)?.Name ?? ""; fx.LayersOf = id => c != null && c.Seat(id) != null && c.Seat(id).IsMe ? MyLayers() : runner != null ? runner.CardsOf(id) : null; }      // under the dock and the slip
+            if (banner == null && view.transform is RectTransform bannerRoot) banner = KitTurnBanner.Create(bannerRoot);
             if (dock == null && view.transform is RectTransform root)
             {
                 dock = KitMatchDock.Create(root);
@@ -149,6 +152,7 @@ namespace MafiaNight.App
                 case ActionResult.AbilityUsed: return "أطلقت طلقتك الوحيدة.";
                 case ActionResult.InvalidTarget: return "اختيار غير صالح.";
                 case ActionResult.WrongPhase: return "فات الوقت.";
+                case ActionResult.WrongStep: return "مش دورك هلأ.";
                 default: return "";
             }
         }
@@ -158,7 +162,12 @@ namespace MafiaNight.App
         private void Redraw()
         {
             if (c == null || view == null) return;
-            if (c.Round != confirmedRound && c.Phase == Phase.Night) { confirmedRound = c.Round; confirmed = false; picked = null; silencePicked = sniperPicked = null; silenceConfirmed = sniperDecided = silencerSuggesting = false; }
+            if (c.Round != confirmedRound && c.Phase == Phase.Night) { confirmedRound = c.Round; confirmed = false; picked = null; silencePicked = sniperPicked = null; silenceConfirmed = sniperDecided = false; shownStep = null; }
+            if (c.Phase == Phase.Night && c.ActiveStep != shownStep)
+            {   // a new role is called: its owner starts with nothing picked, and feels it in the hand
+                shownStep = c.ActiveStep; confirmed = false; picked = null;
+                if (c.MyTurn && Application.isMobilePlatform && DevicePerf.DecorativeMotion) Handheld.Vibrate();
+            }
             lastSeconds = -1;
             sheetWanted = false;
             if (c.Phase != Phase.RoleReveal) KitRoleReveal.CloseCurrent();
@@ -174,6 +183,7 @@ namespace MafiaNight.App
                 case Phase.GameOver: DrawOver(); break;
             }
             if (!sheetWanted) KitPickSheet.CloseCurrent();
+            UpdateTurnBanner();
             shownPhase = c.Phase; shownRound = c.Round;
             RefreshDock();
         }
@@ -200,7 +210,7 @@ namespace MafiaNight.App
             var voice = runner != null ? runner.Voice : null;
             var mates = c.Seats.Where(x => x.IsMate && x.Alive && !x.Left).Select(x => x.Id).ToList();
             var living = c.Seats.Where(x => x.Alive && !x.Left).Select(x => x.Id).ToList();
-            var voicePlan = MatchVoiceRules.For(c.Phase, c.MyRole, c.IAmAlive, mates, living, c.Seats.Select(x => x.Id).ToList(), c.Seats.FirstOrDefault(x => x.IsMe)?.Id ?? "", c.IAmSilenced, c.Phase == Phase.Avenge ? c.AvengerId : null);
+            var voicePlan = MatchVoiceRules.For(c.Phase, c.MyRole, c.IAmAlive, mates, living, c.Seats.Select(x => x.Id).ToList(), c.Seats.FirstOrDefault(x => x.IsMe)?.Id ?? "", c.IAmSilenced, c.Phase == Phase.Avenge ? c.AvengerId : null, c.MyTurn);
             bool connected = runner == null || (voice != null && voice.IsConnected);
             var mic = MatchMic.Of(c.Phase, c.MyRole, Alive, c.IAmSilenced, c.IAmTheAvenger, voicePlan.MicAllowed, voice == null || voice.MicOn, connected);
             vm.MicLook = mic.Look == MicLook.Open ? KitMatchDock.Mic.Open : mic.Look == MicLook.Closed ? KitMatchDock.Mic.Closed : KitMatchDock.Mic.Waiting;
@@ -284,29 +294,84 @@ namespace MafiaNight.App
                 var mates = c.Seats.Where(s => s.IsMate).Select(s => s.Name).ToList();
                 line = mates.Count > 0 ? "رفقاؤك بالمافيا: " + string.Join("، ", mates) : "أنت المافيا الوحيد";
             }
-            KitRoleReveal.Show(view.transform, def, MyLayers(), line, confirmed ? "بانتظار البقية" : "فهمت، ابدأ", () => { if (confirmed) return; confirmed = true; c.Ready(); KitRoleReveal.SetButton("بانتظار البقية"); });
+            KitRoleReveal.Show(view.transform, def, MyLayers(), line, confirmed ? "بانتظار البقية" : "فهمت، ابدأ", () => { if (confirmed) return; confirmed = true; c.Ready(); KitRoleReveal.SetButton("بانتظار البقية"); }, RosterLine());
+        }
+
+        /// <summary>The roles of this match and how many of each, in the order the night calls them. Public from the start.</summary>
+        private string RosterLine()
+        {
+            var parts = new List<string>();
+            foreach (var role in new[] { Role.Mafia, Role.Silencer, Role.Doctor, Role.Sheriff, Role.Sniper, Role.Avenger, Role.Civilian })
+            {
+                int n = 0; foreach (var kv in c.RoleCounts) if (kv.Key == role) n = kv.Value;
+                if (n <= 0) continue;
+                string name = role == Role.Sheriff ? "شيخ" : role == Role.Civilian ? "مواطن" : RoleName(role);
+                parts.Add(n > 1 ? name + " ×" + n : name);
+            }
+            return parts.Count == 0 ? null : string.Join(" · ", parts);
         }
 
         // ---------------------------------------------------------------- night
 
+        private static string StepName(NightStep step)
+        {
+            switch (step) { case NightStep.Mafia: return "المافيا"; case NightStep.Silencer: return "كاتم الصوت"; case NightStep.Doctor: return "الطبيب"; case NightStep.Sheriff: return "الشيخ"; default: return "القنّاص"; }
+        }
+
+        /// <summary>The banner in the middle of the table (Docs/mockups/match-turns.html): the same words for everybody, gold for the one whose turn it is.</summary>
+        private void UpdateTurnBanner()
+        {
+            if (banner == null) return;
+            if (c.Phase != Phase.Night) { banner.Hide(); return; }
+            banner.Follow = !string.IsNullOrEmpty(frame) && frame != "reveal" ? view.Frame(frame)?.Find("f_stage") as RectTransform : null;
+            var step = c.ActiveStep;
+            if (!step.HasValue) banner.Show(KitTurnBanner.Look.Sleepy, "الكل ينام", "أغمضوا عيونكم");
+            else if (c.MyTurn) banner.Show(KitTurnBanner.Look.Mine, StepName(step.Value), "دورك · اختر الآن");
+            else banner.Show(KitTurnBanner.Look.Other, StepName(step.Value), step.Value == NightStep.Mafia ? "دورهم · يختارون الآن" : "دوره · يختار الآن");
+        }
+
+        private enum Turn { Never, Later, Done, Now }
+
+        /// <summary>Where this player's own call stands tonight: he has none, it comes later, it is over, or it is now.</summary>
+        private Turn TurnState()
+        {
+            var role = c.MyRole ?? Role.Civilian;
+            int mine = -1, last = -1;
+            for (int i = 0; i < c.NightSteps.Count; i++) if (MafiaMatch.IsAwake(c.NightSteps[i], role)) { if (mine < 0) mine = i; last = i; }
+            if (mine < 0) return Turn.Never;
+            if (c.NightStepIndex < mine) return Turn.Later;
+            if (c.NightStepIndex > last || (c.NightStepIndex == last && !c.ActiveStep.HasValue)) return Turn.Done;
+            return Turn.Now;
+        }
+
+        /// <summary>Eyes closed: the seats sleep and nothing can be tapped. Everybody sees this except the one whose turn it is.</summary>
+        private void DrawAsleep()
+        {
+            string f = "p2_civ";
+            Use(f);
+            var turn = TurnState();
+            view.SetText(f, Bars[f].Sub, "الجولة " + c.Round + (turn == Turn.Never ? " · ما عندك دور بالليل" : turn == Turn.Later ? " · دورك بعد شوي" : turn == Turn.Done ? " · دورك خلص" : ""));
+            view.SetText(f, 72, "عيونك مغمضة");
+            view.SetText(f, 74, turn == Turn.Never ? "ما عندك دور ليلي. اسمع الصمت، وبالصباح تعرف شو صار." : turn == Turn.Later ? "دورك بعد شوي. ابقَ ساكت وعيونك مغمضة." : turn == Turn.Done ? "تمام، دورك خلص. ارجع نام وانتظر الصباح." : "الراوي ينادي دور غيرك. اسمع الصمت.");
+            view.SetActive(f, 6, false); view.SetActive(f, 7, false);        // the banner in the middle of the table says it
+            view.SetSeats(f, MakeSeats((s, spec) => { if (s.Alive && !s.Left) { spec.Look = SeatLook.Sleep; spec.Dim = !s.IsMe; } return spec; }), null);
+        }
+
         private void DrawNight()
         {
             var role = c.MyRole ?? Role.Civilian;
+            if (!c.MyTurn) { DrawAsleep(); return; }
+            // the second choices of the new roles are made in a sheet, in their own call
+            if (c.ActiveStep == NightStep.Silencer) { DrawAsleep(); if (!silenceConfirmed) ShowSilenceSheet(); return; }
+            if (c.ActiveStep == NightStep.Sniper) { DrawAsleep(); if (!c.ShotUsed && !sniperDecided) ShowSniperSheet(); return; }
             string f = "p2_" + RoleKey(role);
             Use(f);
             var bar = Bars[f];
             string sub = "الجولة " + c.Round;
-
-            if (role == Role.Civilian || role == Role.Avenger || role == Role.Sniper)
-            {
-                view.SetText(f, bar.Sub, sub);
-                view.SetSeats(f, MakeSeats((s, spec) => { if (s.Alive && !s.Left) { spec.Look = SeatLook.Sleep; spec.Dim = !s.IsMe; } return spec; }), null);
-                if (role == Role.Sniper && !c.ShotUsed && !sniperDecided) ShowSniperSheet();
-                return;
-            }
+            view.SetActive(f, 6, false); view.SetActive(f, 7, false);        // the banner in the middle of the table says what to do
 
             bool mafia = c.IAmMafia, doc = role == Role.Doctor;
-            view.SetText(f, bar.Sub, sub + (confirmed ? " · تم" : " · دورك الآن"));
+            view.SetText(f, bar.Sub, sub + (confirmed ? " · تم، ابقَ لآخر الوقت" : " · دورك الآن"));
             var votes = new Dictionary<string, int>();
             var advice = new HashSet<string>();           // targets only the silencer suggested: he advises, the assassins decide, so they show as "?"
             bool assassinsLeft = c.MyRole == Role.Mafia || c.Seats.Any(s => s.Alive && !s.Left && s.Role == Role.Mafia);
@@ -336,7 +401,7 @@ namespace MafiaNight.App
             else if (doc) { goBtn = 68; goSmall = 72; ghost = 73; hint = 8; }
             else { goBtn = 78; goSmall = 82; ghost = 83; hint = 8; }
             view.SetActive(f, ghost, false);
-            view.SetText(f, goSmall, pickedName != null ? "المختار: " + pickedName : "اضغط على لاعب أولاً");
+            view.SetText(f, goSmall, confirmed && pickedName != null ? "تم ✓ " + pickedName + " · النافذة تبقى لآخر الوقت" : pickedName != null ? "المختار: " + pickedName : "اضغط على لاعب أولاً");
             string reason = Reason(c.LastResult);
             if (c.LastResult != ActionResult.Ok && !string.IsNullOrEmpty(reason) && c.LastResultKind != "ready") view.SetText(f, hint, reason);
             else view.SetText(f, hint, role == Role.Silencer ? "اقترح على مافيا الاغتيال: القرار إلهم" : "اضغط على لاعب");
@@ -360,7 +425,6 @@ namespace MafiaNight.App
             if (doc) view.SetText(f, 66, "اللي تنقذه ما يموت هالليلة حتى لو اختاره المافيا. تقدر تنقذ نفسك مرة وحدة بالمباراة.");
 
             view.SetTap(f, goBtn, () => ConfirmNight(role));
-            if (role == Role.Silencer && !silenceConfirmed && !silencerSuggesting) ShowSilenceSheet();
         }
 
         private void OnNightSeatTapped(string id)
@@ -381,7 +445,7 @@ namespace MafiaNight.App
                 case Role.Doctor: c.DoctorSave(picked); break;
                 case Role.Sheriff: c.SheriffCheck(picked); break;
             }
-            confirmed = true; silencerSuggesting = false;
+            confirmed = true;
             Redraw();
         }
 
@@ -408,7 +472,6 @@ namespace MafiaNight.App
                 Buttons = new List<KitPickSheet.Button2>
                 {
                     new KitPickSheet.Button2 { Label = silencePicked == null ? "اختر لاعباً" : "أسكِت " + Name(silencePicked), Disabled = silencePicked == null, Run = () => { c.Silence(silencePicked); silenceConfirmed = true; Redraw(); } },
-                    new KitPickSheet.Button2 { Label = "اقترح على المافيا", Quiet = true, Run = () => { silencerSuggesting = true; Redraw(); } },
                 },
             });
         }

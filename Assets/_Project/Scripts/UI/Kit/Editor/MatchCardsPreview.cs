@@ -55,7 +55,9 @@ namespace MafiaNight.UI.Kit.Editor
             var cam = Camera.main;
             var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
             var old = cam.targetTexture; cam.targetTexture = rt;
-            cam.Render(); Canvas.ForceUpdateCanvases(); cam.Render(); Canvas.ForceUpdateCanvases(); cam.Render();
+            cam.Render(); Canvas.ForceUpdateCanvases();
+            foreach (var fit in Object.FindObjectsByType<KitCardFit>(FindObjectsInactive.Include)) fit.Apply();      // edit mode has no LateUpdate: fit the card to this size
+            cam.Render(); Canvas.ForceUpdateCanvases(); cam.Render();
             RenderTexture.active = rt;
             var tex = new Texture2D(w, h, TextureFormat.RGB24, false);
             tex.ReadPixels(new Rect(0, 0, w, h), 0, 0); tex.Apply();
@@ -120,6 +122,50 @@ namespace MafiaNight.UI.Kit.Editor
                 Object.DestroyImmediate(viewer.gameObject);
             }
             finally { KitCardViewer.StepOverride = 0f; }
+            return log;
+        }
+
+        /// <summary>The night as the owner asked for it (Docs/mockups/match-turns.html): the banner in the middle of the table for the one whose turn it is, for the others, and while everybody sleeps; and the role reveal with the roster.</summary>
+        public static string RenderNight(string folder)
+        {
+            var v = Object.FindFirstObjectByType<KitMatchView>();
+            if (v == null) return "open the match scene first";
+            string log = "";
+            var seats = new List<SeatSpec>
+            {
+                new SeatSpec { Id = "me", Name = "أنت", Me = true }, new SeatSpec { Id = "a", Name = "سامر" }, new SeatSpec { Id = "b", Name = "ريم" },
+                new SeatSpec { Id = "c", Name = "لينا" }, new SeatSpec { Id = "d", Name = "خالد", Look = SeatLook.Dead }, new SeatSpec { Id = "e", Name = "مازن" },
+            };
+            foreach (var size in new[] { new Vector2Int(540, 1200), new Vector2Int(540, 760), new Vector2Int(800, 1200) })
+            {
+                string tag = size.x + "x" + size.y;
+                var cam = Camera.main; var rt0 = new RenderTexture(size.x, size.y, 24); cam.targetTexture = rt0; cam.Render(); Canvas.ForceUpdateCanvases(); cam.targetTexture = null; rt0.Release();
+                var cases = new[]
+                {
+                    new { name = "sleepy", frame = "p2_civ", look = KitTurnBanner.Look.Sleepy, line = "الكل ينام", sub = "أغمضوا عيونكم" },
+                    new { name = "other", frame = "p2_civ", look = KitTurnBanner.Look.Other, line = "الطبيب", sub = "دوره · يختار الآن" },
+                    new { name = "mine", frame = "p2_doc", look = KitTurnBanner.Look.Mine, line = "الطبيب", sub = "دورك · اختر الآن" },
+                    new { name = "mine-silencer", frame = "p2_mafia", look = KitTurnBanner.Look.Mine, line = "كاتم الصوت", sub = "دورك · اختر الآن" },
+                };
+                foreach (var cs in cases)
+                {
+                    v.Show(cs.frame);
+                    var stage = v.Frame(cs.frame).Find("f_stage");
+                    for (int i = stage.childCount - 1; i >= 0; i--) { var c = stage.GetChild(i); if (c.name.StartsWith("f_seat") || c.name == "Seat") Object.DestroyImmediate(c.gameObject); }
+                    v.SetSeats(cs.frame, seats, null);
+                    v.SetActive(cs.frame, 6, false); v.SetActive(cs.frame, 7, false);        // as the screen does: the banner replaces the centre label
+                    foreach (var g in v.GetComponentsInChildren<KitFitGroup>(true)) g.Apply();
+                    Canvas.ForceUpdateCanvases();
+                    var banner = KitTurnBanner.Create((RectTransform)v.transform);
+                    banner.Follow = stage as RectTransform;
+                    try { banner.Show(cs.look, cs.line, cs.sub); Canvas.ForceUpdateCanvases(); banner.Show(cs.look, cs.line, cs.sub); log += Snap(System.IO.Path.Combine(folder, "night-" + cs.name + "-" + tag + ".png"), size.x, size.y); }
+                    finally { Object.DestroyImmediate(banner.gameObject); }
+                }
+                KitRoleReveal.Show(v.transform, MafiaNight.Data.Cards.RoleCards.Find("doctor"), new MafiaNight.Data.Cards.CardLayers(), "حامي الحارة · الجولة الأولى · 8 لاعبين", "فهمت، ابدأ", () => { }, "مافيا ×2 · كاتم صوت · طبيب · شيخ · قنّاص · الثأري · مواطن ×2");
+                foreach (var fit in v.GetComponentsInChildren<KitCardFit>(true)) fit.Apply();      // edit mode has no LateUpdate
+                log += Snap(System.IO.Path.Combine(folder, "night-reveal-" + tag + ".png"), size.x, size.y);
+                var r = v.transform.Find("RoleReveal"); if (r != null) Object.DestroyImmediate(r.gameObject);
+            }
             return log;
         }
 

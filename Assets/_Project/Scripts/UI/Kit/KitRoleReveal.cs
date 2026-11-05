@@ -18,7 +18,7 @@ namespace MafiaNight.UI.Kit
 
         private ArabicText buttonLabel;
 
-        public static void Show(Transform canvasRoot, RoleCardDef def, CardLayers layers, string line, string button, Action ready)
+        public static void Show(Transform canvasRoot, RoleCardDef def, CardLayers layers, string line, string button, Action ready, string roster = null)
         {
             CloseCurrent();
             var th = KitTheme.Current;
@@ -34,11 +34,18 @@ namespace MafiaNight.UI.Kit
             var title = Label(root.transform, "دورك بهالسهرة", th.fontLalezar, 64, th.brassLight, TextAlignmentOptions.Midline);
             var tr = (RectTransform)title.transform; tr.anchorMin = new Vector2(0, 1); tr.anchorMax = new Vector2(1, 1); tr.pivot = new Vector2(0.5f, 1); tr.sizeDelta = new Vector2(-120, 130); tr.anchoredPosition = new Vector2(0, -170);
 
+            if (!string.IsNullOrEmpty(roster))
+            {   // the roles of this match, public to everybody, so a night call never gives anybody away
+                var list = Label(root.transform, "الأدوار بهالسهرة: " + roster, th.fontBody, 34, th.ivoryDim, TextAlignmentOptions.Midline);
+                var lt = list.GetComponent<TMP_Text>(); lt.enableAutoSizing = true; lt.fontSizeMax = 34; lt.fontSizeMin = 22; lt.maxVisibleLines = 2;
+                var lrr = (RectTransform)list.transform; lrr.anchorMin = new Vector2(0, 1); lrr.anchorMax = new Vector2(1, 1); lrr.pivot = new Vector2(0.5f, 1); lrr.sizeDelta = new Vector2(-120, 100); lrr.anchoredPosition = new Vector2(0, -300);
+            }
+
             // the card: as wide as the screen allows but never taller than the middle of the screen (short and tall phones alike)
             var card = KitRoleCard.Create(root.transform, def, layers, 640f);
             var cr = (RectTransform)card.transform; cr.anchorMin = cr.anchorMax = new Vector2(0.5f, 0.54f); cr.pivot = new Vector2(0.5f, 0.5f); cr.anchoredPosition = Vector2.zero;
             card.Pressed += c => c.SetFace(c.Current == KitRoleCard.Face.Front ? KitRoleCard.Face.Back : KitRoleCard.Face.Front, true);
-            var fit = root.AddComponent<KitCardFit>(); fit.Setup(cr, 640f, KitRoleCard.RefH / KitRoleCard.RefW);
+            var fit = root.AddComponent<KitCardFit>(); fit.Setup(cr, 640f, KitRoleCard.RefH / KitRoleCard.RefW, string.IsNullOrEmpty(roster) ? 0f : 110f);
             Canvas.ForceUpdateCanvases(); fit.Apply();
 
             var hint = Label(root.transform, "اضغط على الكرت لتقلبه", th.fontBody, 34, th.ivoryDim, TextAlignmentOptions.Midline);
@@ -78,10 +85,10 @@ namespace MafiaNight.UI.Kit
     public sealed class KitCardFit : MonoBehaviour
     {
         private RectTransform card;
-        private float width, aspect;
+        private float width, aspect, extraTop;
         private Vector2 last;
 
-        public void Setup(RectTransform card, float width, float aspect) { this.card = card; this.width = width; this.aspect = aspect; }
+        public void Setup(RectTransform card, float width, float aspect, float extraTop = 0f) { this.card = card; this.width = width; this.aspect = aspect; this.extraTop = extraTop; }
 
         private void LateUpdate() { var r = ((RectTransform)transform).rect.size; if (r != last) Apply(); }
 
@@ -89,7 +96,7 @@ namespace MafiaNight.UI.Kit
         {
             var r = ((RectTransform)transform).rect.size; last = r;
             if (card == null || r.y < 300f || r.x < 300f) return;      // not laid out yet
-            float room = r.y - 170f - 130f - 760f;                      // under the title, above the hint, line and button
+            float room = r.y - 170f - 130f - extraTop - 760f;           // under the title (and the roster of roles), above the hint, line and button
             float h = width * aspect;
             card.localScale = Vector3.one * Mathf.Clamp(room / h, 0.35f, 1f) * Mathf.Min(1f, (r.x - 80f) / width);
         }
