@@ -205,6 +205,85 @@ namespace MafiaNight.UI.Kit
             return Sprite.Create(tex, new Rect(0, 0, tw, th), new Vector2(0.5f, 0.5f), 100f);
         }
 
+        // ---------------------------------------------------------------- the ribbon (a banner with notched ends)
+
+        public sealed class RibbonSpec
+        {
+            public float H = 240f, Notch = 28f, Margin = 40f;
+            public Color Top, Mid, Bottom; public float MidAt = 0.6f;
+            public Color Lip; public float LipDy;                          // the hard edge under the ribbon (drop-shadow 0 5px 0)
+            public float ShadowA = 0.65f, ShadowDy = 12f, ShadowBlur = 16f; // the soft shadow
+            public Color Edge; public float EdgePx;                        // a ring just inside the edge
+            public Color Line; public float LineInset, LinePx;             // a fine engraved line following the shape, inside
+            public Color TopLight; public float TopLightPx;
+            /// <summary>Each end that keeps its shape when the ribbon is stretched (the middle is the same everywhere along it).</summary>
+            public float EndW => Notch + 18f;
+        }
+
+        private static readonly Vector2[] ribbonPoly = new Vector2[6];
+
+        private static float SdPoly(float px, float py, Vector2[] v)
+        {
+            float best = float.MaxValue; bool inside = false;
+            for (int i = 0, j = v.Length - 1; i < v.Length; j = i++)
+            {
+                Vector2 a = v[j], b = v[i], e = b - a, w = new Vector2(px, py) - a;
+                float t = Mathf.Clamp01(Vector2.Dot(w, e) / e.sqrMagnitude);
+                best = Mathf.Min(best, (w - e * t).magnitude);
+                if ((a.y > py) != (b.y > py) && px < (b.x - a.x) * (py - a.y) / (b.y - a.y) + a.x) inside = !inside;
+            }
+            return inside ? -best : best;
+        }
+
+        /// <summary>
+        /// A banner whose ends are notched like a ribbon, painted once as a small strip that stretches in the middle (use it with Image.Type.Sliced and pixelsPerUnitMultiplier = 1 / <see cref="Q"/>).
+        /// The image must be as tall as <see cref="RibbonSpec.H"/> plus the margin on both sides, so only its width stretches.
+        /// </summary>
+        public static Sprite Ribbon(string key, RibbonSpec s)
+        {
+            if (TryGet(key, out var hit)) return hit;
+            float endW = s.EndW, W = 2f * endW + 8f, m = s.Margin, hx = W * 0.5f, hy = s.H * 0.5f, n = s.Notch;
+            float totalW = W + 2f * m, totalH = s.H + 2f * m;
+            int tw = Mathf.Max(4, Mathf.CeilToInt(totalW * Q)), th = Mathf.Max(4, Mathf.CeilToInt(totalH * Q));
+            var poly = ribbonPoly;
+            poly[0] = new Vector2(-hx, hy); poly[1] = new Vector2(hx, hy); poly[2] = new Vector2(hx - n, 0f); poly[3] = new Vector2(hx, -hy); poly[4] = new Vector2(-hx, -hy); poly[5] = new Vector2(-hx + n, 0f);
+            var tex = new Texture2D(tw, th, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color32[tw * th];
+            for (int y = 0; y < th; y++)
+            {
+                for (int x = 0; x < tw; x++)
+                {
+                    float cx = (x + 0.5f) / Q - totalW * 0.5f, cy = (y + 0.5f) / Q - totalH * 0.5f;
+                    var c = Color.clear;
+                    if (s.ShadowA > 0f)
+                    {
+                        float ds = SdPoly(cx, cy + s.ShadowDy, poly);
+                        float k = Mathf.Clamp01(1f - ds / s.ShadowBlur); k = k * k * (3f - 2f * k);
+                        c = Over(c, new Color(0f, 0f, 0f, LinA(s.ShadowA * k)));
+                    }
+                    if (s.Lip.a > 0f) { float cl = Cov(SdPoly(cx, cy + s.LipDy, poly)); if (cl > 0f) c = Over(c, new Color(s.Lip.r, s.Lip.g, s.Lip.b, s.Lip.a * cl)); }
+                    float d = SdPoly(cx, cy, poly), body = Cov(d);
+                    if (body > 0f)
+                    {
+                        float v = Mathf.Clamp01(1f - (cy + hy) / s.H);
+                        Color f = v < s.MidAt ? Color.Lerp(s.Top, s.Mid, v / s.MidAt) : Color.Lerp(s.Mid, s.Bottom, (v - s.MidAt) / (1f - s.MidAt));
+                        if (s.TopLight.a > 0f && cy > hy - s.TopLightPx) f = Over(f, s.TopLight);
+                        if (s.Edge.a > 0f && d > -s.EdgePx) f = Over(f, s.Edge);
+                        if (s.Line.a > 0f) { float ln = Mathf.Clamp01(0.5f - (Mathf.Abs(d + s.LineInset) - s.LinePx * 0.5f) * Q); if (ln > 0f) f = Over(f, new Color(s.Line.r, s.Line.g, s.Line.b, s.Line.a * ln)); }
+                        f.a *= body;
+                        c = Over(c, f);
+                    }
+                    px[y * tw + x] = c;
+                }
+            }
+            tex.SetPixels32(px);
+            tex.Apply(false, true);
+            float b = (m + endW) * Q;
+            var sp = Sprite.Create(tex, new Rect(0, 0, tw, th), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(b, 0f, b, 0f));
+            Put(key, sp);
+            return sp;
+        }
+
         /// <summary>A tiny map pin (the head and the needle) for the "pinned" tag.</summary>
         public static Sprite Pin(Color color)
         {

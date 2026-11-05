@@ -15,7 +15,7 @@ namespace MafiaNight.UI.Kit
     {
         public enum Look { Mine, Other, Sleepy }
 
-        private const float MinWidth = 640f, MaxWidth = 960f;
+        private const float MinWidth = 640f, MaxWidth = 960f, Height = 240f, Margin = 40f;
         private RectTransform rt, body;
         private CanvasGroup group;
         private ArabicText title, sub;
@@ -33,14 +33,14 @@ namespace MafiaNight.UI.Kit
             var th = KitTheme.Current;
             var go = new GameObject("TurnBanner", typeof(RectTransform), typeof(CanvasGroup));
             var r = (RectTransform)go.transform; r.SetParent(parent, false);
-            r.anchorMin = r.anchorMax = new Vector2(0.5f, 0.5f); r.pivot = new Vector2(0.5f, 0.5f); r.sizeDelta = new Vector2(MinWidth, 240f);
+            r.anchorMin = r.anchorMax = new Vector2(0.5f, 0.5f); r.pivot = new Vector2(0.5f, 0.5f); r.sizeDelta = new Vector2(MinWidth, Height);
             var b = go.AddComponent<KitTurnBanner>();
             b.rt = r; b.group = go.GetComponent<CanvasGroup>(); b.group.alpha = 0f; b.group.blocksRaycasts = false; b.group.interactable = false;      // it never takes a tap
 
             var body = new GameObject("Body", typeof(RectTransform), typeof(Image));
             body.transform.SetParent(go.transform, false);
-            b.body = (RectTransform)body.transform; b.body.anchorMin = Vector2.zero; b.body.anchorMax = Vector2.one; b.body.offsetMin = b.body.offsetMax = Vector2.zero;
-            var bi = body.GetComponent<Image>(); bi.raycastTarget = false; bi.type = Image.Type.Sliced;
+            b.body = (RectTransform)body.transform; b.body.anchorMin = Vector2.zero; b.body.anchorMax = Vector2.one; b.body.offsetMin = new Vector2(-Margin, -Margin); b.body.offsetMax = new Vector2(Margin, Margin);      // the shadow and the lip live in the margin
+            var bi = body.GetComponent<Image>(); bi.raycastTarget = false; bi.type = Image.Type.Sliced; bi.pixelsPerUnitMultiplier = 1f / KitProc.Q;
 
             b.title = Text(go.transform, "Title", th.fontLalezar != null ? th.fontLalezar : th.fontBody, 92, 0.38f, 1f);
             b.sub = Text(go.transform, "Sub", th.fontBody, 38, 0f, 0.38f);
@@ -53,7 +53,7 @@ namespace MafiaNight.UI.Kit
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
             go.transform.SetParent(parent, false);
-            var r = (RectTransform)go.transform; r.anchorMin = new Vector2(0, yMin); r.anchorMax = new Vector2(1, yMax); r.offsetMin = new Vector2(40, 6); r.offsetMax = new Vector2(-40, -6);
+            var r = (RectTransform)go.transform; r.anchorMin = new Vector2(0, yMin); r.anchorMax = new Vector2(1, yMax); r.offsetMin = new Vector2(64, 6); r.offsetMax = new Vector2(-64, -6);      // clear of the notched ends
             var t = go.GetComponent<TextMeshProUGUI>();
             if (font != null) t.font = font;
             t.fontSize = size; t.alignment = TextAlignmentOptions.Midline; t.raycastTarget = false;
@@ -61,13 +61,29 @@ namespace MafiaNight.UI.Kit
             return go.AddComponent<ArabicText>();
         }
 
+        private static Color Hex(string h) { ColorUtility.TryParseHtmlString(h, out var c); return c; }
+
+        /// <summary>The ribbon of each look (the mockup's colors: gold paper with a hard brass lip for the viewer's own turn, dark leather for the others, deep blue for the sleep).</summary>
         private static Sprite Paper(Look look)
         {
+            var s = new KitProc.RibbonSpec { H = Height, Margin = Margin, TopLight = new Color(1f, 1f, 1f, 0.28f), TopLightPx = 2f };
             switch (look)
             {
-                case Look.Mine: return KitProc.Paint("turnbanner.mine", new KitProc.Spec { Radius = 14, Top = new Color32(0xF5, 0xE2, 0xA8, 255), Mid = new Color32(0xC9, 0xA0, 0x50, 255), Bottom = new Color32(0x8A, 0x6A, 0x30, 255), MidAt = 0.6f, Edge = new Color32(0x4A, 0x35, 0x12, 255), EdgePx = 3, Shadow = Color.black, ShadowDy = 6, ShadowBlur = 1.4f, Sliced = true });
-                case Look.Other: return KitProc.Paint("turnbanner.other", new KitProc.Spec { Radius = 14, Top = new Color32(0x33, 0x25, 0x1A, 255), Bottom = new Color32(0x1A, 0x11, 0x0B, 255), Edge = new Color32(0x6A, 0x55, 0x3A, 255), EdgePx = 3, Shadow = Color.black, ShadowDy = 5, ShadowBlur = 1.4f, Sliced = true });
-                default: return KitProc.Paint("turnbanner.sleepy", new KitProc.Spec { Radius = 14, Top = new Color32(0x1C, 0x20, 0x38, 255), Bottom = new Color32(0x0E, 0x10, 0x22, 255), Edge = new Color32(0x3A, 0x40, 0x68, 255), EdgePx = 3, Shadow = Color.black, ShadowDy = 5, ShadowBlur = 1.4f, Sliced = true });
+                case Look.Mine:
+                    s.Top = Hex("#f5e2a8"); s.Mid = Hex("#c9a050"); s.Bottom = Hex("#8a6a30"); s.MidAt = 0.6f;
+                    s.Lip = Hex("#4a3512"); s.LipDy = 6f; s.ShadowA = 0.7f; s.ShadowDy = 14f; s.ShadowBlur = 18f;
+                    s.Edge = new Color(0.29f, 0.21f, 0.07f, 0.55f); s.EdgePx = 2.5f; s.Line = new Color(0.29f, 0.21f, 0.07f, 0.45f); s.LineInset = 13f; s.LinePx = 2f;
+                    return KitProc.Ribbon("turnribbon.mine", s);
+                case Look.Other:
+                    s.Top = Hex("#33251a"); s.Mid = Hex("#26190f"); s.Bottom = Hex("#1a110b"); s.MidAt = 0.5f;
+                    s.Lip = Color.black; s.LipDy = 5f; s.ShadowA = 0.65f; s.ShadowDy = 11f; s.ShadowBlur = 16f;
+                    s.Edge = Hex("#6a553a"); s.EdgePx = 2.5f; s.Line = new Color(0.42f, 0.33f, 0.23f, 0.7f); s.LineInset = 13f; s.LinePx = 2f; s.TopLight = new Color(1f, 1f, 1f, 0.07f);
+                    return KitProc.Ribbon("turnribbon.other", s);
+                default:
+                    s.Top = Hex("#1c2038"); s.Mid = Hex("#151932"); s.Bottom = Hex("#0e1022"); s.MidAt = 0.5f;
+                    s.Lip = Color.clear; s.ShadowA = 0.65f; s.ShadowDy = 9f; s.ShadowBlur = 14f;
+                    s.Edge = Hex("#3a4068"); s.EdgePx = 2.5f; s.Line = new Color(0.36f, 0.4f, 0.62f, 0.55f); s.LineInset = 13f; s.LinePx = 2f; s.TopLight = new Color(1f, 1f, 1f, 0.06f);
+                    return KitProc.Ribbon("turnribbon.sleepy", s);
             }
         }
 
@@ -117,7 +133,7 @@ namespace MafiaNight.UI.Kit
         {
             if (rt == null) return;
             float w = Mathf.Clamp(Mathf.Max(MinWidth, title.GetComponent<TextMeshProUGUI>().preferredWidth + 160f), MinWidth, MaxWidth);
-            rt.sizeDelta = new Vector2(w, 240f);
+            rt.sizeDelta = new Vector2(w, Height);
             if (follow == null) return;
             var world = follow.TransformPoint(follow.rect.center);
             var parent = (RectTransform)rt.parent;
