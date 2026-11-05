@@ -51,6 +51,10 @@ namespace MafiaNight.App
         private KitMomentFx fx;
         private KitTurnBanner banner;                      // the banner in the middle of the table at night: whose turn it is, for everybody
         private NightStep? shownStep;                      // the call this screen was last drawn for (a new call starts with nothing picked)
+        private const float PickGrace = 3f;                // a tap picks; the choice can still change for this long, then it goes out by itself (no confirm button)
+        private float commitAt = -1f, stepStartedAt;       // when the pending pick goes out; when the current call began (its 15 s end the grace early)
+        private int graceShown = -1, sentSeq;              // the second last printed in the banner; the host answers counted when the pick went out
+        private string pickError;                          // why the host refused the last pick (shown in the banner until the next tap)
         // the second choices of the new roles, made in a sheet: the silencer's target, the sniper's shot
         private string silencePicked, sniperPicked;
         private bool silenceConfirmed, sniperDecided, sheetWanted;
@@ -95,6 +99,7 @@ namespace MafiaNight.App
             tick?.Invoke();
             if (dock != null && Time.unscaledTime >= nextDockAt) { nextDockAt = Time.unscaledTime + 0.5f; RefreshDock(); }      // the voice connection and the mic switch change without the match telling
             if (KitPickSheet.IsOpen) KitPickSheet.SetTimer(Clock(Mathf.CeilToInt(c.SecondsLeft)));
+            TickPick();
             if (Bars.TryGetValue(frame, out var bar))
             {
                 int s = Mathf.CeilToInt(c.SecondsLeft);
@@ -107,7 +112,7 @@ namespace MafiaNight.App
             }
         }
 
-        private void OnPhase(Phase p) { picked = null; confirmed = false; }
+        private void OnPhase(Phase p) { picked = null; confirmed = false; commitAt = -1f; pickError = null; }
 
         // ---------------------------------------------------------------- helpers
 
@@ -162,10 +167,10 @@ namespace MafiaNight.App
         private void Redraw()
         {
             if (c == null || view == null) return;
-            if (c.Round != confirmedRound && c.Phase == Phase.Night) { confirmedRound = c.Round; confirmed = false; picked = null; silencePicked = sniperPicked = null; silenceConfirmed = sniperDecided = false; shownStep = null; }
+            if (c.Round != confirmedRound && c.Phase == Phase.Night) { confirmedRound = c.Round; confirmed = false; picked = null; silencePicked = sniperPicked = null; silenceConfirmed = sniperDecided = false; shownStep = null; commitAt = -1f; pickError = null; }
             if (c.Phase == Phase.Night && c.ActiveStep != shownStep)
             {   // a new role is called: its owner starts with nothing picked, and feels it in the hand
-                shownStep = c.ActiveStep; confirmed = false; picked = null;
+                shownStep = c.ActiveStep; confirmed = false; picked = null; commitAt = -1f; pickError = null; stepStartedAt = Time.unscaledTime;
                 if (c.MyTurn && Application.isMobilePlatform && DevicePerf.DecorativeMotion) Handheld.Vibrate();
             }
             lastSeconds = -1;
@@ -326,8 +331,44 @@ namespace MafiaNight.App
             banner.Follow = !string.IsNullOrEmpty(frame) && frame != "reveal" ? view.Frame(frame)?.Find("f_stage") as RectTransform : null;
             var step = c.ActiveStep;
             if (!step.HasValue) banner.Show(KitTurnBanner.Look.Sleepy, "الكل ينام", "أغمضوا عيونكم");
-            else if (c.MyTurn) banner.Show(KitTurnBanner.Look.Mine, StepName(step.Value), "دورك · اختر الآن");
+            else if (c.MyTurn) banner.Show(KitTurnBanner.Look.Mine, StepName(step.Value), NightSmall(step.Value));
             else banner.Show(KitTurnBanner.Look.Other, StepName(step.Value), step.Value == NightStep.Mafia ? "دورهم · يختارون الآن" : "دوره · يختار الآن");
+        }
+
+        /// <summary>The small line of the gold banner: what to do, then the pick counting down to go out, then "done" (the sheriff's answer too). Replaces the old confirm panel.</summary>
+        private string NightSmall(NightStep step)
+        {
+            if (!string.IsNullOrEmpty(pickError) && picked == null) return pickError;
+            if (picked != null && commitAt >= 0f)
+            {
+                int left = Mathf.Max(1, Mathf.CeilToInt(commitAt - Time.unscaledTime));
+                graceShown = left;
+                return Name(picked) + " · يتثبّت بعد " + Digits(left);
+            }
+            if (picked != null && confirmed)
+            {
+                if (c.MyRole == Role.Sheriff && c.SheriffReports.Count > 0)
+                {
+                    var last = c.SheriffReports[c.SheriffReports.Count - 1];
+                    if (last.Key == picked) return Name(last.Key) + " · " + (last.Value ? "مافيا!" : "بريء");
+                }
+                return "تم ✓ " + Name(picked);
+            }
+            switch (step)
+            {
+                case NightStep.Mafia: return c.MyRole == Role.Silencer ? "دورك · اقترح الضحية، القرار للمافيا" : "دورك · اختر الضحية";
+                case NightStep.Doctor: return "دورك · اختر مين تنقذ";
+                case NightStep.Sheriff: return "دورك · اختر مين تتحقق منه";
+                default: return "دورك · اختر الآن";
+            }
+        }
+
+        /// <summary>Counts the pick's grace down in the banner, and sends the pick when the grace is over.</summary>
+        private void TickPick()
+        {
+            if (c.Phase != Phase.Night || !c.MyTurn || picked == null || commitAt < 0f) return;
+            if (Time.unscaledTime >= commitAt) { commitAt = -1f; SendNightPick(); return; }
+            if (Mathf.CeilToInt(commitAt - Time.unscaledTime) != graceShown) UpdateTurnBanner();
         }
 
         private enum Turn { Never, Later, Done, Now }
@@ -354,12 +395,19 @@ namespace MafiaNight.App
             view.SetText(f, 72, "عيونك مغمضة");
             view.SetText(f, 74, turn == Turn.Never ? "ما عندك دور ليلي. اسمع الصمت، وبالصباح تعرف شو صار." : turn == Turn.Later ? "دورك بعد شوي. ابقَ ساكت وعيونك مغمضة." : turn == Turn.Done ? "تمام، دورك خلص. ارجع نام وانتظر الصباح." : "الراوي ينادي دور غيرك. اسمع الصمت.");
             view.SetActive(f, 6, false); view.SetActive(f, 7, false);        // the banner in the middle of the table says it
-            view.SetSeats(f, MakeSeats((s, spec) => { if (s.Alive && !s.Left) { spec.Look = SeatLook.Sleep; spec.Dim = !s.IsMe; } return spec; }), null);
+            view.SetSeats(f, MakeSeats((s, spec) =>
+            {
+                if (!s.Alive || s.Left) return spec;
+                spec.Look = SeatLook.Sleep; spec.Dim = !s.IsMe;
+                if (c.MyRole == Role.Sheriff) foreach (var rep in c.SheriffReports) if (rep.Key == s.Id) { spec.Tag = rep.Value ? SeatTag.Mafia : SeatTag.Check; spec.TagText = "✓"; }      // his answers stay on the seats
+                return spec;
+            }), null);
         }
 
         private void DrawNight()
         {
             var role = c.MyRole ?? Role.Civilian;
+            PickRefused();
             if (!c.MyTurn) { DrawAsleep(); return; }
             // the second choices of the new roles are made in a sheet, in their own call
             if (c.ActiveStep == NightStep.Silencer) { DrawAsleep(); if (!silenceConfirmed) ShowSilenceSheet(); return; }
@@ -395,51 +443,31 @@ namespace MafiaNight.App
                 return spec;
             }), OnNightSeatTapped);
 
-            string pickedName = picked != null ? Name(picked) : null;
-            int goBtn, goSmall, ghost, hint;
-            if (mafia) { goBtn = 74; goSmall = 78; ghost = 79; hint = 8; }
-            else if (doc) { goBtn = 68; goSmall = 72; ghost = 73; hint = 8; }
-            else { goBtn = 78; goSmall = 82; ghost = 83; hint = 8; }
-            view.SetActive(f, ghost, false);
-            view.SetText(f, goSmall, confirmed && pickedName != null ? "تم ✓ " + pickedName + " · النافذة تبقى لآخر الوقت" : pickedName != null ? "المختار: " + pickedName : "اضغط على لاعب أولاً");
-            string reason = Reason(c.LastResult);
-            if (c.LastResult != ActionResult.Ok && !string.IsNullOrEmpty(reason) && c.LastResultKind != "ready") view.SetText(f, hint, reason);
-            else view.SetText(f, hint, role == Role.Silencer ? "اقترح على مافيا الاغتيال: القرار إلهم" : "اضغط على لاعب");
-
-            if (!mafia && !doc)
-            {   // last answer of the sheriff
-                if (c.SheriffReports.Count > 0)
-                {
-                    var last = c.SheriffReports[c.SheriffReports.Count - 1];
-                    view.SetText(f, 66, "نتيجة آخر فحص");
-                    view.SetText(f, 68, Name(last.Key) + ":");
-                    view.SetText(f, 70, last.Value ? "مافيا" : "بريء");
-                }
-                else
-                {
-                    view.SetText(f, 66, "لا نتيجة بعد");
-                    view.SetText(f, 68, "ما تحققت من أحد");
-                    view.SetText(f, 70, "");
-                }
-            }
-            if (doc) view.SetText(f, 66, "اللي تنقذه ما يموت هالليلة حتى لو اختاره المافيا. تقدر تنقذ نفسك مرة وحدة بالمباراة.");
-
-            view.SetTap(f, goBtn, () => ConfirmNight(role));
+            // no panel and no button: the banner in the middle of the table says what to do, counts the pick down and gives the answer
+            int panel = mafia ? 66 : doc ? 60 : 62;
+            view.SetActive(f, panel, false);
         }
 
         private void OnNightSeatTapped(string id)
         {
             var s = c.Seat(id);
             if (s == null || !s.Alive || s.Left) return;
+            var role = c.MyRole ?? Role.Civilian;
             if (c.IAmMafia && (s.IsMate || s.IsMe)) return;
-            picked = id;
+            if (role == Role.Sheriff && (s.IsMe || confirmed)) return;      // one check per night, and never himself: the answer is final
+            if (id == picked) return;                                       // the same player again changes nothing
+            picked = id; confirmed = false; pickError = null; graceShown = -1;
+            float now = Time.unscaledTime;
+            commitAt = Mathf.Min(now + PickGrace, Mathf.Max(now, stepStartedAt + CueCatalog.NightCallSeconds - 1.5f));      // the call's own end cuts the grace short
             Redraw();
         }
 
-        private void ConfirmNight(Role role)
+        /// <summary>The grace is over: the pick goes out (the host takes the last one for the mafia and the doctor, the sheriff's is final).</summary>
+        private void SendNightPick()
         {
             if (picked == null) return;
-            switch (role)
+            sentSeq = c.ResultSeq;
+            switch (c.MyRole ?? Role.Civilian)
             {
                 case Role.Mafia: case Role.Silencer: c.MafiaPick(picked); break;
                 case Role.Doctor: c.DoctorSave(picked); break;
@@ -447,6 +475,15 @@ namespace MafiaNight.App
             }
             confirmed = true;
             Redraw();
+        }
+
+        /// <summary>The host refused the pick that went out: say why in the banner, and let the player pick again.</summary>
+        private bool PickRefused()
+        {
+            if (!confirmed || c.ResultSeq == sentSeq || c.LastResult == ActionResult.Ok) return false;
+            pickError = Reason(c.LastResult);
+            picked = null; confirmed = false; commitAt = -1f;
+            return true;
         }
 
         // ---------------------------------------------------------------- sheets of the new roles

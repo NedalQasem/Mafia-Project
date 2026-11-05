@@ -94,6 +94,8 @@ namespace MafiaNight.MatchRules.Net
         public int SkipNeeded { get; private set; }
         public string LastResultKind { get; private set; }
         public ActionResult LastResult { get; private set; }
+        /// <summary>Counts the host's answers, so a screen can tell a fresh answer to its own act from an old one.</summary>
+        public int ResultSeq { get; private set; }
 
         /// <summary>What this device sees of the match, one line at a time (for the test journal).</summary>
         public Action<string> Trace;
@@ -145,7 +147,7 @@ namespace MafiaNight.MatchRules.Net
                     break;
                 case Msg.Result:
                     LastResultKind = m.Arg(0);
-                    Enum.TryParse(m.Arg(1), out ActionResult res); LastResult = res;
+                    Enum.TryParse(m.Arg(1), out ActionResult res); LastResult = res; ResultSeq++;
                     T("the host answered my " + LastResultKind + ": " + res);
                     break;
                 case Msg.MafiaVotes:

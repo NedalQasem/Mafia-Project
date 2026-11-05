@@ -144,8 +144,10 @@ namespace MafiaNight.UI.Kit.Editor
                 {
                     new { name = "sleepy", frame = "p2_civ", look = KitTurnBanner.Look.Sleepy, line = "الكل ينام", sub = "أغمضوا عيونكم" },
                     new { name = "other", frame = "p2_civ", look = KitTurnBanner.Look.Other, line = "الطبيب", sub = "دوره · يختار الآن" },
-                    new { name = "mine", frame = "p2_doc", look = KitTurnBanner.Look.Mine, line = "الطبيب", sub = "دورك · اختر الآن" },
-                    new { name = "mine-silencer", frame = "p2_mafia", look = KitTurnBanner.Look.Mine, line = "كاتم الصوت", sub = "دورك · اختر الآن" },
+                    new { name = "mine", frame = "p2_doc", look = KitTurnBanner.Look.Mine, line = "الطبيب", sub = "ريم · يتثبّت بعد ٣" },
+                    new { name = "mine-silencer", frame = "p2_mafia", look = KitTurnBanner.Look.Mine, line = "كاتم الصوت", sub = "دورك · اقترح الضحية، القرار للمافيا" },
+                    new { name = "mine-sheriff", frame = "p2_sher", look = KitTurnBanner.Look.Mine, line = "الشيخ", sub = "سامر · مافيا!" },
+                    new { name = "mine-long", frame = "p2_sher", look = KitTurnBanner.Look.Mine, line = "الشيخ", sub = "عبد الرحمن بن عبد العزيز الحداد الكبير · يتثبّت بعد ٣" },
                 };
                 foreach (var cs in cases)
                 {
@@ -154,6 +156,7 @@ namespace MafiaNight.UI.Kit.Editor
                     for (int i = stage.childCount - 1; i >= 0; i--) { var c = stage.GetChild(i); if (c.name.StartsWith("f_seat") || c.name == "Seat") Object.DestroyImmediate(c.gameObject); }
                     v.SetSeats(cs.frame, seats, null);
                     v.SetActive(cs.frame, 6, false); v.SetActive(cs.frame, 7, false);        // as the screen does: the banner replaces the centre label
+                    if (cs.frame == "p2_mafia") v.SetActive(cs.frame, 66, false); else if (cs.frame == "p2_doc") v.SetActive(cs.frame, 60, false); else if (cs.frame == "p2_sher") v.SetActive(cs.frame, 62, false);      // and no panel at the bottom
                     foreach (var g in v.GetComponentsInChildren<KitFitGroup>(true)) g.Apply();
                     Canvas.ForceUpdateCanvases();
                     var banner = KitTurnBanner.Create((RectTransform)v.transform);

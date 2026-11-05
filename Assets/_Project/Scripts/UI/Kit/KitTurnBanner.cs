@@ -75,7 +75,7 @@ namespace MafiaNight.UI.Kit
         public void Show(Look look, string line, string small)
         {
             var th = KitTheme.Current;
-            string key = look + "|" + line + "|" + small;
+            string key = look + "|" + line;      // the small line may change every second (the pick counting down) without the banner popping again
             body.GetComponent<Image>().sprite = Paper(look);
             title.Text = line; sub.Text = small;
             var tt = title.GetComponent<TextMeshProUGUI>(); var st = sub.GetComponent<TextMeshProUGUI>();
